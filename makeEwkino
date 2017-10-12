@@ -1,0 +1,12 @@
+CC=g++
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= src/tdrstyle.cc src/treeReader.cc src/ewkino.cc src/analysisTools.cc src/eventSelection.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= analysis
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)

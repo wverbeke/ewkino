@@ -1,0 +1,12 @@
+CC=g++
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= src/eventSelection.cc src/skimmer.cc src/treeReader.cc src/analysisTools.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= skimTree
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)b
