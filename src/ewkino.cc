@@ -54,7 +54,7 @@ void treeReader::Analyze(){
     }
 
     //tweakable options
-    const double DataLuminosity = 35.867; //in units of 1/fb
+    const double DataLuminosity = 18.90; //21.15; //in units of 1/fb
     const TString extra = ""; //for plot names
 
     //Loop over all samples 
