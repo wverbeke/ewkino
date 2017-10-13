@@ -22,7 +22,6 @@
 
 void treeReader::Analyze(){
     //Set CMS plotting style
-    setTDRStyle();
     //gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
     std::ifstream file("samples.txt");
@@ -94,17 +93,9 @@ void treeReader::Analyze(){
             //select leptons
             unsigned lCount = selectLep(ind);
             if(lCount != 2) continue;
-            //Select photons
-            unsigned phCount = selectPhot();
-            if(phCount < 1) continue;			
-            //Select jets
-            if(nJets() < 2) continue;
-            //Select b jets
-            if(nBJets() < 1) continue;
             //Fill histograms
-            double fill[nDist] = {static_cast<double> (ttgCat(ind))};
             for(unsigned dist = 0; dist < nDist; ++dist){
-                hists[dist][sam]->Fill(fill[dist], weight);
+                hists[dist][sam]->Fill(1, weight);
             }
         }
         //Set histograms to 0 if negative
