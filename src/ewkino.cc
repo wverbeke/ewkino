@@ -36,11 +36,15 @@ void treeReader::Analyze(){
         std::cout << std::get<0>(*it) << "     " << std::get<1>(*it) << "      " << std::get<2>(*it) << std::endl;
     }	
     //info on kinematic distributions to plot
-    const unsigned nDist = 1;
     std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfo;
+    //name      xlabel    nBins,  min, max
     histInfo = {
-        std::make_tuple("flavors", "", 3, 0, 2)
+        std::make_tuple("sip3d", "SIP_{3D}", 100, 0, 8),
+        std::make_tuple("dxy", "|d_{xy}| (cm)", 100, 0, 0.05),
+        std::make_tuple("dz", "|d_{z}| (cm)", 100, 0, 0.1),
+        std::make_tuple("miniIso", "miniIso", 100, 0, 0.4) 
     };
+    const unsigned nDist = histInfo.size();
     //initialize vector holding all histograms
     std::vector< std::vector < TH1D* > > hists(nDist, std::vector<TH1D*>(samples.size()) );
     for(unsigned dist = 0; dist < nDist; ++dist){
@@ -92,10 +96,17 @@ void treeReader::Analyze(){
             std::vector<unsigned> ind;
             //select leptons
             unsigned lCount = selectLep(ind);
-            if(lCount != 2) continue;
-            //Fill histograms
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                hists[dist][sam]->Fill(1, weight);
+            if(lCount < 2) continue;
+            //require leading OSSF pair 
+            unsigned flavorComp = dilFlavorComb(ind);
+            if(flavorComp != 0 && flavorComp != 2) continue;
+            //Loop over leading leptons
+            for(unsigned l = 0; l < 2; ++l){
+                double fill[nDist] = {_3dIPSig[ind[l]], _dxy[ind[l]], _dz[ind[l]], _miniIso[ind[l]]};
+                //Fill histograms
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    hists[dist][sam]->Fill(fill[dist], weight);
+                }
             }
         }
         //Set histograms to 0 if negative
