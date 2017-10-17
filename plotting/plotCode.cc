@@ -210,8 +210,6 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //draw CMS header
     drawLumi(&p1);
 
-    //~~~~~~~~~~~~~~ FIXED DOWN TO HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
     //make ratio plot in second pad
     c.cd(); 
     p2 = TPad(file + "2","",0,0.0,1,xPad);
@@ -220,27 +218,23 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     p2.SetTopMargin(0.01);     //small space between two pads
     p2.SetBottomMargin(0.4);
 
-    //make separate histograms containing total and statistical background uncertainty
+    //make separate histograms containing total and statistical background uncertainty which will be used to plot uncertainty bands
     const unsigned nBins = data->GetNbinsX();
     TH1D* bkgStatErrors = new TH1D("bkgStaterrors" + file, "bkgStaterrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
+    TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();
     for(unsigned b = 1; b < nBins + 1; ++b){
-        bkgStatErrors->SetBinContent(b, 1.);
-        if(bkgTot->GetBinContent(b) != 0){
-            bkgStatErrors->SetBinError(b, bkgTot->GetBinError(b)/bkgTot->GetBinContent(b));
-        } else{
-            bkgStatErrors->SetBinError(b, 0.);
-        }			
-    }
-    TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();//new TH1D("bkgerrors" + file, "bkgerrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
-    for(unsigned b = 1; b < nBins + 1; ++b){
+        bkgStatErrors->SetBinContent(b, 1.);    //center bands around 0
         bkgErrors->SetBinContent(b, 1.);
         if(bkgTot->GetBinContent(b) != 0){
+            bkgStatErrors->SetBinError(b, bkgTot->GetBinError(b)/bkgTot->GetBinContent(b));
             bkgErrors->SetBinError(b, bkgTotE->GetBinError(b)/bkgTotE->GetBinContent(b));
         } else{
+            bkgStatErrors->SetBinError(b, 0.);
             bkgErrors->SetBinError(b, 0.);
-        }
-    }			
+        }			
+    }
 
+    //set style of uncertainty bands 
     bkgStatErrors->SetFillStyle(1001);
     bkgErrors->SetFillStyle(1001);
     bkgStatErrors->SetFillColor(kCyan - 4);
@@ -248,60 +242,57 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgStatErrors->SetMarkerStyle(1);
     bkgErrors->SetMarkerStyle(1);
 
-    TGraphAsymmErrors* obsRatio = new TGraphAsymmErrors(data);
+    //make TGraph asymmErros to plot data with the correct uncertainties
+    TGraphAsymmErrors obsRatio = TGraphAsymmErrors(data);
     for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-        obsRatio->GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
-        obsRatio->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), data->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
-        if(data->GetBinContent(b) == 0) obsRatio->GetY()[b - 1] += 5;
+        obsRatio.GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
+        obsRatio.SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), data->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
+        if(data->GetBinContent(b) == 0) obsRatio.GetY()[b - 1] += 5;
     }
 
-    //Now reset bin errors 
-    //for(unsigned b = 1; b < nBins + 1; ++b){
-    //dataC->SetBinError(b, dataErrors->GetBinContent(b));
-    //}
-    //Legend for uncertainties
-    TLegend* legend2 = new TLegend(0.18,0.85,0.8,0.98,NULL,"brNDC"); //0.18, 0.85, 0.65, 0.98
-    legend2-> SetNColumns(3); //2
-    //Avoid legend box
-    legend2->SetFillStyle(0);
-    //Add data to legend
-    legend2->AddEntry(bkgStatErrors, "stat. pred. unc.", "f");
-    legend2->AddEntry(bkgErrors, "total pred. unc.", "f");
-    //legend2->AddEntry(dataC, "obs./pred. with total unc.", "pe12");
-    legend2->AddEntry(obsRatio, "obs./pred.", "pe12");
+    //legend for uncertainties
+    TLegend legend2 = TLegend(0.18,0.85,0.8,0.98,NULL,"brNDC");
+    legend2.SetNColumns(3); 
+    legend2.SetFillStyle(0); //avoid legend box 
+    legend2.AddEntry(bkgStatErrors, "stat. pred. unc.", "f");
+    legend2.AddEntry(bkgErrors, "total pred. unc.", "f");
+    legend2.AddEntry(obsRatio, "obs./pred.", "pe12");
 
-
+    /*
+    We will set up the range and label sizes of the plot using bkgErros. As such this histogram always has to be 
+    drawn first on the pad to fix the plotted labels.
+    */
     bkgErrors->SetMarkerColor(1);
     bkgErrors->SetLineColor(1);
     bkgErrors->GetYaxis()->SetRangeUser(0.,1.999);
     bkgErrors->GetYaxis()->SetTitle("obs./pred.");
-    bkgErrors->GetYaxis()->SetTitleOffset(1.25/((1.-xPad)/xPad)); //1.25
-    bkgErrors->GetYaxis()->SetTitleSize((1.-xPad)/xPad*0.06); //originally 0.06
-    bkgErrors->GetXaxis()->SetTitleSize((1.-xPad)/xPad*0.06); //originally 0.09
-    bkgErrors->GetYaxis()->SetLabelSize((1.-xPad)/xPad*0.05); //originally 0.05
-    bkgErrors->GetXaxis()->SetLabelSize((1.-xPad)/xPad*0.05); //originally 0.05
-    //NeW 
+    bkgErrors->GetYaxis()->SetTitleOffset(1.25/((1.-xPad)/xPad));
+    bkgErrors->GetYaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
+    bkgErrors->GetXaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
+    bkgErrors->GetYaxis()->SetLabelSize((1.-xPad)/xPad*0.05);
+    bkgErrors->GetXaxis()->SetLabelSize((1.-xPad)/xPad*0.05);
     bkgErrors->GetXaxis()->SetLabelOffset((1-xPad)/xPad*0.009);
     bkgErrors->GetXaxis()->SetTitleOffset((1-xPad)/xPad*0.32);
 
-    //dataC->Draw("pe");
-    bkgErrors->Draw("e2"); //e2same
-    //draw bkg errors
-    bkgErrors->Draw("e2same"); //e2same
-    bkgStatErrors->Draw("e2same");
-    //bkgStatErrors->Draw("e2same");
-    //dataC->Draw("pe1same"); //esame
-    obsRatio->Draw("pe1same");
-    legend2->Draw("same");
+    //draw objects on pad
+    bkgErrors->Draw("e2");
+    bkgErrors->Draw("e2 same");
+    bkgStatErrors->Draw("e2 same");
+    obsRatio.Draw("pe1 same");
+    legend2.Draw("same");
     gPad->RedrawAxis();
-    //Draw line at 1 on ratio plot
-    //double xmax = dataC->GetBinCenter(dataC->GetNbinsX()) + dataC->GetBinWidth(dataC->GetNbinsX())/2;
-    //double xmin = dataC->GetBinCenter(0) + dataC->GetBinWidth(0)/2;
+
+    //draw line at 1 on ratio plot
     double xmax = data->GetBinCenter(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX())/2;
     double xmin = data->GetBinCenter(0) + data->GetBinWidth(0)/2;
-    TLine *line = new TLine(xmin, 1, xmax, 1);
-    line->SetLineStyle(2);
-    line->Draw("same");
-    c->SaveAs("plots/" + file + ".pdf");
-    c->SaveAs("plots/" + file + ".png");
+    TLine line = TLine(xmin, 1, xmax, 1);
+    line.SetLineStyle(2);
+    line.Draw("same");
+
+    //save canvas to file
+    c.SaveAs("plots/" + file + ".pdf");
+    c.SaveAs("plots/" + file + ".png");
+    
+    //Clean up memory 
+    delete bkgStatErrors;
 }
