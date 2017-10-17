@@ -100,9 +100,11 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //Background histograms with full uncertainty
     TH1D* bkgE[nHist]; //clone histograms so that the function does not affect its arguments!
     std::copy(std::begin(bkg), std::end(bkg), std::begin(bkgE) ); //CHECK WHETHER STD COPY DOES INDEED COPY THE OBJECTS AND NOT JUST THE POINTERS
-    for(unsigned h = 0; h < nHist; ++h){
-        for(unsigned bin = 1; bin < bkgE[b]->GetNbinsX() + 1; ++bin){
-            bkgE[b]->SetBinError(bin, sqrt(bkgE[h]->GetBinError(bin)*bkgE[h]->GetBinError(bin) + bkgSyst[h]->GetBinContent(bin)*bkgSyst[h]->GetBinContent(bin)) );
+    if(bkgSyst != nullptr){
+        for(unsigned h = 0; h < nHist; ++h){
+            for(unsigned bin = 1; bin < bkgE[b]->GetNbinsX() + 1; ++bin){
+                bkgE[b]->SetBinError(bin, sqrt(bkgE[h]->GetBinError(bin)*bkgE[h]->GetBinError(bin) + bkgSyst[h]->GetBinContent(bin)*bkgSyst[h]->GetBinContent(bin)) );
+            }
         }
     }
 
@@ -174,6 +176,10 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //determine upper limit of plot
     if(!ylog){
         bkgTotE->SetMaximum(totalMax*1.3);
+        //hack not to draw 0 observed event points
+        for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
+            if(obs->GetY()[b - 1] == 0)  obs->GetY()[b - 1] += totalMax*10;
+        }
     } else{
         double minimum = totalMax; //find pad minimum when plotting on a log scale
         for(unsigned b = 1; b < bkgTot->GetNbinsX() + 1; ++b){
@@ -184,63 +190,39 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         double SF = log10(std::max(10., totalMax/minimum));
         bkgTotE->SetMinimum(minimum/5.);
         bkgTotE->SetMaximum(totalMax*3*SF);
-    }			
-
-    //hack not to draw 0 observed event points
-    for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-        if(!ylog){
-            if(obs->GetY()[b - 1] == 0)  obs->GetY()[b - 1] += totalMax*10;
-        } else{
+        //hack not to draw 0 observed event points
+        for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
            if(data->GetBinContent(b) == 0)  obs->GetY()[b - 1] += totalMax*30*SF;
         }
-    }
+    }			
 
-    //Draw histograms and legends
-    //First draw data to fix plot range
-    //data->Draw("pe");
-    bkgTotE->Draw("e2"); //e2same
+    //draw histograms and legends
+    //first draw total background to fix plot range
+    bkgTotE->Draw("e2");
     bkgStack->Draw("hist same");
-    //Redraw data so it is overlaid on the background stack
-    //data->Draw("pe same");
-    legend->Draw("same");
-    bkgTotE->Draw("e2same"); //e2same
-    //data->Draw("pe1 same"); // NEW  //pesame
-    obs->Draw("pe1 same");	
-    //Draw signal plots
-    if(plotsig){
-        for(unsigned sig = 0; sig < nSig; ++sig){
-            if(signorm && signal[sig]->GetSumOfWeights() != 0) signal[sig]->Scale(bkgTot->GetSumOfWeights()/ signal[sig]->GetSumOfWeights());
-            signal[sig]->Draw("histsame");
-        }
-    }
+    legend.Draw("same");
+    bkgTotE->Draw("e2 same"); //Redraw data so it is overlaid on the background stack
+    dataGraph.Draw("pe1 same");	
+
     //redraw axis over histograms
     gPad->RedrawAxis();
+
     //Draw CMS header
-    drawLumi(p1);
-    c->cd(); 
+    drawLumi(&p1);
+
+    //~~~~~~~~~~~~~~ FIXED DOWN TO HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     //Make ratio plot in second pad
+    c.cd(); 
 
     const unsigned nBins = data->GetNbinsX();
-    //TH1D* dataErrors = new TH1D("dataerrors" + file, "dataerrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
     TH1D* bkgStatErrors = new TH1D("bkgStaterrors" + file, "bkgStaterrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
-    //TH1D* bkgStatErrors = new TH1D("bkgStaterros" + file, "bkgStaterrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
     for(unsigned b = 1; b < nBins + 1; ++b){
-        /*
-           if(data->GetBinContent(b) != 0){
-           if(bkgTot->GetBinContent(b) != 0) dataErrors->SetBinContent(b, data->GetBinError(b)/bkgTot->GetBinContent(b));
-           else dataErrors->SetBinContent(b, data->GetBinError(b)/data->GetBinContent(b));
-           } else{
-           dataErrors->SetBinContent(b, 0);
-           }
-         */
         bkgStatErrors->SetBinContent(b, 1.);
-        //bkgStatErrors->SetBinContent(b, 1.);
         if(bkgTot->GetBinContent(b) != 0){
             bkgStatErrors->SetBinError(b, bkgTot->GetBinError(b)/bkgTot->GetBinContent(b));
-            //bkgStatErrors->SetBinError(b, sqrt( *bkgTot->GetBinContent(b) ));
         } else{
             bkgStatErrors->SetBinError(b, 0.);
-            //bkgStatErrors->SetBinError(b, 0.);
         }			
     }
     TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();//new TH1D("bkgerrors" + file, "bkgerrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
