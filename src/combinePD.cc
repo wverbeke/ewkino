@@ -31,15 +31,12 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
     outputFile->cd("blackJackAndHookers"); 
     TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
     setOutputTree(outputTree, true);
-    //TH1D* hCounterTot = new TH1D("hCounterTot", "Events counter", 1,0,1);
     for(std::vector<std::string>::const_iterator it = datasets.cbegin(); it != datasets.cend(); ++it){
         std::cout << *it << std::endl;
         //Read tree	
         TFile* sampleFile = new TFile( (const TString&)"~/Work/ntuples_ewkino/" + *it,"read");	
         //Determine hcounter for cross section scaling
         sampleFile->cd("blackJackAndHookers");	
-        //TH1D* hCounter = new TH1D("hCounter" + (const TString&) *it,   "Events counter", 1,0,1);
-        //hCounter->Read("hCounter");	
         TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
         Init(sampleTree, true);
 
@@ -61,13 +58,10 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
             sampleTree->GetEntry(it);
             outputTree->Fill();
         }
-        //hCounterTot->Add(hCounter);
         //sampleFile->Close();
         std::cout << std::endl;
-        //hCounter->Reset();
     }
     outputFile->cd("blackJackAndHookers"); 
-    //hCounterTot->Write("hCounter");
     outputTree->Write("",  BIT(2));
     outputFile->Close();
 }
