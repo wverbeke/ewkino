@@ -16,84 +16,78 @@
 #include <memory>
 
 //include other parts of the code
-#include "tdrstyle.h"
-#include "plotCode.h"
+#include "../plotting/tdrstyle.h"
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 
 
 void treeReader::combinePD(const std::vector<std::string>& datasets, std::string outputDirectory){
-	std::set<std::tuple<long unsigned, long unsigned, long unsigned> > usedEvents;
-	//Set output file and tree
-	outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_temp/" : outputDirectory;
-	const std::string outputFileName = "~/Work/ntuples_ttg/data_combined_ttg.root";
-	TFile* outputFile = new TFile((const TString&) outputFileName ,"RECREATE");
-	outputFile->mkdir("blackJackAndHookers");
-	outputFile->cd("blackJackAndHookers"); 
-	TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
-	setOutputTree(outputTree, true);
-	TH1D* hCounterTot = new TH1D("hCounterTot", "Events counter", 1,0,1);
-	for(std::vector<std::string>::const_iterator it = datasets.cbegin(); it != datasets.cend(); ++it){
-		std::cout << *it << std::endl;
-		//Read tree	
-		TFile* sampleFile = new TFile( (const TString&)"~/Work/ntuples_ttg/" + *it,"read");	
-		//Determine hcounter for cross section scaling
-		sampleFile->cd("blackJackAndHookers");	
-		TH1D* hCounter = new TH1D("hCounter" + (const TString&) *it,   "Events counter", 1,0,1);
-		hCounter->Read("hCounter");	
-		TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
-		Init(sampleTree, true);
-	
-		double progress = 0; 	//For printing progress bar
-		long nEntries = sampleTree->GetEntries();
-		for (long it=0; it <nEntries; ++it){
-			if(it%100 == 0 && it != 0){
-				progress += (double) (100./ (double) nEntries);
-				tools::printProgress(progress);
-			} else if(it == nEntries -1){
-				progress = 1.;
-				tools::printProgress(progress);
-			}
-			if(usedEvents.find(std::make_tuple(_runNb, _lumiBlock, _eventNb) ) == usedEvents.end()){
-				usedEvents.insert(std::make_tuple(_runNb, _lumiBlock, _eventNb) );
-			} else{
-				continue;
-			}
-			sampleTree->GetEntry(it);
-			std::vector<unsigned> ind;
-			unsigned lCount = selectLep(ind);
-			if(lCount < 2) continue;
-			unsigned phCount = selectPhot();
-			if(phCount < 1) continue;
-			outputTree->Fill();
-		}
-		hCounterTot->Add(hCounter);
-		//sampleFile->Close();
-		std::cout << std::endl;
-		hCounter->Reset();
-	}
-	outputFile->cd("blackJackAndHookers"); 
-	hCounterTot->Write("hCounter");
-	outputTree->Write("",  BIT(2));
-	outputFile->Close();
+    std::set<std::tuple<long unsigned, long unsigned, long unsigned> > usedEvents;
+    //Set output file and tree
+    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_temp/" : outputDirectory;
+    const std::string outputFileName = "~/Work/ntuples_ewkino/data_combined_trilepton.root";
+    TFile* outputFile = new TFile((const TString&) outputFileName ,"RECREATE");
+    outputFile->mkdir("blackJackAndHookers");
+    outputFile->cd("blackJackAndHookers"); 
+    TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
+    setOutputTree(outputTree, true);
+    //TH1D* hCounterTot = new TH1D("hCounterTot", "Events counter", 1,0,1);
+    for(std::vector<std::string>::const_iterator it = datasets.cbegin(); it != datasets.cend(); ++it){
+        std::cout << *it << std::endl;
+        //Read tree	
+        TFile* sampleFile = new TFile( (const TString&)"~/Work/ntuples_ewkino/" + *it,"read");	
+        //Determine hcounter for cross section scaling
+        sampleFile->cd("blackJackAndHookers");	
+        //TH1D* hCounter = new TH1D("hCounter" + (const TString&) *it,   "Events counter", 1,0,1);
+        //hCounter->Read("hCounter");	
+        TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
+        Init(sampleTree, true);
+
+        double progress = 0; 	//For printing progress bar
+        long nEntries = sampleTree->GetEntries();
+        for (long it=0; it <nEntries; ++it){
+            if(it%100 == 0 && it != 0){
+                progress += (double) (100./ (double) nEntries);
+                tools::printProgress(progress);
+            } else if(it == nEntries -1){
+                progress = 1.;
+                tools::printProgress(progress);
+            }
+            if(usedEvents.find(std::make_tuple(_runNb, _lumiBlock, _eventNb) ) == usedEvents.end()){
+                usedEvents.insert(std::make_tuple(_runNb, _lumiBlock, _eventNb) );
+            } else{
+                continue;
+            }
+            sampleTree->GetEntry(it);
+            outputTree->Fill();
+        }
+        //hCounterTot->Add(hCounter);
+        //sampleFile->Close();
+        std::cout << std::endl;
+        //hCounter->Reset();
+    }
+    outputFile->cd("blackJackAndHookers"); 
+    //hCounterTot->Write("hCounter");
+    outputTree->Write("",  BIT(2));
+    outputFile->Close();
 }
 
 int main(int argc, char* argv[]){	
-	std::vector<std::string> datasets = {"SingleElectron.root", "SingleMuon.root", "DoubleEG.root", "DoubleMuon.root", "MuonEG.root"}; 
-	treeReader reader;
-	switch(argc){
-		case 1:{
-			reader.combinePD(datasets);
-			return 0;
-		}
-		case 2:{
-			reader.combinePD(datasets, argv[1]);
-			return 0;
-		}
-		default:{
-			std::cerr << "Error: Wrong number of options given!" << std::endl;
-			return 1;
-		}
-	}
+    std::vector<std::string> datasets = {"SingleElectron.root", "SingleMuon.root", "DoubleEG.root", "DoubleMuon.root", "MuonEG.root"}; 
+    treeReader reader;
+    switch(argc){
+        case 1:{
+                   reader.combinePD(datasets);
+                   return 0;
+               }
+        case 2:{
+                   reader.combinePD(datasets, argv[1]);
+                   return 0;
+               }
+        default:{
+                    std::cerr << "Error: Wrong number of options given!" << std::endl;
+                    return 1;
+                }
+    }
 }
 
