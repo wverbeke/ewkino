@@ -1,10 +1,9 @@
-//include c++ library classes
-#include <math.h> 
+//include c++ library classesQ
+#include <algorithm>
+#include <math.h>
 //include Root classes
 #include "TCanvas.h"
-#include "TLatex.h"
 #include "TLine.h"
-#include "TF1.h"
 #include "TGraphAsymmErrors.h"
 //Include other parts of the code
 #include "plotCode.h"
@@ -122,57 +121,50 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
     legend.SetNColumns(4);
     legend.SetFillStyle(0); //avoid legend box
-    legend->AddEntry(dataGraph, names[0], "pe1"); //add data to legend
+    legend.AddEntry(dataGraph, names[0], "pe1"); //add data to legend
     for(unsigned h = 0; h < nBkg; ++h){
         legend.AddEntry(bkgE[h], names[h + 1], "f"); //add backgrounds to the legend
     }
-    legend->AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
+    legend.AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
     
     //order background histograms by yield
     yieldOrder(bkg);
 
     //add background histograms to stack
-
-
-    //Order background histograms in terms of yields 
-    unsigned histI[nHist];
-    TH1D* bkgC[nHist];
-    for(unsigned b = 0; b < nHist; ++b){
-        bkgC[b] = (TH1D*) bkg[b]->Clone();
+    THStack bkgStack = THStack("bkgStack", "bkgStack");
+    for(unsigned h = 0; h < nHist; ++h){
+        bkgStack.Add(bkgE[h]);
     }
-    yieldOrder(bkgC, histI, nHist);
-    //Stack containing all background histograms
-    THStack* bkgStack = new THStack("bkgStack", "bkgStack");
-    //Determine canvas size, depending on chosen option
-    double width, height;
-    if(widthopt == 0){
-        width = 600*(1 - xPad);
-        height = 600; //on request of Lesya
-    } else if(widthopt == 1){
-        width = 1200;
-        height = 500;
-    } else if(widthopt == 2){
-        width = 300;
-        height = 500;
-    } else{
-        std::cerr << "Incorrect width option given can't make plot" << std::endl;
-        return;
-    }
-    //Make canvas to plot
-    TCanvas *c =  new TCanvas(file,"",width,height);
-    c->cd();
-    //Make upper pad to draw main plot and lower pad for ratios
-    TPad* p1, *p2;
-    //Plot data and MC yields in first pad
-    p1 = new TPad(file,"",0,xPad,1,1);
-    p1->Draw();
-    p1->cd();
-    //p1->SetBottomMargin(0);
-    p1->SetBottomMargin(0.03);
-    //Set minimum slightly above 0 to avoid chopped off zero in the plots
-    if(!ylog) data->SetMinimum(0.0001);
-    else if(ylog) p1->SetLogy();
+    
+    //canvas dimenstions
+    const double width = 600*(1 - xPad);
+    const double height = 600;
+
+    //make canvas to plot
+    TCanvas c = TCanvas(file,"",width,height);
+    c.cd();
+
+    //make upper pad to draw main plot and lower pad for ratios
+    TPad p1, p2;
+
+    //prepare first pad for plotting data and background yields
+    p1 = TPad(file,"",0,xPad,1,1);
+    p1.Draw();
+    p1.cd();
+    p1.SetBottomMargin(0.03);
+
+    //make pad logarithmic if needed
+    if(ylog) p1.SetLogy();
+    
+    /*
+    From now on we will determine the range of the plot from the total background histogram which will always be drawn first
+    in order to force the range of the canvas.
+    */
+
+    //set minimum to zero
     if(!ylog) bkgTotE->SetMinimum(0);
+    
+    //x-axis labels will only be drawn in the lower (ratio) canvas
     bkgTotE->GetXaxis()->SetLabelSize(0);
 
     //Determine the maximum range of the histogram, depending on the maximum range of the bkg or data
