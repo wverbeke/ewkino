@@ -23,7 +23,7 @@ void HistLabelSizes(TH1D *h, const double xlabel = 0.045, const double xtitle = 
 //Order histograms in terms of yields (biggest first)
 void yieldOrder(TH1D**, unsigned*, const unsigned);
 //Plot background stack and compare to observed yields
-void plotDataVSMC(TH1D* data, TH1D** bkg, const TString* names, const unsigned nHist, const TString& file, const TString& analysis = "", const bool ylog = false, TH1D** bkgSyst = nullptr);
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis = "", const bool ylog = false, TH1D** bkgSyst = nullptr);
 //return color corresponding to bkg
-Color_t bkgColor(const TString&); 
+Color_t bkgColor(const std::string&); 
 #endif
