@@ -100,6 +100,8 @@ void treeReader::Analyze(){
             double weight;
             if(sam == 0) weight = 1;
             else weight = scale*_weight;	
+            //Set flavors (temporary) 
+            setFlavors();
             //vector containing good lepton indices
             std::vector<unsigned> ind;
             //select leptons
