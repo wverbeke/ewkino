@@ -19,6 +19,14 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 
+//Temporary function to set _flavors correctly as it is buggy
+void treeReader::setFlavors(){
+    for(unsigned l = 0; l < _nL; ++l){
+        if(l < _nMu) _lFlavor[l] = 1;
+        else if(l < _nEle) _lFlavor[l] = 0;
+        else _lFlavor[l] = 2;
+    }
+}
 
 void treeReader::Analyze(){
     //Set CMS plotting style

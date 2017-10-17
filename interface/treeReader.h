@@ -348,5 +348,7 @@ class treeReader {
         unsigned nJets(const unsigned unc = 0);
         bool bTagged(const unsigned);
         unsigned nBJets(const unsigned unc = 0);
+        //Temporary function to patch buggy trees
+        void setFlavors();
 };
 #endif
