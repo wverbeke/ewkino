@@ -126,7 +126,7 @@ void treeReader::Analyze(){
         }	
     }
     //Merge histograms with the same physical background
-    std::vector<std::string> proc = {"obs.", "TT + #gamma", "TT + jets", "TT/T + X", "X + #gamma", "multiboson", "Drell-Yan"};
+    std::vector<std::string> proc = {"obs.", "DY", "TT + jets", "WJets", "VV", "TT + X", "T + X"};
     std::vector< std::vector <TH1D*> > mergedHists;
     for(unsigned dist = 0; dist < nDist; ++dist){
         mergedHists.push_back(std::vector<TH1D*>());
@@ -138,6 +138,10 @@ void treeReader::Analyze(){
             }
             ++sam;
         }
+    }
+    //Plot all distributions
+    for(unsigned dist = 0; dist < nDist; ++dist){
+        plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist]) ); 
     }
 }
 
