@@ -17,7 +17,7 @@ void histcol(TH1D*, const Color_t);
 //Set Stack colors
 void StackCol(TH1D*, const Color_t);
 //Set Histogram labelsizes
-void HistLabelSizes(TH1D* h, const double xlabel = 0.045, const double xtitle = 0.05, const double ylabel = 0.045, const double ytitle = 0.045);
+void HistLabelSizes(TH1D* h, const double xLabel = 0.045, const double xTitle = 0.05, const double yLabel = 0.045, const double yTitle = 0.045);
 //Order histograms in terms of yields (biggest first)
 void yieldOrder(TH1D**);
 //return color corresponding to bkg

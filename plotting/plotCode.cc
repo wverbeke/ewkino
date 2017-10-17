@@ -13,24 +13,24 @@ extern const double xPad;
 extern const Color_t colors[];
 
 //set color of histogram to be plotted separately
-void histcol(TH1D *h, const Color_t color){
+void histcol(TH1D* h, const Color_t color){
     h->SetLineColor(color);
     h->SetMarkerColor(color);
     h->SetLineWidth(2);
 }
 //set color of histogram to be plotted in a stack
-void StackCol(TH1D *h, const Color_t color){
+void StackCol(TH1D* h, const Color_t color){
     histcol(h,color);
     h->SetFillColor(color);
     h->SetLineWidth(1);
     h->SetLineColor(kBlack); //black line between the stack elements
 }
 //set histogram axis and label sizes simulataneously
-void HistLabelSizes(TH1D *h, const double xlabel, const double xtitle, const double ylabel, const double ytitle){
-    h->GetXaxis()->SetLabelSize(xlabel);
-    h->GetXaxis()->SetTitleSize(xtitle);
-    h->GetYaxis()->SetLabelSize(ylabel);
-    h->GetYaxis()->SetTitleSize(ytitle);
+void HistLabelSizes(TH1D* h, const double xLabel, const double xTitle, const double yLabel, const double yTitle){
+    h->GetXaxis()->SetLabelSize(xLabel);
+    h->GetXaxis()->SetTitleSize(xTitle);
+    h->GetYaxis()->SetLabelSize(yLabel);
+    h->GetYaxis()->SetTitleSize(yTitle);
 }
 //Order an array of histograms by yield
 void yieldOrder(TH1D** hists){
