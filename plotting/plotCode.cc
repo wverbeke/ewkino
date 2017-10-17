@@ -34,9 +34,13 @@ void HistLabelSizes(TH1D* h, const double xLabel, const double xTitle, const dou
     h->GetYaxis()->SetTitleSize(yTitle);
 }
 //Order an array of histograms by yield
-//void yieldOrder(TH1D** hists){
-    //std::sort(std::begin(hists), std::end(hists), [](const TH1D* h1, const TH1D* h2){ return h1->GetSumOfWeights() > h2->GetSumOfWeights(); } );
-//}
+void yieldOrder(TH1D** hists, const unsigned nHist){
+    std::vector<TH1D*> temp(hists, hists + nHist);
+    std::sort(temp.begin(), temp.end(), [](const TH1D* h1, const TH1D* h2){ return h1->GetSumOfWeights() > h2->GetSumOfWeights(); } );
+    for(unsigned h = 0; h < nHist; ++h){
+        hists[h] = temp[h];
+    }
+}
 
 Color_t bkgColorEWK(const std::string& bkgName){
     if(bkgName == "non-prompt") return kAzure + 1;
@@ -131,7 +135,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     legend.AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
     
     //order background histograms by yield
-    //yieldOrder(bkg);
+    yieldOrder(bkg, nBkg);
 
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");
