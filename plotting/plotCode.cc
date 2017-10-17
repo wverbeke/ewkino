@@ -167,89 +167,31 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //x-axis labels will only be drawn in the lower (ratio) canvas
     bkgTotE->GetXaxis()->SetLabelSize(0);
 
-    //Determine the maximum range of the histogram, depending on the maximum range of the bkg or data
-    double dataMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinError(data->GetMaximumBin());
-    double bkgMax = bkgTot->GetBinContent(bkgTot->GetMaximumBin()) + bkgTotE->GetBinError(bkgTot->GetMaximumBin());
-    double totalMax = std::max(dataMax, bkgMax);
-    if(plotsig && !signorm){
-        double sigMax = 0;
-        for(unsigned sig = 0; sig < nSig; ++sig){
-            if(signal[sig]->GetSumOfWeights() == 0) continue;
-            double localMax = signal[sig]->GetBinContent(signal[sig]->GetMaximumBin()) + signal[sig]->GetBinError(signal[sig]->GetMaximumBin());
-            if( localMax > sigMax) sigMax = localMax;
-        }
-        totalMax = std::max(totalMax, sigMax);
-    }
-    //if(!ylog) data->SetMaximum(totalMax*1.3);
-    //if(!plotsig && !ylog) data->SetMaximum(totalMax*1.3);
-    //else if(!ylog) data->SetMaximum(totalMax*1.6);
+    //determine the maximum range of data and the backgrounds
+    double totalMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinError(data->GetMaximumBin());
+    totalMax = std::max(totalMax, bkgTot->GetBinContent(bkgTot->GetMaximumBin()) + bkgTotE->GetBinError(bkgTot->GetMaximumBin()) );
 
-    //Hack not to draw 0 points
-    for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-        if(obs->GetY()[b - 1] == 0)  obs->GetY()[b - 1] += totalMax*10;
-    }
-    if(!plotsig && !ylog) bkgTotE->SetMaximum(totalMax*1.3);
-    else if(!ylog) bkgTotE->SetMaximum(totalMax*1.6);
-    else if (!plotsig) {
-        /*
-        //NEW TEST CODE
-        double minimum = totalMax;
-        for(unsigned back = 0; back < nHist; ++back){
-        for(unsigned b = 1; b < bkg[back]->GetNbinsX() + 1; ++b){
-        if(bkg[back]->GetBinContent(b) != 0 &&  bkg[back]->GetBinContent(b) < minimum){
-        minimum = bkg[back]->GetBinContent(b);
-        }
-        }
-        }
-        if(0.5*bkgTot->GetBinContent(bkgTot->GetMinimumBin()) > minimum*30) data->SetMinimum(minimum*30);
-        else if(0.5*bkgTot->GetBinContent(bkgTot->GetMinimumBin()) < minimum*30) data->SetMinimum(0.5*bkgTot->GetBinContent(bkgTot->GetMinimumBin()) );
-         */
-        double minimum = totalMax;
+    //determine upper limit of plot
+    if(!ylog){
+        bkgTotE->SetMaximum(totalMax*1.3);
+    } else{
+        double minimum = totalMax; //find pad minimum when plotting on a log scale
         for(unsigned b = 1; b < bkgTot->GetNbinsX() + 1; ++b){
             if(bkgTot->GetBinContent(b) != 0 && bkgTot->GetBinContent(b) < minimum){
                 minimum = bkgTot->GetBinContent(b);
             }
         }
-        //data->SetMinimum(minimum/5.); //10.
         double SF = log10(std::max(10., totalMax/minimum));
-        //data->SetMaximum(totalMax*3*SF); //3
         bkgTotE->SetMinimum(minimum/5.);
         bkgTotE->SetMaximum(totalMax*3*SF);
-        //Hack not to draw 0 points
-        for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-            if(data->GetBinContent(b) == 0)  obs->GetY()[b - 1] += totalMax*30*SF;
-        }
     }			
-    else{
-        /*
-           double minimum = totalMax;
-           for(unsigned back = 0; back < nHist; ++back){
-           for(unsigned b = 1; b < bkg[back]->GetNbinsX() + 1; ++b){
-           if(bkg[back]->GetBinContent(b) != 0 &&  bkg[back]->GetBinContent(b) < minimum){
-           minimum = bkg[back]->GetBinContent(b);
-           }
-           }
-           }
-           if(0.5*bkgTot->GetBinContent(bkgTot->GetMinimumBin()) > minimum*30) data->SetMinimum(minimum*30);
-           else if(0.5*bkgTot->GetBinContent(bkgTot->GetMinimumBin()) < minimum*30) data->SetMinimum(0.5*bkgTot->GetBinContent(bkgTot->GetMinimumBin()) );
-        //double SF = log10(std::max(10., totalMax/bkgTot->GetBinContent(bkgTot->GetMinimumBin()) ));
-        double SF = log10(std::max(10., totalMax/minimum));
-        data->SetMaximum(totalMax*6*SF);
-         */
-        double minimum = totalMax;
-        for(unsigned b = 1; b < bkgTot->GetNbinsX() + 1; ++b){
-            if(bkgTot->GetBinContent(b) != 0 && bkgTot->GetBinContent(b) < minimum){
-                minimum = bkgTot->GetBinContent(b);
-            }
-        }
-        //data->SetMinimum(minimum/5.); //10.
-        double SF = log10(std::max(10., totalMax/minimum ));
-        //data->SetMaximum(totalMax*6*SF);
-        bkgTotE->SetMinimum(minimum/5.);
-        bkgTotE->SetMaximum(totalMax*6*SF);
-        //Hack not to draw 0 points
-        for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-            if(data->GetBinContent(b) == 0)  obs->GetY()[b - 1] += totalMax*30*SF;
+
+    //hack not to draw 0 observed event points
+    for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
+        if(!ylog){
+            if(obs->GetY()[b - 1] == 0)  obs->GetY()[b - 1] += totalMax*10;
+        } else{
+           if(data->GetBinContent(b) == 0)  obs->GetY()[b - 1] += totalMax*30*SF;
         }
     }
 
