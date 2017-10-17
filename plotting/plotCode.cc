@@ -207,14 +207,20 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //redraw axis over histograms
     gPad->RedrawAxis();
 
-    //Draw CMS header
+    //draw CMS header
     drawLumi(&p1);
 
     //~~~~~~~~~~~~~~ FIXED DOWN TO HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    //Make ratio plot in second pad
+    //make ratio plot in second pad
     c.cd(); 
+    p2 = TPad(file + "2","",0,0.0,1,xPad);
+    p2.Draw();
+    p2.cd();
+    p2.SetTopMargin(0.01);     //small space between two pads
+    p2.SetBottomMargin(0.4);
 
+    //make separate histograms containing total and statistical background uncertainty
     const unsigned nBins = data->GetNbinsX();
     TH1D* bkgStatErrors = new TH1D("bkgStaterrors" + file, "bkgStaterrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
     for(unsigned b = 1; b < nBins + 1; ++b){
@@ -226,51 +232,21 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         }			
     }
     TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();//new TH1D("bkgerrors" + file, "bkgerrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
-    /*
-       if(analysis == "HNL"){
-       TString bkgNames[nHist];
-       for(int b = nHist - 1; b > -1; --b){
-       bkgNames[b] = names[histI[b] + 1];
-       }
-       hnl::setSystUnc(bkg, nHist - 1, bkgNames);
-       bkgTot = (TH1D*) bkg[0]->Clone();
-       for(int i = 1; i <  nHist; ++i){
-       bkgTot->Add(bkg[i]);
-       }
-     */
     for(unsigned b = 1; b < nBins + 1; ++b){
         bkgErrors->SetBinContent(b, 1.);
-        //bkgStatErrors->SetBinContent(b, 1.);
         if(bkgTot->GetBinContent(b) != 0){
             bkgErrors->SetBinError(b, bkgTotE->GetBinError(b)/bkgTotE->GetBinContent(b));
-            //bkgStatErrors->SetBinError(b, sqrt( *bkgTot->GetBinContent(b) ));
         } else{
             bkgErrors->SetBinError(b, 0.);
-            //bkgStatErrors->SetBinError(b, 0.);
         }
     }			
-    //}
 
     bkgStatErrors->SetFillStyle(1001);
     bkgErrors->SetFillStyle(1001);
-    bkgStatErrors->SetFillColor(kCyan  - 4); //
-    bkgErrors->SetFillColor(kOrange	- 4); //kOrange  //kOrange + 7 kYellow - 3   kOrange - 4
-    //bkgStatErrors->SetFillColor(kOrange); 
+    bkgStatErrors->SetFillColor(kCyan - 4);
+    bkgErrors->SetFillColor(kOrange - 4);
     bkgStatErrors->SetMarkerStyle(1);
     bkgErrors->SetMarkerStyle(1);
-    //bkgStatErrors->SetMarkerStyle(1);
-
-    p2 = new TPad(file + "2","",0,0.0,1,xPad);
-    p2->Draw();
-    p2->cd();
-    //p2->SetTopMargin(0);
-    p2->SetTopMargin(0.01);
-    p2->SetBottomMargin(0.4);
-
-    //TH1D* dataC = (TH1D*) data->Clone();
-    //TH1D* bkgTotC = (TH1D*) bkgTot->Clone();
-
-    // dataC->Divide(bkgTotE);
 
     TGraphAsymmErrors* obsRatio = new TGraphAsymmErrors(data);
     for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
@@ -293,20 +269,6 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     legend2->AddEntry(bkgErrors, "total pred. unc.", "f");
     //legend2->AddEntry(dataC, "obs./pred. with total unc.", "pe12");
     legend2->AddEntry(obsRatio, "obs./pred.", "pe12");
-
-
-    //legend2->AddEntry(bkgStatErrors, "stat. bkg. unc.", "f");
-    /*
-       dataC->SetMarkerColor(1);
-       dataC->SetLineColor(1);
-       dataC->GetYaxis()->SetRangeUser(0.,1.999);
-       dataC->GetYaxis()->SetTitle("obs./pred.");
-       dataC->GetYaxis()->SetTitleOffset(1.25/((1.-xPad)/xPad));
-       dataC->GetYaxis()->SetTitleSize((1.-xPad)/xPad*0.06); //originally 0.06
-       dataC->GetXaxis()->SetTitleSize((1.-xPad)/xPad*0.06); //originally 0.09
-       dataC->GetYaxis()->SetLabelSize((1.-xPad)/xPad*0.05); //originally 0.05
-       dataC->GetXaxis()->SetLabelSize((1.-xPad)/xPad*0.05); //originally 0.05
-     */
 
 
     bkgErrors->SetMarkerColor(1);
