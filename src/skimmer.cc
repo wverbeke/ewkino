@@ -23,10 +23,13 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     //Read tree	
     std::shared_ptr<TFile> sampleFile = std::make_shared<TFile>( (const TString& ) fileName,"read");	
     sampleFile->cd("blackJackAndHookers");
-    //Determine hcounter for cross section scaling
-    TH1D* hCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/hCounter");
+    //Determine hcounter and lheCounter for MC cross section scaling and uncertainties
+    TH1D* hCounter;
     TH1D* lheCounter;
-    if(!isData) lheCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/lheCounter");
+    if(!isData){
+        TH1D* hCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/hCounter");
+        lheCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/lheCounter");
+    }
     //Get Tree
     TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
     Init(sampleTree, isData);
@@ -66,8 +69,10 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         outputTree->Fill();
     }   
     std::cout << std::endl;
-    hCounter->Write();
-    if(!isData) lheCounter->Write();
+    if(!isData){
+        hCounter->Write();
+        lheCounter->Write();
+    }
     outputTree->Write("",  BIT(2));
     outputFile->Close(); 
 }
