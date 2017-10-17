@@ -1,6 +1,7 @@
 //include c++ library classesQ
 #include <algorithm>
 #include <math.h>
+#include <iterator>
 //include Root classes
 #include "TCanvas.h"
 #include "TLine.h"
@@ -33,9 +34,9 @@ void HistLabelSizes(TH1D* h, const double xLabel, const double xTitle, const dou
     h->GetYaxis()->SetTitleSize(yTitle);
 }
 //Order an array of histograms by yield
-void yieldOrder(TH1D** hists){
-    std::order(std::begin(hists), std::end(hists), [](const TH1D* h1, const TH1D* h2){ return h1->GetSumOfWeights() > h2->GetSumOfWeights(); } );
-}
+//void yieldOrder(TH1D** hists){
+    //std::sort(std::begin(hists), std::end(hists), [](const TH1D* h1, const TH1D* h2){ return h1->GetSumOfWeights() > h2->GetSumOfWeights(); } );
+//}
 
 Color_t bkgColorEWK(const std::string& bkgName){
     if(bkgName == "non-prompt") return kAzure + 1;
@@ -62,7 +63,7 @@ Color_t bkgColorHNL(const std::string& bkgName){
     else return kBlack;
 }
 
-Color_t bkgColor_general(){
+Color_t bkgColorGeneral(){
     static const Color_t colors[8] = {kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kBlue -3, kOrange + 6, kCyan + 1, kMagenta +3};
     static unsigned counter = 0;
     Color_t output = colors[counter];
@@ -92,25 +93,25 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     data->SetBinErrorOption(TH1::kPoisson);
 
     //Replace data by TGRaphAsymmErrors for plotting
-    TGraphAsymmErrors dataGraph = TGraphAsymmErrors(data);
+    TGraphAsymmErrors* dataGraph = new TGraphAsymmErrors(data);
     for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-        dataGraph.SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b), (data->GetBinContent(b) == 0 ) ? 0 : data->GetBinErrorUp(b) );
+        dataGraph->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b), (data->GetBinContent(b) == 0 ) ? 0 : data->GetBinErrorUp(b) );
     }
 
     //Background histograms with full uncertainty
-    TH1D* bkgE[nHist]; //clone histograms so that the function does not affect its arguments!
-    std::copy(std::begin(bkg), std::end(bkg), std::begin(bkgE) ); //CHECK WHETHER STD COPY DOES INDEED COPY THE OBJECTS AND NOT JUST THE POINTERS
-    if(bkgSyst != nullptr){
-        for(unsigned h = 0; h < nHist; ++h){
-            for(unsigned bin = 1; bin < bkgE[b]->GetNbinsX() + 1; ++bin){
-                bkgE[b]->SetBinError(bin, sqrt(bkgE[h]->GetBinError(bin)*bkgE[h]->GetBinError(bin) + bkgSyst[h]->GetBinContent(bin)*bkgSyst[h]->GetBinContent(bin)) );
+    TH1D* bkgE[nBkg]; //clone histograms so that the function does not affect its arguments!
+    for(unsigned h = 0; h < nBkg; ++h){
+        bkgE[h] = (TH1D*) bkg[h]->Clone(); //CHECK WHETHER THIS IS MEMORY SAFE
+        if(bkgSyst != nullptr){
+            for(unsigned bin = 1; bin < bkgE[h]->GetNbinsX() + 1; ++bin){
+                bkgE[h]->SetBinError(bin, sqrt(bkgE[h]->GetBinError(bin)*bkgE[h]->GetBinError(bin) + bkgSyst[h]->GetBinContent(bin)*bkgSyst[h]->GetBinContent(bin)) );
             }
         }
     }
 
     //Compute total background
-    TH1D* bkgTotE = (TH1D*) bkgE[0]->Clone(); //REPLACE WITH MEMORY SAFE CODE
-    for(unsigned h = 1; h < nHist; ++h){
+    TH1D* bkgTotE = (TH1D*) bkgE[0]->Clone(); //CHECK WHETHER THIS IS MEMORY SAFE
+    for(unsigned h = 1; h < nBkg; ++h){
         bkgTotE->Add(bkgE[h]);
     }
 
@@ -123,18 +124,18 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
     legend.SetNColumns(4);
     legend.SetFillStyle(0); //avoid legend box
-    legend.AddEntry(dataGraph, names[0], "pe1"); //add data to legend
+    legend.AddEntry(dataGraph, (const TString&) names[0], "pe1"); //add data to legend
     for(unsigned h = 0; h < nBkg; ++h){
-        legend.AddEntry(bkgE[h], names[h + 1], "f"); //add backgrounds to the legend
+        legend.AddEntry(bkgE[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
     }
     legend.AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
     
     //order background histograms by yield
-    yieldOrder(bkg);
+    //yieldOrder(bkg);
 
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");
-    for(unsigned h = 0; h < nHist; ++h){
+    for(unsigned h = 0; h < nBkg; ++h){
         bkgStack.Add(bkgE[h]);
     }
     
@@ -143,20 +144,20 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     const double height = 600;
 
     //make canvas to plot
-    TCanvas c = TCanvas(file,"",width,height);
-    c.cd();
+    TCanvas* c = new TCanvas((const TString&) file,"",width,height);
+    c->cd();
 
     //make upper pad to draw main plot and lower pad for ratios
-    TPad p1, p2;
+    TPad* p1,* p2;
 
     //prepare first pad for plotting data and background yields
-    p1 = TPad(file,"",0,xPad,1,1);
-    p1.Draw();
-    p1.cd();
-    p1.SetBottomMargin(0.03);
+    p1 = new TPad((const TString&) file,"",0,xPad,1,1);
+    p1->Draw();
+    p1->cd();
+    p1->SetBottomMargin(0.03);
 
     //make pad logarithmic if needed
-    if(ylog) p1.SetLogy();
+    if(ylog) p1->SetLogy();
     
     /*
     From now on we will determine the range of the plot from the total background histogram which will always be drawn first
@@ -171,20 +172,20 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
     //determine the maximum range of data and the backgrounds
     double totalMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinError(data->GetMaximumBin());
-    totalMax = std::max(totalMax, bkgTot->GetBinContent(bkgTot->GetMaximumBin()) + bkgTotE->GetBinError(bkgTot->GetMaximumBin()) );
+    totalMax = std::max(totalMax, bkgTotE->GetBinContent(bkgTotE->GetMaximumBin()) + bkgTotE->GetBinError(bkgTotE->GetMaximumBin()) );
 
     //determine upper limit of plot
     if(!ylog){
         bkgTotE->SetMaximum(totalMax*1.3);
         //hack not to draw 0 observed event points
         for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-            if(obs->GetY()[b - 1] == 0)  obs->GetY()[b - 1] += totalMax*10;
+            if(dataGraph->GetY()[b - 1] == 0)  dataGraph->GetY()[b - 1] += totalMax*10;
         }
     } else{
         double minimum = totalMax; //find pad minimum when plotting on a log scale
-        for(unsigned b = 1; b < bkgTot->GetNbinsX() + 1; ++b){
-            if(bkgTot->GetBinContent(b) != 0 && bkgTot->GetBinContent(b) < minimum){
-                minimum = bkgTot->GetBinContent(b);
+        for(unsigned b = 1; b < bkgTotE->GetNbinsX() + 1; ++b){
+            if(bkgTotE->GetBinContent(b) != 0 && bkgTotE->GetBinContent(b) < minimum){
+                minimum = bkgTotE->GetBinContent(b);
             }
         }
         double SF = log10(std::max(10., totalMax/minimum));
@@ -192,40 +193,45 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         bkgTotE->SetMaximum(totalMax*3*SF);
         //hack not to draw 0 observed event points
         for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-           if(data->GetBinContent(b) == 0)  obs->GetY()[b - 1] += totalMax*30*SF;
+           if(data->GetBinContent(b) == 0)  dataGraph->GetY()[b - 1] += totalMax*30*SF;
         }
     }			
 
     //draw histograms and legends
     //first draw total background to fix plot range
     bkgTotE->Draw("e2");
-    bkgStack->Draw("hist same");
+    bkgStack.Draw("hist same");
     legend.Draw("same");
     bkgTotE->Draw("e2 same"); //Redraw data so it is overlaid on the background stack
-    dataGraph.Draw("pe1 same");	
+    dataGraph->Draw("pe1 same");	
 
     //redraw axis over histograms
     gPad->RedrawAxis();
 
     //draw CMS header
-    drawLumi(&p1);
+    drawLumi(p1);
 
     //make ratio plot in second pad
-    c.cd(); 
-    p2 = TPad(file + "2","",0,0.0,1,xPad);
-    p2.Draw();
-    p2.cd();
-    p2.SetTopMargin(0.01);     //small space between two pads
-    p2.SetBottomMargin(0.4);
+    c->cd(); 
+    p2 = new TPad((const TString&) file + "2","",0,0.0,1,xPad);
+    p2->Draw();
+    p2->cd();
+    p2->SetTopMargin(0.01);     //small space between two pads
+    p2->SetBottomMargin(0.4);
 
     //make separate histograms containing total and statistical background uncertainty which will be used to plot uncertainty bands
     const unsigned nBins = data->GetNbinsX();
-    TH1D* bkgStatErrors = new TH1D("bkgStaterrors" + file, "bkgStaterrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
+    TH1D* bkgStatErrors = new TH1D((const TString&) "bkgStaterrors" + file, (const TString&) "bkgStaterrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
     TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();
+    //Compute total background without systematics
+    TH1D* bkgTot = (TH1D*) bkg[0]->Clone();
+    for(unsigned h = 0; h < nBkg; ++h){
+        bkgTot->Add(bkg[h]);
+    }
     for(unsigned b = 1; b < nBins + 1; ++b){
         bkgStatErrors->SetBinContent(b, 1.);    //center bands around 0
         bkgErrors->SetBinContent(b, 1.);
-        if(bkgTot->GetBinContent(b) != 0){
+        if(bkgTotE->GetBinContent(b) != 0){
             bkgStatErrors->SetBinError(b, bkgTot->GetBinError(b)/bkgTot->GetBinContent(b));
             bkgErrors->SetBinError(b, bkgTotE->GetBinError(b)/bkgTotE->GetBinContent(b));
         } else{
@@ -243,11 +249,11 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgErrors->SetMarkerStyle(1);
 
     //make TGraph asymmErros to plot data with the correct uncertainties
-    TGraphAsymmErrors obsRatio = TGraphAsymmErrors(data);
+    TGraphAsymmErrors* obsRatio = new TGraphAsymmErrors(data);
     for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-        obsRatio.GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
-        obsRatio.SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), data->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
-        if(data->GetBinContent(b) == 0) obsRatio.GetY()[b - 1] += 5;
+        obsRatio->GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
+        obsRatio->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), data->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
+        if(data->GetBinContent(b) == 0) obsRatio->GetY()[b - 1] += 5;
     }
 
     //legend for uncertainties
@@ -278,7 +284,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgErrors->Draw("e2");
     bkgErrors->Draw("e2 same");
     bkgStatErrors->Draw("e2 same");
-    obsRatio.Draw("pe1 same");
+    obsRatio->Draw("pe1 same");
     legend2.Draw("same");
     gPad->RedrawAxis();
 
@@ -290,9 +296,14 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     line.Draw("same");
 
     //save canvas to file
-    c.SaveAs("plots/" + file + ".pdf");
-    c.SaveAs("plots/" + file + ".png");
+    c->SaveAs((const TString&) "plots/" + file + ".pdf");
+    c->SaveAs((const TString&) "plots/" + file + ".png");
     
     //Clean up memory 
+    delete dataGraph;
+    delete obsRatio;
     delete bkgStatErrors;
+    delete c;
+    delete p1;
+    delete p2;
 }

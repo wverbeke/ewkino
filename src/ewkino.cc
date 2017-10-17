@@ -18,6 +18,7 @@
 //include other parts of the code
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
+#include "../plotting/plotCode.h"
 
 //Temporary function to set _flavors correctly as it is buggy
 void treeReader::setFlavors(){
