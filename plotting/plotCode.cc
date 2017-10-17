@@ -34,8 +34,7 @@ void HistLabelSizes(TH1D *h, const double xlabel, const double xtitle, const dou
     h->GetYaxis()->SetTitleSize(ytitle);
 }
 //Order an array of histograms by yield
-void yieldOrder(TH1D** hists, unsigned* histInd, const unsigned nHist){
-    unsigned ordered[nHist];
+void yieldOrder(TH1D** hists){
     std::order(std::begin(hists), std::end(hists), [](const TH1D* h1, const TH1D* h2){ return h1->GetSumOfWeights() > h2->GetSumOfWeights(); } );
 }
 
@@ -85,11 +84,54 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
 }
 
 void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, TH1D** bkgSyst){
-    //Set all colors 
-    for(unsigned h = 0; h < nBkg; ++bkg){
-        
+    //set background histogram colors
+    for(unsigned h = 0; h < nBkg; ++h){
+        StackCol(bkg[h], bkgColor(names[h + 1], analysis) ); //first name is data
+    }    
+
+    //Set Poisonian errors to data
+    data->SetBinErrorOption(TH1::kPoisson);
+
+    //Replace data by TGRaphAsymmErrors for plotting
+    TGraphAsymmErrors dataGraph = TGraphAsymmErrors(data);
+    for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
+        dataGraph.SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b), (data->GetBinContent(b) == 0 ) ? 0 : data->GetBinErrorUp(b) );
     }
-    //Order background histograms by yield
+
+    //Background histograms with full uncertainty
+    TH1D* bkgE[nHist]; //clone histograms so that the function does not affect its arguments!
+    std::copy(std::begin(bkg), std::end(bkg), std::begin(bkgE) ); //CHECK WHETHER STD COPY DOES INDEED COPY THE OBJECTS AND NOT JUST THE POINTERS
+    for(unsigned h = 0; h < nHist; ++h){
+        for(unsigned bin = 1; bin < bkgE[b]->GetNbinsX() + 1; ++bin){
+            bkgE[b]->SetBinError(bin, sqrt(bkgE[h]->GetBinError(bin)*bkgE[h]->GetBinError(bin) + bkgSyst[h]->GetBinContent(bin)*bkgSyst[h]->GetBinContent(bin)) );
+        }
+    }
+
+    //Compute total background
+    TH1D* bkgTotE = (TH1D*) bkgE[0]->Clone(); //REPLACE WITH MEMORY SAFE CODE
+    for(unsigned h = 1; h < nHist; ++h){
+        bkgTotE->Add(bkgE[h]);
+    }
+
+    //Make the total background uncertainty visible as a grey band
+    bkgTotE->SetFillStyle(3244); //3005  3244
+    bkgTotE->SetFillColor(kGray+2);
+    bkgTotE->SetMarkerStyle(0); //1
+
+    //make legend and add all histograms
+    TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
+    legend.SetNColumns(4);
+    legend.SetFillStyle(0); //avoid legend box
+    legend->AddEntry(dataGraph, names[0], "pe1"); //add data to legend
+    for(unsigned h = 0; h < nBkg; ++h){
+        legend.AddEntry(bkgE[h], names[h + 1], "f"); //add backgrounds to the legend
+    }
+    legend->AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
+    
+    //order background histograms by yield
+    yieldOrder(bkg);
+
+    //add background histograms to stack
 
 
     //Order background histograms in terms of yields 
@@ -101,67 +143,6 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     yieldOrder(bkgC, histI, nHist);
     //Stack containing all background histograms
     THStack* bkgStack = new THStack("bkgStack", "bkgStack");
-    for(int effsam = nHist -1; effsam > -1; --effsam){
-        if(analysis == "EWKino"){
-            StackCol(bkgC[effsam], bkgColor_EWK(names[histI[effsam] + 1]) );
-        } else if(analysis == "HNL"){
-            StackCol(bkgC[effsam], bkgColor_HNL(names[histI[effsam] + 1]) );
-        } else{
-            StackCol(bkgC[effsam], colors[histI[effsam]]);
-        }
-        bkgStack->Add(bkgC[effsam], "f");
-    }
-    //Total background
-    TH1D* bkgTot = (TH1D*) bkgC[0]->Clone();
-    for(unsigned i = 1; i <  nHist; ++i){
-        bkgTot->Add(bkgC[i]);
-    }
-    //Background histograms with full uncertainty
-    TH1D* bkgE[nHist];
-    for(unsigned b = 0; b < nHist; ++b){
-        bkgE[b] = (TH1D*) bkgC[b]->Clone();
-        for(unsigned bin = 1; bin < bkgE[b]->GetNbinsX() + 1; ++bin){
-            bkgE[b]->SetBinError(bin, sqrt(bkgE[b]->GetBinError(bin)*bkgE[b]->GetBinError(bin) + bkgSyst[histI[b]]->GetBinContent(bin)*bkgSyst[histI[b]]->GetBinContent(bin)) );
-        }
-    }
-    //Total background with full unc.
-    TH1D* bkgTotE = (TH1D*) bkgE[0]->Clone();
-    for(unsigned bkg = 1; bkg < nHist; ++bkg){
-        bkgTotE->Add(bkgE[bkg]);
-    }
-
-    //Set Poisonian errors to data
-    data->SetBinErrorOption(TH1::kPoisson);
-    //Replace data by TGRaphAsymmErrors for plotting
-    TGraphAsymmErrors* obs = new TGraphAsymmErrors(data);
-    for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
-        obs->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b), (data->GetBinContent(b) == 0 ) ? 0 : data->GetBinErrorUp(b) );
-    }
-
-    //Legend for data and all backgrounds
-    //TLegend* legend = new TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
-    TLegend* legend;
-    if(!plotsig) legend = new TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
-    else legend = new TLegend(0.2,0.7,0.95,0.9,NULL,"brNDC");
-    if(!plotsig) legend-> SetNColumns(4); //2
-    else legend->SetNColumns(3);
-    //Avoid legend box
-    legend->SetFillStyle(0);
-    //Add data to legend
-    //legend->AddEntry(data,names[0]);
-    legend->AddEntry(obs,names[0], "pe1");
-    //Add overlaid signals to legend
-    if(plotsig){
-        for(unsigned sig = 0; sig < nSig; ++sig){
-            histcol(signal[sig], sigCols[sig]);
-            signal[sig]->SetLineWidth(3);
-            legend->AddEntry(signal[sig], signames[sig]);
-        }
-    }
-    //Add backgrounds to the legend
-    for(int effsam = nHist - 1; effsam > -1; --effsam){
-        legend->AddEntry(bkgE[effsam], names[histI[effsam] + 1], "f");
-    }
     //Determine canvas size, depending on chosen option
     double width, height;
     if(widthopt == 0){
@@ -188,11 +169,6 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     p1->cd();
     //p1->SetBottomMargin(0);
     p1->SetBottomMargin(0.03);
-    //Make the total background uncertainty visible as a grey band
-    bkgTotE->SetFillStyle(3244); //3005  3244
-    bkgTotE->SetFillColor(kGray+2);
-    bkgTotE->SetMarkerStyle(0); //1
-    legend->AddEntry(bkgTotE, "total bkg. unc.", "f");
     //Set minimum slightly above 0 to avoid chopped off zero in the plots
     if(!ylog) data->SetMinimum(0.0001);
     else if(ylog) p1->SetLogy();

@@ -19,7 +19,7 @@ void StackCol(TH1D*, const Color_t);
 //Set Histogram labelsizes
 void HistLabelSizes(TH1D* h, const double xlabel = 0.045, const double xtitle = 0.05, const double ylabel = 0.045, const double ytitle = 0.045);
 //Order histograms in terms of yields (biggest first)
-void yieldOrder(TH1D**, unsigned*, const unsigned);
+void yieldOrder(TH1D**);
 //return color corresponding to bkg
 Color_t bkgColor(const std::string&, const std::string& analysis = ""); 
 //Plot background stack and compare to observed yields
