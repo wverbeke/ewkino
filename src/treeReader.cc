@@ -183,6 +183,17 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
     outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/b");
+    outputTree->Branch("_met",                          &_met,                          "_met/D");
+    outputTree->Branch("_metJECDown",                   &_metJECDown,                   "_metJECDown/D");
+    outputTree->Branch("_metJECUp",                     &_metJECUp,                     "_metJECUp/D");
+    outputTree->Branch("_metUnclDown",                  &_metUnclDown,                  "_metUnclDown/D");
+    outputTree->Branch("_metUnclUp",                    &_metUnclUp,                    "_metUnclUp/D");
+    outputTree->Branch("_metPhi",                       &_metPhi,                       "_metPhi/D");
+    outputTree->Branch("_metPhiJECDown",                &_metPhiJECDown,                "_metPhiJECDown/D");
+    outputTree->Branch("_metPhiJECUp",                  &_metPhiJECUp,                  "_metPhiJECUp/D");
+    outputTree->Branch("_metPhiUnclDown",               &_metPhiUnclDown,               "_metPhiUnclDown/D");
+    outputTree->Branch("_metPhiUnclUp",                 &_metPhiUnclUp,                 "_metPhiUnclUp/D");
+    outputTree->Branch("_2017_e", &_2017_e, "_2017_e/O");
     outputTree->Branch("_HLT_Ele35_WPTight_Gsf", &_HLT_Ele35_WPTight_Gsf, "_HLT_Ele35_WPTight_Gsf/O");
     outputTree->Branch("_HLT_Ele35_WPTight_Gsf_prescale", &_HLT_Ele35_WPTight_Gsf_prescale, "_HLT_Ele35_WPTight_Gsf_prescale/O");
     outputTree->Branch("_HLT_Ele40_WPTight_Gsf", &_HLT_Ele40_WPTight_Gsf, "_HLT_Ele40_WPTight_Gsf/O");
