@@ -69,7 +69,7 @@ void treeReader::Analyze(){
     //Loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
         //Read info from tree
-        std::shared_ptr<TFile> sampleFile= std::make_shared<TFile>("../../ntuples_ttg/"+ (const TString&) std::get<1>(samples[sam]),"read");
+        std::shared_ptr<TFile> sampleFile= std::make_shared<TFile>("../../ntuples_ewkino/"+ (const TString&) std::get<1>(samples[sam]),"read");
         sampleFile->cd("blackJackAndHookers");
         //Determine hcounter for cross section scaling
         double hCounter;
