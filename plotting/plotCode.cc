@@ -101,13 +101,13 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
     }
 }
 
-void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, TH1D** bkgSyst){
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, TH1D** bkgSyst){
     //set background histogram colors
     for(unsigned h = 0; h < nBkg; ++h){
         StackCol(bkg[h], bkgColor(names[h + 1], analysis) ); //first name is data
     }    
 
-    //Set Poisonian errors to data
+    //set Poisonian errors to data
     data->SetBinErrorOption(TH1::kPoisson);
 
     //Replace data by TGRaphAsymmErrors for plotting
@@ -116,7 +116,27 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         dataGraph->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b), (data->GetBinContent(b) == 0 ) ? 0 : data->GetBinErrorUp(b) );
     }
 
-    //Background histograms with full uncertainty
+    
+    //Compute total background (needed later for uncertainty bands)
+    TH1D* bkgTot = (TH1D*) bkg[0]->Clone();
+    for(unsigned h = 1; h < nBkg; ++h){
+        bkgTot->Add(bkg[h]);
+    }
+
+    //normalize background to data if option is chosen
+    if(normToData){
+        double SF = data->GetSumOfWeights()/bkgTot->GetSumOfWeights();
+        for(unsigned h = 0; h < nBkg; ++h){
+            bkg[h]->Scale(SF);
+        }
+        //Remcompute total background after scaling
+        bkgTot = (TH1D*) bkg[0]->Clone();
+        for(unsigned h = 1; h < nBkg; ++h){
+            bkgTot->Add(bkg[h]);
+        }
+    }
+
+    //background histograms with full uncertainty
     TH1D* bkgE[nBkg]; //clone histograms so that the function does not affect its arguments!
     for(unsigned h = 0; h < nBkg; ++h){
         bkgE[h] = (TH1D*) bkg[h]->Clone(); //CHECK WHETHER THIS IS MEMORY SAFE
@@ -127,13 +147,13 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         }
     }
 
-    //Compute total background
+    //compute total background
     TH1D* bkgTotE = (TH1D*) bkgE[0]->Clone(); //CHECK WHETHER THIS IS MEMORY SAFE
     for(unsigned h = 1; h < nBkg; ++h){
         bkgTotE->Add(bkgE[h]);
     }
 
-    //Make the total background uncertainty visible as a grey band
+    //make the total background uncertainty visible as a grey band
     bkgTotE->SetFillStyle(3244); //3005  3244
     bkgTotE->SetFillColor(kGray+2);
     bkgTotE->SetMarkerStyle(0); //1
@@ -241,11 +261,6 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     const unsigned nBins = data->GetNbinsX();
     TH1D* bkgStatErrors = new TH1D((const TString&) "bkgStaterrors" + file, (const TString&) "bkgStaterrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
     TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();
-    //Compute total background without systematics
-    TH1D* bkgTot = (TH1D*) bkg[0]->Clone();
-    for(unsigned h = 1; h < nBkg; ++h){
-        bkgTot->Add(bkg[h]);
-    }
     for(unsigned b = 1; b < nBins + 1; ++b){
         bkgStatErrors->SetBinContent(b, 1.);    //center bands around 0
         bkgErrors->SetBinContent(b, 1.);
