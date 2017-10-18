@@ -31,7 +31,8 @@ void treeReader::setFlavors(){
 
 void treeReader::Analyze(){
     //Set CMS plotting style
-    //gROOT->SetBatch(kTRUE);
+    setTDRStyle();
+    gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
     std::ifstream file("samples.txt");
     std::string line;
