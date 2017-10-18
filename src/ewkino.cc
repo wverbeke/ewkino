@@ -119,6 +119,8 @@ void treeReader::Analyze(){
             //select leptons
             const unsigned lCount = selectLep(ind);
             if(lCount < 2) continue;
+            //require pt cuts (25, 20) to be passed
+            if(!passPtCuts(ind)) continue;
             //require leading OSSF pair 
             unsigned flavorComp = dilFlavorComb(ind);
             if(flavorComp != 0 && flavorComp != 2) continue;
