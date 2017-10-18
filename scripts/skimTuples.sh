@@ -23,7 +23,7 @@ skimSample(){                                           #function to skim one sa
         #filename=${f##*/}                               
         filename=${f///}
         filename=${filename%.*}
-        echo "~/Work/AnalysisCode/ewkino2017/skimTree $f $outputDir/ > ${outputDir}/${filename}_log.txt 2> ${outputDir}/${filename}_err.txt" >> $submit
+        echo "~/Work/AnalysisCode/ewkino/skimTree $f $outputDir/ > ${outputDir}/${filename}_log.txt 2> ${outputDir}/${filename}_err.txt" >> $submit
         count=$((count+1))
     done
     qsub $submit -l walltime=04:00:00;
