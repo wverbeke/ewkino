@@ -9,13 +9,12 @@ VV		WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8.root																			4.42965
 VV		ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8.root																		3.28
 VV		ZZTo2Q2Nu_13TeV_amcatnloFXFX_madspin_pythia8.root																		0.564
 VV		ZZTo4L_13TeV_powheg_pythia8.root																						4.04
-VV		VVTo2L2Nu_13TeV_amcatnloFXFX_madspin_pythia8.root																		11.95
-VV		WWToLNuQQ_13TeV-powheg.root																								49.997
+VV      WWTo2L2Nu_13TeV-powheg.root                                                                                             12.178 
 VV		WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root																			0.2086
 VV		WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root																			0.1651
 VV		WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root																			0.05565
 VV		ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root																			0.01398						
-TTX		TTGamma_Dilept_TuneCUETP8M2T4_13TeV-amcatnlo-pythia8.root																0.899
+TTX     TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8.root                                                            3.697
 TTX		TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8.root														0.2043
 TTX		TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8.root														0.40620
 TTX		TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root																0.2728
