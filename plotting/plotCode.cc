@@ -149,7 +149,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     legend.AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
     
     //order background histograms by yield
-    yieldOrder(bkg, nBkg);
+    yieldOrder(bkgE, nBkg);
 
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");
