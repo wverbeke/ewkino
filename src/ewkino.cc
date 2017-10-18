@@ -53,7 +53,16 @@ void treeReader::Analyze(){
         std::make_tuple("sip3d", "SIP_{3D}", 100, 0, 8),
         std::make_tuple("dxy", "|d_{xy}| (cm)", 100, 0, 0.05),
         std::make_tuple("dz", "|d_{z}| (cm)", 100, 0, 0.1),
-        std::make_tuple("miniIso", "miniIso", 100, 0, 0.4) 
+        std::make_tuple("miniIso", "miniIso", 100, 0, 0.4),
+        std::make_tuple("leptonMva", "lepton MVA value", 100, -1, 1),
+        std::make_tuple("ptRel", "P_{T}^{rel} (GeV)", 100, 0, 200),
+        std::make_tuple("ptRatio", "P_{T}^{ratio}", 100, 0, 2),
+        std::make_tuple("closestJetCsv", "closest jet CSV", 100, 0, 1),
+        std::make_tuple("chargedTrackMult", "closest jet track multiplicity", 20, 0, 20),
+        std::make_tuple("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
+        std::make_tuple("mll", "M_{ll} (GeV)", 200, 0, 200),
+        std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 100, 0, 200),
+        std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 100, 0, 150)
     };
     const unsigned nDist = histInfo.size();
     //initialize vector holding all histograms
@@ -68,12 +77,12 @@ void treeReader::Analyze(){
     const double DataLuminosity = 18.90; //21.15; //in units of 1/fb
     const TString extra = ""; //for plot names
 
-    //Loop over all samples 
+    //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        //Read info from tree
+        //read info from tree
         std::shared_ptr<TFile> sampleFile= std::make_shared<TFile>("../../ntuples_ewkino/"+ (const TString&) std::get<1>(samples[sam]),"read");
         sampleFile->cd("blackJackAndHookers");
-        //Determine hcounter for cross section scaling
+        //determine hcounter for cross section scaling
         double hCounter;
         if(sam != 0){
             TH1D* _hCounter = new TH1D("hCounter", "Events counter", 5,0,5);
@@ -89,9 +98,9 @@ void treeReader::Analyze(){
         //find number of entries in sample
         long unsigned nEntries = sampleTree->GetEntries();
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
-        double progress = 0; 	//For printing progress bar
+        double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries/10; ++it){
-            //Print progress bar	
+            //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
                 tools::printProgress(progress);
@@ -103,31 +112,38 @@ void treeReader::Analyze(){
             double weight;
             if(sam == 0) weight = 1;
             else weight = scale*_weight;	
-            //Set flavors (temporary) 
+            //set flavors (temporary) 
             setFlavors();
             //vector containing good lepton indices
             std::vector<unsigned> ind;
             //select leptons
-            unsigned lCount = selectLep(ind);
+            const unsigned lCount = selectLep(ind);
             if(lCount < 2) continue;
             //require leading OSSF pair 
             unsigned flavorComp = dilFlavorComb(ind);
             if(flavorComp != 0 && flavorComp != 2) continue;
-            //Loop over leading leptons
+            //loop over leading leptons
             for(unsigned l = 0; l < 2; ++l){
-                double fill[nDist] = {_3dIPSig[ind[l]], _dxy[ind[l]], _dz[ind[l]], _miniIso[ind[l]]};
-                //Fill histograms
-                for(unsigned dist = 0; dist < nDist; ++dist){
+                double fill[9] = {_3dIPSig[ind[l]], _dxy[ind[l]], _dz[ind[l]], _miniIso[ind[l]], _leptonMva[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsv[ind[l]], (double) _selectedTrackMult[ind[l]]};
+                //fill histograms
+                for(unsigned dist = 0; dist < 9; ++dist){
                     hists[dist][sam]->Fill(fill[dist], weight);
                 }
             }
+            //make lorentzvectors for leptons
+            TLorentzVector lepV[lCount];
+            for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
+            double fill[nDist - 9] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[2]]};
+            for(unsigned dist = 9; dist < nDist; ++dist){
+                hists[dist][sam]->Fill(fill[dist], weight);
+            }
         }
-        //Set histograms to 0 if negative
+        //set histograms to 0 if negative
         for(unsigned dist = 0; dist < nDist; ++dist){
             tools::setNegativeZero(hists[dist][sam]);
         }	
     }
-    //Merge histograms with the same physical background
+    //merge histograms with the same physical background
     std::vector<std::string> proc = {"obs.", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
     std::vector< std::vector <TH1D*> > mergedHists;
     for(unsigned dist = 0; dist < nDist; ++dist){
@@ -141,7 +157,7 @@ void treeReader::Analyze(){
             ++sam;
         }
     }
-    //Plot all distributions
+    //plot all distributions
     for(unsigned dist = 0; dist < nDist; ++dist){
         plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist]), "ewkinoDilep", false, true);             //linear plots
         plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist]) + "_log", "ewkinoDilep", true, true);     //log plots
