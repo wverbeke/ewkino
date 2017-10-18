@@ -33,7 +33,7 @@ void treeReader::Analyze(){
     //Set CMS plotting style
     //gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    std::ifstream file("samples.txt");
+    std::ifstream file("../samples.txt");
     std::string line;
     std::vector<std::tuple<std::string, std::string, double> > samples;
     while(std::getline(file, line)){	
