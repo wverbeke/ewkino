@@ -27,7 +27,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     TH1D* hCounter;
     TH1D* lheCounter;
     if(!isData){
-        TH1D* hCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/hCounter");
+        hCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/hCounter");
         lheCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/lheCounter");
     }
     //Get Tree
