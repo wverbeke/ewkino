@@ -22,7 +22,7 @@ skimSample(){                                           #function to skim one sa
         mkdir $outputDir
     fi
     submit=~/skimJob.sh
-    makeSubmit $submit                                  #make temporary submission script
+    makeSubmit $submit $2                               #make temporary submission script
     
     count=0                                             #file counter
     files=${1}/*/*/*root
@@ -45,5 +45,5 @@ cd $baseFolder
 foldersMC=*/*ewkinoMCList                               #add suffix for newer versions
 foldersData=*/*ewkinoDataList
 for d in $foldersMC $foldersData                        #skim all samples
-    do skimSample $d
+    do skimSample $d $baseFolder
 done
