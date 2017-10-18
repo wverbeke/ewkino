@@ -62,7 +62,8 @@ void treeReader::Analyze(){
         std::make_tuple("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
         std::make_tuple("mll", "M_{ll} (GeV)", 200, 0, 200),
         std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 100, 0, 200),
-        std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 100, 0, 150)
+        std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 100, 0, 150),
+        std::make_tuple("nVertex", "number of vertices", 100, 0, 100)
     };
     const unsigned nDist = histInfo.size();
     //initialize vector holding all histograms
@@ -135,7 +136,7 @@ void treeReader::Analyze(){
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
-            double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]]}; //replace 0 by _met for correct trees
+            double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], _nVertex}; //replace 0 by _met for correct trees
             for(unsigned dist = 9; dist < nDist; ++dist){
                 hists[dist][sam]->Fill(fill[dist - 9], weight);
             }
