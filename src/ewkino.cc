@@ -133,9 +133,9 @@ void treeReader::Analyze(){
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
-            double fill[nDist - 9] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[2]]};
+            double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]]}; //replace 0 by _met for correct trees
             for(unsigned dist = 9; dist < nDist; ++dist){
-                hists[dist][sam]->Fill(fill[dist], weight);
+                hists[dist][sam]->Fill(fill[dist - 9], weight);
             }
         }
         //set histograms to 0 if negative
