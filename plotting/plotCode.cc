@@ -154,7 +154,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");
     for(unsigned h = 0; h < nBkg; ++h){
-        bkgStack.Add(bkgE[h]);
+        bkgStack.Add(bkgE[nBkg - h - 1]); //Put highest yield on top -> good for log scale plots
     }
     
     //canvas dimenstions
