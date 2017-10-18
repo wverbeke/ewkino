@@ -243,7 +243,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();
     //Compute total background without systematics
     TH1D* bkgTot = (TH1D*) bkg[0]->Clone();
-    for(unsigned h = 0; h < nBkg; ++h){
+    for(unsigned h = 1; h < nBkg; ++h){
         bkgTot->Add(bkg[h]);
     }
     for(unsigned b = 1; b < nBins + 1; ++b){
