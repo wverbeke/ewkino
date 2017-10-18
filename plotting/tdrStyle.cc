@@ -152,7 +152,7 @@ void setTDRStyle() {
   // tdrStyle->SetHistMinimumZero(kTRUE);
 
   //For error in SF maps
-  //tdrStyle->SetMarkerSize(12);
+  tdrStyle->SetMarkerSize(0.6); //TEMPORARY SIZE FOR DILEPTON PLOTS. SET BACK TO DEFAULT FOR TRILEPTON
   tdrStyle->SetPaintTextFormat("4.2f");  //4.2
   //tdrStyle->SetHatchesLineWidth(5);
   //tdrStyle->SetHatchesSpacing(0.05);
