@@ -29,7 +29,7 @@ skimSample(){                                           #function to skim one sa
     for f in $files
         do if (( $count % 50 == 0))
             then qsub $submit -l walltime=04:00:00;
-            makeSubmit $submit
+            makeSubmit $submit $2
         fi
         filename=${f##*/}                               
         filename=${filename%.*}
