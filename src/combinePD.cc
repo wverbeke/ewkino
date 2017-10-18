@@ -43,6 +43,7 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
         double progress = 0; 	//For printing progress bar
         long nEntries = sampleTree->GetEntries();
         for (long it=0; it <nEntries; ++it){
+            sampleTree->GetEntry(it);
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./ (double) nEntries);
                 tools::printProgress(progress);
@@ -55,7 +56,6 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
             } else{
                 continue;
             }
-            sampleTree->GetEntry(it);
             outputTree->Fill();
         }
         //sampleFile->Close();
