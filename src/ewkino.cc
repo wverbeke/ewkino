@@ -19,6 +19,7 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 #include "../plotting/plotCode.h"
+#include "../plotting/tdrStyle.h"
 
 //Temporary function to set _flavors correctly as it is buggy
 void treeReader::setFlavors(){
@@ -127,7 +128,7 @@ void treeReader::Analyze(){
         }	
     }
     //Merge histograms with the same physical background
-    std::vector<std::string> proc = {"obs.", "DY", "TT + jets", "WJets", "VV", "TT + X", "T + X"};
+    std::vector<std::string> proc = {"obs.", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
     std::vector< std::vector <TH1D*> > mergedHists;
     for(unsigned dist = 0; dist < nDist; ++dist){
         mergedHists.push_back(std::vector<TH1D*>());
