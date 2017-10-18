@@ -32,6 +32,7 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
     std::vector<std::pair<double, unsigned>> ptMap;
     for(unsigned l = 0; l < _nLight; ++l){
         if(_lEwkLoose[l]){
+            if(_lFlavor[l] == 0 && !_lElectronPassEmu[l]) continue;
             ++lCount;
             ptMap.push_back({_lPt[l], l});
         }
