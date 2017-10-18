@@ -52,6 +52,16 @@ Color_t bkgColorEWK(const std::string& bkgName){
     else if(bkgName == "T + X") return kCyan + 1;
 }
 
+Color_t bkgColorEWKDilept(const std::string bkgName){
+    if(bkgName == "DY") return kAzure + 1;
+    else if(bkgName == "TT + Jets") return kCyan + 1;
+    else if(bkgName == "VV") return kRed - 7;
+    else if(bkgName == "WJets") return  kGreen + 1;
+    else if(bkgName == "TT + X") return  kGreen + 1;
+    else if(bkgName == "T + X") return kMagenta -7;
+    else return kBlack;
+}
+
 Color_t bkgColorHNL(const std::string& bkgName){
     if(bkgName == "non-prompt") return kAzure + 1;
     else if(bkgName == "nonprompt") return kAzure + 1;
@@ -67,6 +77,8 @@ Color_t bkgColorHNL(const std::string& bkgName){
     else return kBlack;
 }
 
+
+//FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
 Color_t bkgColorGeneral(){
     static const Color_t colors[8] = {kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kBlue -3, kOrange + 6, kCyan + 1, kMagenta +3};
     static unsigned counter = 0;
@@ -82,6 +94,8 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
         return bkgColorEWK(bkgName);
     } else if(analysis == "HNL"){
         return bkgColorHNL(bkgName);
+    } else if(analysis == "ewkinoDilep"){
+        return bkgColorEWKDilept(bkgName);
     } else{
         return bkgColorGeneral();
     }
