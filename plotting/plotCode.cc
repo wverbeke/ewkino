@@ -56,8 +56,8 @@ Color_t bkgColorEWKDilept(const std::string bkgName){
     if(bkgName == "DY") return kAzure + 1;
     else if(bkgName == "TT + Jets") return kCyan + 1;
     else if(bkgName == "VV") return kRed - 7;
-    else if(bkgName == "WJets") return  kGreen + 1;
-    else if(bkgName == "TT + X") return  kOrange;
+    else if(bkgName == "WJets") return kOrange;
+    else if(bkgName == "TT + X") return kGreen + 1;
     else if(bkgName == "T + X") return kMagenta -7;
     else return kBlack;
 }
