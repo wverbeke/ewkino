@@ -93,6 +93,12 @@ void treeReader::Analyze(){
         }
     }
 
+    //store maxima of histograms for overflow bins
+    double maxBin[nDist];
+    for(unsigned dist = 0; dist < nDist; ++dist){
+        maxBin[dist] = std::get<4>(histInfo[dist]) - 0.5*(std::get<4>(histInfo[dist]) - std::get<3>(histInfo[dist]) )/std::get<2>(histInfo[dist]);
+    }
+
     //tweakable options
     const double DataLuminosity = 18.90; //21.15; //in units of 1/fb
     const TString extra = ""; //for plot names
@@ -159,8 +165,8 @@ void treeReader::Analyze(){
                 for(unsigned dist = 0; dist < 9; ++dist){
                     for(unsigned r = 0; r < nRuns; ++r){
                         if(sam != 0 || r == run || r == 0){
-                            hists[r][flav][dist][sam]->Fill(fill[dist], weight);
-                            hists[r][0][dist][sam]->Fill(fill[dist], weight);
+                            hists[r][flav][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
+                            hists[r][0][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
                         }
                     }
                 }
@@ -169,8 +175,8 @@ void treeReader::Analyze(){
             for(unsigned dist = 9; dist < nDist; ++dist){
                 for(unsigned r = 0; r < nRuns; ++r){
                     if(sam != 0 || r == run || r == 0){
-                        hists[r][flav][dist][sam]->Fill(fill[dist - 9], weight);
-                        hists[r][0][dist][sam]->Fill(fill[dist - 9], weight);
+                        hists[r][flav][dist][sam]->Fill(std::min(fill[dist - 9], maxBin[dist]), weight);
+                        hists[r][0][dist][sam]->Fill(std::min(fill[dist - 9], maxBin[dist]), weight);
                     }
                 }
             }
