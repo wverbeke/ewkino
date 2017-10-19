@@ -32,8 +32,8 @@ skimSample(){                                           #function to skim one sa
 
 baseFolder=/pnfs/iihe/cms/store/user/wverbeke/heavyNeutrino
 cd $baseFolder
-foldersMC=*/*ewkinoMCList                               #add suffix for newer versions
-foldersData=*/*ewkinoDataList
+foldersMC=*/*ewkinoMCList-v2p2                               #add suffix for newer versions
+foldersData=*/*ewkinoDataList-v2p2
 for d in $foldersMC $foldersData                        #skim all samples
     do skimSample $d $baseFolder
 done
