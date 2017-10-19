@@ -144,16 +144,19 @@ void treeReader::Analyze(){
             //determine flavor compositions
             unsigned flav = dilFlavorComb(ind) + 1; //reserve 0 for inclusive
             //determine run perios
-            unsigned run = ewk::runPeriod(_runNb) + 1; //reserve 0 for inclusive
+            unsigned run;
+            if(sam == 0) run = ewk::runPeriod(_runNb) + 1; //reserve 0 for inclusive
             //loop over leading leptons
             for(unsigned l = 0; l < 2; ++l){
                 double fill[9] = {_3dIPSig[ind[l]], _dxy[ind[l]], _dz[ind[l]], _miniIso[ind[l]], _leptonMva[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsv[ind[l]], (double) _selectedTrackMult[ind[l]]};
                 //fill histograms
                 for(unsigned dist = 0; dist < 9; ++dist){
-                    hists[run][flav][dist][sam]->Fill(fill[dist], weight);
-                    hists[run][0][dist][sam]->Fill(fill[dist], _weight);
-                    hists[0][0][dist][sam]->Fill(fill[dist], _weight);
-                    hists[0][flav][dist][sam]->Fill(fill[dist], _weight);
+                    for(unsigned r = 0; r < nRun; ++r){
+                        if(sam != 0 || r == run || r == 0){
+                            hists[run][flav][dist][sam]->Fill(fill[dist], weight);
+                            hists[run][0][dist][sam]->Fill(fill[dist], _weight);
+                        }
+                    }
                 }
             }
             //make lorentzvectors for leptons
@@ -161,10 +164,12 @@ void treeReader::Analyze(){
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
             double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) nJets(), (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
             for(unsigned dist = 9; dist < nDist; ++dist){
-                hists[run][flav][dist][sam]->Fill(fill[dist - 9], weight);
-                hists[run][0][dist][sam]->Fill(fill[dist - 9], weight);
-                hists[0][0][dist][sam]->Fill(fill[dist - 9], weight);
-                hists[0][flav][dist][sam]->Fill(fill[dist - 9], weight);
+                for(unsigned r = 0; r < nRun; ++r){
+                    if(sam != 0 || r == run || r == 0){
+                        hists[run][flav][dist][sam]->Fill(fill[dist], weight);
+                        hists[run][0][dist][sam]->Fill(fill[dist], _weight);
+                    }
+                }
             }
         }
         //set histograms to 0 if negative
@@ -190,11 +195,13 @@ void treeReader::Analyze(){
                         mergedHists[run][flav][dist][m]->Add(hists[run][flav][dist][sam + 1]);
                         ++sam;
                     }
+                    std::cout << "mergedHists[run][flav][dist][m] = " << mergedHists[run][flav][dist][m] << std::endl;
                     ++sam;
                 }
             }
         }
     }
+    /*
     //plot all distributions
     for(unsigned run = 0; run < nRuns; ++run){
         for(unsigned flav = 0; flav < nFlav; ++flav){
@@ -204,6 +211,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    */
 }
 
 int main(){
