@@ -26,7 +26,7 @@
 void treeReader::setFlavors(){
     for(unsigned l = 0; l < _nL; ++l){
         if(l < _nMu) _lFlavor[l] = 1;
-        else if(l < _nEle) _lFlavor[l] = 0;
+        else if(l < _nLight) _lFlavor[l] = 0;
         else _lFlavor[l] = 2;
     }
 }
@@ -120,6 +120,7 @@ void treeReader::Analyze(){
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries/100; ++it){
+            //if(it%100 != 0) continue;
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -135,7 +136,7 @@ void treeReader::Analyze(){
             //set flavors (temporary) 
             setFlavors();
             //vector containing good lepton indices
-            std::vector<unsigned> ind(2);
+            std::vector<unsigned> ind;
             //select leptons
             const unsigned lCount = selectLep(ind);
             if(lCount < 2) continue;
@@ -153,8 +154,8 @@ void treeReader::Analyze(){
                 for(unsigned dist = 0; dist < 9; ++dist){
                     for(unsigned r = 0; r < nRuns; ++r){
                         if(sam != 0 || r == run || r == 0){
-                            hists[run][flav][dist][sam]->Fill(fill[dist], weight);
-                            hists[run][0][dist][sam]->Fill(fill[dist], _weight);
+                            hists[r][flav][dist][sam]->Fill(fill[dist], weight);
+                            hists[r][0][dist][sam]->Fill(fill[dist], weight);
                         }
                     }
                 }
@@ -166,8 +167,8 @@ void treeReader::Analyze(){
             for(unsigned dist = 9; dist < nDist; ++dist){
                 for(unsigned r = 0; r < nRuns; ++r){
                     if(sam != 0 || r == run || r == 0){
-                        hists[run][flav][dist][sam]->Fill(fill[dist], weight);
-                        hists[run][0][dist][sam]->Fill(fill[dist], _weight);
+                        hists[r][flav][dist][sam]->Fill(fill[dist - 9], weight);
+                        hists[r][0][dist][sam]->Fill(fill[dist - 9], weight);
                     }
                 }
             }
@@ -195,13 +196,11 @@ void treeReader::Analyze(){
                         mergedHists[run][flav][dist][m]->Add(hists[run][flav][dist][sam + 1]);
                         ++sam;
                     }
-                    std::cout << "mergedHists[run][flav][dist][m] = " << mergedHists[run][flav][dist][m] << std::endl;
                     ++sam;
                 }
             }
         }
     }
-    /*
     //plot all distributions
     for(unsigned run = 0; run < nRuns; ++run){
         for(unsigned flav = 0; flav < nFlav; ++flav){
@@ -211,7 +210,6 @@ void treeReader::Analyze(){
             }
         }
     }
-    */
 }
 
 int main(){
