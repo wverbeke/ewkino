@@ -185,6 +185,7 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 mergedHists[run][flav].push_back(std::vector<TH1D*>(proc.size()) );
                 for(size_t m = 0, sam = 0; m < proc.size(); ++m){
+                    mergedHists[run][flav][dist][m] = (TH1D*) hists[run][flav][dist][sam]->Clone();
                     while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
                         mergedHists[run][flav][dist][m]->Add(hists[run][flav][dist][sam + 1]);
                         ++sam;
