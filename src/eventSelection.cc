@@ -56,7 +56,7 @@ unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsig
 
 bool treeReader::passPtCuts(const std::vector<unsigned>& ind){
     if(_lPt[ind[0]] < 25) return false;
-    if(_lPt[ind[1]] < 20) return false;
+    if(_lPt[ind[1]] < 15) return false;
     return true;
 }
 
@@ -73,14 +73,14 @@ bool treeReader::jetIsClean(const unsigned ind){
     return true;
 }
 
-bool treeReader::jetIsGood(const unsigned ind, const unsigned unc){
+bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc){
     if(fabs(_jetEta[ind]) < 2.4) return false;
     switch(unc){
-        case 0: if(_jetPt[ind] < 30) return false;
-        case 1: if(_jetPt_JECDown[ind] < 30) return false;
-        case 2: if(_jetPt_JECUp[ind] < 30) return false;
-        case 3: if(_jetPt_JERDown[ind] < 30) return false;
-        case 4: if(_jetPt_JERUp[ind] < 30) return true;
+        case 0: if(_jetPt[ind] < ptCut) return false;
+        case 1: if(_jetPt_JECDown[ind] < ptCut) return false;
+        case 2: if(_jetPt_JECUp[ind] < ptCut) return false;
+        case 3: if(_jetPt_JERDown[ind] < ptCut) return false;
+        case 4: if(_jetPt_JERUp[ind] < ptCut) return true;
         default: ;
     }
     return jetIsClean(ind);
@@ -89,21 +89,27 @@ bool treeReader::jetIsGood(const unsigned ind, const unsigned unc){
 unsigned treeReader::nJets(const unsigned unc){
     unsigned nJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, unc)) ++nJets;
+        if(jetIsGood(j, 30, unc)) ++nJets;
     }
     return nJets;
 }
 
-bool treeReader::bTagged(const unsigned ind){
+bool treeReader::bTaggedDeepCSV(const unsigned ind){
     static const unsigned bTagWP = 0.6324;
     return (_jetDeepCsv_b[ind] + _jetDeepCsv_bb[ind]) > bTagWP;
 }
 
-unsigned treeReader::nBJets(const unsigned unc){
+bool treeReader::bTaggedCSVv2(const unsigned ind){
+    static const unsigned bTagWP = 0.8484;
+    return _jetCsvV2[ind] > bTagWP;
+}
+
+unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV){
     unsigned nbJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, unc)){
-            if(bTagged(j)) ++nbJets;
+        if(jetIsGood(j, 25, unc)){
+            if(deepCSV && bTaggedDeepCSV(j)) ++nbJets;
+            else if(bTaggedCSVv2(j)) ++nbJets;
         }
     }
     return nbJets;
