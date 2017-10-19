@@ -151,7 +151,7 @@ void treeReader::Analyze(){
                 double fill[9] = {_3dIPSig[ind[l]], _dxy[ind[l]], _dz[ind[l]], _miniIso[ind[l]], _leptonMva[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsv[ind[l]], (double) _selectedTrackMult[ind[l]]};
                 //fill histograms
                 for(unsigned dist = 0; dist < 9; ++dist){
-                    for(unsigned r = 0; r < nRun; ++r){
+                    for(unsigned r = 0; r < nRuns; ++r){
                         if(sam != 0 || r == run || r == 0){
                             hists[run][flav][dist][sam]->Fill(fill[dist], weight);
                             hists[run][0][dist][sam]->Fill(fill[dist], _weight);
@@ -164,7 +164,7 @@ void treeReader::Analyze(){
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
             double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) nJets(), (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
             for(unsigned dist = 9; dist < nDist; ++dist){
-                for(unsigned r = 0; r < nRun; ++r){
+                for(unsigned r = 0; r < nRuns; ++r){
                     if(sam != 0 || r == run || r == 0){
                         hists[run][flav][dist][sam]->Fill(fill[dist], weight);
                         hists[run][0][dist][sam]->Fill(fill[dist], _weight);
