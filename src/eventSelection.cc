@@ -64,7 +64,7 @@ bool treeReader::jetIsClean(const unsigned ind){
     TLorentzVector jet;	
     jet.SetPtEtaPhiE(_jetPt[ind], _jetEta[ind], _jetPhi[ind], _jetE[ind]);
     for(unsigned l = 0; l < _nLight; ++l){
-        if(_lEwkFO[l]){
+        if(_lEwkLoose[l]){ //TEMPORARY FOR DILEPTON CONTROL REGIONS
             TLorentzVector lep;
             lep.SetPtEtaPhiE(_lPt[l], _lEta[l], _lPhi[l], _lE[l]);
             if(lep.DeltaR(jet) < 0.4) return false;
