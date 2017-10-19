@@ -142,6 +142,11 @@ void treeReader::Analyze(){
             if(lCount < 2) continue;
             //require pt cuts (25, 20) to be passed
             if(!passPtCuts(ind)) continue;
+            //make lorentzvectors for leptons
+            TLorentzVector lepV[lCount];
+            for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
+            //Cut of Mll at 12 GeV
+            if((lepV[0] + lepV[1]).M() < 12) continue;
             //determine flavor compositions
             unsigned flav = dilFlavorComb(ind) + 1; //reserve 0 for inclusive
             //determine run perios
@@ -160,9 +165,6 @@ void treeReader::Analyze(){
                     }
                 }
             }
-            //make lorentzvectors for leptons
-            TLorentzVector lepV[lCount];
-            for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
             double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) nJets(), (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
             for(unsigned dist = 9; dist < nDist; ++dist){
                 for(unsigned r = 0; r < nRuns; ++r){
