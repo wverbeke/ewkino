@@ -69,12 +69,27 @@ void treeReader::Analyze(){
         std::make_tuple("nBJets_CSVv2", "number of b-jets (CSVv2)", 5, 0, 5),
         std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 5, 0, 5)
     };
-    const unsigned nDist = histInfo.size();
+
+    //split histograms in run periods
+    const unsigned nRuns = 7;
+    const std::string runNames[nRuns] = {"all2017", "RunA", "RunB", "RunC", "RunD", "RunE", "RunF"};
+    //split histograms in flavor combinations
+    const unsigned nFlav = 4;
+    const std::string flavNames[nFlav] = {"inclusive", "ee", "em", "mm"};
+
+    const unsigned nDist = histInfo.size(); //number of distributions to plot
     //initialize vector holding all histograms
-    std::vector< std::vector < TH1D* > > hists(nDist, std::vector<TH1D*>(samples.size()) );
-    for(unsigned dist = 0; dist < nDist; ++dist){
-        for(size_t sam = 0; sam < samples.size(); ++sam){
-            hists[dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) ), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist])  + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
+    std::vector< std::vector < std::vector< std::vector< TH1D* > > > > hists(nRuns);
+    for(unsigned run = 0; run < nRuns; ++run){
+        for(unsigned flav = 0; flav < nFlav; ++flav){
+            hists[run].push_back(std::vector< std::vector < TH1D* > >() );
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                hists[run][flav].push_back(std::vector < TH1D* >() );
+                for(size_t sam = 0; sam < samples.size(); ++sam){
+                    hists[run][flav][dist].push_back(nullptr);
+                    hists[run][flav][dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + flavNames[flav] + runNames[run] ), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + flavNames[flav] + runNames[run]  + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
+                }
+            }
         }
     }
 
@@ -126,15 +141,16 @@ void treeReader::Analyze(){
             if(lCount < 2) continue;
             //require pt cuts (25, 20) to be passed
             if(!passPtCuts(ind)) continue;
-            //require leading OSSF pair 
-            unsigned flavorComp = dilFlavorComb(ind);
-            if(flavorComp != 0 && flavorComp != 2) continue;
+            //determine flavor compositions
+            unsigned flav = dilFlavorComb(ind) + 1; //reserve 0 for inclusive
+            //determine run perios
+            unsigned run = ewk::runPeriod(_runNb) + 1; //reserve 0 for inclusive
             //loop over leading leptons
             for(unsigned l = 0; l < 2; ++l){
                 double fill[9] = {_3dIPSig[ind[l]], _dxy[ind[l]], _dz[ind[l]], _miniIso[ind[l]], _leptonMva[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsv[ind[l]], (double) _selectedTrackMult[ind[l]]};
                 //fill histograms
                 for(unsigned dist = 0; dist < 9; ++dist){
-                    hists[dist][sam]->Fill(fill[dist], weight);
+                    hists[run][flav][dist][sam]->Fill(fill[dist], weight);
                 }
             }
             //make lorentzvectors for leptons
@@ -142,14 +158,19 @@ void treeReader::Analyze(){
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
             double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) nJets(), (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
             for(unsigned dist = 9; dist < nDist; ++dist){
-                hists[dist][sam]->Fill(fill[dist - 9], weight);
+                hists[run][flav][dist][sam]->Fill(fill[dist - 9], weight);
             }
         }
         //set histograms to 0 if negative
-        for(unsigned dist = 0; dist < nDist; ++dist){
-            tools::setNegativeZero(hists[dist][sam]);
-        }	
+        for(unsigned run = 0; run < nRuns; ++run){
+            for(unsigned flav = 0; flav < nFlav; ++flav){
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    tools::setNegativeZero(hists[run][flav][dist][sam]);
+                }	
+            }
+        }
     }
+    /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"obs.", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
     std::vector< std::vector <TH1D*> > mergedHists;
@@ -169,6 +190,7 @@ void treeReader::Analyze(){
         plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist]), "ewkinoDilep", false, true);             //linear plots
         plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist]) + "_log", "ewkinoDilep", true, true);     //log plots
     }
+    */
 }
 
 int main(){
