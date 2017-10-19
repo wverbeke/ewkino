@@ -61,7 +61,7 @@ void treeReader::Analyze(){
         std::make_tuple("closestJetCsv", "closest jet CSV", 100, 0, 1),
         std::make_tuple("chargedTrackMult", "closest jet track multiplicity", 20, 0, 20),
         std::make_tuple("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
-        std::make_tuple("mll", "M_{ll} (GeV)", 200, 0, 200),
+        std::make_tuple("mll", "M_{ll} (GeV)", 200, 12, 200),
         std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 100, 25, 200),
         std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 100, 15, 150),
         std::make_tuple("nVertex", "number of vertices", 100, 0, 100),
