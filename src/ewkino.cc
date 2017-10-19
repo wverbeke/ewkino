@@ -135,7 +135,7 @@ void treeReader::Analyze(){
             //set flavors (temporary) 
             setFlavors();
             //vector containing good lepton indices
-            std::vector<unsigned> ind;
+            std::vector<unsigned> ind(2);
             //select leptons
             const unsigned lCount = selectLep(ind);
             if(lCount < 2) continue;
@@ -151,6 +151,9 @@ void treeReader::Analyze(){
                 //fill histograms
                 for(unsigned dist = 0; dist < 9; ++dist){
                     hists[run][flav][dist][sam]->Fill(fill[dist], weight);
+                    hists[run][0][dist][sam]->Fill(fill[dist], _weight);
+                    hists[0][0][dist][sam]->Fill(fill[dist], _weight);
+                    hists[0][flav][dist][sam]->Fill(fill[dist], _weight);
                 }
             }
             //make lorentzvectors for leptons
@@ -159,6 +162,9 @@ void treeReader::Analyze(){
             double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) nJets(), (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
             for(unsigned dist = 9; dist < nDist; ++dist){
                 hists[run][flav][dist][sam]->Fill(fill[dist - 9], weight);
+                hists[run][0][dist][sam]->Fill(fill[dist - 9], weight);
+                hists[0][0][dist][sam]->Fill(fill[dist - 9], weight);
+                hists[0][flav][dist][sam]->Fill(fill[dist - 9], weight);
             }
         }
         //set histograms to 0 if negative
@@ -170,27 +176,33 @@ void treeReader::Analyze(){
             }
         }
     }
-    /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"obs.", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
-    std::vector< std::vector <TH1D*> > mergedHists;
-    for(unsigned dist = 0; dist < nDist; ++dist){
-        mergedHists.push_back(std::vector<TH1D*>());
-        for(size_t m = 0, sam = 0; m < proc.size(); ++m){
-            mergedHists[dist].push_back((TH1D*) hists[dist][sam]->Clone());
-            while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
-                mergedHists[dist][m]->Add(hists[dist][sam + 1]);
-                ++sam;
+    std::vector< std::vector <std::vector < std::vector<TH1D*> > > > mergedHists(nRuns);
+    for(unsigned run = 0; run < nRuns; ++run){
+        for(unsigned flav = 0; flav < nFlav; ++flav){
+            mergedHists[run].push_back(std::vector< std::vector <TH1D*> >() );
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                mergedHists[run][flav].push_back(std::vector<TH1D*>(proc.size()) );
+                for(size_t m = 0, sam = 0; m < proc.size(); ++m){
+                    while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
+                        mergedHists[run][flav][dist][m]->Add(hists[run][flav][dist][sam + 1]);
+                        ++sam;
+                    }
+                    ++sam;
+                }
             }
-            ++sam;
         }
     }
     //plot all distributions
-    for(unsigned dist = 0; dist < nDist; ++dist){
-        plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist]), "ewkinoDilep", false, true);             //linear plots
-        plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist]) + "_log", "ewkinoDilep", true, true);     //log plots
+    for(unsigned run = 0; run < nRuns; ++run){
+        for(unsigned flav = 0; flav < nFlav; ++flav){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run], "ewkinoDilep", false, true);             //linear plots
+                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run] + "_log", "ewkinoDilep", true, true);     //log plots
+            }
+        }
     }
-    */
 }
 
 int main(){
