@@ -226,7 +226,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
                 minimum = bkgTotE->GetBinContent(b);
             }
         }
-        double SF = log10(std::max(10., totalMax/minimum));
+        double SF = 5*log10(std::max(10., totalMax/minimum));
         bkgTotE->SetMinimum(minimum/5.);
         bkgTotE->SetMaximum(totalMax*3*SF);
         //hack not to draw 0 observed event points
