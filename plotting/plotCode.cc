@@ -54,8 +54,8 @@ Color_t bkgColorEWK(const std::string& bkgName){
 
 Color_t bkgColorEWKDilept(const std::string bkgName){
     if(bkgName == "DY") return kAzure + 1;
-    else if(bkgName == "TT + Jets") return kCyan + 1;
-    else if(bkgName == "VV") return kRed - 7;
+    else if(bkgName == "TT + Jets") return kRed - 7;
+    else if(bkgName == "VV") return kCyan + 1;
     else if(bkgName == "WJets") return kOrange;
     else if(bkgName == "TT + X") return kGreen + 1;
     else if(bkgName == "T + X") return kMagenta -7;
@@ -333,10 +333,12 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     c->SaveAs((const TString&) "plots/" + file + ".png");
     
     //Clean up memory 
+    /*
     delete dataGraph;
     delete obsRatio;
     delete bkgStatErrors;
     delete c;
     delete p1;
     delete p2;
+    */
 }
