@@ -18,6 +18,7 @@
 //include other parts of the code
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
+#include "../interface/ewkinoTools.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -103,7 +104,7 @@ void treeReader::Analyze(){
         long unsigned nEntries = sampleTree->GetEntries();
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries/10; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
