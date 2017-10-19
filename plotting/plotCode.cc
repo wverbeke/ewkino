@@ -101,7 +101,7 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
     }
 }
 
-void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, TH1D** bkgSyst){
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D** bkgSyst){
     //set background histogram colors
     for(unsigned h = 0; h < nBkg; ++h){
         StackCol(bkg[h], bkgColor(names[h + 1], analysis) ); //first name is data
@@ -247,7 +247,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     gPad->RedrawAxis();
 
     //draw CMS header
-    drawLumi(p1);
+    if(header == "") drawLumi(p1);
+    else drawLumi(p1, "Preliminary", (const TString&) header);
 
     //make ratio plot in second pad
     c->cd(); 

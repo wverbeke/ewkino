@@ -202,11 +202,12 @@ void treeReader::Analyze(){
         }
     }
     //plot all distributions
+    const std::string runString[nRuns] = {"", "2017 Run A", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
     for(unsigned run = 0; run < nRuns; ++run){
         for(unsigned flav = 0; flav < nFlav; ++flav){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run], "ewkinoDilep", false, true);             //linear plots
-                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run] + "_log", "ewkinoDilep", true, true);     //log plots
+                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run], "ewkinoDilep", false, true, runString[run]);             //linear plots
+                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run] + "_log", "ewkinoDilep", true, true, runString[run]);     //log plots
             }
         }
     }

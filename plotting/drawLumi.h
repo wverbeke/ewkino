@@ -4,15 +4,9 @@
 #include "TLatex.h"
 #include "TLine.h"
 
-//void drawLumi(TPad*, const TString& extraText = "Preliminary", const bool data = true);
-void drawLumi(TPad*, const TString& extraText = "", const bool data = true);
+void drawLumi(TPad*, const TString& extraText = "Preliminary", const TString& lumiText = "18.9 fb^{-1} (13 TeV)");
 
-void drawLumi(TPad* pad, const TString& extraText, const bool data){
-	TString lumiText;
-	if(data) lumiText = "35.9 fb^{-1} (13 TeV)";
-	else lumiText = "(13 TeV)";
-	//const float H = pad->GetWh();
-  	//const float W = pad->GetWw();
+void drawLumi(TPad* pad, const TString& extraText, const TString& lumiText){
   	const float l = pad->GetLeftMargin();
   	const float t = pad->GetTopMargin();
   	const float r = pad->GetRightMargin();
@@ -21,8 +15,8 @@ void drawLumi(TPad* pad, const TString& extraText, const bool data){
 	float CMSTextSize = pad->GetTopMargin()*0.8;
 	float lumiTextSize = pad->GetTopMargin()*0.6;
 
-	float CMSTextOffset = pad->GetTopMargin()*0.2; //0.7
-	float lumiTextOffset = pad->GetTopMargin()*0.2; //0.7
+	float CMSTextOffset = pad->GetTopMargin()*0.2;
+	float lumiTextOffset = pad->GetTopMargin()*0.2;
 	
 	pad->cd();
 	//Define latex text to draw on plot
@@ -35,17 +29,16 @@ void drawLumi(TPad* pad, const TString& extraText, const bool data){
 	latex.SetTextAlign(11); 
 	latex.SetTextSize(CMSTextSize);
 	const float cmsX = latex.GetXsize();
-	//latex.DrawLatex(l,1-t+lumiTextOffset*t,"CMS");
 	latex.DrawLatex(l,1  -t + lumiTextOffset,"CMS");
 
 	const float extraTextSize = CMSTextSize*0.76;	 
 	latex.SetTextFont(52);
 	latex.SetTextSize(extraTextSize);
 	latex.SetTextAlign(11);
-	latex.DrawLatex(l + 1.2*cmsX, 1-t+lumiTextOffset, extraText); //relPosX*(1-l-r)
+	latex.DrawLatex(l + 1.2*cmsX, 1-t+lumiTextOffset, extraText);
 
 	latex.SetTextFont(42);
-	latex.SetTextAlign(31); //31
+	latex.SetTextAlign(31);
 	latex.SetTextSize(lumiTextSize);  
 	latex.DrawLatex(1-r,1-t+lumiTextOffset,lumiText);
 	return;
