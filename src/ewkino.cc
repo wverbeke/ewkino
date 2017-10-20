@@ -125,7 +125,7 @@ void treeReader::Analyze(){
         long unsigned nEntries = sampleTree->GetEntries();
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries/100; ++it){
+        for(long unsigned it = 0; it < nEntries; ++it){
             //if(it%100 != 0) continue;
             //print progress bar	
             if(it%100 == 0 && it != 0){
@@ -155,6 +155,14 @@ void treeReader::Analyze(){
             if((lepV[0] + lepV[1]).M() < 12) continue;
             //determine flavor compositions
             unsigned flav = dilFlavorComb(ind) + 1; //reserve 0 for inclusive
+
+            //Extra category selection: for DY select onZ, for ttbar select 1 b-jet 2-jets
+            if(flav == 1 || flav == 3){ //OSSF
+                if(fabs((lepV[0] + lepV[1]).M() - 91) > 15) continue;
+            } else if(flav == 2){
+                if(nJets() < 2 || nBJets() < 1) continue;
+            }
+
             //determine run perios
             unsigned run;
             if(sam == 0) run = ewk::runPeriod(_runNb) + 1; //reserve 0 for inclusive
