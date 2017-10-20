@@ -16,7 +16,6 @@
 #include <memory>
 
 //include other parts of the code
-#include "../plotting/tdrstyle.h"
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 
