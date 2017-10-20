@@ -100,7 +100,7 @@ void treeReader::Analyze(){
     }
 
     //tweakable options
-    const double DataLuminosity = 18.90; //21.15; //in units of 1/fb
+    const double DataLuminosity = 21.15; //24.92 //in units of 1/fb
     const TString extra = ""; //for plot names
 
     //loop over all samples 
@@ -218,7 +218,7 @@ void treeReader::Analyze(){
         }
     }
     //plot all distributions
-    const std::string runString[nRuns] = {"", "2017 Run A", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
+    const std::string runString[nRuns] = {"21.2 fb^{-1} (13 TeV)", "2017 Run A", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
     const std::string flavString[nFlav] = {"", "ee : ", "e#mu : ", "#mu#mu : "};
     for(unsigned run = 0; run < nRuns; ++run){
         for(unsigned flav = 0; flav < nFlav; ++flav){
