@@ -33,6 +33,7 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
     for(unsigned l = 0; l < _nLight; ++l){
         if(_lEwkLoose[l]){
             if(_lFlavor[l] == 0 && !_lElectronPassEmu[l]) continue;
+            else if(_lFlavor[l] == 1 && !_lPOGMedium[l]) continue;
             ++lCount;
             ptMap.push_back({_lPt[l], l});
         }
