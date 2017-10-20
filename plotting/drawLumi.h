@@ -4,7 +4,7 @@
 #include "TLatex.h"
 #include "TLine.h"
 
-void drawLumi(TPad*, const TString& extraText = "Preliminary", const TString& lumiText = "18.9 fb^{-1} (13 TeV)");
+void drawLumi(TPad*, const TString& extraText = "Preliminary", const TString& lumiText = "21.2 fb^{-1} (13 TeV)");
 
 void drawLumi(TPad* pad, const TString& extraText, const TString& lumiText){
   	const float l = pad->GetLeftMargin();
