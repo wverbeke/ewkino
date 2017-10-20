@@ -10,7 +10,7 @@ fillJob(){
     echo "name=${name}.root" >> $2
     echo "if [ ! -d ~/Work/ntuples_ewkino ]" >> $2
     echo "    then mkdir ~/Work/ntuples_ewkino" >> $2
-    echo "fi \n" >> $2
+    echo "fi" >> $2
     echo "if [ -f ~/Work/ntuples_ewkino/$name ]" >> $2
     echo "    then rm ~/Work/ntuples_ewkino/$name" >> $2
     echo "fi" >> $2
