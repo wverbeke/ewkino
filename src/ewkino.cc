@@ -179,7 +179,7 @@ void treeReader::Analyze(){
                     }
                 }
             }
-            double fill[nDist - 9] = {0, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) nJets(), (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
+            double fill[nDist - 9] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) nJets(), (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
             for(unsigned dist = 9; dist < nDist; ++dist){
                 for(unsigned r = 0; r < nRuns; ++r){
                     if(sam != 0 || r == run || r == 0){
