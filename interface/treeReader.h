@@ -344,11 +344,11 @@ class treeReader {
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned);
         bool passPtCuts(const std::vector<unsigned>&);
         bool jetIsClean(const unsigned);
-        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0);
-        unsigned nJets(const unsigned unc = 0);
-        bool bTaggedDeepCSV(const unsigned);
-        bool bTaggedCSVv2(const unsigned);
-        unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true);
+        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true);
+        unsigned nJets(const unsigned unc = 0, const bool clean = true);
+        bool bTaggedDeepCSV(const unsigned unc, const unsigned wp = 1);
+        bool bTaggedCSVv2(const unsigned uncm, const unsigned wp = 1);
+        unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
         //Temporary function to patch buggy trees
         void setFlavors();
 };

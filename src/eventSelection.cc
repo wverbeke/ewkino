@@ -74,7 +74,7 @@ bool treeReader::jetIsClean(const unsigned ind){
     return true;
 }
 
-bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc){
+bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean){
     if(fabs(_jetEta[ind]) > 2.4) return false;
     switch(unc){
         case 0: if(_jetPt[ind] < ptCut) return false;
@@ -84,33 +84,33 @@ bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsig
         case 4: if(_jetPt_JERUp[ind] < ptCut) return true;
         default: ;
     }
-    return jetIsClean(ind);
+    return !clean || jetIsClean(ind);
 }
 
-unsigned treeReader::nJets(const unsigned unc){
+unsigned treeReader::nJets(const unsigned unc, const bool clean){
     unsigned nJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 30, unc)) ++nJets;
+        if(jetIsGood(j, 30, unc, clean)) ++nJets;
     }
     return nJets;
 }
 
-bool treeReader::bTaggedDeepCSV(const unsigned ind){
-    static const unsigned bTagWP = 0.6324;
-    return (_jetDeepCsv_b[ind] + _jetDeepCsv_bb[ind]) > bTagWP;
+bool treeReader::bTaggedDeepCSV(const unsigned ind, const unsigned wp){
+    static const double bTagWP[3] = {0.2219, 0.6324,  0.8958};
+    return (_jetDeepCsv_b[ind] + _jetDeepCsv_bb[ind]) > bTagWP[wp];
 }
 
-bool treeReader::bTaggedCSVv2(const unsigned ind){
-    static const unsigned bTagWP = 0.8484;
-    return _jetCsvV2[ind] > bTagWP;
+bool treeReader::bTaggedCSVv2(const unsigned ind, const unsigned wp){
+    static const double bTagWP[3] = {0.5426, 0.8484, 0.9535};
+    return _jetCsvV2[ind] > bTagWP[wp];
 }
 
-unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV){
+unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp){
     unsigned nbJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 25, unc)){
-            if(deepCSV && bTaggedDeepCSV(j)) ++nbJets;
-            else if(bTaggedCSVv2(j)) ++nbJets;
+        if(jetIsGood(j, 25, unc, clean)){
+            if(deepCSV && bTaggedDeepCSV(j, wp)) ++nbJets;
+            else if(bTaggedCSVv2(j, wp)) ++nbJets;
         }
     }
     return nbJets;
