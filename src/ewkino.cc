@@ -158,8 +158,10 @@ void treeReader::Analyze(){
 
             //Extra category selection: for DY select onZ, for ttbar select 1 b-jet 2-jets
             if(flav == 1 || flav == 3){ //OSSF
-                if(fabs((lepV[0] + lepV[1]).M() - 91) > 15) continue;
+                if(fabs((lepV[0] + lepV[1]).M() - 91) > 10) continue;
+                if(nBJets(0,  true, false, 0) != 0) continue;
             } else if(flav == 2){
+                if(_met < 50) continue;
                 if(nJets() < 2 || nBJets() < 1) continue;
             }
 
