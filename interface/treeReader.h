@@ -333,7 +333,7 @@ class treeReader {
         void Analyze();
         void Loop(const std::string& sample, const double xSection);
         void setOutputTree(TTree*, const bool isData = false);
-        void skimTree(const std::string&, std::string = "", const bool isData = false);//std::string outputFileName = "");
+        void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);//std::string outputFileName = "");
         void combinePD(const std::vector<std::string>& datasets, std::string outputDirectory = "");
 
         //functions for event selection()
