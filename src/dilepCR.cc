@@ -36,17 +36,7 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    std::ifstream file("samples.txt");
-    std::string line;
-    std::vector<std::tuple<std::string, std::string, double> > samples;
-    while(std::getline(file, line)){	
-        samples.push_back(tools::readSampleLine(line));
-    }
-    //Always close file after usage
-    file.close();
-    for( auto it = samples.cbegin(); it != samples.cend(); ++it){
-        std::cout << std::get<0>(*it) << "     " << std::get<1>(*it) << "      " << std::get<2>(*it) << std::endl;
-    }	
+    readSamples("samples.txt");
     //info on kinematic distributions to plot
     std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfo;
     //name      xlabel    nBins,  min, max
@@ -117,7 +107,7 @@ void treeReader::Analyze(){
             delete _hCounter;
         }
         std::shared_ptr<TTree> sampleTree = std::shared_ptr<TTree> ( (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree")) );
-        Init(sampleTree.get(), sam == 0); //don't store generator info for data ( first entry )
+        initTree(sampleTree.get(), sam == 0); //don't store generator info for data ( first entry )
 
         double scale;
         if(sam != 0) scale = std::get<2>(samples[sam])*DataLuminosity*1000/(hCounter);

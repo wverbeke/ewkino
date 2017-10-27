@@ -32,7 +32,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     }
     //Get Tree
     TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
-    Init(sampleTree, isData);
+    initTree(sampleTree, isData);
     outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_temp/" : outputDirectory;
     std::string outputFileName = fileName;
     /*

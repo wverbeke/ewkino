@@ -1,21 +1,55 @@
-#include "../interface/treeReader.h"
+#include <iostream>
+#include <fstream>
 
-treeReader::treeReader(TTree *tree) : fChain(0) 
+#include "../interface/treeReader.h"
+#include "../interface/analysisTools.h"
+
+treeReader::treeReader(TTree *tree) : fChain(nullptr) 
 {
-    // if parameter tree is not specified (or zero), connect the file
-    // used to generate this class and read the Tree.
     if (tree != nullptr){
-        Init(tree);
+        initTree(tree);
     }
 }
 
-Int_t treeReader::GetEntry(Long64_t entry)
-{
-    if (!fChain) return 0;
-    return fChain->GetEntry(entry);
+void treeReader::readSamples(const std::string& list){
+    samples.clear();    //clear current sample list
+    //read samples and cross sections from txt file
+    std::ifstream file(list);
+    std::string line;
+    while(std::getline(file, line)){
+        samples.push_back(tools::readSampleLine(line));
+    }
+    file.close();       //close file after usage
+    for( auto it = samples.cbegin(); it != samples.cend(); ++it){
+        std::cout << std::get<0>(*it) << "     " << std::get<1>(*it) << "      " << std::get<2>(*it) << std::endl;
+    }
 }
 
-void treeReader::Init(TTree *tree, const bool isData)
+void treeReader::initSample(){
+    const bool isData = (currentSample == 0);
+    sampleFile = std::make_shared<TFile>("../../ntuples_ewkino/"+ (const TString&) std::get<1>(samples[currentSample]),"read"); 
+    sampleFile->cd("blackJackAndHookers");
+    fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
+    initTree(fChain, isData);
+    nEntries = fChain->GetEntries();
+    if(!isData){
+        TH1D* hCounter = new TH1D("hCounter", "Events counter", 1, 0, 1);
+        scale = std::get<2>(samples[currentSample])*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
+        delete hCounter;
+    }
+    ++currentSample;    //increment the current sample for the next iteration
+}
+
+void treeReader::GetEntry(long unsigned entry)
+{
+    if (!fChain) return;
+    fChain->GetEntry(entry);
+    //Set up correct weights
+    if(currentSample != 0) weight = _weight*scale; //MC
+    else weight = 1;                               //data
+}
+
+void treeReader::initTree(TTree *tree, const bool isData)
 {
     // Set branch addresses and branch pointers
     if (!tree) return;

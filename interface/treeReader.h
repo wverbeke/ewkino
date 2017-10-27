@@ -15,9 +15,6 @@
 
 class treeReader {
     public :
-        TTree          *fChain;
-        Int_t           fCurrent;
-
         //Declare leaf types
         static const unsigned nL_max = 10;
         static const unsigned nJets_max = 20;
@@ -174,6 +171,52 @@ class treeReader {
         Double_t        _metPhiUnclDown;
         Double_t        _metPhiUnclUp;       
 
+
+        //Constructor
+        treeReader(TTree *tree = nullptr);
+
+        //set up tree for reading and writing
+        void initTree(TTree *tree, const bool isData = false);
+        void setOutputTree(TTree*, const bool isData = false);
+
+        //skim tree
+        void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
+        void combinePD(const std::vector<std::string>& datasets, std::string outputDirectory = "");
+
+        //set up tree for analysis
+        void readSamples(const std::string& list = ""); //read sample list from file
+        void initSample();
+
+        //functions to analyze tree
+        void GetEntry(long unsigned entry);
+        void Analyze();
+        void Loop(const std::string& sample, const double xSection);
+
+        //functions for event selection
+        unsigned dilFlavorComb(const std::vector<unsigned>&);
+        double coneCorr(const unsigned);
+        void setConePt();
+        unsigned selectLep(std::vector<unsigned>&);
+        unsigned tightLepCount(const std::vector<unsigned>&, const unsigned);
+        bool passPtCuts(const std::vector<unsigned>&);
+        bool jetIsClean(const unsigned);
+        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true);
+        unsigned nJets(const unsigned unc = 0, const bool clean = true);
+        bool bTaggedDeepCSV(const unsigned unc, const unsigned wp = 1);
+        bool bTaggedCSVv2(const unsigned uncm, const unsigned wp = 1);
+        unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
+        //Temporary function to patch buggy trees
+        void setFlavors();
+    private:
+        TTree* fChain;                                                          //current Tree
+        std::shared_ptr<TFile> sampleFile;                                      //current sample
+        std::vector<std::tuple<std::string, std::string, double> > samples;     //list of samples
+        unsigned currentSample = 0;                                             //current index in list
+        double scale = 0;
+        double weight = 1;                                                      //weight of given event
+        unsigned long nEntries = 0;
+        const double dataLumi = 29.55;                                          //in units of 1/fb
+
         // List of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   
@@ -325,31 +368,5 @@ class treeReader {
         TBranch        *b__metPhiJECUp;   
         TBranch        *b__metPhiUnclDown;   
         TBranch        *b__metPhiUnclUp;   
-
-        treeReader(TTree *tree = nullptr);
-        Int_t GetEntry(Long64_t entry);
-        //Long64_t LoadTree(Long64_t entry);
-        void Init(TTree *tree, const bool isData = false);
-        void Analyze();
-        void Loop(const std::string& sample, const double xSection);
-        void setOutputTree(TTree*, const bool isData = false);
-        void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);//std::string outputFileName = "");
-        void combinePD(const std::vector<std::string>& datasets, std::string outputDirectory = "");
-
-        //functions for event selection()
-        unsigned dilFlavorComb(const std::vector<unsigned>&);
-        double coneCorr(const unsigned);
-        void setConePt();
-        unsigned selectLep(std::vector<unsigned>&);
-        unsigned tightLepCount(const std::vector<unsigned>&, const unsigned);
-        bool passPtCuts(const std::vector<unsigned>&);
-        bool jetIsClean(const unsigned);
-        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true);
-        unsigned nJets(const unsigned unc = 0, const bool clean = true);
-        bool bTaggedDeepCSV(const unsigned unc, const unsigned wp = 1);
-        bool bTaggedCSVv2(const unsigned uncm, const unsigned wp = 1);
-        unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
-        //Temporary function to patch buggy trees
-        void setFlavors();
 };
 #endif
