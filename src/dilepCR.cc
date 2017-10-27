@@ -95,28 +95,10 @@ void treeReader::Analyze(){
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        //read info from tree
-        std::shared_ptr<TFile> sampleFile= std::make_shared<TFile>("../../ntuples_ewkino/"+ (const TString&) std::get<1>(samples[sam]),"read");
-        sampleFile->cd("blackJackAndHookers");
-        //determine hcounter for cross section scaling
-        double hCounter;
-        if(sam != 0){
-            TH1D* _hCounter = new TH1D("hCounter", "Events counter", 5,0,5);
-            _hCounter->Read("hCounter");
-            hCounter = _hCounter->GetBinContent(1);
-            delete _hCounter;
-        }
-        std::shared_ptr<TTree> sampleTree = std::shared_ptr<TTree> ( (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree")) );
-        initTree(sampleTree.get(), sam == 0); //don't store generator info for data ( first entry )
-
-        double scale;
-        if(sam != 0) scale = std::get<2>(samples[sam])*DataLuminosity*1000/(hCounter);
-        //find number of entries in sample
-        long unsigned nEntries = sampleTree->GetEntries();
+        initSample();
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
-            //if(it%100 != 0) continue;
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -125,7 +107,7 @@ void treeReader::Analyze(){
                 progress = 1.;
                 tools::printProgress(progress);
             }
-            sampleTree->GetEntry(it);
+            GetEntry(it);
             double weight;
             if(sam == 0) weight = 1;
             else weight = scale*_weight;	
