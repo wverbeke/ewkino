@@ -38,7 +38,7 @@ class treeReader {
         Double_t        _gen_lEta[gen_nL_max];   
         Double_t        _gen_lPhi[gen_nL_max];   
         Double_t        _gen_lE[gen_nL_max];   
-        UChar_t         _gen_lFlavor[gen_nL_max];   
+        UInt_t          _gen_lFlavor[gen_nL_max];   
         Int_t           _gen_lCharge[gen_nL_max];   
         Int_t           _gen_lMomPdg[gen_nL_max];   
         Bool_t          _gen_lIsPrompt[gen_nL_max];   
@@ -109,7 +109,7 @@ class treeReader {
         Double_t        _lEtaSC[nL_max];   
         Double_t        _lPhi[nL_max];   
         Double_t        _lE[nL_max];   
-        UChar_t         _lFlavor[nL_max];   
+        UInt_t          _lFlavor[nL_max];   
         Int_t           _lCharge[nL_max];   
         Double_t        _dxy[nL_max];   
         Double_t        _dz[nL_max];   
@@ -161,7 +161,7 @@ class treeReader {
         Double_t        _jetDeepCsv_b[nJets_max];   
         Double_t        _jetDeepCsv_c[nJets_max];   
         Double_t        _jetDeepCsv_bb[nJets_max];   
-        Double_t        _jetHadronFlavor[nJets_max];   
+        UInt_t          _jetHadronFlavor[nJets_max];   
         UInt_t          _jetId[nJets_max];   
         Double_t        _met;
         Double_t        _metJECDown;
@@ -326,7 +326,7 @@ class treeReader {
         TBranch        *b__metPhiUnclDown;   
         TBranch        *b__metPhiUnclUp;   
 
-        treeReader(TTree *tree=0);
+        treeReader(TTree *tree = nullptr);
         Int_t GetEntry(Long64_t entry);
         //Long64_t LoadTree(Long64_t entry);
         void Init(TTree *tree, const bool isData = false);

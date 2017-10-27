@@ -4,7 +4,7 @@ treeReader::treeReader(TTree *tree) : fChain(0)
 {
     // if parameter tree is not specified (or zero), connect the file
     // used to generate this class and read the Tree.
-    if (tree != 0){
+    if (tree != nullptr){
         Init(tree);
     }
 }
@@ -20,7 +20,6 @@ void treeReader::Init(TTree *tree, const bool isData)
     // Set branch addresses and branch pointers
     if (!tree) return;
     fChain = tree;
-    fCurrent = -1;
     fChain->SetMakeClass(1);
 
     fChain->SetBranchAddress("_runNb", &_runNb, &b__runNb);
@@ -264,7 +263,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_lEtaSC",                       &_lEtaSC,                       "_lEtaSC[_nLight]/D");
     outputTree->Branch("_lPhi",                         &_lPhi,                         "_lPhi[_nL]/D");
     outputTree->Branch("_lE",                           &_lE,                           "_lE[_nL]/D");
-    outputTree->Branch("_lFlavor",                      &_lFlavor,                      "_lFlavor[_nL]/b");
+    outputTree->Branch("_lFlavor",                      &_lFlavor,                      "_lFlavor[_nL]/i");
     outputTree->Branch("_lCharge",                      &_lCharge,                      "_lCharge[_nL]/I");
     outputTree->Branch("_dxy",                          &_dxy,                          "_dxy[_nL]/D");
     outputTree->Branch("_dz",                           &_dz,                           "_dz[_nL]/D");
@@ -315,7 +314,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_jetDeepCsv_c",              &_jetDeepCsv_c,             "_jetDeepCsv_c[_nJets]/D");
     outputTree->Branch("_jetDeepCsv_bb",             &_jetDeepCsv_bb,            "_jetDeepCsv_bb[_nJets]/D");
     //outputTree->Branch("_jetDeepCsv_cc",             &_jetDeepCsv_cc,            "_jetDeepCsv_cc[_nJets]/D");
-    outputTree->Branch("_jetHadronFlavor",           &_jetHadronFlavor,          "_jetHadronFlavor[_nJets]/D");
+    outputTree->Branch("_jetHadronFlavor",           &_jetHadronFlavor,          "_jetHadronFlavor[_nJets]/i");
     outputTree->Branch("_jetId",                     &_jetId,                    "_jetId[_nJets]/i");
 
     if(!isData){
@@ -332,7 +331,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_gen_lEta",                  &_gen_lEta,                  "_gen_lEta[_gen_nL]/D");
         outputTree->Branch("_gen_lPhi",                  &_gen_lPhi,                  "_gen_lPhi[_gen_nL]/D");
         outputTree->Branch("_gen_lE",                    &_gen_lE,                    "_gen_lE[_gen_nL]/D");
-        outputTree->Branch("_gen_lFlavor",               &_gen_lFlavor,               "_gen_lFlavor[_gen_nL]/b");
+        outputTree->Branch("_gen_lFlavor",               &_gen_lFlavor,               "_gen_lFlavor[_gen_nL]/i");
         outputTree->Branch("_gen_lCharge",               &_gen_lCharge,               "_gen_lCharge[_gen_nL]/I");
         outputTree->Branch("_gen_lMomPdg",               &_gen_lMomPdg,               "_gen_lMomPdg[_gen_nL]/I");
         outputTree->Branch("_gen_lIsPrompt",             &_gen_lIsPrompt,             "_gen_lIsPrompt[_gen_nL]/O");
