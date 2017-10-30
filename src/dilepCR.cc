@@ -22,15 +22,6 @@
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
-//Temporary function to set _flavors correctly as it is buggy
-void treeReader::setFlavors(){
-    for(unsigned l = 0; l < _nL; ++l){
-        if(l < _nMu) _lFlavor[l] = 1;
-        else if(l < _nLight) _lFlavor[l] = 0;
-        else _lFlavor[l] = 2;
-    }
-}
-
 void treeReader::Analyze(){
     //Set CMS plotting style
     setTDRStyle();
@@ -108,8 +99,6 @@ void treeReader::Analyze(){
                 tools::printProgress(progress);
             }
             GetEntry(it);
-            //set flavors (temporary) 
-            setFlavors();
             //vector containing good lepton indices
             std::vector<unsigned> ind;
             //select leptons
