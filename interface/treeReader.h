@@ -197,6 +197,7 @@ class treeReader {
         double coneCorr(const unsigned);
         void setConePt();
         bool lepIsGood(const unsigned);
+        bool lepIsTight(const unsigned);
         unsigned selectLep(std::vector<unsigned>&);
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned);
         bool passPtCuts(const std::vector<unsigned>&);

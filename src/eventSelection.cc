@@ -34,6 +34,10 @@ bool treeReader::lepIsGood(const unsigned l){
     return true;
 }
 
+bool treeReader::lepIsTight(const unsigned l){
+    return _lEwkTight[l];
+}
+
 unsigned treeReader::selectLep(std::vector<unsigned>& ind){
     //setConePt(); REMOVE CONE CORRECTION UNTIL MOVING TO FR
     unsigned lCount = 0;
@@ -55,7 +59,7 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
 unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsigned lCount){
     unsigned tightC = 0; 
     for(unsigned l = 0; l < lCount; ++l){
-        if(_lEwkTight[ind[l]]) ++tightC;
+        if(lepIsTight(l)) ++tightC;
         else return tightC;
     }
     return tightC;
