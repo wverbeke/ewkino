@@ -196,6 +196,7 @@ class treeReader {
         unsigned dilFlavorComb(const std::vector<unsigned>&);
         double coneCorr(const unsigned);
         void setConePt();
+        bool lepIsGood(const unsigned);
         unsigned selectLep(std::vector<unsigned>&);
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned);
         bool passPtCuts(const std::vector<unsigned>&);

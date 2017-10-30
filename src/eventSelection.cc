@@ -26,14 +26,20 @@ void treeReader::setConePt(){
     }
 }
 
+bool treeReader::lepIsGood(const unsigned l){
+    //temporary selection for dileptonCR, update later
+    if(!_lEwkLoose[l]) return false;
+    if(_lFlavor[l] == 0 && !_lElectronPassEmu[l]) return false;
+    if(_lFlavor[l] == 1 && !_lPOGMedium[l]) return false;
+    return true;
+}
+
 unsigned treeReader::selectLep(std::vector<unsigned>& ind){
-    setConePt();
+    //setConePt(); REMOVE CONE CORRECTION UNTIL MOVING TO FR
     unsigned lCount = 0;
     std::vector<std::pair<double, unsigned>> ptMap;
     for(unsigned l = 0; l < _nLight; ++l){
-        if(_lEwkLoose[l]){
-            if(_lFlavor[l] == 0 && !_lElectronPassEmu[l]) continue;
-            else if(_lFlavor[l] == 1 && !_lPOGMedium[l]) continue;
+        if(lepIsGood(l)){
             ++lCount;
             ptMap.push_back({_lPt[l], l});
         }
@@ -65,7 +71,7 @@ bool treeReader::jetIsClean(const unsigned ind){
     TLorentzVector jet;	
     jet.SetPtEtaPhiE(_jetPt[ind], _jetEta[ind], _jetPhi[ind], _jetE[ind]);
     for(unsigned l = 0; l < _nLight; ++l){
-        if(_lEwkLoose[l]){ //TEMPORARY FOR DILEPTON CONTROL REGIONS
+        if(lepIsGood(l)){
             TLorentzVector lep;
             lep.SetPtEtaPhiE(_lPt[l], _lEta[l], _lPhi[l], _lE[l]);
             if(lep.DeltaR(jet) < 0.4) return false;
