@@ -16,7 +16,7 @@
 class treeReader {
     public :
         //Declare leaf types
-        static const unsigned nL_max = 10;
+        static const unsigned nL_max = 20;
         static const unsigned nJets_max = 20;
         static const unsigned gen_nL_max = 20;
         static const unsigned gen_nPh_max = 10;
