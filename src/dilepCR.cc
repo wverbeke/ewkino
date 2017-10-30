@@ -108,9 +108,6 @@ void treeReader::Analyze(){
                 tools::printProgress(progress);
             }
             GetEntry(it);
-            double weight;
-            if(sam == 0) weight = 1;
-            else weight = scale*_weight;	
             //set flavors (temporary) 
             setFlavors();
             //vector containing good lepton indices
@@ -136,13 +133,12 @@ void treeReader::Analyze(){
                 if(_met < 50) continue;
                 if(nJets() < 2 || nBJets() < 1) continue;
             }
-
             //determine run perios
             unsigned run;
             if(sam == 0) run = ewk::runPeriod(_runNb) + 1; //reserve 0 for inclusive
             //loop over leading leptons
             for(unsigned l = 0; l < 2; ++l){
-                double fill[9] = {_3dIPSig[ind[l]], _dxy[ind[l]], _dz[ind[l]], _miniIso[ind[l]], _leptonMva[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsv[ind[l]], (double) _selectedTrackMult[ind[l]]};
+                double fill[9] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _leptonMva[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsv[ind[l]], (double) _selectedTrackMult[ind[l]]};
                 //fill histograms
                 for(unsigned dist = 0; dist < 9; ++dist){
                     for(unsigned r = 0; r < nRuns; ++r){

@@ -212,6 +212,7 @@ class treeReader {
         std::shared_ptr<TFile> sampleFile;                                      //current sample
         std::vector<std::tuple<std::string, std::string, double> > samples;     //list of samples
         unsigned currentSample = 0;                                             //current index in list
+        bool isData = false;
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;

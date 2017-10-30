@@ -26,7 +26,7 @@ void treeReader::readSamples(const std::string& list){
 }
 
 void treeReader::initSample(){
-    const bool isData = (currentSample == 0);
+    isData = (currentSample == 0);
     sampleFile = std::make_shared<TFile>("../../ntuples_ewkino/"+ (const TString&) std::get<1>(samples[currentSample]),"read"); 
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
@@ -34,6 +34,7 @@ void treeReader::initSample(){
     nEntries = fChain->GetEntries();
     if(!isData){
         TH1D* hCounter = new TH1D("hCounter", "Events counter", 1, 0, 1);
+        hCounter->Read("hCounter"); 
         scale = std::get<2>(samples[currentSample])*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
         delete hCounter;
     }
@@ -45,7 +46,7 @@ void treeReader::GetEntry(long unsigned entry)
     if (!fChain) return;
     fChain->GetEntry(entry);
     //Set up correct weights
-    if(currentSample != 0) weight = _weight*scale; //MC
+    if(!isData) weight = _weight*scale; //MC
     else weight = 1;                               //data
 }
 
