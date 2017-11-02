@@ -139,7 +139,9 @@ class treeReader {
         Double_t        _miniIsoCharged[nL_max];   
         Double_t        _ptRel[nL_max];   
         Double_t        _ptRatio[nL_max];   
-        Double_t        _closestJetCsv[nL_max];   
+        Double_t        _closestJetCsvV2[nL_max];
+        Double_t        _closestJetDeepCsv_b[nL_max];
+        Double_t        _closestJetDeepCsv_bb[nL_max];
         UInt_t          _selectedTrackMult[nL_max];   
         Double_t        _muonSegComp[nL_max];   
         Bool_t          _lIsPrompt[nL_max];   
@@ -338,7 +340,9 @@ class treeReader {
         TBranch        *b__miniIsoCharged;   
         TBranch        *b__ptRel;   
         TBranch        *b__ptRatio;   
-        TBranch        *b__closestJetCsv;   
+        TBranch        *b__closestJetCsvV2;
+        TBranch        *b__closestJetDeepCsv_b;
+        TBranch        *b__closestJetDeepCsv_bb;
         TBranch        *b__selectedTrackMult;   
         TBranch        *b__muonSegComp;   
         TBranch        *b__lIsPrompt;   
