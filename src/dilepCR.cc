@@ -81,7 +81,7 @@ void treeReader::Analyze(){
     }
 
     //tweakable options
-    const double DataLuminosity = 21.15; //24.92 //in units of 1/fb
+    const double DataLuminosity = 32.5; //in unints of 1/fb
     const TString extra = ""; //for plot names
 
     //loop over all samples 
@@ -127,7 +127,7 @@ void treeReader::Analyze(){
             if(sam == 0) run = ewk::runPeriod(_runNb) + 1; //reserve 0 for inclusive
             //loop over leading leptons
             for(unsigned l = 0; l < 2; ++l){
-                double fill[9] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _leptonMva[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsv[ind[l]], (double) _selectedTrackMult[ind[l]]};
+                double fill[9] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _leptonMva[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsvV2[ind[l]], (double) _selectedTrackMult[ind[l]]};
                 //fill histograms
                 for(unsigned dist = 0; dist < 9; ++dist){
                     for(unsigned r = 0; r < nRuns; ++r){
@@ -177,7 +177,7 @@ void treeReader::Analyze(){
         }
     }
     //plot all distributions
-    const std::string runString[nRuns] = {"21.2 fb^{-1} (13 TeV)", "2017 Run A", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
+    const std::string runString[nRuns] = {"32.5 fb^{-1} (13 TeV)", "2017 Run A", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
     const std::string flavString[nFlav] = {"", "ee : ", "e#mu : ", "#mu#mu : "};
     for(unsigned run = 0; run < nRuns; ++run){
         for(unsigned flav = 0; flav < nFlav; ++flav){
