@@ -27,7 +27,7 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("samples.txt");
+    readSamples("samples_dilepCR.txt");
     //info on kinematic distributions to plot
     std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfo;
     //name      xlabel    nBins,  min, max
