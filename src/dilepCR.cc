@@ -47,8 +47,8 @@ void treeReader::Analyze(){
         std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 100, 15, 150),
         std::make_tuple("nVertex", "number of vertices", 100, 0, 100),
         std::make_tuple("nJets", "number of jets", 10, 0, 10),
-        std::make_tuple("nBJets_CSVv2", "number of b-jets (CSVv2)", 5, 0, 8),
-        std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 5, 0, 8)
+        std::make_tuple("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
+        std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
     };
 
     //split histograms in run periods
