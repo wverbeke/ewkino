@@ -187,7 +187,7 @@ class treeReader {
 
         //set up tree for analysis
         void readSamples(const std::string& list = ""); //read sample list from file
-        void initSample();
+        void initSample(const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
 
         //functions to analyze tree
         void GetEntry(long unsigned entry);
@@ -218,7 +218,8 @@ class treeReader {
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;
-        const double dataLumi = 29.55;                                          //in units of 1/fb
+        const double lumi2016 = 29.55;                                          //in units of 1/fb
+        const double lumi2017 = 35.867;                 
 
         // List of branches
         TBranch        *b__runNb;   

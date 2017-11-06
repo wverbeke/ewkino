@@ -25,7 +25,7 @@ void treeReader::readSamples(const std::string& list){
     }
 }
 
-void treeReader::initSample(){
+void treeReader::initSample(const unsigned period){                             //0 = 2016, 1 = 2017, > 1 = combined
     isData = (currentSample == 0);
     sampleFile = std::make_shared<TFile>("../../ntuples_ewkino/"+ (const TString&) std::get<1>(samples[currentSample]),"read"); 
     sampleFile->cd("blackJackAndHookers");
@@ -35,6 +35,10 @@ void treeReader::initSample(){
     if(!isData){
         TH1D* hCounter = new TH1D("hCounter", "Events counter", 1, 0, 1);
         hCounter->Read("hCounter"); 
+        double dataLumi;
+        if(period == 0) dataLumi = lumi2016;
+        else if(period == 1) dataLumi = lumi2017;
+        else dataLumi = lumi2016 + lumi2017;
         scale = std::get<2>(samples[currentSample])*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
         delete hCounter;
     }
