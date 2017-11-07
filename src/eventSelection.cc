@@ -118,7 +118,7 @@ bool treeReader::bTaggedCSVv2(const unsigned ind, const unsigned wp){
 unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp){
     unsigned nbJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 25, unc, clean)){
+        if(jetIsGood(j, 25, unc, clean) && fabs(_jetEta[j]) < 2.4){
             if(deepCSV && bTaggedDeepCSV(j, wp)) ++nbJets;
             else if(bTaggedCSVv2(j, wp)) ++nbJets;
         }
