@@ -27,7 +27,7 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("samples_trilep.txt");
+    readSamples("samples.txt");
     //info on kinematic distributions to plot
     std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfo;
     //name      xlabel    nBins,  min, max
@@ -69,7 +69,6 @@ void treeReader::Analyze(){
     }
 
     //tweakable options
-    const double DataLuminosity = 21.15; //24.92 //in units of 1/fb
     const TString extra = ""; //for plot names
 
     //loop over all samples 
