@@ -93,9 +93,12 @@ void treeReader::Analyze(){
             if(lCount != 3) continue;
             //require pt cuts (25, 20) to be passed
             if(!passPtCuts(ind)) continue;
+            //Determine tZq analysis category
+            unsigned cat = tzq::cat(nJets(), nBJets());
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
+            
         }
         //set histograms to 0 if negative
         for(unsigned dist = 0; dist < nDist; ++dist){
