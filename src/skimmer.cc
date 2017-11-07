@@ -65,7 +65,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         sampleTree->GetEntry(it);
         std::vector<unsigned> ind;
         unsigned lCount = selectLep(ind);
-        if(lCount < 2) continue;
+        if(lCount < 3) continue;
         outputTree->Fill();
     }   
     std::cout << std::endl;
