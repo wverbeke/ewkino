@@ -77,11 +77,6 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
     //define all backgrounds and their yields
     card << "---------------------------------------------------------------------------------------- \n";
     if(shapeCard){
-	/*
-	   if(shapeFileName == "") shapeFileName = (std::string) cardName;
-	   shapeFileName = shapeFileName.substr(shapeFileName.find("/") + 1, shapeFileName.length());
-	 */
-	//card << "shapes * * " << shapeFileName + ".root  $PROCESS_$CHANNEL $PROCESS_$CHANNEL_$SYSTEMATIC\n";
 	card << "shapes * * " << shapeFileName + ".root  $PROCESS $PROCESS_$SYSTEMATIC\n";
 	card << "---------------------------------------------------------------------------------------- \n";
     }
@@ -112,15 +107,6 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
     //define sources of systematic uncertainty, what distibution they follow and how large their effect is
     for(unsigned syst = 0; syst < nSyst; ++syst){
 	card << systNames[syst] << "	" << systDist[syst];
-	/*
-	   if(systDist[syst] = "gmN"){
-	   for(unsigned bkg = 0; bkg < nBkg + 1; ++bkg){
-	   if(systUnc[syst][proc] != 0){
-	   card << systDist[syst] << " " << bkgYield[bkg];
-	   }
-	   }
-	   }
-	 */
 	for(unsigned proc = 0; proc < nBkg + 1; ++proc){
 	    card << "	";
 	    if(systUnc[syst][proc] == 0) card << "-";
