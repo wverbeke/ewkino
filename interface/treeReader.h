@@ -195,6 +195,7 @@ class treeReader {
         void Loop(const std::string& sample, const double xSection);
 
         //functions for event selection
+        void orderByPt(std::vector<unsigned>&, const double*, const unsigned);
         unsigned dilFlavorComb(const std::vector<unsigned>&);
         double coneCorr(const unsigned);
         void setConePt();
@@ -205,7 +206,8 @@ class treeReader {
         bool passPtCuts(const std::vector<unsigned>&);
         bool jetIsClean(const unsigned);
         bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true);
-        unsigned nJets(const unsigned unc = 0, const bool clean = true);
+        unsigned nJets(const unsigned unc = 0, const bool clean = true);                                        //without jet pt ordering
+        unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true);         //with jet pt ordering
         bool bTaggedDeepCSV(const unsigned unc, const unsigned wp = 1);
         bool bTaggedCSVv2(const unsigned uncm, const unsigned wp = 1);
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);

@@ -1,5 +1,17 @@
 #include "../interface/treeReader.h"
 
+
+void treeReader::orderByPt(std::vector<unsigned>& ind, const double* pt, const unsigned count){
+    std::vector<std::pair<double, unsigned>> ptMap;
+    for(unsigned p = 0; p < count; ++p){
+        ptMap.push_back({pt[ind[p]], ind[p]});
+    }
+    std::sort(ptMap.begin(), ptMap.end(), [](std::pair<double, unsigned>& p1, std::pair<double, unsigned>& p2){return p1.first > p2.first;} );
+    for(unsigned p = 0; p < count; ++p){
+        ind[p] = ptMap[p].second;
+    }
+}
+
 unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind){
     unsigned flavCount[3] = {0,0,0};
     for(unsigned l = 0; l < 2; ++l) ++flavCount[_lFlavor[ind[l]]];
@@ -40,19 +52,16 @@ bool treeReader::lepIsTight(const unsigned l){
 
 unsigned treeReader::selectLep(std::vector<unsigned>& ind){
     //setConePt(); REMOVE CONE CORRECTION UNTIL MOVING TO FR
+    ind.clear();
     unsigned lCount = 0;
-    std::vector<std::pair<double, unsigned>> ptMap;
     for(unsigned l = 0; l < _nLight; ++l){
         if(lepIsGood(l)){
             ++lCount;
-            ptMap.push_back({_lPt[l], l});
+            ind.push_back(l);
         }
     }
     if(lCount < 2) return 0;
-    std::sort(ptMap.begin(), ptMap.end(), [](std::pair<double, unsigned>& p1, std::pair<double, unsigned>& p2){return p1.first > p2.first;} );
-    for(unsigned l = 0; l < lCount; ++l){
-        ind.push_back(ptMap[l].second);
-    }
+    orderByPt(ind, _lPt, lCount);
     return lCount;	
 }
 
@@ -103,6 +112,19 @@ unsigned treeReader::nJets(const unsigned unc, const bool clean){
     for(unsigned j = 0; j < _nJets; ++j){
         if(jetIsGood(j, 25, unc, clean)) ++nJets;
     }
+    return nJets;
+}
+
+unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, const bool clean){
+    unsigned nJets = 0;
+    jetInd.clear();
+    for(unsigned j = 0; j < _nJets; ++j){
+        if(jetIsGood(j, 30, unc, clean)){
+            ++nJets;
+            jetInd.push_back(nJets);
+        }
+    }
+    orderByPt(jetInd, _jetPt, nJets);
     return nJets;
 }
 
