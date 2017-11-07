@@ -69,12 +69,11 @@ void treeReader::Analyze(){
     }
 
     //tweakable options
-    const double DataLuminosity = 21.15; //24.92 //in units of 1/fb
     const TString extra = ""; //for plot names
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        initSample();
+        initSample(2);          //Use combined 2016 + 2017 luminosity
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
