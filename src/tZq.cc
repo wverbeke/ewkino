@@ -43,8 +43,8 @@ void treeReader::Analyze(){
         std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
         std::make_tuple("jetEta_highestEta", "|#eta| (most forward jet)", 30, 0, 5),
         std::make_tuple("jetEta_leading", "|#eta| (leading jet)", 30, 0, 5),
-        std::make_tuple("jetLeadPt", "P_{T} (leading jet)", 30, 0, 300)
-
+        std::make_tuple("jetLeadPt", "P_{T} (leading jet)", 30, 0, 300),
+        std::make_tuple("jetHighestEtaPt", "P_{T} (most forward het)", 30, 0, 300)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot

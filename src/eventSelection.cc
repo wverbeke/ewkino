@@ -68,6 +68,7 @@ unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsig
 bool treeReader::passPtCuts(const std::vector<unsigned>& ind){
     if(_lPt[ind[0]] < 25) return false;
     if(_lPt[ind[1]] < 15) return false;
+    if(_lPt[ind[0]] < 10) return false;
     return true;
 }
 
@@ -100,7 +101,7 @@ bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsig
 unsigned treeReader::nJets(const unsigned unc, const bool clean){
     unsigned nJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 30, unc, clean)) ++nJets;
+        if(jetIsGood(j, 25, unc, clean)) ++nJets;
     }
     return nJets;
 }
