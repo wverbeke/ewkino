@@ -113,8 +113,10 @@ class treeReader {
         Double_t        _3dIP[nL_max];   
         Double_t        _3dIPSig[nL_max];   
         Float_t         _lElectronMva[nL_max];   
+        Float_t         _lElectronMvaHZZ[nL_max];
         Bool_t          _lElectronPassEmu[nL_max];   
-        Double_t        _leptonMva[nL_max];   
+        Double_t        _leptonMvaSUSY[nL_max];   
+        Double_t        _leptonMvaTTH[nL_max];
         Bool_t          _lHNLoose[nL_max];   
         Bool_t          _lHNFO[nL_max];   
         Bool_t          _lHNTight[nL_max];   
@@ -317,8 +319,10 @@ class treeReader {
         TBranch        *b__3dIP;   
         TBranch        *b__3dIPSig;   
         TBranch        *b__lElectronMva;   
+        TBranch        *b__lElectronMvaHZZ;
         TBranch        *b__lElectronPassEmu;   
-        TBranch        *b__leptonMva;   
+        TBranch        *b__leptonMvaSUSY;
+        TBranch        *b__leptonMvaTTH;
         TBranch        *b__lHNLoose;   
         TBranch        *b__lHNFO;   
         TBranch        *b__lHNTight;   

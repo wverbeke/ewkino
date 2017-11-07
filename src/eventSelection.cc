@@ -39,10 +39,25 @@ void treeReader::setConePt(){
 }
 
 bool treeReader::lepIsGood(const unsigned l){
-    //temporary selection for dileptonCR, update later
-    if(!_lEwkLoose[l]) return false;
-    if(_lFlavor[l] == 0 && !_lElectronPassEmu[l]) return false;
-    if(_lFlavor[l] == 1 && !_lPOGMedium[l]) return false;
+    //ttH FO definition
+    if(_lFlavor[l] == 2) return false;  //don't consider taus here
+    if(_lPt[l] <= 15) return false;
+    if(fabs(_dxy[l]) >= 0.05) return false;
+    if(fabs(_dz[l]) >= 0.1) return false;
+    if(_3dIPSig[l] >= 8) return false;
+    if(_miniIso[l] >= 0.4) return false;
+    if(_closestJetCsvV2[l] >= 0.8484) return false;
+    if(_leptonMvaTTH[l] <= 0.9){
+        if(_ptRatio[l] <= 0.5) return false;
+        if(_closestJetCsvV2[l] >= 0.3) return false;
+        if(_lFlavor[l] == 1 && _muonSegComp[l] <= 0.3) return false; 
+        if(_lFlavor[l] == 0 && _lElectronMvaHZZ[l] <= 0.0 + (fabs(_lEta[l]) >= 0.8)*0.7) return false;
+    }
+    if(_lFlavor[l] == 1){       //specific muon selection
+        if(!_lPOGLoose[l]) return false;
+    } else if(_lFlavor[l] == 0){
+        if(!_lElectronPassEmu[l]) return false;
+    }
     return true;
 }
 
