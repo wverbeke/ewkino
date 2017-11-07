@@ -19,6 +19,7 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 #include "../interface/tZqTools.h"
+#include "../interface/trilepTools.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -73,7 +74,7 @@ void treeReader::Analyze(){
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        initSample();
+        initSample(2);          //Use combined 2016 + 2017 luminosity
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){

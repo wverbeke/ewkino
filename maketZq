@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= src/treeReader.cc src/tZq.cc src/analysisTools.cc src/eventSelection.cc src/tZqTools.cc plotting/plotCode.cc plotting/tdrStyle.cc
+SOURCES= src/treeReader.cc src/tZq.cc src/analysisTools.cc src/eventSelection.cc src/tZqTools.cc src/trilepTools.cc plotting/plotCode.cc plotting/tdrStyle.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= tZq
 
