@@ -32,33 +32,33 @@ void treeReader::Analyze(){
     std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfo;
     //name      xlabel    nBins,  min, max
     histInfo = {
-        std::make_tuple("sip3d", "SIP_{3D}", 100, 0, 8),
-        std::make_tuple("dxy", "|d_{xy}| (cm)", 100, 0, 0.05),
-        std::make_tuple("dz", "|d_{z}| (cm)", 100, 0, 0.1),
-        std::make_tuple("miniIso", "miniIso", 100, 0, 0.4),
-        std::make_tuple("leptonMva", "lepton MVA value", 100, -1, 1),
-        std::make_tuple("ptRel", "P_{T}^{rel} (GeV)", 100, 0, 200),
-        std::make_tuple("ptRatio", "P_{T}^{ratio}", 100, 0, 2),
-        std::make_tuple("closestJetCsv", "closest jet CSV", 100, 0, 1),
-        std::make_tuple("chargedTrackMult", "closest jet track multiplicity", 20, 0, 20),
-        std::make_tuple("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
-        std::make_tuple("mll", "M_{ll} (GeV)", 200, 12, 200),
-        std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 100, 25, 200),
-        std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 100, 15, 150),
-        std::make_tuple("nVertex", "number of vertices", 100, 0, 100),
+        std::make_tuple("leptonMva", "lepton MVA value", 30, -1, 1),
+        std::make_tuple("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
+        std::make_tuple("mll", "M_{ll} (GeV)", 60, 12, 200),
+        std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
+        std::make_tuple("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
+        std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200),
         std::make_tuple("nJets", "number of jets", 10, 0, 10),
-        std::make_tuple("nBJets_CSVv2", "number of b-jets (CSVv2)", 5, 0, 8),
-        std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 5, 0, 8)
+        std::make_tuple("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
+        std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
+        std::make_tuple("jetEta_highestEta", "|#eta| (most forward jet)", 30, 0, 5),
+        std::make_tuple("jetEta_leading", "|#eta| (leading jet)", 30, 0, 5),
+        std::make_tuple("jetLeadPt", "P_{T} (leading jet)", 30, 0, 300)
+
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
+    const unsigned nCat = 6;                //Several categories enriched in different processes
+    const std::string catNames[nCat] = {"0bJets_01Jets", "0bJets_2Jets", "1bJet_0jets", "1bJet_12Jet", "1bJet_3Jet", "2bJets"};
     //initialize vector holding all histograms
-    std::vector< std::vector< TH1D* > > hists;
-    for(unsigned dist = 0; dist < nDist; ++dist){
-        hists.push_back(std::vector < TH1D* >() );
-        for(size_t sam = 0; sam < samples.size(); ++sam){
-            hists[dist].push_back(nullptr);
-            hists[dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist])), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
+    std::vector< std::vector < std::vector< TH1D* > > > hists(nCat);
+    for(unsigned cat = 0; cat < nCat; ++cat){
+        for(unsigned dist = 0; dist < nDist; ++dist){
+            hists.push_back(std::vector < TH1D* >() );
+            for(size_t sam = 0; sam < samples.size(); ++sam){
+                hists[dist].push_back(nullptr);
+                hists[dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist])), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
+            }
         }
     }
 
