@@ -48,16 +48,16 @@ void treeReader::Analyze(){
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
-    const unsigned nCat = 6;                //Several categories enriched in different processes
-    const std::string catNames[nCat] = {"0bJets_01Jets", "0bJets_2Jets", "1bJet_0jets", "1bJet_12Jet", "1bJet_3Jet", "2bJets"};
+    const unsigned nCat = 7;                //Several categories enriched in different processes
+    const std::string catNames[nCat] = {"inclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_0jets", "1bJet_12Jet", "1bJet_3Jet", "2bJets"};
     //initialize vector holding all histograms
     std::vector< std::vector < std::vector< TH1D* > > > hists(nCat);
     for(unsigned cat = 0; cat < nCat; ++cat){
         for(unsigned dist = 0; dist < nDist; ++dist){
-            hists.push_back(std::vector < TH1D* >() );
+            hists[cat].push_back(std::vector < TH1D* >() );
             for(size_t sam = 0; sam < samples.size(); ++sam){
-                hists[dist].push_back(nullptr);
-                hists[dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist])), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
+                hists[cat][dist].push_back(nullptr);
+                hists[cat][dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + catNames[cat]), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + catNames[cat] + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
             }
         }
     }
@@ -94,45 +94,62 @@ void treeReader::Analyze(){
             //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;
             //require presence of OSSF pair
-            if(trilep::flavorChargeComp(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
+            if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
             //require best Z mass to be onZ
             std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, lCount);
             double mll = (lepV[bestZ.first] - lepV[bestZ.second]).M();
-            if( fabs( (mll - 91.1876 ) < 15) continue;
+            if( fabs(mll - 91.1876) < 15) continue;
             //Determine tZq analysis category
-            unsigned cat = tzq::cat(nJets(), nBJets());
+            unsigned tzqCat = tzq::cat(nJets(), nBJets());
             //determine leading jet and leading eta jet
             std::vector<unsigned> jetInd;
+            unsigned jetCount = nJets(jetInd);
+            unsigned highestEtaJ = jetInd[0];
+            for(unsigned j = 1; j < jetCount; ++j){
+                if(fabs(_jetEta[jetInd[j]]) > fabs(_jetEta[highestEtaJ]) ) highestEtaJ = jetInd[j];
+            }
             //distributions to plot
-            double dist[nDist] = {_met,mll, _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], nJets(), nBJets(), nBJets(0, false)};
-            
+            double fill[nDist] = {_met, mll, _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(_jetEta[highestEtaJ]), fabs(_jetEta[jetInd[0]]), _jetPt[jetInd[0]], _jetPt[highestEtaJ]};
+            for(unsigned cat = 0; cat < nCat; ++cat){
+                if(cat == 0 || cat == (tzqCat + 1) ){
+                    for(unsigned dist = 0; dist < nDist; ++dist){
+                        hists[cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
+                    }
+                }
+            }
         }
         //set histograms to 0 if negative
-        for(unsigned dist = 0; dist < nDist; ++dist){
-            tools::setNegativeZero(hists[dist][sam]);
-        }	
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                tools::setNegativeZero(hists[cat][dist][sam]);
+            }	
+        }
     }
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"obs.", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
-    std::vector< std::vector<TH1D*> > mergedHists;
-    for(unsigned dist = 0; dist < nDist; ++dist){
-        mergedHists.push_back(std::vector<TH1D*>(proc.size() ) );
-        for(size_t m = 0, sam = 0; m < proc.size(); ++m){
-            mergedHists[dist][m] = (TH1D*) hists[dist][sam]->Clone();
-            while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
-                mergedHists[dist][m]->Add(hists[dist][sam + 1]);
+    std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nCat);
+    for(unsigned cat = 0; cat < nCat; ++cat){
+        for(unsigned dist = 0; dist < nDist; ++dist){
+            mergedHists[cat].push_back(std::vector<TH1D*>(proc.size() ) );
+            for(size_t m = 0, sam = 0; m < proc.size(); ++m){
+                mergedHists[cat][dist][m] = (TH1D*) hists[cat][dist][sam]->Clone();
+                while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
+                    mergedHists[cat][dist][m]->Add(hists[cat][dist][sam + 1]);
+                    ++sam;
+                }
                 ++sam;
             }
-            ++sam;
         }
     }
     //plot all distributions
-    for(unsigned dist = 0; dist < nDist; ++dist){
-        plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist]), "ewkino", false, true);             //linear plots
-        plotDataVSMC(mergedHists[dist][0], &mergedHists[dist][1], &proc[0], mergedHists[dist].size() - 1, std::get<0>(histInfo[dist])  + "_log", "ewkino", true, true);    //log plots
+    for(unsigned cat = 0; cat < nCat; ++cat){
+        for(unsigned dist = 0; dist < nDist; ++dist){
+            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, std::get<0>(histInfo[dist]), "ewkino", false, true);             //linear plots
+            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, std::get<0>(histInfo[dist])  + "_log", "ewkino", true, true);    //log plots
+        }
     }
 }
 
