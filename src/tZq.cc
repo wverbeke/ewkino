@@ -33,7 +33,6 @@ void treeReader::Analyze(){
     std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfo;
     //name      xlabel    nBins,  min, max
     histInfo = {
-        std::make_tuple("leptonMva", "lepton MVA value", 30, -1, 1),
         std::make_tuple("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
         std::make_tuple("mll", "M_{ll} (GeV)", 60, 12, 200),
         std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
@@ -92,13 +91,23 @@ void treeReader::Analyze(){
             //select leptons
             const unsigned lCount = selectLep(ind);
             if(lCount != 3) continue;
-            //require pt cuts (25, 20) to be passed
+            //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;
-            //Determine tZq analysis category
-            unsigned cat = tzq::cat(nJets(), nBJets());
+            //require presence of OSSF pair
+            if(trilep::flavorChargeComp(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
+            //require best Z mass to be onZ
+            std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, lCount);
+            double mll = (lepV[bestZ.first] - lepV[bestZ.second]).M();
+            if( fabs( (mll - 91.1876 ) < 15) continue;
+            //Determine tZq analysis category
+            unsigned cat = tzq::cat(nJets(), nBJets());
+            //determine leading jet and leading eta jet
+            std::vector<unsigned> jetInd;
+            //distributions to plot
+            double dist[nDist] = {_met,mll, _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], nJets(), nBJets(), nBJets(0, false)};
             
         }
         //set histograms to 0 if negative
