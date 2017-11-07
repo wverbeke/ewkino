@@ -19,6 +19,7 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 #include "../interface/ewkinoTools.h"
+#include "../interface/trilepTools.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
