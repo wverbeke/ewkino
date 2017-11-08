@@ -34,7 +34,7 @@ void treeReader::Analyze(){
     //name      xlabel    nBins,  min, max
     histInfo = {
         std::make_tuple("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
-        std::make_tuple("mll", "M_{ll} (GeV)", 60, 12, 200),
+        std::make_tuple("mll", "M_{ll} (GeV) (GeV)", 60, 12, 200),
         std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
         std::make_tuple("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
         std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200),
@@ -43,8 +43,13 @@ void treeReader::Analyze(){
         std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
         std::make_tuple("jetEta_highestEta", "|#eta| (most forward jet)", 30, 0, 5),
         std::make_tuple("jetEta_leading", "|#eta| (leading jet)", 30, 0, 5),
-        std::make_tuple("jetLeadPt", "P_{T} (leading jet)", 30, 0, 300),
-        std::make_tuple("jetHighestEtaPt", "P_{T} (most forward het)", 30, 0, 300)
+        std::make_tuple("jetLeadPt", "P_{T} (leading jet) (GeV)", 30, 0, 300),
+        std::make_tuple("jetHighestEtaPt", "P_{T} (most forward jet) (GeV)", 30, 0, 300),
+        std::make_tuple("mtop", "M_{W + b} (GeV)", 30, 0, 400),
+        std::make_tuple("taggedBJetPt", "P_{T} (b-jet from top) (GeV)", 30, 0, 300),
+        std::make_tuple("taggedBJetEta", "|#eta| (b-jet from top) (GeV)", 30, 0, 2.5),
+        std::make_tuple("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 0, 300), 
+        std::make_tuple("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 2.5)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -102,17 +107,36 @@ void treeReader::Analyze(){
             std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, lCount);
             double mll = (lepV[bestZ.first] - lepV[bestZ.second]).M();
             if( fabs(mll - 91.1876) < 15) continue;
-            //Determine tZq analysis category
-            unsigned tzqCat = tzq::cat(nJets(), nBJets());
-            //determine leading jet and leading eta jet
-            std::vector<unsigned> jetInd;
+            //make ordered jet and bjet collections
+            std::vector<unsigned> jetInd, bJetInd;
             unsigned jetCount = nJets(jetInd);
+            unsigned bJetCount = nBJets(bJetInd);
+            //find highest eta jet
             unsigned highestEtaJ = jetInd[0];
             for(unsigned j = 1; j < jetCount; ++j){
                 if(fabs(_jetEta[jetInd[j]]) > fabs(_jetEta[highestEtaJ]) ) highestEtaJ = jetInd[j];
             }
+            //Determine tZq analysis category
+            unsigned tzqCat = tzq::cat(jetCount, bJetCount);
+            //make LorentzVector for all jets 
+            TLorentzVector jetV[(const unsigned) _nJets];
+            for(unsigned j = 0; j < _nJets; ++j){
+                jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
+            }
+            //find W lepton 
+            unsigned lw;
+            for(unsigned l = 0; l < lCount; ++l){
+                if( l != bestZ.first && l != bestZ.second ) lw = l;
+            }
+            //make met vector 
+            TLorentzVector met;
+            met.SetPtEtaPhiE(_met, _metPhi, 0, _met);
+            //reconstruct top mass and tag jets
+            std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
+            double mTop = tzq::findMTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
+            
             //distributions to plot
-            double fill[nDist] = {_met, mll, _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(_jetEta[highestEtaJ]), fabs(_jetEta[jetInd[0]]), _jetPt[jetInd[0]], _jetPt[highestEtaJ]};
+            double fill[nDist] = {_met, mll, _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(_jetEta[highestEtaJ]), fabs(_jetEta[jetInd[0]]), _jetPt[jetInd[0]], _jetPt[highestEtaJ], mTop, _jetPt[taggedJetI[0]], fabs(_jetEta[taggedJetI[0]]), _jetPt[taggedJetI[1]], fabs(_jetEta[taggedJetI[1]])};
             for(unsigned cat = 0; cat < nCat; ++cat){
                 if(cat == 0 || cat == (tzqCat + 1) ){
                     for(unsigned dist = 0; dist < nDist; ++dist){
