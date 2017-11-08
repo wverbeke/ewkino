@@ -29,3 +29,11 @@ unsigned trilep::flavorChargeComb(const std::vector<unsigned>& ind, const unsign
     }
     return (1 + !OSOF);     //0 = OSSF, 1 = OSOF, 2 = SSS
 }
+
+std::pair<double, double> neutrinoPZ(const TLorentzVector& wLep, const TLorentzVector& met){
+    static const double mW = 80.385;
+    double mSquared = 0.5*mW*mW + wLep.Pt()*met.Pt()*cos(wLep.Phi() - met.Phi() );
+    double preFac = mSquared/(wLep.Pt() * wLep.Pt());
+    double term2 = wLep.P()*sqrt(1 - met.Pt()*met.Pt()*wLep.Pt()*wLep.Pt()/(mSquared*mSquared) );
+    return {preFac*(wLep.Pz() + term2), preFac*(wLep.Pz() - term2)};
+}
