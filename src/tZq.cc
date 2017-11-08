@@ -168,7 +168,7 @@ void treeReader::Analyze(){
             }
         }
     }
-    const bool isSMSignal[ (const size_t) proc.size() ] = {true, false, false, false, false, false, false};
+    const bool isSMSignal[ (const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     //plot all distributions
     for(unsigned cat = 0; cat < nCat; ++cat){
         for(unsigned dist = 0; dist < nDist; ++dist){
