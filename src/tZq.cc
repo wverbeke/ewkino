@@ -49,7 +49,7 @@ void treeReader::Analyze(){
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
     const unsigned nCat = 7;                //Several categories enriched in different processes
-    const std::string catNames[nCat] = {"inclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_0jets", "1bJet_12Jet", "1bJet_3Jet", "2bJets"};
+    const std::string catNames[nCat] = {"inclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_3Jets", "2bJets"};
     //initialize vector holding all histograms
     std::vector< std::vector < std::vector< TH1D* > > > hists(nCat);
     for(unsigned cat = 0; cat < nCat; ++cat){
