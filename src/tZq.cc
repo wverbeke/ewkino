@@ -153,7 +153,7 @@ void treeReader::Analyze(){
         }
     }
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"obs.", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
+    std::vector<std::string> proc = {"obs.", "tZq", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nCat);
     for(unsigned cat = 0; cat < nCat; ++cat){
         for(unsigned dist = 0; dist < nDist; ++dist){

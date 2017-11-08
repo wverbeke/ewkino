@@ -1,4 +1,5 @@
 obs		data_combined_ewkino.root	
+tZq	    tZq_ll_4f_13TeV-amcatnlo-pythia8.root																					0.0758
 DY		DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root														18610
 DY		DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root															5765.4
 TT		TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root   														 	87.31483776
@@ -23,4 +24,3 @@ ST		ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP
 ST		ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root													35.85
 ST		ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root														35.85
 ST		TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8.root																	2.967
-ST		tZq_ll_4f_13TeV-amcatnlo-pythia8.root																					0.0758
