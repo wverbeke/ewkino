@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <math.h>
 #include <iterator>
+#include <utility>
 //include Root classes
 #include "TCanvas.h"
 #include "TLine.h"
@@ -34,11 +35,23 @@ void HistLabelSizes(TH1D* h, const double xLabel, const double xTitle, const dou
     h->GetYaxis()->SetTitleSize(yTitle);
 }
 //Order an array of histograms by yield
-void yieldOrder(TH1D** hists, const unsigned nHist){
-    std::vector<TH1D*> temp(hists, hists + nHist);
-    std::sort(temp.begin(), temp.end(), [](const TH1D* h1, const TH1D* h2){ return h1->GetSumOfWeights() > h2->GetSumOfWeights(); } );
-    for(unsigned h = 0; h < nHist; ++h){
-        hists[h] = temp[h];
+void yieldOrder(TH1D** hists, const unsigned nHist, const bool* isSMSignal){
+    if(isSMSignal == nullptr){  //No SM signal that has to be stacked on top
+        std::vector<TH1D*> temp(hists, hists + nHist);
+        std::sort(temp.begin(), temp.end(), [](const TH1D* h1, const TH1D* h2){ return h1->GetSumOfWeights() > h2->GetSumOfWeights(); } );
+        for(unsigned h = 0; h < nHist; ++h){
+            hists[h] = temp[h];
+        }
+    } else{
+        std::vector<std::pair < TH1D*, bool > > sigMap(nHist);
+        for(unsigned h = 0; h < nHist; ++h){
+            sigMap[h] = {hists[h], isSMSignal[h]};
+        }
+        std::sort(sigMap.begin(), sigMap.end(), [](const std::pair<TH1D*, bool>& p1, const std::pair<TH1D*, bool>& p2){ return (p1.first)->GetSumOfWeights() > (p2.first)->GetSumOfWeights(); } );
+        std::sort(sigMap.begin(), sigMap.end(), [](const std::pair<TH1D*, bool>& p1, const std::pair<TH1D*, bool>& p2){ return (p1.second) > (p2.second); } );
+        for(unsigned h = 0; h < nHist; ++h){
+            hists[h] = sigMap[h].first;
+        }
     }
 }
 
@@ -101,7 +114,7 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
     }
 }
 
-void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D** bkgSyst){
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal){
     //set background histogram colors
     for(unsigned h = 0; h < nBkg; ++h){
         StackCol(bkg[h], bkgColor(names[h + 1], analysis) ); //first name is data
@@ -169,7 +182,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     legend.AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
     
     //order background histograms by yield
-    yieldOrder(bkgE, nBkg);
+    yieldOrder(bkgE, nBkg, isSMSignal);
 
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");
