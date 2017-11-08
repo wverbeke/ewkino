@@ -14,7 +14,7 @@ unsigned tzq::cat(unsigned nJets, unsigned nBJets){
     }
 }
 
-double tzq::findMTop(const TLorentzVector& wLep, const TLorentzVector& met, std::vector<unsigned>& taggedJetI, const std::vector<unsigned>& jetI, const TLorentzVector* jetV, const std::vector<unsigned>& bJetI){
+double tzq::findMTop(const TLorentzVector& wLep, const TLorentzVector& met, std::vector<unsigned>& taggedJetI, const std::vector<unsigned>& jetI, const std::vector<unsigned>& bJetI, const TLorentzVector* jetV){
     static const double mTop = 173.1;
     std::pair<double, double> pzSol = trilep::neutrinoPZ(wLep, met);
     TLorentzVector neutrinoPlus(met.Px(), met.Py(), pzSol.first, met.Px()*met.Px() + met.Py()*met.Py() + pzSol.first*pzSol.first);
