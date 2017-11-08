@@ -181,8 +181,8 @@ void treeReader::Analyze(){
     for(unsigned run = 0; run < nRuns; ++run){
         for(unsigned flav = 0; flav < nFlav; ++flav){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run], "ewkinoDilep", false, true, flavString[flav] + runString[run]);             //linear plots
-                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run] + "_log", "ewkinoDilep", true, true, flavString[flav] + runString[run]);     //log plots
+                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, "ewkino/dilepCR/" + runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run], "ewkinoDilep", false, true, flavString[flav] + runString[run]);             //linear plots
+                plotDataVSMC(mergedHists[run][flav][dist][0], &mergedHists[run][flav][dist][1], &proc[0], mergedHists[run][flav][dist].size() - 1, "ewkino/dilepCR/" + runNames[run] + "/" + flavNames[flav] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run] + "_log", "ewkinoDilep", true, true, flavString[flav] + runString[run]);     //log plots
             }
         }
     }
