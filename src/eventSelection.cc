@@ -136,7 +136,7 @@ unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, co
     for(unsigned j = 0; j < _nJets; ++j){
         if(jetIsGood(j, 30, unc, clean)){
             ++nJets;
-            jetInd.push_back(nJets);
+            jetInd.push_back(j);
         }
     }
     orderByPt(jetInd, _jetPt, nJets);
@@ -161,5 +161,20 @@ unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool c
             else if(bTaggedCSVv2(j, wp)) ++nbJets;
         }
     }
+    return nbJets;
+}
+
+unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp){
+    unsigned nbJets = 0;
+    bJetInd.clear();
+    for(unsigned j = 0; j < _nJets; ++j){
+        if(jetIsGood(j, 25, unc, clean)){ 
+            if( ( deepCSV && bTaggedDeepCSV(j, wp) ) || ( !deepCSV && bTaggedCSVv2(j, wp) ) ){
+                ++nbJets;
+                bJetInd.push_back(j);
+            }
+        }
+    }
+    orderByPt(bJetInd, _jetPt, nbJets);
     return nbJets;
 }

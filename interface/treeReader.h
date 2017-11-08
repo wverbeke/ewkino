@@ -213,6 +213,7 @@ class treeReader {
         bool bTaggedDeepCSV(const unsigned unc, const unsigned wp = 1);
         bool bTaggedCSVv2(const unsigned uncm, const unsigned wp = 1);
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
+        unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
