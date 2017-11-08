@@ -168,6 +168,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    const bool isSMSignal = {true, false, false, false, false, false, false};
     //plot all distributions
     for(unsigned cat = 0; cat < nCat; ++cat){
         for(unsigned dist = 0; dist < nDist; ++dist){
