@@ -171,8 +171,8 @@ void treeReader::Analyze(){
     //plot all distributions
     for(unsigned cat = 0; cat < nCat; ++cat){
         for(unsigned dist = 0; dist < nDist; ++dist){
-            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, std::get<0>(histInfo[dist]), "ewkino", false, true);             //linear plots
-            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, std::get<0>(histInfo[dist])  + "_log", "ewkino", true, true);    //log plots
+            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + std::get<0>(histInfo[dist]), "ewkino", false, true);             //linear plots
+            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + std::get<0>(histInfo[dist])  + "_log", "ewkino", true, true);    //log plots
         }
     }
 }
