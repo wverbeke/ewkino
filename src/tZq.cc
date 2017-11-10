@@ -34,7 +34,8 @@ void treeReader::Analyze(){
     //name      xlabel    nBins,  min, max
     histInfo = {
         std::make_tuple("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
-        std::make_tuple("mll", "M_{ll} (GeV) (GeV)", 60, 12, 200),
+        std::make_tuple("mll", "M_{ll} (GeV)", 60, 12, 200),
+        std::make_tuple("mt", "M_{T} (GeV)", 30, 0, 300),
         std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
         std::make_tuple("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
         std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200),
@@ -162,7 +163,7 @@ void treeReader::Analyze(){
             }
 
             //distributions to plot
-            double fill[nDist] = {_met, mll, _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(_jetEta[highestEtaJ]), fabs(_jetEta[jetInd[0]]), _jetPt[jetInd[0]], _jetPt[highestEtaJ], mTop, _jetPt[taggedJetI[0]], fabs(_jetEta[taggedJetI[0]]), _jetPt[taggedJetI[1]], fabs(_jetEta[taggedJetI[1]]),
+            double fill[nDist] = {_met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(_jetEta[highestEtaJ]), fabs(_jetEta[jetInd[0]]), _jetPt[jetInd[0]], _jetPt[highestEtaJ], mTop, _jetPt[taggedJetI[0]], fabs(_jetEta[taggedJetI[0]]), _jetPt[taggedJetI[1]], fabs(_jetEta[taggedJetI[1]]),
             (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw] + met).M(),
             (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw]).M(),
             (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
