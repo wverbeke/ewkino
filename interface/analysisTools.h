@@ -6,6 +6,7 @@
 #include<string>
 //include ROOT classes
 #include "TH1D.h"
+#include "TLorentzVector.h"
 
 namespace tools{
     //show progress bar
