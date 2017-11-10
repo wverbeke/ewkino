@@ -97,6 +97,7 @@ void treeReader::Analyze(){
             const unsigned lCount = selectLep(ind);
             if(lCount != 3) continue;
             //require pt cuts (25, 15, 10) to be passed
+            if(tightLepCount(ind) != 3) continue; //require 3 tight leptons
             if(!passPtCuts(ind)) continue;
             //require presence of OSSF pair
             if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
