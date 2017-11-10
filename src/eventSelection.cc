@@ -63,11 +63,11 @@ bool treeReader::lepIsGood(const unsigned l){
 }
 
 bool treeReader::lepIsTight(const unsigned l){
-    if(_closestJetCsvV2[l] >= 0.8484) return fa
+    if(_closestJetCsvV2[l] >= 0.8484) return false;
     if(_lFlavor[l] == 2) return false;
-    else if(l_flavor[l] == 1){
+    else if(_lFlavor[l] == 1){
         if(!_lPOGMedium[l]) return false;
-    else{
+    } else{
         if(!_lElectronPassConvVeto[l]) return false;
     }        
     return _leptonMvaTTH[l] > 0.9;
@@ -98,9 +98,9 @@ unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsig
 }
 
 bool treeReader::passPtCuts(const std::vector<unsigned>& ind){
-    if(_lPt[ind[0]] < 25) return false;
-    if(_lPt[ind[1]] < 15) return false;
-    if(_lPt[ind[0]] < 10) return false;
+    if(_lPt[ind[0]] <= 25) return false;
+    if(_lPt[ind[1]] <= 15) return false;
+    if(_lPt[ind[0]] <= 10) return false;
     return true;
 }
 
@@ -111,14 +111,14 @@ bool treeReader::jetIsClean(const unsigned ind){
         if(lepIsGood(l)){
             TLorentzVector lep;
             lep.SetPtEtaPhiE(_lPt[l], _lEta[l], _lPhi[l], _lE[l]);
-            if(lep.DeltaR(jet) < 0.4) return false;
+            if(lep.DeltaR(jet) <= 0.4) return false;
         }
     }
     return true;
 }
 
 bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean){
-    if(fabs(_jetEta[ind]) > 2.4) return false;
+    //No eta cut applied for jets in this analysis!
     switch(unc){
         case 0: if(_jetPt[ind] < ptCut) return false;
         case 1: if(_jetPt_JECDown[ind] < ptCut) return false;
@@ -176,7 +176,7 @@ unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, 
     unsigned nbJets = 0;
     bJetInd.clear();
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 25, unc, clean)){ 
+        if(jetIsGood(j, 25, unc, clean) && fabs(_jetEta[j]) < 2.4 ){ 
             if( ( deepCSV && bTaggedDeepCSV(j, wp) ) || ( !deepCSV && bTaggedCSVv2(j, wp) ) ){
                 ++nbJets;
                 bJetInd.push_back(j);
