@@ -75,8 +75,8 @@ unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsig
 }
 
 bool treeReader::passPtCuts(const std::vector<unsigned>& ind){
-    if(_lPt[ind[0]] < 25) return false;
-    if(_lPt[ind[1]] < 15) return false;
+    if(_lPt[ind[0]] <= 25) return false;
+    if(_lPt[ind[1]] <= 15) return false;
     return true;
 }
 
@@ -87,14 +87,14 @@ bool treeReader::jetIsClean(const unsigned ind){
         if(lepIsGood(l)){
             TLorentzVector lep;
             lep.SetPtEtaPhiE(_lPt[l], _lEta[l], _lPhi[l], _lE[l]);
-            if(lep.DeltaR(jet) < 0.4) return false;
+            if(lep.DeltaR(jet) <= 0.4) return false;
         }
     }
     return true;
 }
 
 bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean){
-    if(fabs(_jetEta[ind]) > 2.4) return false;
+    if(fabs(_jetEta[ind]) >= 2.4) return false;
     switch(unc){
         case 0: if(_jetPt[ind] < ptCut) return false;
         case 1: if(_jetPt_JECDown[ind] < ptCut) return false;
