@@ -24,7 +24,7 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
     std::set<std::tuple<long unsigned, long unsigned, long unsigned> > usedEvents;
     //Set output file and tree
     outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_temp/" : outputDirectory;
-    const std::string outputFileName = "~/Work/ntuples_ewkino/data_combined_trilepton.root";
+    const std::string outputFileName = "~/Work/ntuples_tzq/data_combined_trilepton.root";
     TFile* outputFile = new TFile((const TString&) outputFileName ,"RECREATE");
     outputFile->mkdir("blackJackAndHookers");
     outputFile->cd("blackJackAndHookers"); 
@@ -33,7 +33,7 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
     for(std::vector<std::string>::const_iterator it = datasets.cbegin(); it != datasets.cend(); ++it){
         std::cout << *it << std::endl;
         //Read tree	
-        TFile* sampleFile = new TFile( (const TString&)"~/Work/ntuples_ewkino/" + *it,"read");	
+        TFile* sampleFile = new TFile( (const TString&)"~/Work/ntuples_tzq/" + *it,"read");	
         //Determine hcounter for cross section scaling
         sampleFile->cd("blackJackAndHookers");	
         TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));

@@ -43,7 +43,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     outputFileName.insert(0, outputDirectory);
     auto it = outputFileName.find(".root");
     outputFileName.erase(it, outputFileName.size());
-    outputFileName.append("_dilepSkim.root");
+    outputFileName.append("_trilepSkim.root");
     std::cout << "output file : " << outputFileName << std::endl;
     
     std::shared_ptr<TFile> outputFile = std::make_shared<TFile>((const TString&) outputFileName ,"RECREATE");
