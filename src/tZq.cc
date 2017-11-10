@@ -45,11 +45,20 @@ void treeReader::Analyze(){
         std::make_tuple("jetEta_leading", "|#eta| (leading jet)", 30, 0, 5),
         std::make_tuple("jetLeadPt", "P_{T} (leading jet) (GeV)", 30, 0, 300),
         std::make_tuple("jetHighestEtaPt", "P_{T} (most forward jet) (GeV)", 30, 0, 300),
-        std::make_tuple("mtop", "M_{W + b} (GeV)", 30, 0, 400),
+        std::make_tuple("mtop", "M_{(W + b)} (GeV)", 30, 0, 400),
         std::make_tuple("taggedBJetPt", "P_{T} (b-jet from top) (GeV)", 30, 0, 300),
         std::make_tuple("taggedBJetEta", "|#eta| (b-jet from top) (GeV)", 30, 0, 2.5),
         std::make_tuple("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 0, 300), 
-        std::make_tuple("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 2.5)
+        std::make_tuple("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 2.5),
+        std::make_tuple("m_highestEta_leadingB_W", "M_{(most forward jet + leading b-jet + W)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_highestEta_leadingB_WZ", "M_{(most forward jet + leading b-jet + WZ)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_highestEta_leadingB_WlepZ", "M_{(most forward jet + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_taggedRecoil_taggedB_W", "M_{(recoiling jet + tagged b-jet + W)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_taggedRecoil_taggedB_WZ", "M_{(recoiling jet + tagged b-jet + WZ)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_taggedRecoil_taggedB_WlepZ", "M_{(recoiling jet + tagged b-jet + lepton + Z)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_forwardJets_leadingB_W", "M_{(forward jets + leading b-jet + W)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_forwardJets_leadingB_WZ", "M_{(forward jets + leading b-jet + WZ)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
