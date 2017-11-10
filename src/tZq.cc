@@ -45,6 +45,9 @@ void treeReader::Analyze(){
         std::make_tuple("jetEta_highestEta", "|#eta| (most forward jet)", 30, 0, 5),
         std::make_tuple("jetEta_leading", "|#eta| (leading jet)", 30, 0, 5),
         std::make_tuple("jetLeadPt", "P_{T} (leading jet) (GeV)", 30, 0, 300),
+        std::make_tuple("trailingJetPt", "P_{T} (trailing jet) (GeV)", 30, 0, 200), 
+        std::make_tuple("leadinBJetPt", "P_{T} (leading b-jet) (GeV)", 30, 0, 200),
+        std::make_tuple("trailingBJetPt", "P_{T} (trailing b-jet) (GeV)", 30, 0, 200),
         std::make_tuple("jetHighestEtaPt", "P_{T} (most forward jet) (GeV)", 30, 0, 300),
         std::make_tuple("mtop", "M_{(W + b)} (GeV)", 30, 0, 400),
         std::make_tuple("taggedBJetPt", "P_{T} (b-jet from top) (GeV)", 30, 0, 300),
@@ -63,7 +66,14 @@ void treeReader::Analyze(){
         std::make_tuple("m_forwardJets_leadingB_Wlep", "M_{(forward jets + leading b-jet + lepton)} (GeV)", 30, 0, 600),
         std::make_tuple("m_forwardJets_leadingB_WZ", "M_{(forward jets + leading b-jet + WZ)} (GeV)", 30, 0, 600),
         std::make_tuple("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_forwardJets", "M_{(forward jets)} (GeV)", 30, 0, 600)
+        std::make_tuple("m_forwardJets", "M_{(forward jets)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_system", "M_{objects in event} (GeV)", 30, 0, 1500), 
+        std::make_tuple("highestDeepCSV", "highest deepCSV", 30, 0, 1), 
+        std::make_tuple("highestCSVv2", "highest CSVv2", 30, 0, 1),
+        std::make_tuple("highestDeepCSVJetPt", "P_{T}(highest DeepCSV jet) (GeV)", 30, 0, 300),
+        std::make_tuple("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 30, 0, 10),
+        std::make_tuple("deltaRleadingBJet_highestEtaJet", "#DeltaR(leading b-jet, most forward jet)", 30, 0, 10),
+        std::make_tuple("deltaRhighestDeepCSVJet_highestEtaJet", "#DeltaR(highest DeepCSV jet, most forward jet)", 30, 0, 10),
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
