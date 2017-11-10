@@ -51,14 +51,18 @@ void treeReader::Analyze(){
         std::make_tuple("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 0, 300), 
         std::make_tuple("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 2.5),
         std::make_tuple("m_highestEta_leadingB_W", "M_{(most forward jet + leading b-jet + W)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_highestEta_leadingB_Wlep", "M_{(most forward jet + leading b-jet + lepton)} (GeV)", 30, 0, 600),
         std::make_tuple("m_highestEta_leadingB_WZ", "M_{(most forward jet + leading b-jet + WZ)} (GeV)", 30, 0, 600),
         std::make_tuple("m_highestEta_leadingB_WlepZ", "M_{(most forward jet + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600),
         std::make_tuple("m_taggedRecoil_taggedB_W", "M_{(recoiling jet + tagged b-jet + W)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_taggedRecoil_taggedB_Wlep", "M_{(recoiling jet + tagged b-jet + lepton)} (GeV)", 30, 0, 600),
         std::make_tuple("m_taggedRecoil_taggedB_WZ", "M_{(recoiling jet + tagged b-jet + WZ)} (GeV)", 30, 0, 600),
         std::make_tuple("m_taggedRecoil_taggedB_WlepZ", "M_{(recoiling jet + tagged b-jet + lepton + Z)} (GeV)", 30, 0, 600),
         std::make_tuple("m_forwardJets_leadingB_W", "M_{(forward jets + leading b-jet + W)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_forwardJets_leadingB_Wlep", "M_{(forward jets + leading b-jet + lepton)} (GeV)", 30, 0, 600),
         std::make_tuple("m_forwardJets_leadingB_WZ", "M_{(forward jets + leading b-jet + WZ)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600)
+        std::make_tuple("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_forwardJets", "M_{(forward jets)} (GeV)", 30, 0, 600)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -119,7 +123,7 @@ void treeReader::Analyze(){
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
             //require best Z mass to be onZ
             std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, lCount);
-            double mll = (lepV[bestZ.first] - lepV[bestZ.second]).M();
+            double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
             if( fabs(mll - 91.1876) < 15) continue;
             //make ordered jet and bjet collections
             std::vector<unsigned> jetInd, bJetInd;
@@ -148,9 +152,34 @@ void treeReader::Analyze(){
             //reconstruct top mass and tag jets
             std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
             double mTop = tzq::findMTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
-            
+
+            //forward jet sum
+            TLorentzVector forwardJets(0,0,0,0);
+            for(unsigned j = 0; jetCount; ++j){
+                if(fabs(_jetEta[j]) > 2.4){
+                    forwardJets += jetV[jetInd[j]];
+                }
+            }
+
             //distributions to plot
-            double fill[nDist] = {_met, mll, _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(_jetEta[highestEtaJ]), fabs(_jetEta[jetInd[0]]), _jetPt[jetInd[0]], _jetPt[highestEtaJ], mTop, _jetPt[taggedJetI[0]], fabs(_jetEta[taggedJetI[0]]), _jetPt[taggedJetI[1]], fabs(_jetEta[taggedJetI[1]])};
+            double fill[nDist] = {_met, mll, _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(_jetEta[highestEtaJ]), fabs(_jetEta[jetInd[0]]), _jetPt[jetInd[0]], _jetPt[highestEtaJ], mTop, _jetPt[taggedJetI[0]], fabs(_jetEta[taggedJetI[0]]), _jetPt[taggedJetI[1]], fabs(_jetEta[taggedJetI[1]]),
+            (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw] + met).M(),
+            (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw]).M(),
+            (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
+            (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+
+            (jetV[taggedJetI[1]] + jetV[taggedJetI[0]] + lepV[lw] + met).M(),
+            (jetV[taggedJetI[1]] + jetV[taggedJetI[0]] + lepV[lw]).M(),
+            (jetV[taggedJetI[1]] + jetV[taggedJetI[0]] + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            (jetV[taggedJetI[1]] + jetV[taggedJetI[0]] + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+
+            (forwardJets + jetV[bJetInd[0]] + lepV[lw] + met).M(),
+            (forwardJets + jetV[bJetInd[0]] + lepV[lw]).M(),
+            (forwardJets + jetV[bJetInd[0]] + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            (forwardJets + jetV[bJetInd[0]] + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            forwardJets.M()
+            };
+
             for(unsigned cat = 0; cat < nCat; ++cat){
                 if(cat == 0 || cat == (tzqCat + 1) ){
                     for(unsigned dist = 0; dist < nDist; ++dist){
