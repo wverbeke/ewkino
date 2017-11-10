@@ -114,7 +114,11 @@ class treeReader {
         Double_t        _3dIPSig[nL_max];   
         Float_t         _lElectronMva[nL_max];   
         Bool_t          _lElectronPassEmu[nL_max];   
-        Double_t        _leptonMva[nL_max];   
+        Bool_t          _lElectronPassConvVeto[nL_max];
+        Bool_t          _lElectronChargeConst[nL_max];
+        UInt_t          _lElectronMissingHits[nL_max];
+        Double_t        _leptonMvaSUSY[nL_max];   
+        Double_t        _leptonMvaTTH[nL_max];
         Bool_t          _lHNLoose[nL_max];   
         Bool_t          _lHNFO[nL_max];   
         Bool_t          _lHNTight[nL_max];   
@@ -143,7 +147,9 @@ class treeReader {
         Double_t        _closestJetDeepCsv_b[nL_max];
         Double_t        _closestJetDeepCsv_bb[nL_max];
         UInt_t          _selectedTrackMult[nL_max];   
-        Double_t        _muonSegComp[nL_max];   
+        Double_t        _lMuonSegComp[nL_max];   
+        Double_t        _lMuonTrackPt[nL_max];
+        Double_t        _lMuonTrackPtErr[nL_max];
         Bool_t          _lIsPrompt[nL_max];   
         Int_t           _lMatchPdgId[nL_max];   
         UChar_t         _nJets;
@@ -319,7 +325,11 @@ class treeReader {
         TBranch        *b__3dIPSig;   
         TBranch        *b__lElectronMva;   
         TBranch        *b__lElectronPassEmu;   
-        TBranch        *b__leptonMva;   
+        TBranch        *b__lElectronPassConvVeto;
+        TBranch        *b__lElectronChargeConst;
+        TBranch        *b__lElectronMissingHits;
+        TBranch        *b__leptonMvaSUSY;
+        TBranch        *b__leptonMvaTTH;
         TBranch        *b__lHNLoose;   
         TBranch        *b__lHNFO;   
         TBranch        *b__lHNTight;   
@@ -348,7 +358,9 @@ class treeReader {
         TBranch        *b__closestJetDeepCsv_b;
         TBranch        *b__closestJetDeepCsv_bb;
         TBranch        *b__selectedTrackMult;   
-        TBranch        *b__muonSegComp;   
+        TBranch        *b__lMuonSegComp;   
+        TBranch        *b__lMuonTrackPt;
+        TBranch        *b__lMuonTrackPtErr;
         TBranch        *b__lIsPrompt;   
         TBranch        *b__lMatchPdgId;   
         TBranch        *b__nJets;   
