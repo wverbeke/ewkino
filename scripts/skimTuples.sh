@@ -8,10 +8,12 @@ skimSample(){                                           #function to skim one sa
     echo "$name"
     outputDir=~/Work/ntuples_temp_${name}
     if [ ! -d "$outputDir" ]; then                      #make output directory if it doesn't exist 
-        mkdir $outputDir
+        mkdir -p $outputDir
     fi
     submit=~/skimJob.sh
     makeSubmit $submit $2                               #make temporary submission script
+
+    cwd=$(pwd)                                          #current working directory needed to locate code 
     
     count=0                                             #file counter
     files=${1}/*/*/*root
@@ -23,7 +25,7 @@ skimSample(){                                           #function to skim one sa
         #filename=${f##*/}                               
         filename=${f///}
         filename=${filename%.*}
-        echo "~/Work/AnalysisCode/ewkino/skimTree $f $outputDir/ > ${outputDir}/${filename}_log.txt 2> ${outputDir}/${filename}_err.txt" >> $submit
+        echo "${cwd}/../skimTree $f $outputDir/ > ${outputDir}/${filename}_log.txt 2> ${outputDir}/${filename}_err.txt" >> $submit
         count=$((count+1))
     done
     qsub $submit -l walltime=04:00:00;
