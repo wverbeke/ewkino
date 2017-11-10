@@ -78,6 +78,10 @@ void treeReader::Analyze(){
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
+        if(sam == 0){                   //skip data for now
+            ++currentSample;
+            continue;
+        }
         initSample(2);          //Use combined 2016 + 2017 luminosity
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
@@ -169,6 +173,18 @@ void treeReader::Analyze(){
             }
         }
     }
+    //TEMPORARY//////
+    //replace data with sum of all backgrounds
+    for(unsigned cat = 0; cat < nCat; ++cat){
+        for(unsigned dist = 0; dist < nDist; ++dist){
+            mergedHists[cat][dist][0] = (TH1D*) mergedHists[cat][dist][1]->Clone(); 
+            for(unsigned p = 2; p < proc.size(); ++p){
+                mergedHists[cat][dist][0]->Add(mergedHists[cat][dist][p]);
+            }
+        }
+    }
+    ////////////////
+
     const bool isSMSignal[ (const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     //plot all distributions
     for(unsigned cat = 0; cat < nCat; ++cat){
