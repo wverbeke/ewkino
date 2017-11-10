@@ -3,6 +3,8 @@
 #include bash functiosn to set up CMSSW
 source setCMSSW.sh
 
+cwd=$(pwd)                                          #current working directory needed to locate code 
+
 skimSample(){                                           #function to skim one sample
     name="${1%/*}"                                      #remove everything before the last "/" in the path to the sample
     echo "$name"
@@ -13,8 +15,6 @@ skimSample(){                                           #function to skim one sa
     submit=~/skimJob.sh
     makeSubmit $submit $2                               #make temporary submission script
 
-    cwd=$(pwd)                                          #current working directory needed to locate code 
-    
     count=0                                             #file counter
     files=${1}/*/*/*root
     for f in $files
