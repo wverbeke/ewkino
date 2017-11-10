@@ -63,7 +63,6 @@ bool treeReader::lepIsGood(const unsigned l){
 }
 
 bool treeReader::lepIsTight(const unsigned l){
-    if(_closestJetCsvV2[l] >= 0.8484) return false;
     if(_lFlavor[l] == 2) return false;
     else if(_lFlavor[l] == 1){
         if(!_lPOGMedium[l]) return false;
