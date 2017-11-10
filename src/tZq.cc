@@ -131,7 +131,7 @@ void treeReader::Analyze(){
             unsigned jetCount = nJets(jetInd);
             unsigned bJetCount = nBJets(bJetInd);
             //find highest eta jet
-            unsigned highestEtaJ = jetInd[0];
+            unsigned highestEtaJ = (jetCount == 0) ? 99 : jetInd[0];
             for(unsigned j = 1; j < jetCount; ++j){
                 if(fabs(_jetEta[jetInd[j]]) > fabs(_jetEta[highestEtaJ]) ) highestEtaJ = jetInd[j];
             }
@@ -161,23 +161,41 @@ void treeReader::Analyze(){
                     forwardJets += jetV[jetInd[j]];
                 }
             }
+            //initialize new vectors to make sure everything is defined for 0 jet events!
+            TLorentzVector leadingJet(0,0,0,0);
+            TLorentzVector highestEtaJet(0,0,0,0);
+            TLorentzVector recoilingJet(0,0,0,0);
+            TLorentzVector taggedBJet(0,0,0,0);
+            TLorentzVector leadingBJet(0,0,0,0);
+            if(taggedJetI[0] != 99) taggedBJet = jetV[taggedJetI[0]];
+            if(taggedJetI[1] != 99) recoilingJet = jetV[taggedJetI[1]];
+            if(jetCount != 0){
+                highestEtaJet = jetV[highestEtaJ];
+                leadingJet = jetV[jetInd[0]];
+            }
+            if(bJetCount != 0){
+                leadingBJet = jetV[bJetInd[0]];
+            } else if(jetCount > 1){
+                leadingBJet = jetV[jetInd[1]];
+            }
 
             //distributions to plot
-            double fill[nDist] = {_met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(_jetEta[highestEtaJ]), fabs(_jetEta[jetInd[0]]), _jetPt[jetInd[0]], _jetPt[highestEtaJ], mTop, _jetPt[taggedJetI[0]], fabs(_jetEta[taggedJetI[0]]), _jetPt[taggedJetI[1]], fabs(_jetEta[taggedJetI[1]]),
-            (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw] + met).M(),
-            (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw]).M(),
-            (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
-            (jetV[highestEtaJ] + jetV[bJetInd[0]] + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            double fill[nDist] = {_met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), highestEtaJet.Pt(), mTop, taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
+            (highestEtaJet + leadingBJet + lepV[lw] + met).M(),
+            (highestEtaJet + leadingBJet + lepV[lw]).M(),
+            (highestEtaJet + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
+            (highestEtaJet + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
 
-            (jetV[taggedJetI[1]] + jetV[taggedJetI[0]] + lepV[lw] + met).M(),
-            (jetV[taggedJetI[1]] + jetV[taggedJetI[0]] + lepV[lw]).M(),
-            (jetV[taggedJetI[1]] + jetV[taggedJetI[0]] + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-            (jetV[taggedJetI[1]] + jetV[taggedJetI[0]] + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            (recoilingJet + taggedBJet + lepV[lw] + met).M(),
+            (recoilingJet + taggedBJet + lepV[lw]).M(),
+            (recoilingJet + taggedBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            (recoilingJet + taggedBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
 
-            (forwardJets + jetV[bJetInd[0]] + lepV[lw] + met).M(),
-            (forwardJets + jetV[bJetInd[0]] + lepV[lw]).M(),
-            (forwardJets + jetV[bJetInd[0]] + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-            (forwardJets + jetV[bJetInd[0]] + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            (forwardJets + leadingBJet + lepV[lw] + met).M(),
+            (forwardJets + leadingBJet + lepV[lw]).M(),
+            (forwardJets + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+
             forwardJets.M()
             };
 
