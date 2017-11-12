@@ -67,7 +67,21 @@ void treeReader::Analyze(){
         std::make_tuple("m_forwardJets_leadingB_WZ", "M_{(forward jets + leading b-jet + WZ)} (GeV)", 30, 0, 600),
         std::make_tuple("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600),
         std::make_tuple("m_forwardJets", "M_{(forward jets)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_system", "M_{objects in event} (GeV)", 30, 0, 1500), 
+
+        std::make_tuple("pT_highestEta_leadingB_W", "P_{T}^{most forward jet + leading b-jet + W} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_highestEta_leadingB_Wlep", "P_{T}^{most forward jet + leading b-jet + lepton} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_highestEta_leadingB_WZ", "P_{T}^{most forward jet + leading b-jet + WZ} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_highestEta_leadingB_WlepZ", "P_{T}^{most forward jet + leading b-jet + lepton + Z} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_taggedRecoil_taggedB_W", "P_{T}^{recoiling jet + tagged b-jet + W} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_taggedRecoil_taggedB_Wlep", "P_{T}^{recoiling jet + tagged b-jet + lepton} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_taggedRecoil_taggedB_WZ", "P_{T}^{recoiling jet + tagged b-jet + WZ} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_taggedRecoil_taggedB_WlepZ", "P_{T}^{recoiling jet + tagged b-jet + lepton + Z} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_forwardJets_leadingB_W", "P_{T}^{forward jets + leading b-jet + W} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_forwardJets_leadingB_Wlep", "P_{T}^{forward jets + leading b-jet + lepton} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_forwardJets_leadingB_WZ", "P_{T}^{forward jets + leading b-jet + WZ} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_forwardJets_leadingB_WlepZ", "P_{T}^{forward jets + leading b-jet + lepton + Z} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_forwardJets", "P_{T}^{forward jets} (GeV)", 30, 0, 600),
+
         std::make_tuple("highestDeepCSV", "highest deepCSV", 30, 0, 1), 
         std::make_tuple("highestCSVv2", "highest CSVv2", 30, 0, 1),
         std::make_tuple("highestDeepCSVJetPt", "P_{T}(highest DeepCSV jet) (GeV)", 30, 0, 300),
@@ -171,26 +185,45 @@ void treeReader::Analyze(){
                     forwardJets += jetV[jetInd[j]];
                 }
             }
+            
+            //find jets with highest DeepCSV and CSVv2 values
+            unsigned highestDeepCSVI = jetInd[0], highestCSVv2I = jetInd[0];
+            for(unsigned j = 1; j < jetCount; ++j){
+                if( (_jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]]) > (_jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI]) ) highestDeepCSVI = jetInd[j];
+                if( _jetCsvV2[jetInd[j]] > _jetCsvV2[jetInd[j]] ) highestCSVv2I = jetInd[j];
+            }
+        
             //initialize new vectors to make sure everything is defined for 0 jet events!
             TLorentzVector leadingJet(0,0,0,0);
+            TLorentzVector trailingJet(0,0,0,0);
             TLorentzVector highestEtaJet(0,0,0,0);
             TLorentzVector recoilingJet(0,0,0,0);
             TLorentzVector taggedBJet(0,0,0,0);
             TLorentzVector leadingBJet(0,0,0,0);
+            TLorentzVector trailingBJet(0,0,0,0);
+            TLorentzVector highestDeepCSVJet(0,0,0,0);
+            TLorentzVector highestCSVv2Jet(0,0,0,0);
             if(taggedJetI[0] != 99) taggedBJet = jetV[taggedJetI[0]];
             if(taggedJetI[1] != 99) recoilingJet = jetV[taggedJetI[1]];
             if(jetCount != 0){
-                highestEtaJet = jetV[highestEtaJ];
                 leadingJet = jetV[jetInd[0]];
+                trailingJet = jetV[jetInd[jetInd.size() - 1]];
+                highestEtaJet = jetV[highestEtaJ];
+                highestDeepCSVJet = jetV[highestDeepCSVI];
+                highestCSVv2Jet = jetV[highestCSVv2I]; 
             }
             if(bJetCount != 0){
                 leadingBJet = jetV[bJetInd[0]];
+                if(bJetCount > 1) trailingBJet = jetV[bJetInd[bJetInd.size() - 1]];
             } else if(jetCount > 1){
                 leadingBJet = jetV[jetInd[1]];
             }
 
             //distributions to plot
-            double fill[nDist] = {_met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), highestEtaJet.Pt(), mTop, taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
+            double fill[nDist] = {_met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
+            (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
+             highestEtaJet.Pt(), mTop, taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
+
             (highestEtaJet + leadingBJet + lepV[lw] + met).M(),
             (highestEtaJet + leadingBJet + lepV[lw]).M(),
             (highestEtaJet + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
@@ -206,7 +239,31 @@ void treeReader::Analyze(){
             (forwardJets + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
             (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
 
-            forwardJets.M()
+            forwardJets.M(),
+
+            (highestEtaJet + leadingBJet + lepV[lw] + met).Pt(),
+            (highestEtaJet + leadingBJet + lepV[lw]).Pt(),
+            (highestEtaJet + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second] ).Pt(),
+            (highestEtaJet + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+
+            (recoilingJet + taggedBJet + lepV[lw] + met).Pt(),
+            (recoilingJet + taggedBJet + lepV[lw]).Pt(),
+            (recoilingJet + taggedBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+            (recoilingJet + taggedBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+
+            (forwardJets + leadingBJet + lepV[lw] + met).Pt(),
+            (forwardJets + leadingBJet + lepV[lw]).Pt(),
+            (forwardJets + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+            (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+
+            forwardJets.Pt(),
+
+            _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_b[highestDeepCSVI],
+            _jetCsvV2[highestCSVv2I],
+            highestDeepCSVJet.Pt(),
+            taggedBJet.DeltaR(recoilingJet),
+            leadingBJet.DeltaR(highestEtaJet),
+            highestDeepCSVJet.DeltaR(highestEtaJet)
             };
 
             for(unsigned cat = 0; cat < nCat; ++cat){
