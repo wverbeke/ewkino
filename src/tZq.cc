@@ -282,7 +282,7 @@ void treeReader::Analyze(){
         }
     }
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"obs.", "tZq", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
+    std::vector<std::string> proc = {"obs.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nCat);
     for(unsigned cat = 0; cat < nCat; ++cat){
         for(unsigned dist = 0; dist < nDist; ++dist){
@@ -313,8 +313,8 @@ void treeReader::Analyze(){
     //plot all distributions
     for(unsigned cat = 0; cat < nCat; ++cat){
         for(unsigned dist = 0; dist < nDist; ++dist){
-            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + std::get<0>(histInfo[dist]), "ewkino", false, false, "", nullptr, isSMSignal);             //linear plots
-            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + std::get<0>(histInfo[dist])  + "_log", "ewkino", true, false, "", nullptr, isSMSignal);    //log plots
+            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + std::get<0>(histInfo[dist]), "tzq", false, false, "", nullptr, isSMSignal);             //linear plots
+            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + std::get<0>(histInfo[dist])  + "_log", "tzq", true, false, "", nullptr, isSMSignal);    //log plots
         }
     }
 }

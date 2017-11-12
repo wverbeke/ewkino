@@ -90,6 +90,20 @@ Color_t bkgColorHNL(const std::string& bkgName){
     else return kBlack;
 }
 
+    std::vector<std::string> proc = {"obs.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X"};
+Color_t bkgColortZq(const std::string& bkgName){
+    if(bkgName == "tZq") return kRed - 7;
+    if(bkgName == "TT" ||  bkgName == "TT + jets") return kOrange - 2;
+    if(bkgName == "TT/T + X" || bkgName == "TT + X") return kCyan - 7;
+    if(bkgName == "X + #gamma") return kMagenta - 10;
+    if(bkgName == "multiboson") return kBlue - 6;
+    if(bkgName == "Drell-Yan" || bkgName == "DY") return kViolet - 7;
+else return kBlack;    
+
+
+
+}
+
 
 //FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
 Color_t bkgColorGeneral(){
