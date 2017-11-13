@@ -92,13 +92,18 @@ Color_t bkgColorHNL(const std::string& bkgName){
 
 
 //FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
-Color_t bkgColorGeneral(){
-    static const Color_t colors[8] = {kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kBlue -3, kOrange + 6, kCyan + 1, kMagenta +3};
+Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
-    Color_t output = colors[counter];
-    ++counter;
-    if(counter == 8) counter = 0;
-    return output;
+    static const Color_t colors[8] = {kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kBlue -3, kOrange + 6, kCyan + 1, kMagenta +3};
+    if(!reset){
+        Color_t output = colors[counter];
+        ++counter;
+        if(counter == 8) counter = 0;
+        return output;
+    } else{
+        counter = 0;
+        return kBlack;
+    }
 }
 
 
@@ -114,11 +119,18 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
     }
 }
 
-void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal){
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
     //set background histogram colors
     for(unsigned h = 0; h < nBkg; ++h){
         StackCol(bkg[h], bkgColor(names[h + 1], analysis) ); //first name is data
     }    
+    //color signal histgrams if they are to be plotted
+    if(signal != nullptr){
+        for(unsigned s = 0; s < nSig; ++s){
+            StackCol(signal[s], bkgColor("", "") );
+        }
+        bkgColorGeneral(true); //reset colors so plots are consistent
+    }
 
     //set Poisonian errors to data
     data->SetBinErrorOption(TH1::kPoisson);
@@ -146,6 +158,14 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         bkgTot = (TH1D*) bkg[0]->Clone();
         for(unsigned h = 1; h < nBkg; ++h){
             bkgTot->Add(bkg[h]);
+        }
+    }
+
+    //normalize signal to data if option is chosen
+    if(signal != nullptr && sigNorm){
+        for(unsigned s = 0; s < nSig; ++s){
+            double SF = data->GetSumOfWeights()/signal[s]->GetSumOfWeights();
+            signal[s]->Scale(SF);
         }
     }
 
@@ -180,6 +200,13 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         legend.AddEntry(bkgE[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
     }
     legend.AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
+
+    //add signal to legend if plotting signal
+    if(signal != nullptr){
+        for(unsigned s = 0; s < nSig; ++s){
+            legend.AddEntry(signal[s], (const TString&) sigNames[s], "l");
+        }
+    }
     
     //order background histograms by yield
     yieldOrder(bkgE, nBkg, isSMSignal);
@@ -256,6 +283,13 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgTotE->Draw("e2 same"); //Redraw data so it is overlaid on the background stack
     dataGraph->Draw("pe1 same");	
 
+    //plot signal if this option is chosen
+    if(signal != nullptr){
+        for(unsigned s = 0; s < nSig; ++s){
+            signal[s]->Draw("lsame");
+        }
+    }
+    
     //redraw axis over histograms
     gPad->RedrawAxis();
 
