@@ -296,15 +296,15 @@ void treeReader::Analyze(){
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
-    for(unsigned m = 0; m < nMll; ++m){
-        mergedHists[m] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
+    for(unsigned mll = 0; mll < nMll; ++mll){
+        mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                mergedHists[m][cat].push_back(std::vector<TH1D*>(proc.size() ) );
+                mergedHists[mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
                 for(size_t m = 0, sam = 0; m < proc.size(); ++m){
-                    mergedHists[m][cat][dist][m] = (TH1D*) hists[m][cat][dist][sam]->Clone();
+                    mergedHists[mll][cat][dist][m] = (TH1D*) hists[mll][cat][dist][sam]->Clone();
                     while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
-                        mergedHists[m][cat][dist][m]->Add(hists[m][cat][dist][sam + 1]);
+                        mergedHists[mll][cat][dist][m]->Add(hists[mll][cat][dist][sam + 1]);
                         ++sam;
                     }
                     ++sam;
