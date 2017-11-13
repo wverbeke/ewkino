@@ -141,7 +141,7 @@ unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, co
     unsigned nJets = 0;
     jetInd.clear();
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 30, unc, clean)){
+        if(jetIsGood(j, 25, unc, clean)){
             ++nJets;
             jetInd.push_back(j);
         }
