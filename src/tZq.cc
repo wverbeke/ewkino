@@ -94,7 +94,7 @@ void treeReader::Analyze(){
     const unsigned nCat = 7;                //Several categories enriched in different processes
     const unsigned nMll = 3;                //categories based on dilepton Mass
     const std::string mllNames[nMll] = {"mllInclusive", "onZ", "offZ"};
-    const std::string catNames[nCat] = {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_3Jets", "2bJets"};
+    const std::string catNames[nCat] = {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_4Jets", "2bJets"};
     //initialize vector holding all histograms
     std::vector< std::vector < std::vector< std::vector< TH1D* > > > > hists(nMll);
     for(unsigned m = 0; m < nMll; ++m){
