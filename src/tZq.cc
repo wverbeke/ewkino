@@ -53,7 +53,7 @@ void treeReader::Analyze(){
         std::make_tuple("taggedBJetPt", "P_{T} (b-jet from top) (GeV)", 30, 0, 300),
         std::make_tuple("taggedBJetEta", "|#eta| (b-jet from top) (GeV)", 30, 0, 2.5),
         std::make_tuple("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 0, 300), 
-        std::make_tuple("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 2.5),
+        std::make_tuple("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 5),
         std::make_tuple("m_highestEta_leadingB_W", "M_{(most forward jet + leading b-jet + W)} (GeV)", 30, 0, 600),
         std::make_tuple("m_highestEta_leadingB_Wlep", "M_{(most forward jet + leading b-jet + lepton)} (GeV)", 30, 0, 600),
         std::make_tuple("m_highestEta_leadingB_WZ", "M_{(most forward jet + leading b-jet + WZ)} (GeV)", 30, 0, 600),
@@ -66,7 +66,9 @@ void treeReader::Analyze(){
         std::make_tuple("m_forwardJets_leadingB_Wlep", "M_{(forward jets + leading b-jet + lepton)} (GeV)", 30, 0, 600),
         std::make_tuple("m_forwardJets_leadingB_WZ", "M_{(forward jets + leading b-jet + WZ)} (GeV)", 30, 0, 600),
         std::make_tuple("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_forwardJets", "M_{(forward jets)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_forwardJets", "M_{(|#eta| > 2.4 jets)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_notSoForwardJets", "M_{(|#eta| > 0.8 jets)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_superForwardJets", "M_{(|#eta| > 3 jets)} (GeV)", 30, 0, 600),
 
         std::make_tuple("pT_highestEta_leadingB_W", "P_{T}^{most forward jet + leading b-jet + W} (GeV)", 30, 0, 600),
         std::make_tuple("pT_highestEta_leadingB_Wlep", "P_{T}^{most forward jet + leading b-jet + lepton} (GeV)", 30, 0, 600),
@@ -80,7 +82,13 @@ void treeReader::Analyze(){
         std::make_tuple("pT_forwardJets_leadingB_Wlep", "P_{T}^{forward jets + leading b-jet + lepton} (GeV)", 30, 0, 600),
         std::make_tuple("pT_forwardJets_leadingB_WZ", "P_{T}^{forward jets + leading b-jet + WZ} (GeV)", 30, 0, 600),
         std::make_tuple("pT_forwardJets_leadingB_WlepZ", "P_{T}^{forward jets + leading b-jet + lepton + Z} (GeV)", 30, 0, 600),
-        std::make_tuple("pT_forwardJets", "P_{T}^{forward jets} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_forwardJets", "P_{T}^{|#eta| > 2.4 jets} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_notSoForwardJets", "P_{T}^{|#eta| > 0.8 jets} (GeV)", 30, 0, 600),
+        std::make_tuple("pT_superForwardJets", "P_{T}^{|#eta| > 3 jets} (GeV)", 30, 0, 600),
+
+        std::make_tuple("eta_forwardJets", "|#eta|^{|#eta| > 2.4 jets}", 30, 0, 5),
+        std::make_tuple("eta_notSoForwardJets", "|#eta|^{|#eta| > 0.8 jets}", 30, 0, 5),
+        std::make_tuple("eta_superForwardJets", "|#eta|^{|#eta| > 3 jets}", 30, 0, 5),
 
         std::make_tuple("highestDeepCSV", "highest deepCSV", 30, 0, 1), 
         std::make_tuple("highestCSVv2", "highest CSVv2", 30, 0, 1),
@@ -189,8 +197,22 @@ void treeReader::Analyze(){
             //forward jet sum
             TLorentzVector forwardJets(0,0,0,0);
             for(unsigned j = 0; j < jetCount; ++j){
-                if(fabs(_jetEta[j]) > 2.4){
+                if(fabs(_jetEta[jetInd[j]]) >= 2.4){ //very good discriminating power when wrongly using index j!!
                     forwardJets += jetV[jetInd[j]];
+                }
+            }
+            //not so forward jet sum
+            TLorentzVector notSoForwardJets(0,0,0,0);
+            for(unsigned j = 0; j < jetCount; ++j){
+                if(fabs(_jetEta[jetInd[j]]) >= 0.8){
+                    notSoForwardJets += jetV[jetInd[j]];
+                }
+            }
+            //super forward jet sum
+            TLorentzVector superForwardJets(0,0,0,0);
+            for(unsigned j = 0; j < jetCount; ++j){
+                if(fabs(_jetEta[jetInd[j]]) >= 3.0){
+                    superForwardJets += jetV[jetInd[j]];
                 }
             }
             
@@ -248,6 +270,8 @@ void treeReader::Analyze(){
             (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
 
             forwardJets.M(),
+            notSoForwardJets.M(),
+            superForwardJets.M(),
 
             (highestEtaJet + leadingBJet + lepV[lw] + met).Pt(),
             (highestEtaJet + leadingBJet + lepV[lw]).Pt(),
@@ -265,6 +289,12 @@ void treeReader::Analyze(){
             (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
 
             forwardJets.Pt(),
+            notSoForwardJets.Pt(),
+            superForwardJets.Pt(),
+    
+            fabs(forwardJets.Eta()),
+            fabs(notSoForwardJets.Eta()),
+            fabs(superForwardJets.Eta()),
 
             _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_b[highestDeepCSVI],
             _jetCsvV2[highestCSVv2I],
