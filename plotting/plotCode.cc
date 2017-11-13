@@ -90,18 +90,18 @@ Color_t bkgColorHNL(const std::string& bkgName){
     else return kBlack;
 }
 
-    std::vector<std::string> proc = {"obs.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X"};
 Color_t bkgColortZq(const std::string& bkgName){
     if(bkgName == "tZq") return kRed - 7;
-    if(bkgName == "TT" ||  bkgName == "TT + jets") return kOrange - 2;
-    if(bkgName == "TT/T + X" || bkgName == "TT + X") return kCyan - 7;
+    if(bkgName == "TT" ||  bkgName == "TT + Jets") return kOrange - 2;
+    if(bkgName == "TT/T + X" || bkgName == "TT + X") return kBlue - 6;
     if(bkgName == "X + #gamma") return kMagenta - 10;
-    if(bkgName == "multiboson") return kBlue - 6;
+    if(bkgName == "multiboson") return kRed - 8;
     if(bkgName == "Drell-Yan" || bkgName == "DY") return kViolet - 7;
-else return kBlack;    
-
-
-
+    if(bkgName == "WJets") return kSpring + 2;
+    if(bkgName == "TT + Z") return kBlue - 6; 
+    if(bkgName == "ZZ/H") return kTeal - 4;
+    if(bkgName == "WZ") return kCyan - 7;
+    else return kBlack;    
 }
 
 
@@ -123,6 +123,8 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
         return bkgColorHNL(bkgName);
     } else if(analysis == "ewkinoDilep"){
         return bkgColorEWKDilept(bkgName);
+    } else if(analysis == "tZq" || analysis == "TZQ" || analysis == "tzq"){
+        return bkgColortZq(bkgName);
     } else{
         return bkgColorGeneral();
     }
