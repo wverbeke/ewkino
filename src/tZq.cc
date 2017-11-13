@@ -180,14 +180,14 @@ void treeReader::Analyze(){
 
             //forward jet sum
             TLorentzVector forwardJets(0,0,0,0);
-            for(unsigned j = 0; jetCount; ++j){
+            for(unsigned j = 0; j < jetCount; ++j){
                 if(fabs(_jetEta[j]) > 2.4){
                     forwardJets += jetV[jetInd[j]];
                 }
             }
             
             //find jets with highest DeepCSV and CSVv2 values
-            unsigned highestDeepCSVI = jetInd[0], highestCSVv2I = jetInd[0];
+            unsigned highestDeepCSVI = (jetCount == 0) ? 0 : jetInd[0], highestCSVv2I = (jetCount == 0) ? 0 : jetInd[0];
             for(unsigned j = 1; j < jetCount; ++j){
                 if( (_jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]]) > (_jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI]) ) highestDeepCSVI = jetInd[j];
                 if( _jetCsvV2[jetInd[j]] > _jetCsvV2[jetInd[j]] ) highestCSVv2I = jetInd[j];
