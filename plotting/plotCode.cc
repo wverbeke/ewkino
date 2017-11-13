@@ -143,7 +143,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //color signal histgrams if they are to be plotted
     if(signal != nullptr){
         for(unsigned s = 0; s < nSig; ++s){
-            StackCol(signal[s], bkgColor("", "") );
+            signal[s]->SetLineColor( bkgColor("", "") );
+            signal[s]->SetMarkerColor( bkgColor("", "") );
         }
         bkgColorGeneral(true); //reset colors so plots are consistent
     }
@@ -302,7 +303,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //plot signal if this option is chosen
     if(signal != nullptr){
         for(unsigned s = 0; s < nSig; ++s){
-            signal[s]->Draw("lsame");
+            signal[s]->Draw("histsame");
         }
     }
     
