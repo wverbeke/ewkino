@@ -157,6 +157,7 @@ void treeReader::Analyze(){
             std::vector<unsigned> jetInd, bJetInd;
             unsigned jetCount = nJets(jetInd);
             unsigned bJetCount = nBJets(bJetInd);
+            if(nBJets() != nBJets(bJetInd) ) std::cout << "bug in number of bjets!" << std::endl;
             //find highest eta jet
             unsigned highestEtaJ = (jetCount == 0) ? 99 : jetInd[0];
             for(unsigned j = 1; j < jetCount; ++j){
