@@ -313,8 +313,8 @@ void treeReader::Analyze(){
     //plot all distributions
     for(unsigned cat = 0; cat < nCat; ++cat){
         for(unsigned dist = 0; dist < nDist; ++dist){
-            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + std::get<0>(histInfo[dist]), "tzq", false, false, "", nullptr, isSMSignal);             //linear plots
-            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + std::get<0>(histInfo[dist])  + "_log", "tzq", true, false, "", nullptr, isSMSignal);    //log plots
+            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat], "tzq", false, false, "", nullptr, isSMSignal);             //linear plots
+            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_log", "tzq", true, false, "", nullptr, isSMSignal);    //log plots
         }
     }
 }
