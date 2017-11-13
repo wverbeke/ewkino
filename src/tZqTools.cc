@@ -35,9 +35,11 @@ double tzq::findMTop(const TLorentzVector& wLep, const TLorentzVector& met, std:
             double diffMin = fabs( (neutrinoMin + wLep + jetV[bJetI[b]] ).M() - mTop);
             if(diffPlus < minDiff && diffPlus < diffMin){
                 plus = true;
+                minDiff = diffPlus;
                 taggedJetI[0] = bJetI[b];
             } else if(diffMin < minDiff){
                 plus = false;
+                minDiff = diffMin;
                 taggedJetI[0] = bJetI[b];
             }
         }
