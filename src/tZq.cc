@@ -328,15 +328,25 @@ void treeReader::Analyze(){
 
     const bool isSMSignal[ (const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     const std::string sigNames[1] = {"tZq"};
+    std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
+    for(unsigned m = 0; m < nMll; ++m){
+        signal[m] = std::vector< std::vector < TH1D* > >(nCat);
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            signal[m][cat] = std::vector<TH1D*>(nDist);
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                signal[m][cat][dist] = (TH1D*) mergedHists[m][cat][dist][1]->Clone();
+            }
+        }
+    }
     //plot all distributions
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m], "tzq", false, false, "", nullptr, isSMSignal);             //linear plots
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m] + "_withSignal", "tzq", false, false, "", nullptr, isSMSignal, &mergedHists[m][cat][dist][1], sigNames, 1);             //linear plots with signal
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m] + "_withSignal", "tzq", false, false, "", nullptr, isSMSignal, &signal[m][cat][dist], sigNames, 1);             //linear plots with signal
 
                 plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_log", "tzq", true, false, "", nullptr, isSMSignal);    //log plots
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_withSignal_log", "tzq", true, false, "", nullptr, isSMSignal, &mergedHists[m][cat][dist][1], sigNames, 1);    //log plots with signal
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_withSignal_log", "tzq", true, false, "", nullptr, isSMSignal, &signal[m][cat][dist], sigNames, 1);    //log plots with signal
             }
         }
     }
