@@ -127,6 +127,27 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
+    //tree for BDT training
+    TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
+    TTree *tree[2];
+    tree[0] = new TTree("signalTree","tZq signal tree");
+    tree[1] = new TTree("backgroundTree", "tZq background tree");
+    double mForwardJets, mTop, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, numberOfBJets, numberOfJets, mll, eventWeight;
+    for(unsigned t = 0; t < 2; ++t){
+        tree[t]->Branch("mForwardJets", &mForwardJets, "mForwardJets/D");
+        tree[t]->Branch("mTop", &mTop, "mTop/D");
+        tree[t]->Branch("pTForwardJets", &pTForwardJets, "pTForwardJets/D");
+        tree[t]->Branch("etaLeading", &etaLeading, "etaLeading/D");            
+        tree[t]->Branch("etaMostForward", &etaMostForward, "etaMostForward/D");
+        tree[t]->Branch("pTRecoiling_tagged_wlep", &pTRecoiling_tagged_wlep, "pTRecoiling_tagged_wlep/D");
+        tree[t]->Branch("numberOfBJets", &numberOfBJets, "numberOfBJets/i");
+        tree[t]->Branch("numberOfJets", &numberOfJets, "numberOfJets/i");
+        tree[t]->Branch("mll", &mll, "mll/D");
+        tree[t]->Branch("eventWeight", &eventWeight, "eventWeight/D");
+    }
+
+
+
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
         if(sam == 0){                   //skip data for now
@@ -249,6 +270,22 @@ void treeReader::Analyze(){
                 leadingBJet = jetV[jetInd[1]];
             }
 
+            //Fill tree for BDT training
+            mForwardJets = forwardJets.M();
+            pTForwardJets = forwardJets.Pt();
+            etaLeading = fabs(leadingJet.Eta());
+            etaMostForward = fabs(highestEtaJet.Eta());
+            pTRecoiling_tagged_wlep = (recoilingJet + taggedBJet + lepV[lw]).Pt();
+            numberOfBJets = bJetCount;
+            numberOfJets = jetCount;
+            mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
+            eventWeight = weight;
+            if(currentSample == 1){
+                tree[0]->Fill();
+            } else if(currentSample > 1){
+                tree[1]->Fill();
+            }
+
             //distributions to plot
             double fill[nDist] = {_met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
@@ -324,6 +361,12 @@ void treeReader::Analyze(){
             }
         }
     }
+    
+    //Save training tree
+    treeFile.Write();
+    treeFile.Close();
+    for(unsigned t = 0; t < 2; ++t) delete tree[t];
+    /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -381,6 +424,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    */
 }
 
 int main(){
