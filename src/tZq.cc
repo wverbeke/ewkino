@@ -92,15 +92,20 @@ void treeReader::Analyze(){
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
     const unsigned nCat = 7;                //Several categories enriched in different processes
-    const std::string catNames[nCat] = {"inclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_3Jets", "2bJets"};
+    const unsigned nMll = 3;                //categories based on dilepton Mass
+    const std::string mllNames[nMll] = {"mllInclusive", "onZ", "offZ"};
+    const std::string catNames[nCat] = {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_3Jets", "2bJets"};
     //initialize vector holding all histograms
-    std::vector< std::vector < std::vector< TH1D* > > > hists(nCat);
-    for(unsigned cat = 0; cat < nCat; ++cat){
-        for(unsigned dist = 0; dist < nDist; ++dist){
-            hists[cat].push_back(std::vector < TH1D* >() );
-            for(size_t sam = 0; sam < samples.size(); ++sam){
-                hists[cat][dist].push_back(nullptr);
-                hists[cat][dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + catNames[cat]), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + catNames[cat] + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
+    std::vector< std::vector < std::vector< std::vector< TH1D* > > > > hists(nMll);
+    for(unsigned m = 0; m < nMll; ++m){
+        hists[m] = std::vector< std::vector < std::vector< TH1D* > > >(nCat);
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                hists[m][cat].push_back(std::vector < TH1D* >() );
+                for(size_t sam = 0; sam < samples.size(); ++sam){
+                    hists[m][cat][dist].push_back(nullptr);
+                    hists[m][cat][dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + catNames[cat] + mllNames[m]), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + catNames[cat] + mllNames[m] + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
+                }
             }
         }
     }
@@ -148,8 +153,6 @@ void treeReader::Analyze(){
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
             //require best Z mass to be onZ
             std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, lCount);
-            double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
-            if( fabs(mll - 91.1876) < 15) continue;
             //make ordered jet and bjet collections
             std::vector<unsigned> jetInd, bJetInd;
             unsigned jetCount = nJets(jetInd);
@@ -161,6 +164,10 @@ void treeReader::Analyze(){
             }
             //Determine tZq analysis category
             unsigned tzqCat = tzq::cat(jetCount, bJetCount);
+            //Determine mll category
+            unsigned mllCat = 0;                      //onZ by default
+            double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
+            if( fabs(mll - 91.1876) < 15) mllCat = 1; //offZ    
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
             for(unsigned j = 0; j < _nJets; ++j){
@@ -265,56 +272,72 @@ void treeReader::Analyze(){
             leadingBJet.DeltaR(highestEtaJet),
             highestDeepCSVJet.DeltaR(highestEtaJet)
             };
-
-            for(unsigned cat = 0; cat < nCat; ++cat){
-                if(cat == 0 || cat == (tzqCat + 1) ){
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        hists[cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
+            for(unsigned m = 0; m < nMll; ++m){
+                if(m == 0 || m == (mllCat + 1) ){
+                    for(unsigned cat = 0; cat < nCat; ++cat){
+                        if(cat == 0 || cat == (tzqCat + 1) ){
+                            for(unsigned dist = 0; dist < nDist; ++dist){
+                                hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
+                            }
+                        }
                     }
                 }
             }
         }
         //set histograms to 0 if negative
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                tools::setNegativeZero(hists[cat][dist][sam]);
-            }	
+        for(unsigned m = 0; m < nMll; ++m){
+            for(unsigned cat = 0; cat < nCat; ++cat){
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    tools::setNegativeZero(hists[m][cat][dist][sam]);
+                }	
+            }
         }
     }
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"obs.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
-    std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nCat);
-    for(unsigned cat = 0; cat < nCat; ++cat){
-        for(unsigned dist = 0; dist < nDist; ++dist){
-            mergedHists[cat].push_back(std::vector<TH1D*>(proc.size() ) );
-            for(size_t m = 0, sam = 0; m < proc.size(); ++m){
-                mergedHists[cat][dist][m] = (TH1D*) hists[cat][dist][sam]->Clone();
-                while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
-                    mergedHists[cat][dist][m]->Add(hists[cat][dist][sam + 1]);
+    std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
+    std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
+    for(unsigned m = 0; m < nMll; ++m){
+        mergedHists[m] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                mergedHists[m][cat].push_back(std::vector<TH1D*>(proc.size() ) );
+                for(size_t m = 0, sam = 0; m < proc.size(); ++m){
+                    mergedHists[m][cat][dist][m] = (TH1D*) hists[m][cat][dist][sam]->Clone();
+                    while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
+                        mergedHists[m][cat][dist][m]->Add(hists[m][cat][dist][sam + 1]);
+                        ++sam;
+                    }
                     ++sam;
                 }
-                ++sam;
             }
         }
     }
     //TEMPORARY//////
     //replace data with sum of all backgrounds
-    for(unsigned cat = 0; cat < nCat; ++cat){
-        for(unsigned dist = 0; dist < nDist; ++dist){
-            mergedHists[cat][dist][0] = (TH1D*) mergedHists[cat][dist][1]->Clone(); 
-            for(unsigned p = 2; p < proc.size(); ++p){
-                mergedHists[cat][dist][0]->Add(mergedHists[cat][dist][p]);
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                mergedHists[m][cat][dist][0] = (TH1D*) mergedHists[m][cat][dist][1]->Clone(); 
+                for(unsigned p = 2; p < proc.size(); ++p){
+                    mergedHists[m][cat][dist][0]->Add(mergedHists[m][cat][dist][p]);
+                }
             }
         }
     }
     ////////////////
 
     const bool isSMSignal[ (const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
+    const std::string sigNames[1] = {"tZq"};
     //plot all distributions
-    for(unsigned cat = 0; cat < nCat; ++cat){
-        for(unsigned dist = 0; dist < nDist; ++dist){
-            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat], "tzq", false, false, "", nullptr, isSMSignal);             //linear plots
-            plotDataVSMC(mergedHists[cat][dist][0], &mergedHists[cat][dist][1], &proc[0], mergedHists[cat][dist].size() - 1, "tZq/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_log", "tzq", true, false, "", nullptr, isSMSignal);    //log plots
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m], "tzq", false, false, "", nullptr, isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m] + "_withSignal", "tzq", false, false, "", nullptr, isSMSignal, &mergedHists[m][cat][dist][1], sigNames, 1);             //linear plots with signal
+
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_log", "tzq", true, false, "", nullptr, isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_withSignal_log", "tzq", true, false, "", nullptr, isSMSignal, &mergedHists[m][cat][dist][1], sigNames, 1);    //log plots with signal
+            }
         }
     }
 }
