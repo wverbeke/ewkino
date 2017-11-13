@@ -27,7 +27,7 @@ double tzq::findMTop(const TLorentzVector& wLep, const TLorentzVector& met, std:
     if(bJetI.size() == 0){
         taggedJetI[0] = jetI[0];
     } else if(bJetI.size() == 1){
-        taggedJetI[1] = bJetI[0];
+        taggedJetI[0] = bJetI[0];
     } else{
         double minDiff = 999999.;
         for(unsigned b = 0; b < bJetI.size(); ++b){
