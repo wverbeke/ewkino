@@ -21,8 +21,8 @@ double tzq::findMTop(const TLorentzVector& wLep, const TLorentzVector& met, std:
     //Check if there are any jets
     if(jetI.size() == 0) return 0.;
     std::pair<double, double> pzSol = trilep::neutrinoPZ(wLep, met);
-    TLorentzVector neutrinoPlus(met.Px(), met.Py(), pzSol.first, met.Px()*met.Px() + met.Py()*met.Py() + pzSol.first*pzSol.first);
-    TLorentzVector neutrinoMin(met.Px(), met.Py(), pzSol.second, met.Px()*met.Px() + met.Py()*met.Py() + pzSol.second*pzSol.second);
+    TLorentzVector neutrinoPlus(met.Px(), met.Py(), pzSol.first, sqrt(met.Px()*met.Px() + met.Py()*met.Py() + pzSol.first*pzSol.first) );
+    TLorentzVector neutrinoMin(met.Px(), met.Py(), pzSol.second, sqrt(met.Px()*met.Px() + met.Py()*met.Py() + pzSol.second*pzSol.second) );
     bool plus;  //true if + solution is chosen, otherwise false
     if(bJetI.size() == 0){
         taggedJetI[0] = jetI[0];
