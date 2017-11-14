@@ -132,7 +132,8 @@ void treeReader::Analyze(){
     TTree *tree[2];
     tree[0] = new TTree("signalTree","tZq signal tree");
     tree[1] = new TTree("backgroundTree", "tZq background tree");
-    double mForwardJets, mTop, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, numberOfBJets, numberOfJets, mll, eventWeight;
+    double mForwardJets, mTop, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, mll, eventWeight;
+    unsigned numberOfJets, numberOfBJets;
     for(unsigned t = 0; t < 2; ++t){
         tree[t]->Branch("mForwardJets", &mForwardJets, "mForwardJets/D");
         tree[t]->Branch("mTop", &mTop, "mTop/D");
