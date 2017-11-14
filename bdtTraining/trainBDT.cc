@@ -23,8 +23,8 @@ void trainMvaMethods(){
     dataloader->AddVariable("etaLeading", 'F');
     dataloader->AddVariable("etaMostForward", 'F');
     dataloader->AddVariable("pTRecoiling_tagged_wlep", 'F');
-    dataloader->AddVariable("numberOfBJets", 'F');
-    dataloader->AddVariable("numberOfJets", 'F');
+    dataloader->AddVariable("numberOfBJets", 'i');
+    dataloader->AddVariable("numberOfJets", 'i');
     dataloader->AddVariable("mll", 'F');
 
     dataloader->SetSignalWeightExpression("eventWeight");
@@ -33,7 +33,7 @@ void trainMvaMethods(){
     //get training trees
     TFile* file =  new TFile("../trainingTrees/bdtTrainingTree.root");
     TTree* signalTree = (TTree*) (file->Get("signalTree"));
-    TTree* backgroundTree = (TTree*) (file->Get("backgroundgTree"));
+    TTree* backgroundTree = (TTree*) (file->Get("backgroundTree"));
 
     dataloader->AddSignalTree(signalTree); //, 1?
     dataloader->AddBackgroundTree(backgroundTree);
