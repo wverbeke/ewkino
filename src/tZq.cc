@@ -280,9 +280,9 @@ void treeReader::Analyze(){
             numberOfJets = jetCount;
             mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
             eventWeight = weight;
-            if(currentSample == 1){
+            if(currentSample == 2){
                 tree[0]->Fill();
-            } else if(currentSample > 1){
+            } else if(currentSample > 2){
                 tree[1]->Fill();
             }
 
