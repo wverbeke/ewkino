@@ -25,7 +25,7 @@ void trainMvaMethods(){
     dataloader->AddVariable("pTRecoiling_tagged_wlep", 'F');
     dataloader->AddVariable("numberOfBJets", 'i');
     dataloader->AddVariable("numberOfJets", 'i');
-    dataloader->AddVariable("mll", 'F');
+    dataloader->AddVariable("dilepMass", 'F');
 
     dataloader->SetSignalWeightExpression("eventWeight");
     dataloader->SetBackgroundWeightExpression("eventWeight");
