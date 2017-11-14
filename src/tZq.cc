@@ -132,18 +132,18 @@ void treeReader::Analyze(){
     TTree *tree[2];
     tree[0] = new TTree("signalTree","tZq signal tree");
     tree[1] = new TTree("backgroundTree", "tZq background tree");
-    double mForwardJets, mTop, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, mll, eventWeight;
+    double mForwardJets, topMass, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, dilepMass, eventWeight;
     unsigned numberOfJets, numberOfBJets;
     for(unsigned t = 0; t < 2; ++t){
         tree[t]->Branch("mForwardJets", &mForwardJets, "mForwardJets/D");
-        tree[t]->Branch("mTop", &mTop, "mTop/D");
+        tree[t]->Branch("topMass", &topMass, "topMass/D");
         tree[t]->Branch("pTForwardJets", &pTForwardJets, "pTForwardJets/D");
         tree[t]->Branch("etaLeading", &etaLeading, "etaLeading/D");            
         tree[t]->Branch("etaMostForward", &etaMostForward, "etaMostForward/D");
         tree[t]->Branch("pTRecoiling_tagged_wlep", &pTRecoiling_tagged_wlep, "pTRecoiling_tagged_wlep/D");
         tree[t]->Branch("numberOfBJets", &numberOfBJets, "numberOfBJets/i");
         tree[t]->Branch("numberOfJets", &numberOfJets, "numberOfJets/i");
-        tree[t]->Branch("mll", &mll, "mll/D");
+        tree[t]->Branch("dilepMass", &dilepMass, "dilepMass/D");
         tree[t]->Branch("eventWeight", &eventWeight, "eventWeight/D");
     }
 
@@ -279,8 +279,9 @@ void treeReader::Analyze(){
             pTRecoiling_tagged_wlep = (recoilingJet + taggedBJet + lepV[lw]).Pt();
             numberOfBJets = bJetCount;
             numberOfJets = jetCount;
-            mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
+            dilepMass = (lepV[bestZ.first] + lepV[bestZ.second]).M();
             eventWeight = weight;
+            topMass = mTop;
             if(currentSample == 2){
                 tree[0]->Fill();
             } else if(currentSample > 2){
@@ -366,7 +367,6 @@ void treeReader::Analyze(){
     //Save training tree
     treeFile.Write();
     treeFile.Close();
-    for(unsigned t = 0; t < 2; ++t) delete tree[t];
     /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};

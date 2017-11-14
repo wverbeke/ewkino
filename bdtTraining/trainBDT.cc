@@ -18,7 +18,7 @@ void trainMvaMethods(){
     TMVA::DataLoader *dataloader=new TMVA::DataLoader("dataset");
 
     dataloader->AddVariable("mForwardJets", 'F');
-    dataloader->AddVariable("mTop", 'F');
+    dataloader->AddVariable("topMass", 'F');
     dataloader->AddVariable("pTForwardJets", 'F');
     dataloader->AddVariable("etaLeading", 'F');
     dataloader->AddVariable("etaMostForward", 'F');
