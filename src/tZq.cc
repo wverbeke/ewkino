@@ -23,6 +23,10 @@
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
+//include TMVA classes
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
+
 void treeReader::Analyze(){
     //Set CMS plotting style
     setTDRStyle();
@@ -33,6 +37,9 @@ void treeReader::Analyze(){
     std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfo;
     //name      xlabel    nBins,  min, max
     histInfo = {
+        //new BDT distribution
+        std::make_tuple("bdt", "BDT output", 30, -1, 1),
+        ////
         std::make_tuple("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
         std::make_tuple("mll", "M_{ll} (GeV)", 60, 12, 200),
         std::make_tuple("mt", "M_{T} (GeV)", 30, 0, 300),
@@ -146,6 +153,20 @@ void treeReader::Analyze(){
         tree[t]->Branch("dilepMass", &dilepMass, "dilepMass/D");
         tree[t]->Branch("eventWeight", &eventWeight, "eventWeight/D");
     }
+    
+    //MVA reader 
+    TMVA::Reader *mvaReader;
+    mvaReader = new TMVA::Reader( "!Color:!Silent" );
+    mvaReader->AddVariable("mFrowardJets", &mForwardJets);
+    mvaReader->AddVariable("topMass", &topMass);
+    mvaReader->AddVariable("pTForwardJets", &pTForwardJets);
+    mvaReader->AddVariable("etaLeading", &etaLeading);
+    mvaReader->AddVariable("etaMostForward", &etaMostForward);
+    mvaReader->AddVariable("pTRecoiling_tagged_wlep", &pTRecoiling_tagged_wlep);
+    mvaReader->AddVariable("numberOfBJets", &numberOfBJets);
+    mvaReader->AddVariable("numberOfJets", &numberOfJets);
+    mvaReader->AddVariable("dilepMass", &dilepMass);
+    mvaReader->BookMVA( "BDT method", "../bdtTraining/dataset/weights/TMVAClassification_BDT.weights.xml");
 
 
 
@@ -288,8 +309,9 @@ void treeReader::Analyze(){
                 tree[1]->Fill();
             }
 
+            double bdt = mvaReader->EvaluateMVA("BDT method");
             //distributions to plot
-            double fill[nDist] = {_met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
+            double fill[nDist] = {bdt, _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
              highestEtaJet.Pt(), mTop, taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
 
@@ -367,7 +389,6 @@ void treeReader::Analyze(){
     //Save training tree
     treeFile.Write();
     treeFile.Close();
-    /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -399,8 +420,9 @@ void treeReader::Analyze(){
             }
         }
     }
+    plotDataVSMC(mergedHists[0][0][0][0], &mergedHists[0][0][0][1], &proc[0], mergedHists[0][0][0].size() - 1, "bdtTestPlot", "tzq", false, false, "", nullptr, isSMSignal);
     ////////////////
-
+    /*
     const bool isSMSignal[ (const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     const std::string sigNames[1] = {"tZq"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
