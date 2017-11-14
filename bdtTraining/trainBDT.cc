@@ -28,7 +28,7 @@ void trainMvaMethods(){
     dataloader->AddVariable("mll", 'F');
 
     dataloader->SetSignalWeightExpression("eventWeight");
-    dataloader->SetBackgroundWeightExpression("eventWeight")
+    dataloader->SetBackgroundWeightExpression("eventWeight");
 
     //get training trees
     TFile* file =  new TFile("../trainingTrees/bdtTrainingTree.root");
@@ -39,11 +39,12 @@ void trainMvaMethods(){
     dataloader->AddBackgroundTree(backgroundTree);
 
     //NN
+    /*
     factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" );
     //multicore CPU Deep NN
     TString cpuOptions = dnnOptions + ":Architecture=CPU";
     factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN CPU", cpuOptions); 
-
+    */
     //BDT 
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG",
             "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" );
@@ -67,7 +68,7 @@ void trainMvaMethods(){
     outputFile->Close();
 
     delete factory;
-    delete dataloader
+    delete dataloader;
 }
 
 int main(){
