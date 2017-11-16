@@ -9,7 +9,6 @@
 #include "TMVA/DataLoader.h"
 #include "TMVA/Tools.h"
 
-
 void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat = ""){
     //output file
     TFile* outputFile = TFile::Open((const TString&) "trainingOutput" + jetsCat + mllCat +".root", "RECREATE" );
@@ -52,7 +51,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
 
     TCut mycuts = ""; // for example: TCut mycuts = "abs(var1)<0.5 && abs(var2-0.5)<1";
     TCut mycutb = ""; // for example: TCut mycutb = "abs(var1)<0.5";
-    factory->PrepareTrainingAndTestTree( mycuts, mycutb, "nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0:NormMode=None:SplitMode=Random:!V" );
+    dataloader->PrepareTrainingAndTestTree( mycuts, mycutb, "nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0:NormMode=None:SplitMode=Random:!V" );
 
     //NN
     /*

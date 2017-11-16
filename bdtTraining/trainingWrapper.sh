@@ -1,8 +1,9 @@
 #!/bin/bash
-#0bJets_01Jets 0bJets_2Jets 1bJet_01jets 1bJet_23Jets 1bJet_4Jets 2bJets; do
-for jetCat in  1bJet_01jets; do
+for 0bJets_01Jets 0bJets_2Jets 1bJet_01jets 1bJet_23Jets 1bJet_4Jets 2bJets; do
     for mllCat in onZ offZ; do
         ./trainBDT $jetCat $mllCat
-        mv dataset/weights/TMVAClassification_BDT.weights.xml bdtWeights/${jetCat}_${mllCat}_BDT.weights.xml
+        for method in BDT BDTG BDTD BDTB; do
+            mv dataset/weights/TMVAClassification_${method}.weights.xml bdtWeights/${jetCat}_${mllCat}_${method}.weights.xml
+        done
     done
 done
