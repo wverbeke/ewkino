@@ -27,7 +27,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     dataloader->AddVariable("etaMostForward", 'F');
     dataloader->AddVariable("pTLeadingLepton", 'F');
     dataloader->AddVariable("pTLeadingJet", 'F');
-    dataloader->AddVariable("pTLeadingBJet", 'F');
+    if(jetCat != "1bJet_01jets" && jetCat != "0bJets_01Jets") dataloader->AddVariable("pTLeadingBJet", 'F');
     dataloader->AddVariable("missingET", 'F');
     dataloader->AddVariable("pTTrailingLepton", 'F');
     //dataloader->AddVariable("pTHighestDeepCSVJet", 'F');
