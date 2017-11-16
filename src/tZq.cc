@@ -136,7 +136,7 @@ void treeReader::Analyze(){
     const TString extra = ""; //for plot names
 
     Float_t mForwardJets, topMass, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, dilepMass, eventWeight, missingET, pTLeadingBJet, pTSubleadingLepton;
-    Float_t numberOfJets, numberOfBJets, etaNotSoForwardJets, pTHighestDeepCSVJet, pTLeadingJet, mNotSoForwardJets, etaRecoilingJet, pTLeadingLepton, pTTrailingLepton;
+    Float_t numberOfJets, numberOfBJets, etaNotSoForwardJets, pTHighestDeepCSVJet, pTLeadingJet, mNotSoForwardJets, etaRecoilingJet, pTLeadingLepton, pTTrailingLepton, highestDeepCSV;
     //tree for BDT training
     TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
     TTree *tree[2][nCat][nMll];
@@ -165,6 +165,7 @@ void treeReader::Analyze(){
                 tree[t][cat][m]->Branch("pTTrailingLepon", &pTTrailingLepton, "pTTrailingLepton/F");
                 tree[t][cat][m]->Branch("pTSubleadingLepton", &pTSubleadingLepton, "pTSubleadingLepton/F");
                 tree[t][cat][m]->Branch("missingET", &missingET, "missingET/F");
+                tree[t][cat][m]->Branch("highestDeepCSV", &highestDeepCSV, "highestDeepCSV/F");
                 //event weights
                 tree[t][cat][m]->Branch("eventWeight", &eventWeight, "eventWeight/F");
             }
@@ -329,6 +330,7 @@ void treeReader::Analyze(){
             pTSubleadingLepton = _lPt[ind[1]];
             pTLeadingBJet = leadingBJet.Pt();
             missingET = _met;
+            highestDeepCSV = _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
             /*
             if(currentSample == 2){
                 tree[0]->Fill();
