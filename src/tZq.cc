@@ -57,6 +57,7 @@ void treeReader::Analyze(){
         std::make_tuple("trailingBJetPt", "P_{T} (trailing b-jet) (GeV)", 30, 0, 200),
         std::make_tuple("jetHighestEtaPt", "P_{T} (most forward jet) (GeV)", 30, 0, 300),
         std::make_tuple("mtop", "M_{(W + b)} (GeV)", 30, 0, 400),
+        std::make_tuple("m3l", "M_{3l} (GeV)", 30, 0, 600),
         std::make_tuple("taggedBJetPt", "P_{T} (b-jet from top) (GeV)", 30, 0, 300),
         std::make_tuple("taggedBJetEta", "|#eta| (b-jet from top) (GeV)", 30, 0, 2.5),
         std::make_tuple("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 0, 300), 
@@ -134,9 +135,8 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
-    Float_t mForwardJets, topMass, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, dilepMass, eventWeight;
-    Float_t numberOfJets, numberOfBJets, etaNotSoForwardJets, pTHighestDeepCSVJet, pTLeadingJet, mNotSoForwardJets, etaRecoilingJet, pTLeadingLepton;
-    /*
+    Float_t mForwardJets, topMass, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, dilepMass, eventWeight, missingET, pTLeadingBJet, pTSubleadingLepton;
+    Float_t numberOfJets, numberOfBJets, etaNotSoForwardJets, pTHighestDeepCSVJet, pTLeadingJet, mNotSoForwardJets, etaRecoilingJet, pTLeadingLepton, pTTrailingLepton;
     //tree for BDT training
     TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
     TTree *tree[2][nCat][nMll];
@@ -161,12 +161,16 @@ void treeReader::Analyze(){
                 tree[t][cat][m]->Branch("pTLeadingLepton", &pTLeadingLepton, "pTLeadingLepton/F");
                 tree[t][cat][m]->Branch("mNotSoForwardJets", &mNotSoForwardJets, "mNotSoForwardJets/F");
                 tree[t][cat][m]->Branch("etaRecoilingJet", &etaRecoilingJet, "etaRecoilingJet/F");
+                tree[t][cat][m]->Branch("pTLeadingBJet", &pTLeadingBJet, "pTLeadingBJet/F");
+                tree[t][cat][m]->Branch("pTTrailingLepon", &pTTrailingLepton, "pTTrailingLepton/F");
+                tree[t][cat][m]->Branch("pTSubleadingLepton", &pTSubleadingLepton, "pTSubleadingLepton/F");
+                tree[t][cat][m]->Branch("missingET", &missingET, "missingET/F");
                 //event weights
                 tree[t][cat][m]->Branch("eventWeight", &eventWeight, "eventWeight/F");
             }
         }
     }
-    */
+    /*
     //MVA reader 
     TMVA::Reader *mvaReader[nMll][nCat]; //one BDT for every category
     for(unsigned m = 0; m < nMll - 1; ++m){
@@ -182,6 +186,7 @@ void treeReader::Analyze(){
             mvaReader[m][cat]->BookMVA("BDT method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDT.weights.xml");
         }
     }
+    */
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
         if(sam == 0){                   //skip data for now
@@ -320,6 +325,10 @@ void treeReader::Analyze(){
             pTLeadingLepton = _lPt[ind[0]];
             mNotSoForwardJets = notSoForwardJets.M();
             etaRecoilingJet = recoilingJet.Eta();
+            pTTrailingLepton = _lPt[ind[2]];
+            pTSubleadingLepton = _lPt[ind[1]];
+            pTLeadingBJet = leadingBJet.Pt();
+            missingET = _met;
             /*
             if(currentSample == 2){
                 tree[0]->Fill();
@@ -327,12 +336,12 @@ void treeReader::Analyze(){
                 tree[1]->Fill();
             }
             */
-            double bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
-            //double bdt = 0;
+            //double bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
+            double bdt = 0;
             //distributions to plot
             double fill[nDist] = {bdt, _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
-             highestEtaJet.Pt(), mTop, taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
+             highestEtaJet.Pt(), mTop, (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
 
             (highestEtaJet + leadingBJet + lepV[lw] + met).M(),
             (highestEtaJet + leadingBJet + lepV[lw]).M(),
@@ -388,8 +397,8 @@ void treeReader::Analyze(){
                     for(unsigned cat = 0; cat < nCat; ++cat){
                         if(cat == 0 || cat == (tzqCat + 1) ){
                             //Fill training tree
-                            //if(currentSample == 2) tree[0][cat][m]->Fill();
-                            //else if(currentSample > 2) tree[1][cat][m]->Fill();
+                            if(currentSample == 2) tree[0][cat][m]->Fill();
+                            else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
                             for(unsigned dist = 0; dist < nDist; ++dist){
                                 hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
                             }
@@ -409,10 +418,9 @@ void treeReader::Analyze(){
     }
     
     //Save training tree
-    /*
     treeFile.Write();
     treeFile.Close();
-    */
+    /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -469,6 +477,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    */
 }
 int main(){
     treeReader reader;
