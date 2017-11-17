@@ -110,12 +110,14 @@ void treeReader::Analyze(){
         std::make_tuple("deltaRleadingBJet_highestEtaJet", "#DeltaR(leading b-jet, most forward jet)", 30, 0, 10),
         std::make_tuple("deltaRhighestDeepCSVJet_highestEtaJet", "#DeltaR(highest DeepCSV jet, most forward jet)", 30, 0, 10),
 
-        std::make_tuple("minMLeptonJet", "M_{l + jet}^{min}", 30, 0, 200),
-        std::make_tuple("maxMLeptonJet", "M_{l + jet}^{max}", 30, 0, 400),
-        std::make_tuple("minMLeptonBJet", "M_{l + bjet}^{min}", 30, 0, 200),
-        std::make_tuple("maxMLeptonBJet", "M_{l + bjet}^{max}", 30, 0, 400),
-        std::make_tuple("minMJetJet", "M_{jet + jet}^{min}", 30, 0, 200),
-        std::make_tuple("maxMJetJet", "M_{jet + jet}^{max}", 30, 0, 400),
+        std::make_tuple("minMLeptonJet", "M_{l + jet}^{min} (GeV)", 30, 0, 200),
+        std::make_tuple("maxMLeptonJet", "M_{l + jet}^{max} (GeV)", 30, 0, 400),
+        std::make_tuple("minMLeptonBJet", "M_{l + bjet}^{min} (GeV)", 30, 0, 200),
+        std::make_tuple("maxMLeptonBJet", "M_{l + bjet}^{max} (GeV)", 30, 0, 400),
+        std::make_tuple("minMJetJet", "M_{jet + jet}^{min} (GeV)", 30, 0, 200),
+        std::make_tuple("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 30, 0, 400),
+        std::make_tuple("minMLeptonLepton", "M_{2l}^{min} (GeV)", 30, 0, 200),
+        std::make_tuple("maxMLeptonLepton", "M_{2l}^{max} (GeV)", 30, 0, 300),
 
         std::make_tuple("minDeltaPhiLeptonJet", "min(#Delta#Phi(l, jet))", 30, 0, 3.15),
         std::make_tuple("maxDeltaPhiLeptonJet", "max(#Delta#Phi(l, jet))", 30, 0, 3.15),
@@ -123,13 +125,17 @@ void treeReader::Analyze(){
         std::make_tuple("maxDeltaPhiLeptonBJet", "max(#Delta#Phi(l, bjet))", 30, 0, 3.15),
         std::make_tuple("minDeltaPhiJetJet", "min(#Delta#Phi(jet, jet))", 30, 0, 3.15),
         std::make_tuple("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 30, 0, 3.15),
+        std::make_tuple("minDeltaPhiLeptonLepton", "min(#Delta#Phi(l, l))", 30, 0, 3.15),
+        std::make_tuple("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 30, 0, 3.15),
 
         std::make_tuple("minDeltaRLeptonJet", "min(#DeltaR(l, jet))", 30, 0, 7),
         std::make_tuple("maxDeltaRLeptonJet", "max(#DeltaR(l, jet))", 30, 0, 10),
         std::make_tuple("minDeltaRLeptonBJet", "min(#DeltaR(l, bjet))", 30, 0, 7),
         std::make_tuple("maxDeltaRLeptonBJet", "max(#DeltaR(l, bjet))", 30, 0, 10),
         std::make_tuple("minDeltaRJetJet", "min(#DeltaR(jet, jet))", 30, 0, 7),
-        std::make_tuple("maxDeltaRJetJet", "max(#DeltaR(jet, jet))", 30, 0, 10)
+        std::make_tuple("maxDeltaRJetJet", "max(#DeltaR(jet, jet))", 30, 0, 10),
+        std::make_tuple("minDeltaRLeptonLepton", "min(#DeltaR(l, l))", 30, 0, 7),
+        std::make_tuple("maxDeltaRLeptonLepton", "max(#DeltaR(l, l))", 30, 0, 10)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -372,12 +378,12 @@ void treeReader::Analyze(){
             double maxDeltaPhiLeptonbJet = 0.;
             for(unsigned l = 0; l < lCount; ++l){
                 for(unsigned j = 0; j < bJetCount; ++j){
-                    if( (lepV[l] + jetV[bJetInd[j]]).M() < minMLeptonJet) minMLeptonbJet = (lepV[l] + jetV[bJetInd[j]]).M();
-                    if( (lepV[l] + jetV[bJetInd[j]]).M() > maxMLeptonJet) maxMLeptonbJet = (lepV[l] + jetV[bJetInd[j]]).M();
-                    if( lepV[l].DeltaR(jetV[bJetInd[j]]) < minDeltaRLeptonJet) minDeltaRLeptonbJet = lepV[l].DeltaR(jetV[bJetInd[j]]);
-                    if( lepV[l].DeltaR(jetV[bJetInd[j]]) > maxDeltaRLeptonJet) maxDeltaRLeptonbJet = lepV[l].DeltaR(jetV[bJetInd[j]]);
-                    if( lepV[l].DeltaPhi(jetV[bJetInd[j]]) < minDeltaPhiLeptonJet) minDeltaPhiLeptonbJet = lepV[l].DeltaPhi(jetV[bJetInd[j]]);
-                    if( lepV[l].DeltaPhi(jetV[bJetInd[j]]) > maxDeltaPhiLeptonJet) maxDeltaPhiLeptonbJet = lepV[l].DeltaPhi(jetV[bJetInd[j]]);
+                    if( (lepV[l] + jetV[bJetInd[j]]).M() < minMLeptonbJet) minMLeptonbJet = (lepV[l] + jetV[bJetInd[j]]).M();
+                    if( (lepV[l] + jetV[bJetInd[j]]).M() > maxMLeptonbJet) maxMLeptonbJet = (lepV[l] + jetV[bJetInd[j]]).M();
+                    if( lepV[l].DeltaR(jetV[bJetInd[j]]) < minDeltaRLeptonbJet) minDeltaRLeptonbJet = lepV[l].DeltaR(jetV[bJetInd[j]]);
+                    if( lepV[l].DeltaR(jetV[bJetInd[j]]) > maxDeltaRLeptonbJet) maxDeltaRLeptonbJet = lepV[l].DeltaR(jetV[bJetInd[j]]);
+                    if( lepV[l].DeltaPhi(jetV[bJetInd[j]]) < minDeltaPhiLeptonbJet) minDeltaPhiLeptonbJet = lepV[l].DeltaPhi(jetV[bJetInd[j]]);
+                    if( lepV[l].DeltaPhi(jetV[bJetInd[j]]) > maxDeltaPhiLeptonbJet) maxDeltaPhiLeptonbJet = lepV[l].DeltaPhi(jetV[bJetInd[j]]);
                 }
             }
             if(minDeltaRLeptonbJet == 99999.) minDeltaRLeptonbJet = 0.;
@@ -392,17 +398,38 @@ void treeReader::Analyze(){
             double maxDeltaPhiJetJet = 0.;
             for(unsigned l = 0; l < jetCount - 1; ++l){
                 for(unsigned j = l + 1; j < jetCount; ++j){
-                    if( (jetV[jetInd[l]] + jetV[jetInd[j]]).M() < minMLeptonJet) minMLeptonbJet = (jetV[jetInd[l]] + jetV[jetInd[j]]).M();
-                    if( (jetV[jetInd[l]] + jetV[jetInd[j]]).M() > maxMLeptonJet) maxMLeptonbJet = (jetV[jetInd[l]] + jetV[jetInd[j]]).M();
-                    if( jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]) < minDeltaRLeptonJet) minDeltaRLeptonbJet = jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]);
-                    if( jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]) > maxDeltaRLeptonJet) maxDeltaRLeptonbJet = jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]);
-                    if( jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]) < minDeltaPhiLeptonJet) minDeltaPhiLeptonbJet = jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]);
-                    if( jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]) > maxDeltaPhiLeptonJet) maxDeltaPhiLeptonbJet = jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]);
+                    if( (jetV[jetInd[l]] + jetV[jetInd[j]]).M() < minMJetJet) minMJetJet = (jetV[jetInd[l]] + jetV[jetInd[j]]).M();
+                    if( (jetV[jetInd[l]] + jetV[jetInd[j]]).M() > maxMJetJet) maxMJetJet = (jetV[jetInd[l]] + jetV[jetInd[j]]).M();
+                    if( jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]) < minDeltaRJetJet) minDeltaRJetJet = jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]);
+                    if( jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]) > maxDeltaRJetJet) maxDeltaRJetJet = jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]);
+                    if( jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]) < minDeltaPhiJetJet) minDeltaPhiJetJet = jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]);
+                    if( jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]) > maxDeltaPhiJetJet) maxDeltaPhiJetJet = jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]);
                 }
             }
             if(minDeltaRJetJet == 99999.) minDeltaRJetJet = 0.;
             if(minDeltaPhiJetJet == 99999.) minDeltaPhiJetJet = 0.;
             if(minMJetJet == 99999.) minMJetJet = 0.;
+            //lepton lepton 
+            double minMLeptonLepton = 99999.;
+            double maxMLeptonLepton = 0.;
+            double minDeltaRLeptonLepton = 99999.;
+            double maxDeltaRLeptonLepton = 0.;
+            double minDeltaPhiLeptonLepton = 99999.;
+            double maxDeltaPhiLeptonLepton = 0.;
+            for(unsigned l = 0; l < lCount - 1; ++l){
+                for(unsigned j = l + 1; j < lCount; ++j){
+                    if( (lepV[l] + lepV[j]).M() < minMLeptonLepton) minMLeptonLepton = (lepV[l] + lepV[j]).M();
+                    if( (lepV[l] + lepV[j]).M() > maxMLeptonLepton) maxMLeptonLepton = (lepV[l] + lepV[j]).M();
+                    if( lepV[l].DeltaR(lepV[j]) < minDeltaRLeptonLepton) minDeltaRLeptonLepton = lepV[l].DeltaR(lepV[j]);
+                    if( lepV[l].DeltaR(lepV[j]) > maxDeltaRLeptonLepton) maxDeltaRLeptonLepton = lepV[l].DeltaR(lepV[j]);
+                    if( lepV[l].DeltaPhi(lepV[j]) < minDeltaPhiLeptonLepton) minDeltaPhiLeptonLepton = lepV[l].DeltaPhi(lepV[j]);
+                    if( lepV[l].DeltaPhi(lepV[j]) > maxDeltaPhiLeptonLepton) maxDeltaPhiLeptonLepton = lepV[l].DeltaPhi(lepV[j]);
+                }
+            }
+            if(minDeltaRLeptonLepton == 99999.) minDeltaRLeptonLepton = 0.;
+            if(minDeltaPhiLeptonLepton == 99999.) minDeltaPhiLeptonLepton = 0.;
+            if(minMLeptonLepton == 99999.) minMLeptonLepton = 0.;
+
              
             //Fill tree for BDT training
             mForwardJets = forwardJets.M();
@@ -494,9 +521,9 @@ void treeReader::Analyze(){
             leadingBJet.DeltaR(highestEtaJet),
             highestDeepCSVJet.DeltaR(highestEtaJet),
 
-            minMLeptonJet, maxMLeptonJet, minDeltaRLeptonJet, maxDeltaRLeptonJet, minDeltaPhiLeptonJet, maxDeltaPhiLeptonJet,
-            minMLeptonbJet, maxMLeptonbJet, minDeltaRLeptonbJet, maxDeltaRLeptonbJet, minDeltaPhiLeptonbJet, maxDeltaPhiLeptonbJet,
-            minMJetJet, maxMJetJet, minDeltaRJetJet, maxDeltaRJetJet, minDeltaPhiJetJet, maxDeltaPhiJetJet
+            minMLeptonJet, maxMLeptonJet, minMLeptonbJet, maxMLeptonbJet, minMJetJet, maxMJetJet, minMLeptonLepton, maxMLeptonLepton,
+            minDeltaPhiLeptonJet, maxDeltaPhiLeptonJet, minDeltaPhiLeptonbJet, maxDeltaPhiLeptonbJet, minDeltaPhiJetJet, maxDeltaPhiJetJet, minDeltaPhiLeptonLepton, maxDeltaPhiLeptonLepton,
+            minDeltaRLeptonJet, maxDeltaRLeptonJet, minDeltaRLeptonbJet, maxDeltaRLeptonbJet, minDeltaRJetJet, maxDeltaRJetJet, minDeltaRLeptonLepton, maxDeltaRLeptonLepton
 
             };
             for(unsigned m = 0; m < nMll; ++m){
