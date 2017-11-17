@@ -209,6 +209,7 @@ void treeReader::Analyze(){
     TMVA::Reader *mvaReader[nMll][nCat]; //one BDT for every category
     for(unsigned m = 0; m < nMll - 1; ++m){
         for(unsigned cat = 0; cat < nCat - 1; ++cat){
+            if(catNames[cat + 1] == "0bJets_01Jets" && mllNames[m + 1] == "offZ") continue; //temporary patch, remove later
             mvaReader[m][cat] = new TMVA::Reader( "!Color:!Silent" );
             mvaReader[m][cat]->AddVariable("topMass", &topMass);
             if(catNames[cat + 1] != "1bJet_01jets") mvaReader[m][cat]->AddVariable("pTForwardJets", &pTForwardJets);
@@ -219,6 +220,7 @@ void treeReader::Analyze(){
             if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets") mvaReader[m][cat]->AddVariable("pTLeadingBJet", &pTLeadingBJet);
             mvaReader[m][cat]->AddVariable("missingET", &missingET);
             mvaReader[m][cat]->AddVariable("pTTrailingLepton", &pTTrailingLepton);
+            mvaReader[m][cat]->AddVariable("highestDeepCSV", &highestDeepCSV);
             mvaReader[m][cat]->BookMVA("BDT method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDT.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTG method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTG.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTD method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTD.weights.xml");
@@ -396,14 +398,17 @@ void treeReader::Analyze(){
             double maxDeltaRJetJet = 0.;
             double minDeltaPhiJetJet = 99999.;
             double maxDeltaPhiJetJet = 0.;
-            for(unsigned l = 0; l < jetCount - 1; ++l){
-                for(unsigned j = l + 1; j < jetCount; ++j){
-                    if( (jetV[jetInd[l]] + jetV[jetInd[j]]).M() < minMJetJet) minMJetJet = (jetV[jetInd[l]] + jetV[jetInd[j]]).M();
-                    if( (jetV[jetInd[l]] + jetV[jetInd[j]]).M() > maxMJetJet) maxMJetJet = (jetV[jetInd[l]] + jetV[jetInd[j]]).M();
-                    if( jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]) < minDeltaRJetJet) minDeltaRJetJet = jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]);
-                    if( jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]) > maxDeltaRJetJet) maxDeltaRJetJet = jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]);
-                    if( jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]) < minDeltaPhiJetJet) minDeltaPhiJetJet = jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]);
-                    if( jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]) > maxDeltaPhiJetJet) maxDeltaPhiJetJet = jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]);
+            //std::cout << "jetCount = " << jetCount << std::endl;
+            if(jetCount != 0){
+                for(unsigned l = 0; l < jetCount - 1; ++l){
+                    for(unsigned j = l + 1; j < jetCount; ++j){
+                        if( (jetV[jetInd[l]] + jetV[jetInd[j]]).M() < minMJetJet) minMJetJet = (jetV[jetInd[l]] + jetV[jetInd[j]]).M();
+                        if( (jetV[jetInd[l]] + jetV[jetInd[j]]).M() > maxMJetJet) maxMJetJet = (jetV[jetInd[l]] + jetV[jetInd[j]]).M();
+                        if( jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]) < minDeltaRJetJet) minDeltaRJetJet = jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]);
+                        if( jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]) > maxDeltaRJetJet) maxDeltaRJetJet = jetV[jetInd[l]].DeltaR(jetV[jetInd[j]]);
+                        if( jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]) < minDeltaPhiJetJet) minDeltaPhiJetJet = jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]);
+                        if( jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]) > maxDeltaPhiJetJet) maxDeltaPhiJetJet = jetV[jetInd[l]].DeltaPhi(jetV[jetInd[j]]);
+                    }
                 }
             }
             if(minDeltaRJetJet == 99999.) minDeltaRJetJet = 0.;
@@ -429,7 +434,6 @@ void treeReader::Analyze(){
             if(minDeltaRLeptonLepton == 99999.) minDeltaRLeptonLepton = 0.;
             if(minDeltaPhiLeptonLepton == 99999.) minDeltaPhiLeptonLepton = 0.;
             if(minMLeptonLepton == 99999.) minMLeptonLepton = 0.;
-
              
             //Fill tree for BDT training
             mForwardJets = forwardJets.M();
@@ -460,13 +464,15 @@ void treeReader::Analyze(){
                 tree[1]->Fill();
             }
             */
-            double bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
-            double bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
-            double bdtD = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTD method");
-            double bdtB = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTB method");
-            double mlp = mvaReader[mllCat][tzqCat]->EvaluateMVA("MLP method");
-            double deepNN = mvaReader[mllCat][tzqCat]->EvaluateMVA("DNN method");
-            //double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0;
+            double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0;
+            if(catNames[tzqCat + 1] != "0bJets_01Jets" && mllNames[mllCat + 1] != "offZ"){  //temporary patch, fix later!
+                bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
+                bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
+                bdtD = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTD method");
+                bdtB = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTB method");
+                mlp = mvaReader[mllCat][tzqCat]->EvaluateMVA("MLP method");
+                deepNN = mvaReader[mllCat][tzqCat]->EvaluateMVA("DNN method");
+            }
             //distributions to plot
             double fill[nDist] = {bdt, bdtG, bdtD, bdtB, mlp, deepNN, _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
