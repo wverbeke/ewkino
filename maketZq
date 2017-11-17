@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS= -Wl,--no-as-needed
+CFLAGS= -Wl,--no-as-needed,-lTMVA
 LDFLAGS=`root-config --glibs --cflags`
 SOURCES= src/treeReader.cc src/tZq.cc src/analysisTools.cc src/eventSelection.cc src/trilepTools.cc src/tZqTools.cc plotting/plotCode.cc plotting/tdrStyle.cc
 OBJECTS=$(SOURCES:.cc=.o)
