@@ -30,6 +30,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     if(jetsCat != "1bJet_01jets" && jetsCat != "0bJets_01Jets") dataloader->AddVariable("pTLeadingBJet", 'F');
     dataloader->AddVariable("missingET", 'F');
     dataloader->AddVariable("pTTrailingLepton", 'F');
+    dataloader->AddVariable("highestDeepCSV", 'F');
     //dataloader->AddVariable("pTHighestDeepCSVJet", 'F');
     //dataloader->AddVariable("etaRecoilingJet", 'F');
     //dataloader->AddVariable("pTRecoiling_tagged_wlep", 'F');
@@ -45,27 +46,55 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     TTree* signalTree = (TTree*) (file->Get((const TString&) "signalTree" + jetsCat + mllCat));
     TTree* backgroundTree = (TTree*) (file->Get((const TString&) "backgroundTree" + jetsCat + mllCat));
 
-    dataloader->AddSignalTree(signalTree);
-    dataloader->AddBackgroundTree(backgroundTree);
+    dataloader->AddSignalTree(signalTree, 1.);
+    dataloader->AddBackgroundTree(backgroundTree, 1.);
 
 
     TCut mycuts = ""; // for example: TCut mycuts = "abs(var1)<0.5 && abs(var2-0.5)<1";
     TCut mycutb = ""; // for example: TCut mycutb = "abs(var1)<0.5";
     dataloader->PrepareTrainingAndTestTree( mycuts, mycutb, "nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0:NormMode=None:SplitMode=Random:!V" );
 
-    //NN
-    /*
-    factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" );
-    //multicore CPU Deep NN
-    TString cpuOptions = dnnOptions + ":Architecture=CPU";
-    factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN CPU", cpuOptions); 
-    */
     //BDT 
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" );
-    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT", "!H:!V:NTrees=1000:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" ); //850
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT", "!H:!V:NTrees=1000:MinNodeSize=1%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=-1" ); //850
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTB", "!H:!V:NTrees=400:BoostType=Bagging:SeparationType=GiniIndex:nCuts=20");
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTD", "!H:!V:NTrees=400:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
 
+    //NN
+    factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" );
+    // General layout.
+    TString layoutString ("Layout=TANH|128,TANH|128,TANH|128,LINEAR");
+     
+    // Training strategies.
+    TString training0("LearningRate=1e-1,Momentum=0.9,Repetitions=1,"
+    "ConvergenceSteps=20,BatchSize=256,TestRepetitions=10,"
+    "WeightDecay=1e-4,Regularization=L2,"
+    "DropConfig=0.0+0.5+0.5+0.5, Multithreading=True");
+    TString training1("LearningRate=1e-2,Momentum=0.9,Repetitions=1,"
+    "ConvergenceSteps=20,BatchSize=256,TestRepetitions=10,"
+    "WeightDecay=1e-4,Regularization=L2,"
+    "DropConfig=0.0+0.0+0.0+0.0, Multithreading=True");
+    TString training2("LearningRate=1e-3,Momentum=0.0,Repetitions=1,"
+    "ConvergenceSteps=20,BatchSize=256,TestRepetitions=10,"
+    "WeightDecay=1e-4,Regularization=L2,"
+    "DropConfig=0.0+0.0+0.0+0.0, Multithreading=True");
+    TString trainingStrategyString ("TrainingStrategy=");
+    trainingStrategyString += training0 + "|" + training1 + "|" + training2;
+    
+    // General Options.
+    TString dnnOptions ("!H:V:ErrorStrategy=CROSSENTROPY:VarTransform=N:"
+    "WeightInitialization=XAVIERUNIFORM");
+    dnnOptions.Append (":"); dnnOptions.Append (layoutString);
+    dnnOptions.Append (":"); dnnOptions.Append (trainingStrategyString);
+    
+    // Standard implementation, no dependencies.
+    TString stdOptions = dnnOptions + ":Architecture=STANDARD";
+    factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN", stdOptions);
+    
+    // Multi-core CPU implementation.
+    //TString cpuOptions = dnnOptions + ":Architecture=CPU";
+    //factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN CPU", cpuOptions);
+    //
     //train MVAs using the set of training events
     factory->TrainAllMethods();
 
