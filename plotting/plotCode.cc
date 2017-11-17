@@ -398,12 +398,10 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     c->SaveAs((const TString&) "plots/" + file + ".png");
     
     //Clean up memory 
-    /*
     delete dataGraph;
     delete obsRatio;
     delete bkgStatErrors;
-    delete c;
     delete p1;
     delete p2;
-    */
+    delete c;
 }
