@@ -38,12 +38,12 @@ void treeReader::Analyze(){
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
-        std::make_tuple("bdt", "BDT output", 30, -1, 1),
+        std::make_tuple("bdt", "BDT output", 30, -0.35, 0.35),
         std::make_tuple("bdtG", "BDTG output", 30, -1, 1),
-        std::make_tuple("bdtD", "BDTD output", 30, -1, 1),
+        std::make_tuple("bdtD", "BDTD output", 30, -0.5, 0.5),
         std::make_tuple("bdtB", "BDTB output", 30, -1, 1),
-        std::make_tuple("mlp", "MLP output", 30, -1, 1),
-        std::make_tuple("deepNN", "deep neural network output", 30, -1, 1),
+        std::make_tuple("mlp", "MLP output", 30, 0, 1),
+        std::make_tuple("deepNN", "deep neural network output", 30, 0, 1),
         ////
         std::make_tuple("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
         std::make_tuple("mll", "M_{ll} (GeV)", 60, 12, 200),
@@ -67,20 +67,20 @@ void treeReader::Analyze(){
         std::make_tuple("taggedBJetEta", "|#eta| (b-jet from top) (GeV)", 30, 0, 2.5),
         std::make_tuple("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 0, 300), 
         std::make_tuple("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 5),
-        std::make_tuple("m_highestEta_leadingB_W", "M_{(most forward jet + leading b-jet + W)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_highestEta_leadingB_Wlep", "M_{(most forward jet + leading b-jet + lepton)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_highestEta_leadingB_WZ", "M_{(most forward jet + leading b-jet + WZ)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_highestEta_leadingB_WlepZ", "M_{(most forward jet + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_taggedRecoil_taggedB_W", "M_{(recoiling jet + tagged b-jet + W)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_taggedRecoil_taggedB_Wlep", "M_{(recoiling jet + tagged b-jet + lepton)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_taggedRecoil_taggedB_WZ", "M_{(recoiling jet + tagged b-jet + WZ)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_taggedRecoil_taggedB_WlepZ", "M_{(recoiling jet + tagged b-jet + lepton + Z)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_forwardJets_leadingB_W", "M_{(forward jets + leading b-jet + W)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_forwardJets_leadingB_Wlep", "M_{(forward jets + leading b-jet + lepton)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_forwardJets_leadingB_WZ", "M_{(forward jets + leading b-jet + WZ)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_highestEta_leadingB_W", "M_{(most forward jet + leading b-jet + W)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_highestEta_leadingB_Wlep", "M_{(most forward jet + leading b-jet + lepton)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_highestEta_leadingB_WZ", "M_{(most forward jet + leading b-jet + WZ)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_highestEta_leadingB_WlepZ", "M_{(most forward jet + leading b-jet + lepton + Z)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_taggedRecoil_taggedB_W", "M_{(recoiling jet + tagged b-jet + W)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_taggedRecoil_taggedB_Wlep", "M_{(recoiling jet + tagged b-jet + lepton)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_taggedRecoil_taggedB_WZ", "M_{(recoiling jet + tagged b-jet + WZ)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_taggedRecoil_taggedB_WlepZ", "M_{(recoiling jet + tagged b-jet + lepton + Z)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_forwardJets_leadingB_W", "M_{(forward jets + leading b-jet + W)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_forwardJets_leadingB_Wlep", "M_{(forward jets + leading b-jet + lepton)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_forwardJets_leadingB_WZ", "M_{(forward jets + leading b-jet + WZ)} (GeV)", 30, 0, 1000),
+        std::make_tuple("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 1000),
         std::make_tuple("m_forwardJets", "M_{(|#eta| > 2.4 jets)} (GeV)", 30, 0, 600),
-        std::make_tuple("m_notSoForwardJets", "M_{(|#eta| > 0.8 jets)} (GeV)", 30, 0, 600),
+        std::make_tuple("m_notSoForwardJets", "M_{(|#eta| > 0.8 jets)} (GeV)", 30, 0, 1000),
         std::make_tuple("m_superForwardJets", "M_{(|#eta| > 3 jets)} (GeV)", 30, 0, 600),
 
         std::make_tuple("pT_highestEta_leadingB_W", "P_{T}^{most forward jet + leading b-jet + W} (GeV)", 30, 0, 600),
@@ -169,6 +169,7 @@ void treeReader::Analyze(){
 
     Float_t mForwardJets, topMass, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, dilepMass, eventWeight, missingET, pTLeadingBJet, pTSubleadingLepton;
     Float_t numberOfJets, numberOfBJets, etaNotSoForwardJets, pTHighestDeepCSVJet, pTLeadingJet, mNotSoForwardJets, etaRecoilingJet, pTLeadingLepton, pTTrailingLepton, highestDeepCSV;
+    Float_t maxMjj, maxMlb, minDeltaPhilb;
     /*
     //tree for BDT training
     TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
@@ -199,6 +200,9 @@ void treeReader::Analyze(){
                 tree[t][cat][m]->Branch("pTSubleadingLepton", &pTSubleadingLepton, "pTSubleadingLepton/F");
                 tree[t][cat][m]->Branch("missingET", &missingET, "missingET/F");
                 tree[t][cat][m]->Branch("highestDeepCSV", &highestDeepCSV, "highestDeepCSV/F");
+                tree[t][cat][m]->Branch("maxMjj", &maxMjj, "maxMjj/F");
+                tree[t][cat][m]->Branch("maxMlb", &maxMlb, "maxMlb/F");
+                tree[t][cat][m]->Branch("minDeltaPhilb", &minDeltaPhilb, "minDeltaPhilb/F");
                 //event weights
                 tree[t][cat][m]->Branch("eventWeight", &eventWeight, "eventWeight/F");
             }
@@ -209,18 +213,21 @@ void treeReader::Analyze(){
     TMVA::Reader *mvaReader[nMll][nCat]; //one BDT for every category
     for(unsigned m = 0; m < nMll - 1; ++m){
         for(unsigned cat = 0; cat < nCat - 1; ++cat){
-            if(catNames[cat + 1] == "0bJets_01Jets" && mllNames[m + 1] == "offZ") continue; //temporary patch, remove later
             mvaReader[m][cat] = new TMVA::Reader( "!Color:!Silent" );
             mvaReader[m][cat]->AddVariable("topMass", &topMass);
             if(catNames[cat + 1] != "1bJet_01jets") mvaReader[m][cat]->AddVariable("pTForwardJets", &pTForwardJets);
-            mvaReader[m][cat]->AddVariable("etaLeading", &etaLeading);
+            //mvaReader[m][cat]->AddVariable("etaLeading", &etaLeading);
             mvaReader[m][cat]->AddVariable("etaMostForward", &etaMostForward);
             mvaReader[m][cat]->AddVariable("pTLeadingLepton", &pTLeadingLepton);
-            mvaReader[m][cat]->AddVariable("pTLeadingJet", &pTLeadingJet);
+            //mvaReader[m][cat]->AddVariable("pTLeadingJet", &pTLeadingJet);
             if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets") mvaReader[m][cat]->AddVariable("pTLeadingBJet", &pTLeadingBJet);
-            mvaReader[m][cat]->AddVariable("missingET", &missingET);
-            mvaReader[m][cat]->AddVariable("pTTrailingLepton", &pTTrailingLepton);
+            //mvaReader[m][cat]->AddVariable("missingET", &missingET);
+            //mvaReader[m][cat]->AddVariable("pTTrailingLepton", &pTTrailingLepton);
             mvaReader[m][cat]->AddVariable("highestDeepCSV", &highestDeepCSV);
+            if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("maxMjj", &maxMjj);
+            if(catNames[cat + 1] != "0bJets_2Jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("maxMlb", &maxMlb);
+            if(catNames[cat + 1] != "0bJets_2Jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("minDeltaPhilb", &minDeltaPhilb);
+            mvaReader[m][cat]->AddVariable("mNotSoForwardJets", &mNotSoForwardJets);
             mvaReader[m][cat]->BookMVA("BDT method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDT.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTG method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTG.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTD method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTD.weights.xml");
@@ -457,6 +464,9 @@ void treeReader::Analyze(){
             pTLeadingBJet = leadingBJet.Pt();
             missingET = _met;
             highestDeepCSV = _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
+            maxMjj = maxMJetJet;
+            maxMlb = maxMLeptonbJet;
+            minDeltaPhilb = minDeltaPhiLeptonbJet;
             /*
             if(currentSample == 2){
                 tree[0]->Fill();
@@ -465,14 +475,12 @@ void treeReader::Analyze(){
             }
             */
             double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0;
-            if(catNames[tzqCat + 1] != "0bJets_01Jets" && mllNames[mllCat + 1] != "offZ"){  //temporary patch, fix later!
-                bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
-                bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
-                bdtD = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTD method");
-                bdtB = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTB method");
-                mlp = mvaReader[mllCat][tzqCat]->EvaluateMVA("MLP method");
-                deepNN = mvaReader[mllCat][tzqCat]->EvaluateMVA("DNN method");
-            }
+            bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
+            bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
+            bdtD = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTD method");
+            bdtB = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTB method");
+            mlp = mvaReader[mllCat][tzqCat]->EvaluateMVA("MLP method");
+            deepNN = mvaReader[mllCat][tzqCat]->EvaluateMVA("DNN method");
             //distributions to plot
             double fill[nDist] = {bdt, bdtG, bdtD, bdtB, mlp, deepNN, _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),

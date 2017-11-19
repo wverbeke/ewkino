@@ -23,14 +23,18 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     //dataloader->AddVariable("mForwardJets", 'F');
     dataloader->AddVariable("topMass", 'F');
     if(jetsCat != "1bJet_01jets") dataloader->AddVariable("pTForwardJets", 'F');
-    dataloader->AddVariable("etaLeading", 'F');
+    //dataloader->AddVariable("etaLeading", 'F');
     dataloader->AddVariable("etaMostForward", 'F');
     dataloader->AddVariable("pTLeadingLepton", 'F');
-    dataloader->AddVariable("pTLeadingJet", 'F');
+    //dataloader->AddVariable("pTLeadingJet", 'F');
     if(jetsCat != "1bJet_01jets" && jetsCat != "0bJets_01Jets") dataloader->AddVariable("pTLeadingBJet", 'F');
-    dataloader->AddVariable("missingET", 'F');
-    dataloader->AddVariable("pTTrailingLepton", 'F');
+    //dataloader->AddVariable("missingET", 'F');
+    //dataloader->AddVariable("pTTrailingLepton", 'F');
     dataloader->AddVariable("highestDeepCSV", 'F');
+    if(jetsCat != "1bJet_01jets" && jetsCat != "0bJets_01Jets") dataloader->AddVariable("maxMjj", 'F');
+    if(jetsCat != "0bJet_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("maxMlb", 'F');
+    if(jetsCat != "0bJet_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("minDeltaPhilb", 'F');
+    dataloader->AddVariable("mNotSoForwardJets");
     //dataloader->AddVariable("pTHighestDeepCSVJet", 'F');
     //dataloader->AddVariable("etaRecoilingJet", 'F');
     //dataloader->AddVariable("pTRecoiling_tagged_wlep", 'F');
@@ -53,10 +57,9 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     TCut mycuts = ""; // for example: TCut mycuts = "abs(var1)<0.5 && abs(var2-0.5)<1";
     TCut mycutb = ""; // for example: TCut mycutb = "abs(var1)<0.5";
     dataloader->PrepareTrainingAndTestTree( mycuts, mycutb, "nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0:NormMode=None:SplitMode=Random:!V" );
-
     //BDT 
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" );
-    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT", "!H:!V:NTrees=1000:MinNodeSize=1%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=-1" ); //850
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT", "!H:!V:NTrees=1000:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" ); //850
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTB", "!H:!V:NTrees=400:BoostType=Bagging:SeparationType=GiniIndex:nCuts=20");
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTD", "!H:!V:NTrees=400:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
 
