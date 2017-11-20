@@ -223,8 +223,8 @@ class treeReader {
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
 
         //overlap removal between samples
-        bool photonOverlap(const std::string& sample);                          //sample overlap due to photons
-        bool htOverlap(const std::string& sample, const double genHTCut = 70.);                              //sample overlap due to HT binning
+        bool photonOverlap();                                                                                //sample overlap due to photons
+        bool htOverlap();                                                                                    //sample overlap due to HT binning
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
