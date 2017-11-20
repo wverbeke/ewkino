@@ -224,6 +224,9 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_gen_lIsPrompt", _gen_lIsPrompt, &b__gen_lIsPrompt);
         fChain->SetBranchAddress("_lIsPrompt", _lIsPrompt, &b__lIsPrompt);
         fChain->SetBranchAddress("_lMatchPdgId", _lMatchPdgId, &b__lMatchPdgId);
+        fChain->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
+        fChain->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
+        fChain->SetBranchAddress("_gen_HT", &_gen_HT, &b__gen_HT);
     }
 }
 
@@ -392,7 +395,9 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_gen_lCharge",               &_gen_lCharge,               "_gen_lCharge[_gen_nL]/I");
         outputTree->Branch("_gen_lMomPdg",               &_gen_lMomPdg,               "_gen_lMomPdg[_gen_nL]/I");
         outputTree->Branch("_gen_lIsPrompt",             &_gen_lIsPrompt,             "_gen_lIsPrompt[_gen_nL]/O");
-
+        outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/b");
+        outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
+        outputTree->Branch("_gen_HT",                    &_gen_HT,                    "_gen_HT/D");
     }
 }
 
