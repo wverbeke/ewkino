@@ -162,3 +162,23 @@ unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, 
     orderByPt(bJetInd, _jetPt, nbJets);
     return nbJets;
 }
+
+//overlap removal between events
+
+bool treeReader::photonOverlap(){
+    if(std::get<1>(samples[currentSample - 1]).find("DYJetsToLL") != std::string::npos){
+        return _zgEventType > 2; 
+    } else if(std::get<1>(samples[currentSample - 1]).find("TTTo2L") != std::string::npos){
+        return _ttgEventType > 2;
+    }
+    return false;
+}
+
+bool treeReader::htOverlap(){
+    if(std::get<1>(samples[currentSample - 1]).find("DYJetsToLL_M-50_Tune") != std::string::npos){
+        return _gen_HT > 70.;
+    } else if(std::get<1>(samples[currentSample - 1]).find("DYJetsToLL_M-10_50_Tune") != std::string::npos){
+        return _gen_HT > 100.;
+    }
+    return false;
+}
