@@ -39,6 +39,9 @@ class treeReader {
         Int_t           _gen_lCharge[gen_nL_max];   
         Int_t           _gen_lMomPdg[gen_nL_max];   
         Bool_t          _gen_lIsPrompt[gen_nL_max];   
+        UChar_t         _ttgEventType;
+        UChar_t         _zgEventType;
+        Double_t        _gen_HT;
         Bool_t          _2017_e;
         Bool_t          _HLT_Ele35_WPTight_Gsf;
         Int_t           _HLT_Ele35_WPTight_Gsf_prescale;
@@ -218,6 +221,10 @@ class treeReader {
         bool bTaggedCSVv2(const unsigned uncm, const unsigned wp = 1);
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
+
+        //overlap removal between samples
+        bool photonOverlap();                                                                                //sample overlap due to photons
+        bool htOverlap();                                                                                    //sample overlap due to HT binning
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
@@ -250,6 +257,9 @@ class treeReader {
         TBranch        *b__gen_lCharge;   
         TBranch        *b__gen_lMomPdg;   
         TBranch        *b__gen_lIsPrompt;   
+        TBranch        *b__ttgEventType;
+        TBranch        *b__zgEventType;
+        TBranch        *b__gen_HT;
         TBranch        *b__2017_e;   
         TBranch        *b__HLT_Ele35_WPTight_Gsf;   
         TBranch        *b__HLT_Ele35_WPTight_Gsf_prescale;   

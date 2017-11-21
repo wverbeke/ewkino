@@ -96,11 +96,11 @@ bool treeReader::jetIsClean(const unsigned ind){
 bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean){
     if(fabs(_jetEta[ind]) >= 2.4) return false;
     switch(unc){
-        case 0: if(_jetPt[ind] < ptCut) return false;
-        case 1: if(_jetPt_JECDown[ind] < ptCut) return false;
-        case 2: if(_jetPt_JECUp[ind] < ptCut) return false;
-        case 3: if(_jetPt_JERDown[ind] < ptCut) return false;
-        case 4: if(_jetPt_JERUp[ind] < ptCut) return true;
+        case 0: if(_jetPt[ind] < ptCut) return false; break;
+        case 1: if(_jetPt_JECDown[ind] < ptCut) return false; break;
+        case 2: if(_jetPt_JECUp[ind] < ptCut) return false; break;
+        case 3: if(_jetPt_JERDown[ind] < ptCut) return false; break;
+        case 4: if(_jetPt_JERUp[ind] < ptCut) return false; break;
         default: ;
     }
     return !clean || jetIsClean(ind);
@@ -161,4 +161,24 @@ unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, 
     }
     orderByPt(bJetInd, _jetPt, nbJets);
     return nbJets;
+}
+
+//overlap removal between events
+
+bool treeReader::photonOverlap(){
+    if(std::get<1>(samples[currentSample - 1]).find("DYJetsToLL") != std::string::npos){
+        return _zgEventType > 2; 
+    } else if(std::get<1>(samples[currentSample - 1]).find("TTTo2L") != std::string::npos){
+        return _ttgEventType > 2;
+    }
+    return false;
+}
+
+bool treeReader::htOverlap(){
+    if(std::get<1>(samples[currentSample - 1]).find("DYJetsToLL_M-50_Tune") != std::string::npos){
+        return _gen_HT > 70.;
+    } else if(std::get<1>(samples[currentSample - 1]).find("DYJetsToLL_M-10_50_Tune") != std::string::npos){
+        return _gen_HT > 100.;
+    }
+    return false;
 }
