@@ -302,7 +302,7 @@ void treeReader::Analyze(){
             TLorentzVector lepV[lCount];
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
             //require best Z mass to be onZ
-            std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, lCount);
+            std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, ind, _lFlavor, _lCharge, lCount);
             //make ordered jet and bjet collections
             std::vector<unsigned> jetInd, bJetInd;
             unsigned jetCount = nJets(jetInd);
@@ -612,7 +612,7 @@ void treeReader::Analyze(){
             minpTLeptonJet, maxpTLeptonJet, minpTLeptonbJet, maxpTLeptonbJet, minpTJetJet, maxpTJetJet, minpTLeptonLepton, maxpTLeptonLepton,
             HT,
             (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-            (lepV[bestZ.first] + lepV[bestZ.second]).Eta(),
+            fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta()),
             fabs(_lEta[mostForwardLepInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
             (lepV[0] + lepV[1] + lepV[2]).Pt(), fabs(_lEta[ind[0]])*_lCharge[ind[0]], fabs(_lEta[ind[1]])*_lCharge[ind[1]], fabs(_lEta[ind[2]])*_lCharge[ind[2]], fabs(_lEta[ind[lw]])*_lCharge[ind[lw]],
 
