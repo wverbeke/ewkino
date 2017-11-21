@@ -100,7 +100,7 @@ bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsig
         case 1: if(_jetPt_JECDown[ind] < ptCut) return false; break;
         case 2: if(_jetPt_JECUp[ind] < ptCut) return false; break;
         case 3: if(_jetPt_JERDown[ind] < ptCut) return false; break;
-        case 4: if(_jetPt_JERUp[ind] < ptCut) return true; break;
+        case 4: if(_jetPt_JERUp[ind] < ptCut) return false; break;
         default: ;
     }
     return !clean || jetIsClean(ind);
