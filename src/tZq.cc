@@ -612,7 +612,7 @@ void treeReader::Analyze(){
             fabs(_lEta[mostForwardLepInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
             (lepV[0] + lepV[1] + lepV[2]).Pt(), _lEta[ind[0]]*_lCharge[ind[0]], _lEta[ind[1]]*_lCharge[ind[1]], _lEta[ind[2]]*_lCharge[ind[2]], _lEta[ind[lw]]*_lCharge[ind[lw]],
 
-            deltaRWLepClosestJet, lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ), lepV[lw].DeltaR(recoilingJet), topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
+            deltaRWLepClosestJet, lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ), lepV[lw].DeltaPhi(taggedBJet), lepV[lw].DeltaR(recoilingJet), topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
             topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt()
             };
             for(unsigned m = 0; m < nMll; ++m){
