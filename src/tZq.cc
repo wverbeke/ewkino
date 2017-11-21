@@ -156,17 +156,17 @@ void treeReader::Analyze(){
         std::make_tuple("etaTrailing", "|#eta| (trailing lepton)", 30, 0, 2.5),
         std::make_tuple("etaWLep",  "|#eta| (lepton from W)", 30, 0, 2.5),
         std::make_tuple("pT3l", "P_{T}^{3l} (GeV)", 30, 0, 300),
-        std::make_tuple("assymmetryLeading", 30, -2.5, 2.5),
-        std::make_tuple("asymmetrySubleading", 30, -2.5, 2.5),
-        std::make_tuple("asymmetryTrailing", 30, -2.5, 2.5),
-        std::make_tuple("asymmetryWLep", 30, -2.5, 2.5),
-        std::make_tuple("deltaRWLepClosestJet", 30, 0, 7), 
-        std::make_tuple("deltaPhiWlepZ", 30, 0, 3.15),
-        std::make_tuple("deltaPhiWlepTaggedbJet", 30, 0, 3.15),
-        std::make_tuple("deltaRWlepRecoilingJet", 30, 0, 7),
-        std::make_tuple("deltaRZTop", 30, 0, 7),
-        std::make_tuple("pTTop", 30, 0, 300), 
-        std::make_tuple("pTtzq", 30, 0, 300)
+        std::make_tuple("assymmetryLeading", "asymmetry (leading lepton)", 30, -2.5, 2.5),
+        std::make_tuple("asymmetrySubleading", "asymmetry (subleading lepton)",30, -2.5, 2.5),
+        std::make_tuple("asymmetryTrailing", "asymmetry (trailing lepton)",30, -2.5, 2.5),
+        std::make_tuple("asymmetryWLep", "asymmetry (lepton from W)",30, -2.5, 2.5),
+        std::make_tuple("deltaRWLepClosestJet", "#DeltaR(lepton from W, closest jet)",30, 0, 7), 
+        std::make_tuple("deltaPhiWlepZ", "#DeltaR(lepton from W, Z)", 30, 0, 3.15),
+        std::make_tuple("deltaPhiWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 30, 0, 3.15),
+        std::make_tuple("deltaRWlepRecoilingJet", "#DeltaR(lepton from W, recoiling jet)", 30, 0, 7),
+        std::make_tuple("deltaRZTop", "#DeltaR(top, Z)", 30, 0, 7),
+        std::make_tuple("pTTop", "P_{T}^{top} (GeV)", 30, 0, 300), 
+        std::make_tuple("pTtzq", "P_{T}^{tZq} (GeV)", 30, 0, 300)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -332,7 +332,6 @@ void treeReader::Analyze(){
             //reconstruct top mass and tag jets
             std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
             TLorentzVector neutrino = tzq::findBestNeutrinoAndTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
-            double mTop = tzq::findMTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
 
             //forward jet sum
             TLorentzVector forwardJets(0,0,0,0);
@@ -388,6 +387,8 @@ void treeReader::Analyze(){
             } else if(jetCount > 1){
                 leadingBJet = jetV[jetInd[1]];
             }
+            //compute top vector
+            TLorentzVector topV = (neutrino + lepV[lw] + taggedBJet);
         
             //Compute minimum and maximum masses and separations for several objects
             //lepton Jet 
@@ -498,9 +499,14 @@ void treeReader::Analyze(){
                 HT += _jetPt[jetInd[j]];
             }
             //find most forward lepton
-            unsigned mostForwardLepInd = ind[0]
+            unsigned mostForwardLepInd = ind[0];
             for(unsigned l = 1; l < lCount; ++l){
                 if(fabs(_lEta[ind[l]]) > fabs(_lEta[mostForwardLepInd]) ) mostForwardLepInd = ind[l];
+            }
+            //find closest jet to W lepton
+            double deltaRWLepClosestJet = 99999.;
+            for(unsigned j = 0; j < jetCount; ++j){
+                if(jetV[jetInd[j]].DeltaR(lepV[lw]) < deltaRWLepClosestJet) deltaRWLepClosestJet = jetV[jetInd[j]].DeltaR(lepV[lw]);
             }
              
             //Fill tree for BDT training
@@ -513,7 +519,7 @@ void treeReader::Analyze(){
             numberOfJets = jetCount;
             dilepMass = (lepV[bestZ.first] + lepV[bestZ.second]).M();
             eventWeight = weight;
-            topMass = mTop;
+            topMass = topV.M();
             etaNotSoForwardJets = notSoForwardJets.Eta();
             pTHighestDeepCSVJet = highestDeepCSVJet.Pt();
             pTLeadingJet = leadingJet.Pt();
@@ -545,40 +551,40 @@ void treeReader::Analyze(){
             //distributions to plot
             double fill[nDist] = {bdt, bdtG, bdtD, bdtB, mlp, deepNN, _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
-             highestEtaJet.Pt(), mTop, (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
+             highestEtaJet.Pt(), topV.M(), (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
 
-            (highestEtaJet + leadingBJet + lepV[lw] + met).M(),
+            (highestEtaJet + leadingBJet + lepV[lw] + neutrino).M(),
             (highestEtaJet + leadingBJet + lepV[lw]).M(),
-            (highestEtaJet + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
+            (highestEtaJet + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
             (highestEtaJet + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
 
-            (recoilingJet + taggedBJet + lepV[lw] + met).M(),
+            (recoilingJet + taggedBJet + lepV[lw] + neutrino).M(),
             (recoilingJet + taggedBJet + lepV[lw]).M(),
-            (recoilingJet + taggedBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            (recoilingJet + taggedBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).M(),
             (recoilingJet + taggedBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
 
-            (forwardJets + leadingBJet + lepV[lw] + met).M(),
+            (forwardJets + leadingBJet + lepV[lw] + neutrino).M(),
             (forwardJets + leadingBJet + lepV[lw]).M(),
-            (forwardJets + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).M(),
+            (forwardJets + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).M(),
             (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
 
             forwardJets.M(),
             notSoForwardJets.M(),
             superForwardJets.M(),
 
-            (highestEtaJet + leadingBJet + lepV[lw] + met).Pt(),
+            (highestEtaJet + leadingBJet + lepV[lw] + neutrino).Pt(),
             (highestEtaJet + leadingBJet + lepV[lw]).Pt(),
-            (highestEtaJet + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second] ).Pt(),
+            (highestEtaJet + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second] ).Pt(),
             (highestEtaJet + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
 
-            (recoilingJet + taggedBJet + lepV[lw] + met).Pt(),
+            (recoilingJet + taggedBJet + lepV[lw] + neutrino).Pt(),
             (recoilingJet + taggedBJet + lepV[lw]).Pt(),
-            (recoilingJet + taggedBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+            (recoilingJet + taggedBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
             (recoilingJet + taggedBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
 
-            (forwardJets + leadingBJet + lepV[lw] + met).Pt(),
+            (forwardJets + leadingBJet + lepV[lw] + neutrino).Pt(),
             (forwardJets + leadingBJet + lepV[lw]).Pt(),
-            (forwardJets + leadingBJet + lepV[lw] + met + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+            (forwardJets + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
             (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
 
             forwardJets.Pt(),
@@ -603,9 +609,11 @@ void treeReader::Analyze(){
             HT,
             (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
             (lepV[bestZ.first] + lepV[bestZ.second]).Eta(),
-            fabs(_lEta[mostForwardLeptonInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
-            (lepV[0] + lepV[1] + lepV[2]).Pt(), _lEta[ind[0]]*_lCharge[ind[0]], _lEta[ind[1]]*_lCharge[ind[1]], _lEta[ind[2]]*_lCharge[ind[2]], _lEta[ind[lw]]*_lCharge[ind[lw]]
+            fabs(_lEta[mostForwardLepInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
+            (lepV[0] + lepV[1] + lepV[2]).Pt(), _lEta[ind[0]]*_lCharge[ind[0]], _lEta[ind[1]]*_lCharge[ind[1]], _lEta[ind[2]]*_lCharge[ind[2]], _lEta[ind[lw]]*_lCharge[ind[lw]],
 
+            deltaRWLepClosestJet, lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ), lepV[lw].DeltaR(recoilingJet), topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
+            topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt()
             };
             for(unsigned m = 0; m < nMll; ++m){
                 if(m == 0 || m == (mllCat + 1) ){

@@ -19,7 +19,7 @@ TLorentzVector tzq::findBestNeutrinoAndTop(const TLorentzVector& wLep, const TLo
     //set up tagged jets vector
     taggedJetI = {99, 99};
     //Check if there are any jets
-    if(jetI.size() == 0) return TLorentzVector(0,0,0,0);
+    if(jetI.size() == 0) return met;    //dont attempt to find neutrino Z since we cant fix the ambiguity here
     std::pair<double, double> pzSol = trilep::neutrinoPZ(wLep, met);
     TLorentzVector neutrinoPlus(met.Px(), met.Py(), pzSol.first, sqrt(met.Px()*met.Px() + met.Py()*met.Py() + pzSol.first*pzSol.first) );
     TLorentzVector neutrinoMin(met.Px(), met.Py(), pzSol.second, sqrt(met.Px()*met.Px() + met.Py()*met.Py() + pzSol.second*pzSol.second) );
