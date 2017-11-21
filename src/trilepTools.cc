@@ -1,12 +1,15 @@
 #include "../interface/trilepTools.h"
 
-std::pair<unsigned, unsigned> trilep::bestZ(const TLorentzVector* lepV, const unsigned lCount){
+std::pair<unsigned, unsigned> trilep::bestZ(const TLorentzVector* lepV, const std::vector<unsigned>& ind, const unsigned* flavor, const int* charge, const unsigned lCount){
+    //currently only works for events with an OSSF pair! dangerous otherwise
     static const double mZ = 91.1876;
     std::pair<unsigned, unsigned> bestZInd = {0, 1};
     for(unsigned l = 1; l < lCount - 1; ++l){
         for(unsigned k = l + 1; k < lCount; ++k){
-            if( fabs( (lepV[l] + lepV[k]).M() - mZ) < (lepV[bestZInd.first] + lepV[bestZInd.second]).M() ){
-                bestZInd = {l, k};
+            if(flavor[ind[k]] == flavor[ind[l]] && charge[ind[k]] != charge[ind[l]]){
+                if( fabs( (lepV[l] + lepV[k]).M() - mZ) < (lepV[bestZInd.first] + lepV[bestZInd.second]).M() ){
+                    bestZInd = {l, k};
+                }
             }
         }
     }
