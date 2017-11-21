@@ -103,7 +103,9 @@ void treeReader::Analyze(){
         std::make_tuple("eta_notSoForwardJets", "|#eta|^{|#eta| > 0.8 jets}", 30, 0, 5),
         std::make_tuple("eta_superForwardJets", "|#eta|^{|#eta| > 3 jets}", 30, 0, 5),
 
-        std::make_tuple("highestDeepCSV", "highest deepCSV", 30, 0, 1), 
+        std::make_tuple("highestDeepCSV", "highest deepCSV (b + bb)", 30, 0, 1), 
+        std::make_tuple("highestDeepCSVb", "highest deepCSV (b)", 30, 0, 1), 
+        std::make_tuple("highestDeepCSVbb", "highest deepCSV( bb)", 30, 0, 1), 
         std::make_tuple("highestCSVv2", "highest CSVv2", 30, 0, 1),
         std::make_tuple("highestDeepCSVJetPt", "P_{T}(highest DeepCSV jet) (GeV)", 30, 0, 300),
         std::make_tuple("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 30, 0, 10),
@@ -595,7 +597,9 @@ void treeReader::Analyze(){
             fabs(notSoForwardJets.Eta()),
             fabs(superForwardJets.Eta()),
 
-            _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_b[highestDeepCSVI],
+            _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI],
+            _jetDeepCsv_b[highestDeepCSVI],
+            _jetDeepCsv_bb[highestDeepCSVI],
             _jetCsvV2[highestCSVv2I],
             highestDeepCSVJet.Pt(),
             taggedBJet.DeltaR(recoilingJet),
@@ -610,7 +614,7 @@ void treeReader::Analyze(){
             (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
             (lepV[bestZ.first] + lepV[bestZ.second]).Eta(),
             fabs(_lEta[mostForwardLepInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
-            (lepV[0] + lepV[1] + lepV[2]).Pt(), _lEta[ind[0]]*_lCharge[ind[0]], _lEta[ind[1]]*_lCharge[ind[1]], _lEta[ind[2]]*_lCharge[ind[2]], _lEta[ind[lw]]*_lCharge[ind[lw]],
+            (lepV[0] + lepV[1] + lepV[2]).Pt(), fabs(_lEta[ind[0]])*_lCharge[ind[0]], fabs(_lEta[ind[1]])*_lCharge[ind[1]], fabs(_lEta[ind[2]])*_lCharge[ind[2]], fabs(_lEta[ind[lw]])*_lCharge[ind[lw]],
 
             deltaRWLepClosestJet, lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ), lepV[lw].DeltaPhi(taggedBJet), lepV[lw].DeltaR(recoilingJet), topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
             topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt()
