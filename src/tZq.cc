@@ -258,7 +258,7 @@ void treeReader::Analyze(){
         initSample(2);          //Use combined 2016 + 2017 luminosity
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -395,7 +395,7 @@ void treeReader::Analyze(){
             if(minDeltaRLeptonJet == 99999.) minDeltaRLeptonJet = 0.;
             if(minDeltaPhiLeptonJet == 99999.) minDeltaPhiLeptonJet = 0.;
             if(minMLeptonJet == 99999.) minMLeptonJet = 0.;
-            if(minpTLeptonJet = 99999.) minpTLeptonJet = 0.;
+            if(minpTLeptonJet == 99999.) minpTLeptonJet = 0.;
             //lepton bjet
             double minMLeptonbJet = 99999.;
             double maxMLeptonbJet = 0.;
