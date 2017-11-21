@@ -147,8 +147,26 @@ void treeReader::Analyze(){
         std::make_tuple("maxpTLeptonLepton", "P_{T}^{max}(2l) (GeV)", 30, 0, 300),
 
         std::make_tuple("HT", "H_{T} (GeV)", 30, 0, 800),
-        std::make_tuple("pTZboson", "P_{T}(Z) (GeV)", 30, 0, 300)
+        std::make_tuple("pTZboson", "P_{T}(Z) (GeV)", 30, 0, 300),
+        std::make_tuple("etaZboson", "|#eta|(Z)", 30, 0, 2.5),
 
+        std::make_tuple("etaMostForwardLepton", "|#eta| (most forward lepton)", 30, 0, 2.5),
+        std::make_tuple("etaLeading", "|#eta| (leading lepton)", 30, 0, 2.5),
+        std::make_tuple("etaSubLeading", "|#eta| (subleading lepton)", 30, 0, 2.5),
+        std::make_tuple("etaTrailing", "|#eta| (trailing lepton)", 30, 0, 2.5),
+        std::make_tuple("etaWLep",  "|#eta| (lepton from W)", 30, 0, 2.5),
+        std::make_tuple("pT3l", "P_{T}^{3l} (GeV)", 30, 0, 300),
+        std::make_tuple("assymmetryLeading", 30, -2.5, 2.5),
+        std::make_tuple("asymmetrySubleading", 30, -2.5, 2.5),
+        std::make_tuple("asymmetryTrailing", 30, -2.5, 2.5),
+        std::make_tuple("asymmetryWLep", 30, -2.5, 2.5),
+        std::make_tuple("deltaRWLepClosestJet", 30, 0, 7), 
+        std::make_tuple("deltaPhiWlepZ", 30, 0, 3.15),
+        std::make_tuple("deltaPhiWlepTaggedbJet", 30, 0, 3.15),
+        std::make_tuple("deltaRWlepRecoilingJet", 30, 0, 7),
+        std::make_tuple("deltaRZTop", 30, 0, 7),
+        std::make_tuple("pTTop", 30, 0, 300), 
+        std::make_tuple("pTtzq", 30, 0, 300)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -478,6 +496,11 @@ void treeReader::Analyze(){
             for(unsigned j = 0; j < jetCount; ++j){
                 HT += _jetPt[jetInd[j]];
             }
+            //find most forward lepton
+            unsigned mostForwardLepInd = ind[0]
+            for(unsigned l = 1; l < lCount; ++l){
+                if(fabs(_lEta[ind[l]]) > fabs(_lEta[mostForwardLepInd]) ) mostForwardLepInd = ind[l];
+            }
              
             //Fill tree for BDT training
             mForwardJets = forwardJets.M();
@@ -577,7 +600,11 @@ void treeReader::Analyze(){
             minDeltaRLeptonJet, maxDeltaRLeptonJet, minDeltaRLeptonbJet, maxDeltaRLeptonbJet, minDeltaRJetJet, maxDeltaRJetJet, minDeltaRLeptonLepton, maxDeltaRLeptonLepton,
             minpTLeptonJet, maxpTLeptonJet, minpTLeptonbJet, maxpTLeptonbJet, minpTJetJet, maxpTJetJet, minpTLeptonLepton, maxpTLeptonLepton,
             HT,
-            (lepV[bestZ.first] + lepV[bestZ.second]).Pt()
+            (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+            (lepV[bestZ.first] + lepV[bestZ.second]).Eta(),
+            fabs(_lEta[mostForwardLeptonInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
+            (lepV[0] + lepV[1] + lepV[2]).Pt(), _lEta[ind[0]]*_lCharge[ind[0]], _lEta[ind[1]]*_lCharge[ind[1]], _lEta[ind[2]]*_lCharge[ind[2]], _lEta[ind[lw]]*_lCharge[ind[lw]]
+
             };
             for(unsigned m = 0; m < nMll; ++m){
                 if(m == 0 || m == (mllCat + 1) ){
