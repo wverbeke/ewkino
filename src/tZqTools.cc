@@ -14,12 +14,12 @@ unsigned tzq::cat(unsigned nJets, unsigned nBJets){
     }
 }
 
-double tzq::findMTop(const TLorentzVector& wLep, const TLorentzVector& met, std::vector<unsigned>& taggedJetI, const std::vector<unsigned>& jetI, const std::vector<unsigned>& bJetI, const TLorentzVector* jetV){
+TLorentzVector tzq::findBestNeutrinoAndTop(const TLorentzVector& wLep, const TLorentzVector& met, std::vector<unsigned>& taggedJetI, const std::vector<unsigned>& jetI, const std::vector<unsigned>& bJetI, const TLorentzVector* jetV){
     static const double mTop = 173.1;
     //set up tagged jets vector
     taggedJetI = {99, 99};
     //Check if there are any jets
-    if(jetI.size() == 0) return 0.;
+    if(jetI.size() == 0) return TLorentzVector(0,0,0,0);
     std::pair<double, double> pzSol = trilep::neutrinoPZ(wLep, met);
     TLorentzVector neutrinoPlus(met.Px(), met.Py(), pzSol.first, sqrt(met.Px()*met.Px() + met.Py()*met.Py() + pzSol.first*pzSol.first) );
     TLorentzVector neutrinoMin(met.Px(), met.Py(), pzSol.second, sqrt(met.Px()*met.Px() + met.Py()*met.Py() + pzSol.second*pzSol.second) );
@@ -58,6 +58,6 @@ double tzq::findMTop(const TLorentzVector& wLep, const TLorentzVector& met, std:
             break;                              //jet collection is assumed oredered
         }
     }
-    if(plus) return ( neutrinoPlus + wLep + jetV[taggedJetI[0]] ).M();
-    else     return ( neutrinoMin  + wLep + jetV[taggedJetI[0]] ).M();
+    if(plus) return neutrinoPlus;//( neutrinoPlus + wLep + jetV[taggedJetI[0]] ).M();
+    else     return neutrinoMin;//( neutrinoMin  + wLep + jetV[taggedJetI[0]] ).M();
 }

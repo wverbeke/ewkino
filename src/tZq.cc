@@ -331,6 +331,7 @@ void treeReader::Analyze(){
             met.SetPtEtaPhiE(_met, _metPhi, 0, _met);
             //reconstruct top mass and tag jets
             std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
+            TLorentzVector neutrino = tzq::findBestNeutrinoAndTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
             double mTop = tzq::findMTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
 
             //forward jet sum
