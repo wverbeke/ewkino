@@ -96,11 +96,11 @@ bool treeReader::jetIsClean(const unsigned ind){
 bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean){
     if(fabs(_jetEta[ind]) >= 2.4) return false;
     switch(unc){
-        case 0: if(_jetPt[ind] < ptCut) return false;
-        case 1: if(_jetPt_JECDown[ind] < ptCut) return false;
-        case 2: if(_jetPt_JECUp[ind] < ptCut) return false;
-        case 3: if(_jetPt_JERDown[ind] < ptCut) return false;
-        case 4: if(_jetPt_JERUp[ind] < ptCut) return true;
+        case 0: if(_jetPt[ind] < ptCut) return false; break;
+        case 1: if(_jetPt_JECDown[ind] < ptCut) return false; break;
+        case 2: if(_jetPt_JECUp[ind] < ptCut) return false; break;
+        case 3: if(_jetPt_JERDown[ind] < ptCut) return false; break;
+        case 4: if(_jetPt_JERUp[ind] < ptCut) return true; break;
         default: ;
     }
     return !clean || jetIsClean(ind);
