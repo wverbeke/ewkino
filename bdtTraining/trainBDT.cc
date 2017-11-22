@@ -31,15 +31,15 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     dataloader->AddVariable("missingET", 'F');
     dataloader->AddVariable("highestDeepCSV", 'F');
     if(jetsCat != "1bJet_01jets" && jetsCat != "0bJets_01Jets") dataloader->AddVariable("maxMjj", 'F');
-    if(jetsCat != "0bJet_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("minMlb", 'F');
-    dataloader->AddVariable("asymmetryWlep", 'F');
+    if(jetsCat != "0bJets_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("minMlb", 'F');
+    if(jetsCat != "1bJet_01jets") dataloader->AddVariable("asymmetryWlep", 'F'); //mystery crash for "0bJets_2Jets" category on this variable
     dataloader->AddVariable("etaZ", 'F');
     dataloader->AddVariable("m3l", 'F');
-    if(jetsCat != "1bJet_4Jets" && jetsCat != "2bJets") dataloader->AddVariable("maxDeltaPhijj", 'F');
-    dataloader->AddVariable("maxDeltaRjj", 'F');
+    if(jetsCat != "0bJets_01Jets" && jetsCat != "1bJet_01jets" && jetsCat != "1bJet_4Jets" && jetsCat != "2bJets") dataloader->AddVariable("maxDeltaPhijj", 'F');
+    if(jetsCat != "0bJets_01Jets" && jetsCat != "1bJet_01jets") dataloader->AddVariable("maxDeltaRjj", 'F');
     dataloader->AddVariable("maxDeltaPhill", 'F');
     //dataloader->AddVariable("maxM2l", 'F');           //not used now due to correlation with 3l variables
-    dataloader->AddVariable("pTMaxlb", 'F');
+    if(jetsCat != "0bJets_01Jets" && jetsCat != "0bJets_2Jets")  dataloader->AddVariable("pTMaxlb", 'F');
     //dataloader->AddVariable("ptMax2l", 'F');          //not used now due to correlation with 3l variables
     dataloader->AddVariable("pT3l", 'F');
     dataloader->AddVariable("mForwardJetsLeadinBJetW", 'F');

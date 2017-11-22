@@ -514,17 +514,21 @@ void treeReader::Analyze(){
             }
              
             //Fill tree for BDT training
-            topMass = topV.M();
+            unsigned forwardJetCount = 0;
+            for(unsigned j = 0; j < jetCount; ++j){
+                if( fabs(_jetEta[jetInd[j]]) > 0.8) ++forwardJetCount;
+            }
+            topMass = std::max(topV.M(), 0.);
             pTForwardJets = forwardJets.Pt();
             etaMostForward = fabs(highestEtaJet.Eta());
             numberOfBJets = bJetCount;
             numberOfJets = jetCount;
             pTLeadingJet = leadingJet.Pt();
             pTLeadingLepton = _lPt[ind[0]];
-            mNotSoForwardJets = notSoForwardJets.M();
+            mNotSoForwardJets = std::max(notSoForwardJets.M(), 0.);
             pTLeadingBJet = leadingBJet.Pt();
             missingET = _met;
-            highestDeepCSV = _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
+            highestDeepCSV = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
             maxMjj = maxMJetJet;
             minMlb = minMLeptonbJet;
             asymmetryWlep = _lEta[ind[lw]]*_lCharge[ind[lw]];
@@ -537,7 +541,7 @@ void treeReader::Analyze(){
             pTMaxlb = maxpTLeptonbJet;
             pTMax2l = maxpTLeptonLepton;
             pT3l = (lepV[0] + lepV[1] + lepV[2]).Pt();
-            mForwardJetsLeadinBJetW = (forwardJets + leadingBJet + lepV[lw] + neutrino).M();
+            mForwardJetsLeadinBJetW = std::max((forwardJets + leadingBJet + lepV[lw] + neutrino).M(), 0.);
             ht = HT;
             eventWeight = weight;
             /*
