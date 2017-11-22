@@ -200,10 +200,10 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
-    Float_t mForwardJets, topMass, pTForwardJets, etaLeading, etaMostForward, pTRecoiling_tagged_wlep, dilepMass, eventWeight, missingET, pTLeadingBJet, pTSubleadingLepton;
-    Float_t numberOfJets, numberOfBJets, etaNotSoForwardJets, pTHighestDeepCSVJet, pTLeadingJet, mNotSoForwardJets, etaRecoilingJet, pTLeadingLepton, pTTrailingLepton, highestDeepCSV;
-    Float_t maxMjj, maxMlb, minDeltaPhilb;
-    /*
+    Float_t topMass, pTForwardJets, etaMostForward, eventWeight, missingET, pTLeadingBJet;
+    Float_t numberOfJets, numberOfBJets, pTLeadingJet, mNotSoForwardJets, pTLeadingLepton, highestDeepCSV;
+    Float_t maxMjj, minMlb, asymmetryWlep, etaZ, m3l, maxDeltaPhijj, maxDeltaRjj, maxDeltaPhill, maxM2l;
+    Float_t pTMaxlb, pTMax2l, pT3l, mForwardJetsLeadinBJetW, ht;
     //tree for BDT training
     TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
     TTree *tree[2][nCat][nMll];
@@ -212,36 +212,37 @@ void treeReader::Analyze(){
             tree[0][cat][m] = new TTree((const TString&) "signalTree" + catNames[cat] + mllNames[m],(const TString&) "tZq signal tree" + catNames[cat] + mllNames[m]);
             tree[1][cat][m] = new TTree((const TString&) "backgroundTree" + catNames[cat] + mllNames[m], (const TString&) "tZq background tree" + catNames[cat] + mllNames[m]);
             for(unsigned t = 0; t < 2; ++t){
-                tree[t][cat][m]->Branch("mForwardJets", &mForwardJets, "mForwardJets/F");
                 tree[t][cat][m]->Branch("topMass", &topMass, "topMass/F");
                 tree[t][cat][m]->Branch("pTForwardJets", &pTForwardJets, "pTForwardJets/F");
-                tree[t][cat][m]->Branch("etaLeading", &etaLeading, "etaLeading/F");            
                 tree[t][cat][m]->Branch("etaMostForward", &etaMostForward, "etaMostForward/F");
-                tree[t][cat][m]->Branch("pTRecoiling_tagged_wlep", &pTRecoiling_tagged_wlep, "pTRecoiling_tagged_wlep/F");
                 tree[t][cat][m]->Branch("numberOfBJets", &numberOfBJets, "numberOfBJets/F");
                 tree[t][cat][m]->Branch("numberOfJets", &numberOfJets, "numberOfJets/F");
-                tree[t][cat][m]->Branch("dilepMass", &dilepMass, "dilepMass/F");
-                //new variables
-                tree[t][cat][m]->Branch("etaNotSoForwardJets", &etaNotSoForwardJets, "etaNotSoForwardJets/F");
-                tree[t][cat][m]->Branch("pTHighestDeepCSVJet", &pTHighestDeepCSVJet, "pTHighestDeepCSVJet/F");
                 tree[t][cat][m]->Branch("pTLeadingJet", &pTLeadingJet, "pTLeadingJet/F");
                 tree[t][cat][m]->Branch("pTLeadingLepton", &pTLeadingLepton, "pTLeadingLepton/F");
                 tree[t][cat][m]->Branch("mNotSoForwardJets", &mNotSoForwardJets, "mNotSoForwardJets/F");
-                tree[t][cat][m]->Branch("etaRecoilingJet", &etaRecoilingJet, "etaRecoilingJet/F");
                 tree[t][cat][m]->Branch("pTLeadingBJet", &pTLeadingBJet, "pTLeadingBJet/F");
-                tree[t][cat][m]->Branch("pTTrailingLepon", &pTTrailingLepton, "pTTrailingLepton/F");
-                tree[t][cat][m]->Branch("pTSubleadingLepton", &pTSubleadingLepton, "pTSubleadingLepton/F");
                 tree[t][cat][m]->Branch("missingET", &missingET, "missingET/F");
                 tree[t][cat][m]->Branch("highestDeepCSV", &highestDeepCSV, "highestDeepCSV/F");
                 tree[t][cat][m]->Branch("maxMjj", &maxMjj, "maxMjj/F");
-                tree[t][cat][m]->Branch("maxMlb", &maxMlb, "maxMlb/F");
-                tree[t][cat][m]->Branch("minDeltaPhilb", &minDeltaPhilb, "minDeltaPhilb/F");
+                tree[t][cat][m]->Branch("minMlb", &minMlb, "minMlb/F");
+                tree[t][cat][m]->Branch("asymmetryWlep", &asymmetryWlep, "asymmetryWlep/F");
+                tree[t][cat][m]->Branch("etaZ", &etaZ, "etaZ/F");
+                tree[t][cat][m]->Branch("m3l", &m3l, "m3l/F");
+                tree[t][cat][m]->Branch("maxDeltaPhijj", &maxDeltaPhijj, "maxDeltaPhijj/F");
+                tree[t][cat][m]->Branch("maxDeltaRjj", &maxDeltaRjj, "maxDeltaRjj/F");
+                tree[t][cat][m]->Branch("maxDeltaPhill", &maxDeltaPhill, "maxDeltaPhill/F");
+                tree[t][cat][m]->Branch("maxM2l", &maxM2l, "maxM2l/F");
+                tree[t][cat][m]->Branch("pTMaxlb", &pTMaxlb, "pTMaxlb/F");
+                tree[t][cat][m]->Branch("pTMax2l", &pTMax2l, "pTMax2l/F");
+                tree[t][cat][m]->Branch("pT3l", &pT3l, "pT3l/F");
+                tree[t][cat][m]->Branch("mForwardJetsLeadinBJetW", &mForwardJetsLeadinBJetW, "mForwardJetsLeadinBJetW/F");
+                tree[t][cat][m]->Branch("ht", &ht, "ht/F");
                 //event weights
                 tree[t][cat][m]->Branch("eventWeight", &eventWeight, "eventWeight/F");
             }
         }
     }
-    */
+    /*
     //MVA reader 
     TMVA::Reader *mvaReader[nMll][nCat]; //one BDT for every category
     for(unsigned m = 0; m < nMll - 1; ++m){
@@ -269,6 +270,7 @@ void treeReader::Analyze(){
             mvaReader[m][cat]->BookMVA("DNN method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_DNN.weights.xml");
         }
     }
+    */
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
         if(sam == 0){                   //skip data for now
@@ -512,37 +514,32 @@ void treeReader::Analyze(){
             }
              
             //Fill tree for BDT training
-            mForwardJets = forwardJets.M();
+            topMass = topV.M();
             pTForwardJets = forwardJets.Pt();
-            etaLeading = fabs(leadingJet.Eta());
             etaMostForward = fabs(highestEtaJet.Eta());
-            pTRecoiling_tagged_wlep = (recoilingJet + taggedBJet + lepV[lw]).Pt();
             numberOfBJets = bJetCount;
             numberOfJets = jetCount;
-            dilepMass = (lepV[bestZ.first] + lepV[bestZ.second]).M();
-            eventWeight = weight;
-            topMass = topV.M();
-            etaNotSoForwardJets = notSoForwardJets.Eta();
-            pTHighestDeepCSVJet = highestDeepCSVJet.Pt();
             pTLeadingJet = leadingJet.Pt();
             pTLeadingLepton = _lPt[ind[0]];
             mNotSoForwardJets = notSoForwardJets.M();
-            etaRecoilingJet = recoilingJet.Eta();
-            pTTrailingLepton = _lPt[ind[2]];
-            pTSubleadingLepton = _lPt[ind[1]];
             pTLeadingBJet = leadingBJet.Pt();
             missingET = _met;
             highestDeepCSV = _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
             maxMjj = maxMJetJet;
-            maxMlb = maxMLeptonbJet;
-            minDeltaPhilb = minDeltaPhiLeptonbJet;
+            minMlb = minMLeptonbJet;
+            asymmetryWlep = _lEta[ind[lw]]*_lCharge[ind[lw]];
+            etaZ = fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta());
+            m3l = (lepV[0] + lepV[1] + lepV[2]).M();
+            maxDeltaPhijj = maxDeltaPhiJetJet;
+            maxDeltaRjj = maxDeltaRJetJet;
+            maxDeltaPhill = maxDeltaPhiLeptonLepton;
+            maxM2l = maxMLeptonLepton;
+            pTMaxlb = maxpTLeptonbJet;
+            pTMax2l = maxpTLeptonLepton;
+            pT3l = (lepV[0] + lepV[1] + lepV[2]).Pt();
+            ht = HT;
+            eventWeight = weight;
             /*
-            if(currentSample == 2){
-                tree[0]->Fill();
-            } else if(currentSample > 2){
-                tree[1]->Fill();
-            }
-            */
             double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0;
             bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
             bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
@@ -619,22 +616,26 @@ void treeReader::Analyze(){
             deltaRWLepClosestJet, lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ), lepV[lw].DeltaPhi(taggedBJet), lepV[lw].DeltaR(recoilingJet), topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
             topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt()
             };
+            */
             for(unsigned m = 0; m < nMll; ++m){
                 if(m == 0 || m == (mllCat + 1) ){
                     for(unsigned cat = 0; cat < nCat; ++cat){
                         if(cat == 0 || cat == (tzqCat + 1) ){
                             //Fill training tree
-                            //if(currentSample == 2) tree[0][cat][m]->Fill();
-                            //else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
+                            if(currentSample == 2) tree[0][cat][m]->Fill();
+                            else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
+                            /*
                             for(unsigned dist = 0; dist < nDist; ++dist){
                                 hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
                             }
+                            */
                         }
                     }
                 }
             }
         }
         //set histograms to 0 if negative
+        /*
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned cat = 0; cat < nCat; ++cat){
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -642,11 +643,13 @@ void treeReader::Analyze(){
                 }	
             }
         }
+        */
     }
     
     //Save training tree
-    //treeFile.Write();
-    //treeFile.Close();
+    treeFile.Write();
+    treeFile.Close();
+    /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -703,6 +706,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    */
 }
 int main(){
     treeReader reader;
