@@ -537,6 +537,7 @@ void treeReader::Analyze(){
             pTMaxlb = maxpTLeptonbJet;
             pTMax2l = maxpTLeptonLepton;
             pT3l = (lepV[0] + lepV[1] + lepV[2]).Pt();
+            mForwardJetsLeadinBJetW = (forwardJets + leadingBJet + lepV[lw] + neutrino).M();
             ht = HT;
             eventWeight = weight;
             /*
