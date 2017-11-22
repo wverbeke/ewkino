@@ -20,27 +20,30 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
 
     TMVA::DataLoader *dataloader=new TMVA::DataLoader("dataset");
 
-    //dataloader->AddVariable("mForwardJets", 'F');
     dataloader->AddVariable("topMass", 'F');
     if(jetsCat != "1bJet_01jets") dataloader->AddVariable("pTForwardJets", 'F');
-    //dataloader->AddVariable("etaLeading", 'F');
     dataloader->AddVariable("etaMostForward", 'F');
+    if(jetsCat == "1bJet_4Jets" || jetsCat == "2bJets") dataloader->AddVariable("numberOfJets", 'F');
+    if(jetsCat != "1bJet_4Jets" && jetsCat != "2bJets") dataloader->AddVariable("pTLeadingJet", 'F');
     dataloader->AddVariable("pTLeadingLepton", 'F');
-    //dataloader->AddVariable("pTLeadingJet", 'F');
-    if(jetsCat != "1bJet_01jets" && jetsCat != "0bJets_01Jets") dataloader->AddVariable("pTLeadingBJet", 'F');
-    //dataloader->AddVariable("missingET", 'F');
-    //dataloader->AddVariable("pTTrailingLepton", 'F');
+    dataloader->AddVariable("mNotSoForwardJets");
+    if(jetsCat != "1bJet_01jets" && jetsCat != "0bJets_01Jets" && jetsCat != "1bJet_4Jets" && jetsCat != "2bJets") dataloader->AddVariable("pTLeadingBJet", 'F');
+    dataloader->AddVariable("missingET", 'F');
     dataloader->AddVariable("highestDeepCSV", 'F');
     if(jetsCat != "1bJet_01jets" && jetsCat != "0bJets_01Jets") dataloader->AddVariable("maxMjj", 'F');
-    if(jetsCat != "0bJet_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("maxMlb", 'F');
-    if(jetsCat != "0bJet_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("minDeltaPhilb", 'F');
-    dataloader->AddVariable("mNotSoForwardJets");
-    //dataloader->AddVariable("pTHighestDeepCSVJet", 'F');
-    //dataloader->AddVariable("etaRecoilingJet", 'F');
-    //dataloader->AddVariable("pTRecoiling_tagged_wlep", 'F');
-    //dataloader->AddVariable("numberOfBJets", 'i');
-    //dataloader->AddVariable("numberOfJets", 'i');
-    //dataloader->AddVariable("dilepMass", 'F');
+    if(jetsCat != "0bJet_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("minMlb", 'F');
+    dataloader->AddVariable("asymmetryWlep", 'F');
+    dataloader->AddVariable("etaZ", 'F');
+    dataloader->AddVariable("m3l", 'F');
+    if(jetsCat != "1bJet_4Jets" && jetsCat != "2bJets") dataloader->AddVariable("maxDeltaPhijj", 'F');
+    dataloader->AddVariable("maxDeltaRjj", 'F');
+    dataloader->AddVariable("maxDeltaPhill", 'F');
+    //dataloader->AddVariable("maxM2l", 'F');           //not used now due to correlation with 3l variables
+    dataloader->AddVariable("pTMaxlb", 'F');
+    //dataloader->AddVariable("ptMax2l", 'F');          //not used now due to correlation with 3l variables
+    dataloader->AddVariable("pT3l", 'F');
+    dataloader->AddVariable("mForwardJetsLeadinBJetW", 'F');
+    dataloader->AddVariable("ht", 'F');
 
     dataloader->SetSignalWeightExpression("eventWeight");
     dataloader->SetBackgroundWeightExpression("eventWeight");
