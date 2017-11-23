@@ -204,6 +204,7 @@ void treeReader::Analyze(){
     Float_t numberOfJets, numberOfBJets, pTLeadingJet, mNotSoForwardJets, pTLeadingLepton, highestDeepCSV;
     Float_t maxMjj, minMlb, asymmetryWlep, etaZ, m3l, maxDeltaPhijj, maxDeltaRjj, maxDeltaPhill, maxM2l;
     Float_t pTMaxlb, pTMax2l, pT3l, mForwardJetsLeadinBJetW, ht;
+    /*
     //tree for BDT training
     TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
     TTree *tree[2][nCat][nMll];
@@ -242,26 +243,35 @@ void treeReader::Analyze(){
             }
         }
     }
-    /*
+    */
     //MVA reader 
     TMVA::Reader *mvaReader[nMll][nCat]; //one BDT for every category
     for(unsigned m = 0; m < nMll - 1; ++m){
         for(unsigned cat = 0; cat < nCat - 1; ++cat){
+            if(catNames[cat + 1] == "0bJets_01Jets") continue;
             mvaReader[m][cat] = new TMVA::Reader( "!Color:!Silent" );
             mvaReader[m][cat]->AddVariable("topMass", &topMass);
             if(catNames[cat + 1] != "1bJet_01jets") mvaReader[m][cat]->AddVariable("pTForwardJets", &pTForwardJets);
-            //mvaReader[m][cat]->AddVariable("etaLeading", &etaLeading);
             mvaReader[m][cat]->AddVariable("etaMostForward", &etaMostForward);
+            if(catNames[cat + 1]  == "1bJet_4Jets" || catNames[cat + 1] == "2bJets") mvaReader[m][cat]->AddVariable("numberOfJets", &numberOfJets);
+            if(catNames[cat + 1]  != "1bJet_4Jets" && catNames[cat + 1] != "2bJets") mvaReader[m][cat]->AddVariable("pTLeadingJet", &pTLeadingJet);
             mvaReader[m][cat]->AddVariable("pTLeadingLepton", &pTLeadingLepton);
-            //mvaReader[m][cat]->AddVariable("pTLeadingJet", &pTLeadingJet);
-            if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets") mvaReader[m][cat]->AddVariable("pTLeadingBJet", &pTLeadingBJet);
-            //mvaReader[m][cat]->AddVariable("missingET", &missingET);
-            //mvaReader[m][cat]->AddVariable("pTTrailingLepton", &pTTrailingLepton);
+            mvaReader[m][cat]->AddVariable("mNotSoForwardJets", &mNotSoForwardJets);
+            if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets" && catNames[cat + 1]  != "1bJet_4Jets" && catNames[cat + 1] != "2bJets") mvaReader[m][cat]->AddVariable("pTLeadingBJet", &pTLeadingBJet);
+            mvaReader[m][cat]->AddVariable("missingET", &missingET);
             mvaReader[m][cat]->AddVariable("highestDeepCSV", &highestDeepCSV);
             if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("maxMjj", &maxMjj);
-            if(catNames[cat + 1] != "0bJets_2Jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("maxMlb", &maxMlb);
-            if(catNames[cat + 1] != "0bJets_2Jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("minDeltaPhilb", &minDeltaPhilb);
-            mvaReader[m][cat]->AddVariable("mNotSoForwardJets", &mNotSoForwardJets);
+            if(catNames[cat + 1] != "0bJets_2Jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("minMlb", &minMlb);
+            if(catNames[cat + 1] != "1bJet_01jets") mvaReader[m][cat]->AddVariable("asymmetryWlep", &asymmetryWlep);
+            mvaReader[m][cat]->AddVariable("etaZ", &etaZ);
+            mvaReader[m][cat]->AddVariable("m3l", &m3l);
+            if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets" && catNames[cat + 1]  != "1bJet_4Jets" && catNames[cat + 1] != "2bJets") mvaReader[m][cat]->AddVariable("maxDeltaPhijj", &maxDeltaPhijj);
+            if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets") mvaReader[m][cat]->AddVariable("maxDeltaRjj", &maxDeltaRjj);
+            mvaReader[m][cat]->AddVariable("maxDeltaPhill", &maxDeltaPhill);
+            if(catNames[cat + 1] != "0bJets_2Jets" && catNames[cat + 1] != "0bJets_01Jets") mvaReader[m][cat]->AddVariable("pTMaxlb", &pTMaxlb);
+            mvaReader[m][cat]->AddVariable("pT3l", &pT3l);
+            mvaReader[m][cat]->AddVariable("mForwardJetsLeadinBJetW", &mForwardJetsLeadinBJetW);
+            mvaReader[m][cat]->AddVariable("ht", &ht);
             mvaReader[m][cat]->BookMVA("BDT method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDT.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTG method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTG.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTD method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTD.weights.xml");
@@ -270,7 +280,6 @@ void treeReader::Analyze(){
             mvaReader[m][cat]->BookMVA("DNN method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_DNN.weights.xml");
         }
     }
-    */
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
         if(sam == 0){                   //skip data for now
@@ -544,14 +553,15 @@ void treeReader::Analyze(){
             mForwardJetsLeadinBJetW = std::max((forwardJets + leadingBJet + lepV[lw] + neutrino).M(), 0.);
             ht = HT;
             eventWeight = weight;
-            /*
             double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0;
-            bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
-            bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
-            bdtD = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTD method");
-            bdtB = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTB method");
-            mlp = mvaReader[mllCat][tzqCat]->EvaluateMVA("MLP method");
-            deepNN = mvaReader[mllCat][tzqCat]->EvaluateMVA("DNN method");
+            if(catNames[tzqCat + 1] != "0bJets_01Jets"){
+                bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
+                bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
+                bdtD = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTD method");
+                bdtB = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTB method");
+                mlp = mvaReader[mllCat][tzqCat]->EvaluateMVA("MLP method");
+                deepNN = mvaReader[mllCat][tzqCat]->EvaluateMVA("DNN method");
+            }
             //distributions to plot
             double fill[nDist] = {bdt, bdtG, bdtD, bdtB, mlp, deepNN, _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
@@ -621,26 +631,22 @@ void treeReader::Analyze(){
             deltaRWLepClosestJet, lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ), lepV[lw].DeltaPhi(taggedBJet), lepV[lw].DeltaR(recoilingJet), topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
             topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt()
             };
-            */
             for(unsigned m = 0; m < nMll; ++m){
                 if(m == 0 || m == (mllCat + 1) ){
                     for(unsigned cat = 0; cat < nCat; ++cat){
                         if(cat == 0 || cat == (tzqCat + 1) ){
                             //Fill training tree
-                            if(currentSample == 2) tree[0][cat][m]->Fill();
-                            else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
-                            /*
+                            //if(currentSample == 2) tree[0][cat][m]->Fill();
+                            //else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
                             for(unsigned dist = 0; dist < nDist; ++dist){
                                 hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
                             }
-                            */
                         }
                     }
                 }
             }
         }
         //set histograms to 0 if negative
-        /*
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned cat = 0; cat < nCat; ++cat){
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -648,13 +654,11 @@ void treeReader::Analyze(){
                 }	
             }
         }
-        */
     }
     
     //Save training tree
-    treeFile.Write();
-    treeFile.Close();
-    /*
+    //treeFile.Write();
+    //treeFile.Close();
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -711,7 +715,6 @@ void treeReader::Analyze(){
             }
         }
     }
-    */
 }
 int main(){
     treeReader reader;
