@@ -44,6 +44,30 @@ void treeReader::Analyze(){
         std::make_tuple("bdtB", "BDTB output", 30, -1, 1),
         std::make_tuple("mlp", "MLP output", 30, 0, 1),
         std::make_tuple("deepNN", "deep neural network output", 30, 0, 1),
+        std::make_tuple("bdtGAlt", "alternate BDTG output", 30, -1, 1),
+        std::make_tuple("bdtG_200trees", "BDTG output (200 trees)", 30, -1, 1),
+        std::make_tuple("bdtG_shrinkage04", "BDTG output (shrinkage 0.4)", 30, -1, 1),
+        std::make_tuple("bdtG_minNode005", "BDTG output (min node size 5%)", 30, -1, 1),
+        std::make_tuple("bdtG_negWeights", "BDTG output (include neg. weights)", 30, -1, 1),
+        std::make_tuple("bdtG_MaxDepth4", "BDTG output (max depth 4)", 30, -1, 1),
+        std::make_tuple("bdtG_20Cuts", "BDTG output (20 points cut grid)", 30, -1, 1),
+        std::make_tuple("BDTGAlt_negWeights_SDivSqrtSPlusB", "BDTG output (neg. weights, s/sqrt(s + b) )", 30, -1, 1),
+        std::make_tuple("BDTGAlt_shrinkage02_20Cuts", "BDTG output (shrinkage 0.2, 20 cuts)", 30, -1, 1),
+        std::make_tuple("BDTGAlt_shrinkage04_20Cuts",  "BDTG output (shrinkage 0.4, 20 cuts)", 30, -1, 1),
+        std::make_tuple("BDTGAlt_shrinkage02_20Cuts_depth3", "BDTG output (shrinkage 0.2, 20 cuts, depth 3)", 30, -1, 1),
+        std::make_tuple("BDTGAlt_200trees_MaxDepth3_shrinkage02", "BDTG output (200 trees, shrinkage 0.2, depth 3)", 30, -1, 1),
+        std::make_tuple("BDTGAlt_MaxDepth3", "BDTG output (depth 3)", 30, -1, 1),
+        std::make_tuple("BDTGAlt_Decorrelate", "BDTG output (decorrelated)", 30, -1, 1),
+        std::make_tuple("BDTAda_200Cuts",  "BDTAda output (200 cuts)", 30, -0.35, 0.35),
+        std::make_tuple("BDTAda_200Cuts_Depth2", "BDTAda output (depth 2)", 30, -0.35, 0.35),
+        std::make_tuple("BDTAda_200Cuts_Depth2_Beta01", "BDTAda output (200 cuts, depth 2, beta 0.1)", 30, -0.35, 0.35),
+        std::make_tuple("BDTAda_200Cuts_Depth2_200Trees", "BDTAda output (200 cuts, 200 trees, depth 2)", 30, -0.35, 0.35),
+        std::make_tuple("BDTAda_200Cuts_SDivSqrtSPlusB", "BDTAda output (200 cuts, s/sqrt(s + b) )", 30, -0.35, 0.35),
+        std::make_tuple("BDTAda_200Cuts_ignoreNegative", "BDTAda output (200 cuts, ignora neg. weights)", 30, -0.35, 0.35),
+        std::make_tuple("BDTAda_200Cuts_Decorrelate", "BDTAda output (200 cuts, decorrelated)", 30, -0.35, 0.35),
+        std::make_tuple("BDTB_200Cuts", "BDTB output (200 cuts)", 30, -1, 1),
+        std::make_tuple("BDTB_200Cuts_Depth3", "BDTB output (200 cuts, depth 3)", 30, -1, 1),
+        std::make_tuple("BDTB_200Cuts_1000Trees", "BDTB output (200 cuts, 1000 trees)", 30, -1, 1),
         ////
         std::make_tuple("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
         std::make_tuple("mll", "M_{ll} (GeV)", 60, 12, 200),
@@ -244,6 +268,13 @@ void treeReader::Analyze(){
         }
     }
     */
+    const std::vector<std::string> mvaMethods = {"BDT", "BDTG", "BDTD", "BDTB", "MLP", "DNN", "BDTGAlt", "BDTGAlt_200trees", "BDTGAlt_shrinkage04", "BDTGAlt_minNode005", "BDTGAlt_negWeights", "BDTGAlt_MaxDepth4", "BDTGAlt_20Cuts",
+                                     "BDTGAlt_negWeights_SDivSqrtSPlusB", "BDTGAlt_shrinkage02_20Cuts", "BDTGAlt_shrinkage04_20Cuts", "BDTGAlt_shrinkage02_20Cuts_depth3", "BDTGAlt_200trees_MaxDepth3_shrinkage02",
+                                     "BDTGAlt_MaxDepth3", "BDTGAlt_Decorrelate",
+                                     "BDTAda_200Cuts", "BDTAda_200Cuts_Depth2", "BDTAda_200Cuts_Depth2_Beta01", "BDTAda_200Cuts_Depth2_200Trees", "BDTAda_200Cuts_SDivSqrtSPlusB", "BDTAda_200Cuts_ignoreNegative",
+                                     "BDTAda_200Cuts_Decorrelate",
+                                     "BDTB_200Cuts", "BDTB_200Cuts_Depth3", "BDTB_200Cuts_1000Trees"}; 
+
     //MVA reader 
     TMVA::Reader *mvaReader[nMll][nCat]; //one BDT for every category
     for(unsigned m = 0; m < nMll - 1; ++m){
@@ -272,12 +303,24 @@ void treeReader::Analyze(){
             mvaReader[m][cat]->AddVariable("pT3l", &pT3l);
             mvaReader[m][cat]->AddVariable("mForwardJetsLeadinBJetW", &mForwardJetsLeadinBJetW);
             mvaReader[m][cat]->AddVariable("ht", &ht);
+            /*
             mvaReader[m][cat]->BookMVA("BDT method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDT.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTG method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTG.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTD method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTD.weights.xml");
             mvaReader[m][cat]->BookMVA("BDTB method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTB.weights.xml");
             mvaReader[m][cat]->BookMVA("MLP method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_MLP.weights.xml");
             mvaReader[m][cat]->BookMVA("DNN method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_DNN.weights.xml");
+            mvaReader[m][cat]->BookMVA("BDTGAlt method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTGAlt.weights.xml");
+            mvaReader[m][cat]->BookMVA("BDTGAlt_200trees method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTGAlt_200trees.weights.xml");
+            mvaReader[m][cat]->BookMVA("BDTGAlt_shrinkage04 method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTGAlt_shrinkage04.weights.xml");
+            mvaReader[m][cat]->BookMVA("BDTGAlt_minNode005 method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTGAlt_minNode005.weights.xml");
+            mvaReader[m][cat]->BookMVA("BDTGAlt_negWeights method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTGAlt_negWeights.weights.xml");
+            mvaReader[m][cat]->BookMVA("BDTGAlt_MaxDepth4 method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTGAlt_MaxDepth4.weights.xml");
+            mvaReader[m][cat]->BookMVA("BDTGAlt_20Cuts method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTGAlt_20Cuts.weights.xml");
+            */
+            for(auto it = mvaMethods.cbegin(); it != mvaMethods.cend(); ++it){
+                mvaReader[m][cat]->BookMVA(*it + " method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_" + *it + ".weights.xml");
+            }
         }
     }
     //loop over all samples 
@@ -553,7 +596,14 @@ void treeReader::Analyze(){
             mForwardJetsLeadinBJetW = std::max((forwardJets + leadingBJet + lepV[lw] + neutrino).M(), 0.);
             ht = HT;
             eventWeight = weight;
-            double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0;
+            //double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0, bdtGAlt = 0;
+            //double bdtGAlt_200trees = 0, bdtGAlt_shrinkage04 = 0, bdtGAlt_minNode005 = 0, bdtGAlt_negWeights = 0, bdtGAlt_MaxDepth4 = 0, bdtGAlt_20cuts = 0;
+            std::vector<double> mvaVals(30);
+            for(unsigned i = 0; i < mvaMethods.size(); ++i){
+               if(tzqCat != 0 ) mvaVals[i] =  mvaReader[mllCat][tzqCat]->EvaluateMVA(mvaMethods[i] + " method");
+               else mvaVals[i] = 0;
+            }
+            /*
             if(catNames[tzqCat + 1] != "0bJets_01Jets"){
                 bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
                 bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
@@ -561,9 +611,23 @@ void treeReader::Analyze(){
                 bdtB = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTB method");
                 mlp = mvaReader[mllCat][tzqCat]->EvaluateMVA("MLP method");
                 deepNN = mvaReader[mllCat][tzqCat]->EvaluateMVA("DNN method");
+                bdtGAlt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt method");
+                bdtGAlt_200trees = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_200trees method");
+                bdtGAlt_shrinkage04 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_shrinkage04 method");
+                bdtGAlt_minNode005 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_minNode005 method");
+                bdtGAlt_negWeights = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_negWeights method");
+                bdtGAlt_MaxDepth4 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_MaxDepth4 method");
+                bdtGAlt_20cuts = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_20Cuts method");
             }
+            */
             //distributions to plot
-            double fill[nDist] = {bdt, bdtG, bdtD, bdtB, mlp, deepNN, _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
+            //double fill[nDist] = {bdt, bdtG, bdtD, bdtB, mlp, deepNN, bdtGAlt, 
+            //    bdtGAlt_200trees, bdtGAlt_shrinkage04, bdtGAlt_minNode005, bdtGAlt_negWeights, bdtGAlt_MaxDepth4, bdtGAlt_20cuts,
+            double fill[nDist] = {mvaVals[0], mvaVals[1], mvaVals[2], mvaVals[3], mvaVals[4], mvaVals[5], mvaVals[6], mvaVals[7], mvaVals[8], mvaVals[9], 
+                mvaVals[10], mvaVals[11], mvaVals[12], mvaVals[13], mvaVals[14], mvaVals[15], mvaVals[16], mvaVals[17], mvaVals[18], mvaVals[19], mvaVals[20], mvaVals[21],
+                mvaVals[22], mvaVals[23], mvaVals[24], mvaVals[25], mvaVals[26], mvaVals[27], mvaVals[28], mvaVals[29],
+
+                _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
              highestEtaJet.Pt(), topV.M(), (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
 
@@ -639,6 +703,7 @@ void treeReader::Analyze(){
                             //if(currentSample == 2) tree[0][cat][m]->Fill();
                             //else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
                             for(unsigned dist = 0; dist < nDist; ++dist){
+                                if(dist > 32) continue;
                                 hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
                             }
                         }
@@ -707,6 +772,9 @@ void treeReader::Analyze(){
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
+                //TEMP REMOVE LATER
+                if(dist > 32) continue;
+                ///////////
                 plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m], "tzq", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal);             //linear plots
                 plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m] + "_withSignal", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal, &signal[m][cat][dist], sigNames, 1);             //linear plots with signal
 
