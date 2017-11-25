@@ -352,6 +352,91 @@ void treeReader::Analyze(){
             }
         }
     }
+    
+    //make shape datacards for each category
+    const unsigned nBkg = proc.size() - 2;  //number of background processes
+    const std::string bkgNames[nBkg] = {"DY", "TTJets", "WJets", "WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH"}; //rewrite bkg names not to confuse combine
+
+    const unsigned nSyst = 11 + 1 + 2*nBkg; //11 general uncertainties + stat signal + stat bkg + extra unc per bkg
+    std::string systNames[nSyst] = {"lumi", "pdfXsec", "scaleXsec", "JEC", "metUncl", "scale", "pdf", "pu", "btagSF", "id_eff", "trigeff"};
+    std::vector<std::vector<double>> systUnc(nSyst, std::vector<double>(nBkg + 1, 0)); //2D array containing all systematics
+    //initialize flat and shape systematics
+    for(unsigned p = 0; p < nBkg + 1; ++p){ //signal and bkg
+        systUnc[0][p] = 1.025;   //lumi
+        systUnc[1][p] = 0;       //pdfXsec
+        systUnc[2][p] = 0;       //   
+        systUnc[3][p] = 1.05;    //JEC
+        systUnc[4][p] = 1.05;    //PU 
+        systUnc[5][p] = 1.05;    //MET unclustered 
+        systUnc[6][p] = 1.1;     //b-tag SF
+        systUnc[7][p] = 1.05;    //scale shape
+        systUnc[8][p] = 1.02;    //pdf shape
+        systUnc[9][p] = 1.06;    //id eff
+        systUnc[10][p] = 1.05;   //trig eff  
+    }
+    //scale and pdf xsection on tzq
+    systUnc[1][0] = 1.1;
+    systUnc[2][0] = 1.1;
+
+    std::string systDist[nSyst]; //probability distribution of nuisances
+    for(unsigned syst = 0; syst < nSyst; ++syst){
+        if(syst < 11  + 1 || syst  > 11 + nBkg) systDist[syst] = "lnN"; //no shapes at the moment
+        else systDist[syst] = "shape";                                     //statistical shape of BDT
+    }
+    const double extraUnc[nBkg] = {1.3, 1.3, 1.3, 1.15, 1.5, 1.15, 1.15, 1.15, 1.15}; //extra flat uncertainties assigned to each background
+    for(unsigned syst = 12 + nBkg; syst < nSyst; ++syst){//loop over last nBkg uncertainties, being the exta uncertainties for each bkg
+        unsigned bkg = syst - 12 - nBkg;//index of the background corresponding to the uncertainty index
+        systNames[syst] = "extra" + bkgNames[bkg];
+        systUnc[syst][bkg + 1] = extraUnc[bkg];
+    }
+    TH1D* bdtShape[nMll][nCat][(const size_t) proc.size() -1] ; //shape histograms of bdt
+    TH1D* bdtShapeStatUp[nMll][nCat][(const size_t) proc.size() - 1][(const size_t) proc.size() - 1]; //statistical shape uncertainty on bdt
+    TH1D* bdtShapeStatDown[nMll][nCat][(const size_t) proc.size() - 1][(const size_t) proc.size() - 1]; //statistical shape uncertainty on bdt
+
+    //set up background yield array
+
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            //Set bkg yields 
+            double bkgYields[(const size_t) proc.size() - 2];
+            for(unsigned bkg = 0; bkg < proc.size() - 2; ++bkg) bkgYields[bkg] = mergedHists[m][cat][0][2 + bkg]->GetSumOfWeights();
+            //Set names of statistical systematics
+            for(unsigned p = 1; p < proc.size(); ++p){
+                if(p == 1)  systNames[11 + p] = "stattZq" + mllNames[m] + catNames[cat];
+                else        systNames[11 + p] = "stat" + bkgNames[p -2] + mllNames[m] + catNames[cat];
+            }
+            //set BDT shape histogram
+            TFile* shapeFile = new TFile((const TString&) "./datacards/shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  ".root", "recreate");
+            for(unsigned p = 0; p < proc.size(); ++p){
+                bdtShape[m][cat][p] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
+                if(p == 0) bdtShape[m][cat][p]->Write("data_obs");
+                else if (p == 1) bdtShape[m][cat][p]->Write("tZq");
+                else bdtShape[m][cat][p]->Write((const TString&) bkgNames[p -2]);
+                if(p != 0){     //set statistical uncertainty as shape
+                    for(unsigned k = 0; k < proc.size() - 1; ++k){
+                        bdtShapeStatUp[m][cat][p][k] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
+                        bdtShapeStatDown[m][cat][p][k] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
+                        if(k == p){
+                            for(unsigned bin = 1; bin < mergedHists[m][cat][0][p]->GetNbinsX() + 1; ++bin){
+                                bdtShapeStatUp[m][cat][p][k]->SetBinContent(bin, std::max( bdtShapeStatUp[m][cat][p][k]->GetBinContent(bin) + bdtShapeStatUp[m][cat][p][k]->GetBinError(bin),  std::numeric_limits< double >::min() ));
+                                bdtShapeStatDown[m][cat][p][k]->SetBinContent(bin, std::max( bdtShapeStatDown[m][cat][p][k]->GetBinContent(bin) - bdtShapeStatDown[m][cat][p][k]->GetBinError(bin), std::numeric_limits< double >::min() ));
+                            }
+                        }
+                        if (p == 1){
+                            bdtShapeStatUp[m][cat][p][k]->Write((const TString&) "tZq_" + systNames[11 + k - 1] + "Up"); 
+                            bdtShapeStatDown[m][cat][p][k]->Write((const TString&) "tZq_" + systNames[11 + k - 1] + "Down");
+                        } else{
+                            bdtShapeStatUp[m][cat][p][k]->Write((const TString&) bkgNames[p -2] + "_" + systNames[11 + k - 1] + "Up"); 
+                            bdtShapeStatDown[m][cat][p][k]->Write((const TString&) bkgNames[p -2] + "_" + systNames[11 + k - 1] + "Down");
+                        }
+                    }
+                }
+            }
+            shapeFile->Close();
+            tools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, systNames, systDist, "datacard_" + mllNames[m] + "_" + catNames[cat], true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  ".root");
+        }
+    }
+
 }
 int main(){
     treeReader reader;
