@@ -113,7 +113,7 @@ void treeReader::Analyze(){
         initSample(0);          //Use combined 2016 luminosity
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -377,6 +377,10 @@ void treeReader::Analyze(){
     //scale and pdf xsection on tzq
     systUnc[1][0] = 1.1;
     systUnc[2][0] = 1.1;
+    //set statistical uncertainties
+    for(unsigned p = 0; p < nBkg + 1; ++p){
+        systUnc[11 + p][p] = 1.00;
+    }
 
     std::string systDist[nSyst]; //probability distribution of nuisances
     for(unsigned syst = 0; syst < nSyst; ++syst){
@@ -402,8 +406,8 @@ void treeReader::Analyze(){
             for(unsigned bkg = 0; bkg < proc.size() - 2; ++bkg) bkgYields[bkg] = mergedHists[m][cat][0][2 + bkg]->GetSumOfWeights();
             //Set names of statistical systematics
             for(unsigned p = 1; p < proc.size(); ++p){
-                if(p == 1)  systNames[11 + p] = "stattZq" + mllNames[m] + catNames[cat];
-                else        systNames[11 + p] = "stat" + bkgNames[p -2] + mllNames[m] + catNames[cat];
+                if(p == 1)  systNames[11 + p - 1] = "stattZq" + mllNames[m] + catNames[cat];
+                else        systNames[11 + p - 1] = "stat" + bkgNames[p -2] + mllNames[m] + catNames[cat];
             }
             //set BDT shape histogram
             TFile* shapeFile = new TFile((const TString&) "./datacards/shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  ".root", "recreate");
@@ -433,7 +437,7 @@ void treeReader::Analyze(){
                 }
             }
             shapeFile->Close();
-            tools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, systNames, systDist, "datacard_" + mllNames[m] + "_" + catNames[cat], true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  ".root");
+            tools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, systNames, systDist, "datacards/datacard_" + mllNames[m] + "_" + catNames[cat], true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  ".root");
         }
     }
 
