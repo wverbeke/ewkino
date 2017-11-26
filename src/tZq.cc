@@ -282,7 +282,7 @@ void treeReader::Analyze(){
             double fill[nDist] = {bdtG};
 
             for(unsigned dist = 0; dist < nDist; ++dist){
-                hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
+                hists[mllCat][tzqCat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
             }
         }
         //set histograms to 0 if negative
