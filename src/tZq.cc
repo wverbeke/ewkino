@@ -113,7 +113,7 @@ void treeReader::Analyze(){
         initSample(0);          //Use combined 2016 luminosity
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries/100; ++it){
+        for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -281,12 +281,8 @@ void treeReader::Analyze(){
             double bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_20Cuts method");
             double fill[nDist] = {bdtG};
 
-            for(unsigned m = 0; m < nMll; ++m){
-                for(unsigned cat = 0; cat < nCat; ++cat){
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
-                    }
-                }
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
             }
         }
         //set histograms to 0 if negative
@@ -393,9 +389,9 @@ void treeReader::Analyze(){
         systNames[syst] = "extra" + bkgNames[bkg];
         systUnc[syst][bkg + 1] = extraUnc[bkg];
     }
-    TH1D* bdtShape[nMll][nCat][(const size_t) proc.size() -1] ; //shape histograms of bdt
-    TH1D* bdtShapeStatUp[nMll][nCat][(const size_t) proc.size() - 1][(const size_t) proc.size() - 1]; //statistical shape uncertainty on bdt
-    TH1D* bdtShapeStatDown[nMll][nCat][(const size_t) proc.size() - 1][(const size_t) proc.size() - 1]; //statistical shape uncertainty on bdt
+    TH1D* bdtShape[nMll][nCat][(const size_t) proc.size()] ; //shape histograms of bdt
+    TH1D* bdtShapeStatUp[nMll][nCat][(const size_t) proc.size()][(const size_t) proc.size()]; //statistical shape uncertainty on bdt
+    TH1D* bdtShapeStatDown[nMll][nCat][(const size_t) proc.size()][(const size_t) proc.size()]; //statistical shape uncertainty on bdt
 
     //set up background yield array
 
@@ -417,7 +413,7 @@ void treeReader::Analyze(){
                 else if (p == 1) bdtShape[m][cat][p]->Write("tZq");
                 else bdtShape[m][cat][p]->Write((const TString&) bkgNames[p -2]);
                 if(p != 0){     //set statistical uncertainty as shape
-                    for(unsigned k = 0; k < proc.size() - 1; ++k){
+                    for(unsigned k = 1; k < proc.size(); ++k){
                         bdtShapeStatUp[m][cat][p][k] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
                         bdtShapeStatDown[m][cat][p][k] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
                         if(k == p){
@@ -425,19 +421,19 @@ void treeReader::Analyze(){
                                 bdtShapeStatUp[m][cat][p][k]->SetBinContent(bin, std::max( bdtShapeStatUp[m][cat][p][k]->GetBinContent(bin) + bdtShapeStatUp[m][cat][p][k]->GetBinError(bin),  std::numeric_limits< double >::min() ));
                                 bdtShapeStatDown[m][cat][p][k]->SetBinContent(bin, std::max( bdtShapeStatDown[m][cat][p][k]->GetBinContent(bin) - bdtShapeStatDown[m][cat][p][k]->GetBinError(bin), std::numeric_limits< double >::min() ));
                             }
-                        }
-                        if (p == 1){
-                            bdtShapeStatUp[m][cat][p][k]->Write((const TString&) "tZq_" + systNames[11 + k - 1] + "Up"); 
-                            bdtShapeStatDown[m][cat][p][k]->Write((const TString&) "tZq_" + systNames[11 + k - 1] + "Down");
-                        } else{
-                            bdtShapeStatUp[m][cat][p][k]->Write((const TString&) bkgNames[p -2] + "_" + systNames[11 + k - 1] + "Up"); 
-                            bdtShapeStatDown[m][cat][p][k]->Write((const TString&) bkgNames[p -2] + "_" + systNames[11 + k - 1] + "Down");
+                            if (p == 1){
+                                bdtShapeStatUp[m][cat][p][k]->Write((const TString&) "tZq_" + systNames[11 + k - 1] + "Up"); 
+                                bdtShapeStatDown[m][cat][p][k]->Write((const TString&) "tZq_" + systNames[11 + k - 1] + "Down");
+                            } else{
+                                bdtShapeStatUp[m][cat][p][k]->Write((const TString&) bkgNames[p -2] + "_" + systNames[11 + k - 1] + "Up"); 
+                                bdtShapeStatDown[m][cat][p][k]->Write((const TString&) bkgNames[p -2] + "_" + systNames[11 + k - 1] + "Down");
+                            }
                         }
                     }
                 }
             }
             shapeFile->Close();
-            tools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, systNames, systDist, "datacards/datacard_" + mllNames[m] + "_" + catNames[cat], true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  ".root");
+            tools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, systNames, systDist, "datacards/datacard_" + mllNames[m] + "_" + catNames[cat], true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m]);
         }
     }
 
