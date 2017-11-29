@@ -225,6 +225,11 @@ class treeReader {
         //overlap removal between samples
         bool photonOverlap();                                                                                //sample overlap due to photons
         bool htOverlap();                                                                                    //sample overlap due to HT binning
+
+        //functions for event reweighting
+        void setWeights();
+        double puWeight(const unsigned period = 0, const unsigned unc = 0);
+
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
@@ -234,10 +239,15 @@ class treeReader {
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;
-        const double lumi2016 = 29.55;                                          //in units of 1/fb
+        const double lumi2016 = 44.5;                                           //in units of 1/fb
         const double lumi2017 = 35.867;                 
+        
+        //event weights
+        TH1D* puWeights[3]; // 0 = central, 1 = down, 2 = up;
+        TH1D* recoWeights[2]; //0 = electrons, 1 = muons
+        
 
-        // List of branches
+        //list of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   
         TBranch        *b__eventNb;   
