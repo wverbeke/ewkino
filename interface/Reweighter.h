@@ -10,5 +10,6 @@ class Reweighter{
         TH1D* puWeights[3];
         BTagCalibration* bTagCalib;
         BTagCalibrationReader* bTahCalibReader;
+        TH1D* bTagEff[3];
 };
 #endif

@@ -16,7 +16,21 @@ Reweighter::Reweighter(){
     bTagCalibReader->load(calib, BTagEntry::FLAV_C, "comb");
     bTagCalibReader->load(calib, BTagEntry::FLAV_UDSG, "incl");    
     //initialize b-tag efficiencies
-    
-    
-
+    TFile* bTagFile = TFile::Open("../weights/bTagEff_deepCSV_medium_cleaned.root");
+    const std::string quarkFlavors[3] = {"udsg", "charm", "beauty"};
+    for(unsigned flav = 0; flav < nFlav; ++flav){
+        bTagEff[flav] = (TH1D*) bTagFile->Get("bTagEff_" + quarkFlavors[flav];
+    }
+    bTagFile.Close();
 }
+
+double Reweighter::puWeight(const double nTrueInt, const unsigned period, const unsigned unc){
+    if(unc < 3){
+        if(period == 0) return puWeights[unc]->GetBinContent(puWeights[unc]->FindBin(std::min(nTrueInt, (float) 49.) ) );
+        else return 1.;                                                 //weights for 2017 data not yet available
+    }
+    else{
+        std::cerr << "wrong pu uncertainty requested: returning weight 1" << std::endl;
+        return 1.;
+    }
+};
