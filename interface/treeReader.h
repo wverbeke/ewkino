@@ -217,8 +217,9 @@ class treeReader {
         bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true);
         unsigned nJets(const unsigned unc = 0, const bool clean = true);                                        //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true);         //with jet pt ordering
-        bool bTaggedDeepCSV(const unsigned unc, const unsigned wp = 1);
-        bool bTaggedCSVv2(const unsigned uncm, const unsigned wp = 1);
+        bool bTaggedDeepCSV(const unsigned unc = 0, const unsigned wp = 1);
+        bool bTaggedCSVv2(const unsigned unc = 0, const unsigned wp = 1);
+        bool bTagged(const unsigned unc = 0, const unsigned wp = 1);
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
 
@@ -245,8 +246,9 @@ class treeReader {
         //event weights
         TH1D* puWeights[3]; // 0 = central, 1 = down, 2 = up;
         TH1D* recoWeights[2]; //0 = electrons, 1 = muons
+        BTagCalibration bTagCalib("", "../bTag/CSVv2_Moriond17_B_H.csv");
+        BTagCalibrationReader reader;        
         
-
         //list of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   

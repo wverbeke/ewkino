@@ -137,12 +137,16 @@ bool treeReader::bTaggedCSVv2(const unsigned ind, const unsigned wp){
     return _jetCsvV2[ind] > bTagWP[wp];
 }
 
+bool treeReader::bTagged(const unsigned ind, const unsigned wp, const bool deepCSV){
+    if(deepCSV) return bTaggedDeepCSV(ind, wp);
+    else        return bTaggedCSVv2(ind, wp);
+}
+
 unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp){
     unsigned nbJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
         if(jetIsGood(j, 25, unc, clean)){
-            if(deepCSV && bTaggedDeepCSV(j, wp)) ++nbJets;
-            else if(!deepCSV && bTaggedCSVv2(j, wp)) ++nbJets;
+            if(bTagged(ind, wp, deepCSV) ) ++nbJets;
         }
     }
     return nbJets;
