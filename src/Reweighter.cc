@@ -33,4 +33,11 @@ double Reweighter::puWeight(const double nTrueInt, const unsigned period, const 
         std::cerr << "wrong pu uncertainty requested: returning weight 1" << std::endl;
         return 1.;
     }
-};
+}
+
+double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, const double jetEta, const double jetCSV, const unsigned unc = 0){
+    static const BTagEntry::JetFlavor flavorEntries[3] = {BTagEntry::FLAV_UDSG, BTagEntry::FLAV_C, BTagEntry::FLAV_B};
+    static const std::string uncName[3] = {"central", "down", "up"};
+    const unsigned flav = 0 + (_jetHadronFlavor[j] == 4) + 2*(_jetHadronFlavor[j] == 5);
+    return bTagCalibReader.eval_auto_bounds(uncName[unc], flavorEntries[flav], jetEta, jetPt, jetCSV);
+}
