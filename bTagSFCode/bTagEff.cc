@@ -3,7 +3,7 @@
 
 void treeReader::computeBTagEff(const unsigned wp, const bool clean, const bool deepCSV){
     //read sample list for computing btagging efficiency
-    readSamples("samples_bTagEff.txt");
+    readSamples("sampleLists/samples_bTagEff.txt");
     //make 2D b-tagging efficiency histograms for all jet flavors
     TH2D* bTagEff[2][3]; //2: num and denom 3: udsg, c, b
     const double ptBins[17] = {25,30,35,40,45,50,60,70,80,90,100,120,150,200,300,400,600};
@@ -56,7 +56,7 @@ void treeReader::computeBTagEff(const unsigned wp, const bool clean, const bool 
     const std::string cleanNames[2] = {"uncleanded", "cleaned"};
     const std::string outputName = "bTaggEff_" + taggerNames[deepCSV] + "_" + wpNames[wp] + "_" + cleanNames[clean];
     //save histograms to file
-    TFile* bTagEffFile = TFile::Open( (const TString&) "../weights/" + outputName, "recreate");
+    TFile* bTagEffFile = TFile::Open( (const TString&) "../weights/" + outputName + ".root", "recreate");
     //divide histograms to compute the efficiency and save to file
     for(unsigned flav = 0; flav < 3; ++flav){
         bTagEff[0][flav]->Divide(bTagEff[1][flav]);
