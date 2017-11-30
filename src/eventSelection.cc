@@ -146,7 +146,7 @@ unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool c
     unsigned nbJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
         if(jetIsGood(j, 25, unc, clean)){
-            if(bTagged(ind, wp, deepCSV) ) ++nbJets;
+            if(bTagged(j, wp, deepCSV) ) ++nbJets;
         }
     }
     return nbJets;

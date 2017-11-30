@@ -217,7 +217,7 @@ class treeReader {
         bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true);
         unsigned nJets(const unsigned unc = 0, const bool clean = true);                                        //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true);         //with jet pt ordering
-        bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1)
+        bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1);
         bool bTaggedCSVv2(const unsigned ind, const unsigned wp = 1);
         bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true);
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
@@ -231,6 +231,10 @@ class treeReader {
         void setWeights();
         double puWeight(const unsigned period = 0, const unsigned unc = 0);
 
+        //compute b-tagging efficiency
+        void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
+
+
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
@@ -242,12 +246,6 @@ class treeReader {
         unsigned long nEntries = 0;
         const double lumi2016 = 44.5;                                           //in units of 1/fb
         const double lumi2017 = 35.867;                 
-        
-        //event weights
-        TH1D* puWeights[3]; // 0 = central, 1 = down, 2 = up;
-        TH1D* recoWeights[2]; //0 = electrons, 1 = muons
-        BTagCalibration bTagCalib("", "../bTag/CSVv2_Moriond17_B_H.csv");
-        BTagCalibrationReader reader;        
         
         //list of branches
         TBranch        *b__runNb;   
