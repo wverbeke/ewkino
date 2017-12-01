@@ -57,7 +57,7 @@ Reweighter::~Reweighter(){
     delete bTagCalibReader;
 }
 
-double Reweighter::puWeight(const double nTrueInt, const unsigned period, const unsigned unc){
+double Reweighter::puWeight(const double nTrueInt, const unsigned period, const unsigned unc) const{
     if(unc < 3){
         if(period == 0) return puWeights[unc]->GetBinContent(puWeights[unc]->FindBin(std::min(nTrueInt, 49.) ) );
         else return 1.;                                                 //weights for 2017 data not yet available
@@ -68,25 +68,25 @@ double Reweighter::puWeight(const double nTrueInt, const unsigned period, const 
     }
 }
 
-double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, const double jetEta, const double jetCSV, const unsigned unc){
+double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, const double jetEta, const double jetCSV, const unsigned unc) const{
     static const BTagEntry::JetFlavor flavorEntries[3] = {BTagEntry::FLAV_UDSG, BTagEntry::FLAV_C, BTagEntry::FLAV_B};
     static const std::string uncName[3] = {"central", "down", "up"};
     return bTagCalibReader->eval_auto_bounds(uncName[unc], flavorEntries[flavorInd(jetFlavor)], jetEta, jetPt, jetCSV);
 }
 
-double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta){
+double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const{
     return bTagEffHist[flavorInd(jetFlavor)]->GetBinContent(bTagEffHist[flavorInd(jetFlavor)]->FindBin(std::min(jetPt, 599.), std::min(fabs(jetEta), 2.4)) );
 }
 
-double Reweighter::muonRecoWeight(const double eta){
+double Reweighter::muonRecoWeight(const double eta) const{
     return muonRecoSF->Eval(eta);
 }
 
-double Reweighter::electronRecoWeight(const double superClusterEta, const double pt){
+double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
     return electronRecoSF->GetBinContent( electronRecoSF->FindBin(superClusterEta, pt) );
 }
 
-double Reweighter::muonIdWeight(const double pt, const double eta){
+double Reweighter::muonIdWeight(const double pt, const double eta) const{
     double sf = muonMediumSF->GetBinContent(muonMediumSF->FindBin(std::min(pt, 119.), std::min(fabs(eta), 2.4) ) );
     sf *= muonMiniIsoSF->GetBinContent(muonMiniIsoSF->FindBin(std::min(pt, 119.), std::min(fabs(eta), 2.4) ) );
     sf *= muonIPSF->GetBinContent(muonIPSF->FindBin(std::min(pt, 119.), std::min(fabs(eta), 2.4) ) );
@@ -94,6 +94,6 @@ double Reweighter::muonIdWeight(const double pt, const double eta){
     return sf;
 }
 
-double Reweighter::electronIdWeight(const double pt, const double eta){
+double Reweighter::electronIdWeight(const double pt, const double eta) const{
     return electronIdSF->GetBinContent(electronIdSF->FindBin(std::min(pt, 199.), std::min(fabs(eta), 2.5) ) );
 }
