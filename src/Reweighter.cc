@@ -22,12 +22,30 @@ Reweighter::Reweighter(){
         bTagEff[flav] = (TH1D*) bTagFile->Get("bTagEff_" + quarkFlavors[flav];
     }
     bTagFile.Close();
-    //Read Muon SF Weights
+    //Read Muon reco SF Weights
     TFile* muonRecoFile = TFile::Open("../weights/muonTrackingSF_2016.root");
     muonRecoSF = (TGraph*) muonRecoFile->Get("ratio_eff_eta3_dr030e030_corr");
-    //Read Electron SF Weights
+    //Read Electron reco SF Weights
     TFile* electronRecoFile = TFile::Open("../weights/electronRecoSF_2016.root");
     electronRecoSF = (TH2D*) electronRecoFile("EGamma_SF2D");
+    //Read muon id SF weights
+    TFile* muonMediumFile = TFile::Open("../weights/muonScaleFactors_MediumIDtoReco.root");
+    TFile* muonMiniIsoFile = TFile::Open("../weights/muonScaleFactors_miniIso0p4toMediumID.root");
+    TFile* muonIPFile = TFile::Open("../weights/muonScaleFactors_dxy0p05dz0p1toMediumID.root");
+    muonMediumSF = (TH2D*) muonMediumFile->Get("SF");
+    muonMiniIsoSF = (TH2D*) muonMiniIsoFile->Get("SF");
+    muonIPSF = (TH2D*) muonIPFile->Get("SF");
+    muonMediumFile.Close();
+    muonMiniIsoFile.Close();
+    muonIPFile.Close();
+    //read electron id SF weights       
+    TFile* electronIsFile = TFile::Open("../weights/electronIDScalFactors.root");
+    electronIdSF = (TH2D*)->Get("GsfElectronToLeptonMvaTIDEmuTightIP2DSIP3D8mini04");
+}
+
+Reweighter::~Reweighter(){
+    delete bTagCalib;
+    delete bTagCalibReader;
 }
 
 double Reweighter::puWeight(const double nTrueInt, const unsigned period, const unsigned unc){
@@ -44,8 +62,11 @@ double Reweighter::puWeight(const double nTrueInt, const unsigned period, const 
 double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, const double jetEta, const double jetCSV, const unsigned unc = 0){
     static const BTagEntry::JetFlavor flavorEntries[3] = {BTagEntry::FLAV_UDSG, BTagEntry::FLAV_C, BTagEntry::FLAV_B};
     static const std::string uncName[3] = {"central", "down", "up"};
-    const unsigned flav = 0 + (_jetHadronFlavor[j] == 4) + 2*(_jetHadronFlavor[j] == 5);
-    return bTagCalibReader.eval_auto_bounds(uncName[unc], flavorEntries[flav], jetEta, jetPt, jetCSV);
+    return bTagCalibReader.eval_auto_bounds(uncName[unc], flavInd(jetFlavor), jetEta, jetPt, jetCSV);
+}
+
+double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta){
+    return bTagEff[flavInd(jetFlavor)]->GetBinContent(bTagEff[flavInd(jetFlavor)]->FindBin(std::min(jetPt, 599.)), std::min(fabs(jetEta), 2.4)) );
 }
 
 double Reweighter::muonRecoWeight(const double eta){
