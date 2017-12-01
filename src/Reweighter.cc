@@ -32,15 +32,19 @@ Reweighter::Reweighter(){
     TFile* muonMediumFile = TFile::Open("../weights/muonScaleFactors_MediumIDtoReco.root");
     TFile* muonMiniIsoFile = TFile::Open("../weights/muonScaleFactors_miniIso0p4toMediumID.root");
     TFile* muonIPFile = TFile::Open("../weights/muonScaleFactors_dxy0p05dz0p1toMediumID.root");
+    TFile* muonSIP3DFile = TFile::Open("../weights/muonScaleFactors_sip3d4toMediumID.root");
     muonMediumSF = (TH2D*) muonMediumFile->Get("SF");
     muonMiniIsoSF = (TH2D*) muonMiniIsoFile->Get("SF");
     muonIPSF = (TH2D*) muonIPFile->Get("SF");
-    muonMediumFile.Close();
-    muonMiniIsoFile.Close();
-    muonIPFile.Close();
+    muonSIP3DSF = (Th2D*) muonSIP3DFile->Get("SF");
+    muonMediumFile->Close();
+    muonMiniIsoFile->Close();
+    muonIPFile->Close();
+    muonSIP3DFile->Close();
     //read electron id SF weights       
-    TFile* electronIsFile = TFile::Open("../weights/electronIDScalFactors.root");
-    electronIdSF = (TH2D*)->Get("GsfElectronToLeptonMvaTIDEmuTightIP2DSIP3D8mini04");
+    TFile* electronIdFile = TFile::Open("../weights/electronIDScalFactors.root");
+    electronIdSF = (TH2D*) electronIdFile->Get("GsfElectronToLeptonMvaTIDEmuTightIP2DSIP3D8mini04");
+    electronIdFile->Close();
 }
 
 Reweighter::~Reweighter(){
@@ -75,4 +79,16 @@ double Reweighter::muonRecoWeight(const double eta){
 
 double Reweighter::electronRecoWeight(const double superClusterEta, const double pt){
     return electronRecoSF->Eval(superClusterEta, pt);
+}
+
+double Reweighter::muonIdWeight(const double pt, const double eta){
+    double sf = muonMediumFile->GetBinContent(muonMediumFile->FindBin(std::min(pt, 119.), std::min(fabs(eta), 2.4) ) );
+    sf *= muonMiniIsoFile->GetBinContent(muonMiniIsoFile->FindBin(std::min(pt, 119.), std::min(fabs(eta), 2.4) ) );
+    sf *= muonIPFile->GetBinContent(muonMIPFile->FindBin(std::min(pt, 119.), std::min(fabs(eta), 2.4) ) );
+    sf *= muonSIP3DFile->GetBinContent(muonMSIP3DFile->FindBin(std::min(pt, 119.), std::min(fabs(eta), 2.4) ) );
+    return sf;
+}
+
+double Reweighter::electronIdWeight(const double pt, const double eta){
+    return electronIdSF->GetBinContent(electronIdSF->FindBin(std::min(pt, 199.), std::min(fabs(eta), 2.5) ) );
 }
