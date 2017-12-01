@@ -22,6 +22,12 @@ Reweighter::Reweighter(){
         bTagEff[flav] = (TH1D*) bTagFile->Get("bTagEff_" + quarkFlavors[flav];
     }
     bTagFile.Close();
+    //Read Muon SF Weights
+    TFile* muonRecoFile = TFile::Open("../weights/muonTrackingSF_2016.root");
+    muonRecoSF = (TGraph*) muonRecoFile->Get("ratio_eff_eta3_dr030e030_corr");
+    //Read Electron SF Weights
+    TFile* electronRecoFile = TFile::Open("../weights/electronRecoSF_2016.root");
+    electronRecoSF = (TH2D*) electronRecoFile("EGamma_SF2D");
 }
 
 double Reweighter::puWeight(const double nTrueInt, const unsigned period, const unsigned unc){
@@ -40,4 +46,12 @@ double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, cons
     static const std::string uncName[3] = {"central", "down", "up"};
     const unsigned flav = 0 + (_jetHadronFlavor[j] == 4) + 2*(_jetHadronFlavor[j] == 5);
     return bTagCalibReader.eval_auto_bounds(uncName[unc], flavorEntries[flav], jetEta, jetPt, jetCSV);
+}
+
+double Reweighter::muonRecoWeight(const double eta){
+    return muonRecoSF->Eval(eta);
+}
+
+double Reweighter::electronRecoWeight(const double superClusterEta, const double pt){
+    return electronRecoSF->Eval(superClusterEta, pt);
 }
