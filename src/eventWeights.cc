@@ -3,28 +3,76 @@
 
 //include other parts of code
 #include "../interface/treeReader.h"
-#include "../bTagSFCode/BTagCalibrationStandalone.h"
 
-
-//read all weights from files
-void treeReader::setWeights(){
-    //pu weights
-    const std::string vars[3] = {"central", "down", "up"};
-    for(unsigned v = 0; v < 3; ++v){
-        TFile* puFile = TFile::Open((const TString&) "../weights/puw_nTrueInt_Moriond2017_36p5fb_Summer16_" + vars[v] + ".root");
-        puWeights[v] = (TH1D*) puFile->Get("puw");
-        puFile->Close();
-    }
+//pu SF 
+inline double treeReader::puWeight(const unsigned period, const unsigned unc){
+    return reweighter->puWeight(_nTrueInt, period, unc);
 }
 
-//return PU weight
-double treeReader::puWeight(const unsigned period, const unsigned unc){ //unc = 0: central, = 1: down, = 2: up
-    if(unc < 3){
-        if(period == 0) return puWeights[unc]->GetBinContent(puWeights[unc]->FindBin(std::min(_nTrueInt, (float) 49.) ) );
-        else return 1.;                                                 //weights for 2017 data not yet available
+//b-tagging SF for given flavor
+double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc){
+    double pMC = 1.;
+    double pData = 1.;
+    for(unsigned j = 0; j < _nJets; ++j){
+        if(_jetHadronFlavor[j] == jetFlavor){
+            if(jetIsGood(j, 25., unc, true) && fabs(_jetEta[j]) < 2.4){
+                double sf = reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], _jetDeepCsv_b[j] + _jetDeepCsv_bb[j], unc);
+                double eff = reweighter->bTagEff(_jetHadronFlavor[j], _jetPt[j], _jetEta[j]);
+                if(bTagged(j, 1, true)){
+                    pMC *= eff;
+                    pData *= eff*sf;
+                } else{
+                    pMC *= (1 - eff);
+                    pData *= (1 - eff*sf);
+                }
+            }
+        }
     }
-    else{
-        std::cerr << "wrong pu uncertainty requested: returning weight 1" << std::endl;
-        return 1.;
-    }
+    return pData/pMC;
 }
+
+//light flavor b-tagging SF
+double treeReader::bTagWeight_udsg(const unsigned unc){
+    return bTagWeight(0, unc);
+}
+
+//heavy flavor b-tagging SF
+double treeReader::bTagWeight_c(const unsigned unc){
+    return bTagWeight(4, unc);
+}
+
+//beauty flavor b-tagging SF
+double treeReader::bTagWeight_b(const unsigned unc){
+    return bTagWeight(5, unc);
+}
+
+//total b-tagging SF
+double treeReader::bTagWeight(const unsigned unc){
+    return bTagWeight_udsg(unc)*bTagWeight_c(unc)*bTagWeight_b(unc); 
+}
+
+//total lepton SF
+double treeReader::leptonWeight(){
+    double sf = 1.;
+    for(unsigned l = 0; l < _nLight; ++l){
+        if(lepIsTight(l)){
+            if(_lFlavor[l] == 0) sf*= reweighter->muonWeight(_lPt[l], _lEta[l]);
+            else if(_lFlavor[l] == 1) sf *= reweighter->electronWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
+        }        
+    }
+    return sf;
+}
+    
+double treeReader::eventWeight(){
+    static bool first = true;
+    if(first){
+        reweighter = std::make_shared<Reweighter>();
+        first = false;
+    }
+    double sf = puWeight();
+    sf *= bTagWeight();
+    sf *= leptonWeight();
+    return sf;
+}
+
+

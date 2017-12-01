@@ -1,6 +1,7 @@
 #ifndef treeReader_h
 #define treeReader_h
 
+//include ROOT classes
 #include "TROOT.h"
 #include "TChain.h"
 #include "TFile.h"
@@ -9,9 +10,8 @@
 #include "TGraph.h"
 #include "TLorentzVector.h"
 
-#include <TF1.h>
-#include <TH1.h>
-
+//include other parts of code
+#include "Reweighter.h"
 
 class treeReader {
     public :
@@ -227,13 +227,20 @@ class treeReader {
         bool photonOverlap();                                                                                //sample overlap due to photons
         bool htOverlap();                                                                                    //sample overlap due to HT binning
 
-        //functions for event reweighting
-        void setWeights();
-        double puWeight(const unsigned period = 0, const unsigned unc = 0);
-
         //compute b-tagging efficiency
         void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
 
+        //event weights
+        std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class
+        double puWeight(const unsigned period = 0, const unsigned unc = 0);
+        double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0);
+        double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0); //more efficient version if jets were already selected 
+        double bTagWeight_udsg(const unsigned unc = 0);
+        double bTagWeight_c(const unsigned unc = 0);
+        double bTagWeight_b(const unsigned unc = 0);
+        double bTagWeight(const unsigned unc = 0);
+        double leptonWeight();
+        double eventWeight();
 
     private:
         TTree* fChain;                                                          //current Tree
