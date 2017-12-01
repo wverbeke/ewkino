@@ -21,10 +21,13 @@ class Reweighter{
         TGraph* muonRecoSF;
         TH2D* electronRecoSF;
         //muon id scale factors
-        TH1D* muonMediumSF;
-        TH1D* muonMiniIsoSF;
-        TH1D* muonIPSF;
-        TH1D* leptonMvaSF;
+        TH2D* muonMediumSF;
+        TH2D* muonMiniIsoSF;
+        TH2D* muonIPSF;
+        TH2D* muonSIP3DSF
+        TH2D* muonLeptonMvaSF;
+        //electron id scale factors
+        TH2D* electronIdSF;
         //return jet flavor index 1-> 0, 4 -> 1, 5->2
         unsigned flavorInd(const unsigned jetFlavor){ return 0 + (jetFlavor == 4) + 2*(jetFlavor == 5);}
 };
