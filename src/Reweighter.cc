@@ -47,8 +47,8 @@ Reweighter::Reweighter(){
     //muonIPFile->Close();
     //muonSIP3DFile->Close();
     //read electron id SF weights       
-    TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors.root");
-    electronIdSF = (TH2D*) electronIdFile->Get("GsfElectronToLeptonMvaVTIDEmuTightIP2DSIP3D8mini04");
+    TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_ttHMvaTight.root");
+    electronIdSF = (TH2D*) electronIdFile->Get("GsfElectronToTTZ2017");
     //electronIdFile->Close();
 }
 
