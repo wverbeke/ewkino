@@ -219,7 +219,7 @@ void treeReader::Analyze(){
         std::make_tuple("pTMaxBJetMET", "max(P_{T}(lepton + MET)) (GeV)", 30, 0, 400),
         std::make_tuple("mtLeadingLepMET", "M_{T}(leading lepton, MET) (GeV)", 30, 0, 300),
         std::make_tuple("mtSubLeadingLepMET", "M_{T}(subleading lepton, MET) (GeV)", 30, 0, 300),
-        std::make_tuple("mtTrainingLepMET". "M_{T}(trailing lepton, MET) (GeV)", 30, 0, 300),
+        std::make_tuple("mtTrainingLepMET", "M_{T}(trailing lepton, MET) (GeV)", 30, 0, 300),
         std::make_tuple("mtJetsMET", "M_{T}(Jets + MET) (GeV)", 30, 0, 700),
         std::make_tuple("mtJetsLeptonsMET", "M_{T}(Jets leptons + MET) (GeV)", 30, 0, 700), 
         std::make_tuple("mSystem", "M_{(Jets + leptons + neutrino)} (GeV)", 30, 0, 1000), 
@@ -650,6 +650,7 @@ void treeReader::Analyze(){
             if(minpTBJetMET == 99999.) minpTBJetMET = 0.;
 
             //Fill tree for BDT training
+            /*
             topMass = std::max(topV.M(), 0.);
             pTForwardJets = forwardJets.Pt();
             etaMostForward = fabs(highestEtaJet.Eta());
@@ -683,6 +684,7 @@ void treeReader::Analyze(){
                if(tzqCat != 0 ) mvaVals[i] =  mvaReader[mllCat][tzqCat]->EvaluateMVA(mvaMethods[i] + " method");
                else mvaVals[i] = 0;
             }
+            */
             /*
             if(catNames[tzqCat + 1] != "0bJets_01Jets"){
                 bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
@@ -845,13 +847,13 @@ void treeReader::Analyze(){
     }
     ////////////////
     //Make 81 fb copy of all histograms
-    TH1D* mergedHists_81fb[nMll][nCat][nDist];
+    TH1D* mergedHists_81fb[nMll][nCat][nDist][(const size_t) proc.size()];
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned proc = 0; proc < proc.size(); ++proc){
-                    mergedHists_81fb[m][cat][dist][proc] = (TH1D*) mergedHists[m][cat][dist][proc]->Clone();
-                    mergedHists_81fb[m][cat][dist][proc]->Scale((lumi2017 + lumi2017)/lumi2016);
+                for(unsigned p = 0; p < proc.size(); ++p){
+                    mergedHists_81fb[m][cat][dist][p] = (TH1D*) mergedHists[m][cat][dist][p]->Clone();
+                    mergedHists_81fb[m][cat][dist][p]->Scale((lumi2017 + lumi2017)/lumi2016);
                 }
             }
         }
