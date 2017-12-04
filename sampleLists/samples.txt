@@ -5,7 +5,6 @@ DY		DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root					5765.4
 TT		TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root   					87.31483776
 TT		TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root				182.17540224
 TT		TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root				182.17540224
-WJets	        WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root						61526.7
 WZ              WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8.root							4.42965
 multiboson      WWTo2L2Nu_13TeV-powheg.root                                                                     12.178 
 multiboson	WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root							0.2086
