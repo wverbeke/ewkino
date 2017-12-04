@@ -20,6 +20,7 @@
 #include "../interface/analysisTools.h"
 #include "../interface/tZqTools.h"
 #include "../interface/trilepTools.h"
+#include "../interface/Reweighter.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -216,6 +217,8 @@ void treeReader::Analyze(){
             }
             //compute top vector
             TLorentzVector topV = (neutrino + lepV[lw] + taggedBJet);
+
+            std::cout << "eventWeight() = " << eventWeight() << std::endl;
 
             //Compute minimum and maximum masses and separations for several objects
             //lepton bjet

@@ -20,6 +20,7 @@
 #include "../interface/analysisTools.h"
 #include "../interface/tZqTools.h"
 #include "../interface/trilepTools.h"
+#include "../interface/Reweighter.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
