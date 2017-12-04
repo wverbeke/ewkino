@@ -853,7 +853,7 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 for(unsigned p = 0; p < proc.size(); ++p){
                     mergedHists_81fb[m][cat][dist][p] = (TH1D*) mergedHists[m][cat][dist][p]->Clone();
-                    mergedHists_81fb[m][cat][dist][p]->Scale((lumi2017 + lumi2017)/lumi2016);
+                    mergedHists_81fb[m][cat][dist][p]->Scale((lumi2017 + lumi2016)/lumi2016);
                 }
             }
         }
