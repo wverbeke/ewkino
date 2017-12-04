@@ -56,8 +56,8 @@ double treeReader::leptonWeight(){
     double sf = 1.;
     for(unsigned l = 0; l < _nLight; ++l){
         if(lepIsTight(l)){
-            if(_lFlavor[l] == 0) sf*= reweighter->muonWeight(_lPt[l], _lEta[l]);
-            else if(_lFlavor[l] == 1) sf *= reweighter->electronWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
+            if(_lFlavor[l] == 1) sf*= reweighter->muonWeight(_lPt[l], _lEta[l]);
+            else if(_lFlavor[l] == 0) sf *= reweighter->electronWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
         }        
     }
     return sf;
