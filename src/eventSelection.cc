@@ -172,7 +172,7 @@ unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, 
 bool treeReader::photonOverlap(){
     if(std::get<1>(samples[currentSample - 1]).find("DYJetsToLL") != std::string::npos){
         return _zgEventType > 2; 
-    } else if(std::get<1>(samples[currentSample - 1]).find("TTTo2L") != std::string::npos){
+    } else if(std::get<1>(samples[currentSample - 1]).find("TTTo2L") != std::string::npos || std::get<1>(samples[currentSample - 1]).find("TTJets") != std::string::npos ){
         return _ttgEventType > 2;
     }
     return false;
