@@ -1,6 +1,7 @@
 #ifndef treeReader_h
 #define treeReader_h
 
+//include ROOT classes
 #include "TROOT.h"
 #include "TChain.h"
 #include "TFile.h"
@@ -9,9 +10,8 @@
 #include "TGraph.h"
 #include "TLorentzVector.h"
 
-#include <TF1.h>
-#include <TH1.h>
-
+//include other parts of code
+#include "Reweighter.h"
 
 class treeReader {
     public :
@@ -218,14 +218,31 @@ class treeReader {
         bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true);
         unsigned nJets(const unsigned unc = 0, const bool clean = true);                                        //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true);         //with jet pt ordering
-        bool bTaggedDeepCSV(const unsigned unc, const unsigned wp = 1);
-        bool bTaggedCSVv2(const unsigned unc, const unsigned wp = 1);
+        bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1);
+        bool bTaggedCSVv2(const unsigned ind, const unsigned wp = 1);
+        bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true);
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
 
         //overlap removal between samples
         bool photonOverlap();                                                                                //sample overlap due to photons
         bool htOverlap();                                                                                    //sample overlap due to HT binning
+
+        //compute b-tagging efficiency
+        void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
+
+        //event weights
+        std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class
+        double puWeight(const unsigned period = 0, const unsigned unc = 0);
+        double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0);
+        double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0); //more efficient version if jets were already selected 
+        double bTagWeight_udsg(const unsigned unc = 0);
+        double bTagWeight_c(const unsigned unc = 0);
+        double bTagWeight_b(const unsigned unc = 0);
+        double bTagWeight(const unsigned unc = 0);
+        double leptonWeight();
+        double eventWeight();
+
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
@@ -235,9 +252,9 @@ class treeReader {
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;
-        const double lumi2017 = 45;                                             //in units of 1/fb
-        const double lumi2016 = 35.867;                 
-
+        const double lumi2016 = 44.5;                                           //in units of 1/fb
+        const double lumi2017 = 35.867;                 
+        
         // List of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   
