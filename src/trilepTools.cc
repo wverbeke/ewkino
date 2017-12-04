@@ -7,7 +7,7 @@ std::pair<unsigned, unsigned> trilep::bestZ(const TLorentzVector* lepV, const st
     for(unsigned l = 1; l < lCount - 1; ++l){
         for(unsigned k = l + 1; k < lCount; ++k){
             if(flavor[ind[k]] == flavor[ind[l]] && charge[ind[k]] != charge[ind[l]]){
-                if( fabs( (lepV[l] + lepV[k]).M() - mZ) < (lepV[bestZInd.first] + lepV[bestZInd.second]).M() ){
+                if( fabs( (lepV[l] + lepV[k]).M() - mZ) < fabs((lepV[bestZInd.first] + lepV[bestZInd.second]).M() - mZ) ){
                     bestZInd = {l, k};
                 }
             }
@@ -35,7 +35,7 @@ unsigned trilep::flavorChargeComb(const std::vector<unsigned>& ind, const unsign
 
 std::pair<double, double> trilep::neutrinoPZ(const TLorentzVector& wLep, const TLorentzVector& met){
     static const double mW = 80.385;
-    double mSquared = 0.5*mW*mW + wLep.Pt()*met.Pt()*cos(wLep.Phi() - met.Phi() );
+    double mSquared = 0.5*mW*mW + wLep.Px()*met.Px() + wLep.Py()*met.Py();
     double preFac = mSquared/(wLep.Pt() * wLep.Pt());
     double term2 = wLep.P()*sqrt( std::max(0., 1 - met.Pt()*met.Pt()*wLep.Pt()*wLep.Pt()/(mSquared*mSquared) ) );
     return {preFac*(wLep.Pz() + term2), preFac*(wLep.Pz() - term2)};

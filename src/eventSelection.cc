@@ -179,8 +179,8 @@ unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, 
     unsigned nbJets = 0;
     bJetInd.clear();
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 25, unc, clean) && fabs(_jetEta[j]) < 2.4 ){ 
-            if( ( deepCSV && bTaggedDeepCSV(j, wp) ) || ( !deepCSV && bTaggedCSVv2(j, wp) ) ){
+        if(jetIsGood(j, 25, unc, clean)){ 
+            if(bTagged(j, wp, deepCSV) ){
                 ++nbJets;
                 bJetInd.push_back(j);
             }
