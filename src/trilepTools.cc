@@ -7,7 +7,7 @@ std::pair<unsigned, unsigned> trilep::bestZ(const TLorentzVector* lepV, const st
     for(unsigned l = 1; l < lCount - 1; ++l){
         for(unsigned k = l + 1; k < lCount; ++k){
             if(flavor[ind[k]] == flavor[ind[l]] && charge[ind[k]] != charge[ind[l]]){
-                if( fabs( (lepV[l] + lepV[k]).M() - mZ) < (lepV[bestZInd.first] + lepV[bestZInd.second]).M() ){
+                if( fabs( (lepV[l] + lepV[k]).M() - mZ) < fabs((lepV[bestZInd.first] + lepV[bestZInd.second]).M() - mZ) ){
                     bestZInd = {l, k};
                 }
             }
