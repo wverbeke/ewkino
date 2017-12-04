@@ -51,7 +51,7 @@ bool treeReader::lepIsGood(const unsigned l){
         if(_ptRatio[l] <= 0.5) return false;
         if(_closestJetCsvV2[l] >= 0.3) return false;
         if(_lFlavor[l] == 1 && _lMuonSegComp[l] <= 0.3) return false; 
-        if(_lFlavor[l] == 0 && _lElectronMva[l] <= 0.0 + (fabs(_lEta[l]) >= 0.8)*0.7) return false;     //HZZ Mva is currently not stored, change this line when possible!
+        if(_lFlavor[l] == 0 && _lElectronMvaHZZ[l] <= 0.0 + (fabs(_lEta[l]) >= 0.8)*0.7) return false;     //current results use normal electron MVA, now switch to correct HZZ one
     }
     if(_lFlavor[l] == 1){       //specific muon selection
         if(!_lPOGLoose[l]) return false;
