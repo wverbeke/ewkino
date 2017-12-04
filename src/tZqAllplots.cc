@@ -262,7 +262,6 @@ void treeReader::Analyze(){
     Float_t numberOfJets, numberOfBJets, pTLeadingJet, mNotSoForwardJets, pTLeadingLepton, highestDeepCSV;
     Float_t maxMjj, minMlb, asymmetryWlep, etaZ, m3l, maxDeltaPhijj, maxDeltaRjj, maxDeltaPhill, maxM2l;
     Float_t pTMaxlb, pTMax2l, pT3l, mForwardJetsLeadinBJetW, ht;
-    /*
     //tree for BDT training
     TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
     TTree *tree[2][nCat][nMll];
@@ -301,7 +300,6 @@ void treeReader::Analyze(){
             }
         }
     }
-    */
     const std::vector<std::string> mvaMethods = {"BDT", "BDTG", "BDTD", "BDTB", "MLP", "DNN", "BDTGAlt", "BDTGAlt_200trees", "BDTGAlt_shrinkage04", "BDTGAlt_minNode005", "BDTGAlt_negWeights", "BDTGAlt_MaxDepth4", "BDTGAlt_20Cuts",
                                      "BDTGAlt_negWeights_SDivSqrtSPlusB", "BDTGAlt_shrinkage02_20Cuts", "BDTGAlt_shrinkage04_20Cuts", "BDTGAlt_shrinkage02_20Cuts_depth3", "BDTGAlt_200trees_MaxDepth3_shrinkage02",
                                      "BDTGAlt_MaxDepth3", "BDTGAlt_Decorrelate",
@@ -645,7 +643,6 @@ void treeReader::Analyze(){
             if(minDeltaPhiBJetMET == 99999.) minDeltaPhiBJetMET = 0;
             if(minmTBJetMET == 99999.) minmTBJetMET = 0.;
             if(minpTBJetMET == 99999.) minpTBJetMET = 0.;
-            /*
             //Fill tree for BDT training
             topMass = std::max(topV.M(), 0.);
             pTForwardJets = forwardJets.Pt();
@@ -673,6 +670,7 @@ void treeReader::Analyze(){
             mForwardJetsLeadinBJetW = std::max((forwardJets + leadingBJet + lepV[lw] + neutrino).M(), 0.);
             ht = HT;
             eventWeight = weight;
+            /*
             //double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0, bdtGAlt = 0;
             //double bdtGAlt_200trees = 0, bdtGAlt_shrinkage04 = 0, bdtGAlt_minNode005 = 0, bdtGAlt_negWeights = 0, bdtGAlt_MaxDepth4 = 0, bdtGAlt_20cuts = 0;
             std::vector<double> mvaVals(30);
@@ -790,8 +788,8 @@ void treeReader::Analyze(){
                     for(unsigned cat = 0; cat < nCat; ++cat){
                         if(cat == 0 || cat == (tzqCat + 1) ){
                             //Fill training tree
-                            //if(currentSample == 2) tree[0][cat][m]->Fill();
-                            //else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
+                            if(currentSample == 2) tree[0][cat][m]->Fill();
+                            else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
                             for(unsigned dist = 0; dist < nDist; ++dist){
                                 hists[m][cat][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
                             }
@@ -811,8 +809,8 @@ void treeReader::Analyze(){
     }
     
     //Save training tree
-    //treeFile.Write();
-    //treeFile.Close();
+    treeFile.Write();
+    treeFile.Close();
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -858,7 +856,7 @@ void treeReader::Analyze(){
         }
     }
   
-    const std::string sigNames[1] = {"tZq"};
+    const std::string sigNames[1] = {"tZq shape"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
     for(unsigned m = 0; m < nMll; ++m){
         signal[m] = std::vector< std::vector < TH1D* > >(nCat);
