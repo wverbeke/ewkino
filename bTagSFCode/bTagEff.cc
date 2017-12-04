@@ -54,7 +54,7 @@ void treeReader::computeBTagEff(const unsigned wp, const bool clean, const bool 
     const std::string wpNames[3] = {"loose", "medium", "tight"};
     const std::string taggerNames[2] = {"CSVv2", "deepCSV"};
     const std::string cleanNames[2] = {"uncleanded", "cleaned"};
-    const std::string outputName = "bTaggEff_" + taggerNames[deepCSV] + "_" + wpNames[wp] + "_" + cleanNames[clean];
+    const std::string outputName = "bTagEff_" + taggerNames[deepCSV] + "_" + wpNames[wp] + "_" + cleanNames[clean];
     //save histograms to file
     TFile* bTagEffFile = TFile::Open( (const TString&) "../weights/" + outputName + ".root", "recreate");
     //divide histograms to compute the efficiency and save to file
