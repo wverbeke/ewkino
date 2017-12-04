@@ -219,7 +219,7 @@ class treeReader {
         unsigned nJets(const unsigned unc = 0, const bool clean = true);                                        //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true);         //with jet pt ordering
         bool bTaggedDeepCSV(const unsigned unc, const unsigned wp = 1);
-        bool bTaggedCSVv2(const unsigned uncm, const unsigned wp = 1);
+        bool bTaggedCSVv2(const unsigned unc, const unsigned wp = 1);
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
 
@@ -235,8 +235,8 @@ class treeReader {
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;
-        const double lumi2016 = 29.55;                                          //in units of 1/fb
-        const double lumi2017 = 35.867;                 
+        const double lumi2017 = 45;                                             //in units of 1/fb
+        const double lumi2016 = 35.867;                 
 
         // List of branches
         TBranch        *b__runNb;   

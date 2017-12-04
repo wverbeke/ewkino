@@ -28,9 +28,11 @@ cd ..
 
 #set up tZq plots 
 cd tZq 
-for dir in mllInclusive onZ offZ; do
-    for subdir in nJetsInclusive 0bJets_01Jets 0bJets_2Jets 1bJet_01jets 1bJet_23Jets 1bJet_4Jets 2bJets 
-        do mkdir -p ${dir}/${subdir}
-    done
-done 
+for d in . 36fb 81fb; do
+    for dir in mllInclusive onZ offZ; do
+        for subdir in nJetsInclusive 0bJets_01Jets 0bJets_2Jets 1bJet_01jets 1bJet_23Jets 1bJet_4Jets 2bJets 
+            do mkdir -p ${d}/${dir}/${subdir}
+        done
+    done 
+done
 cd ..

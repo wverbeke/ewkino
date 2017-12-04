@@ -61,13 +61,21 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     TCut mycutb = ""; // for example: TCut mycutb = "abs(var1)<0.5";
     dataloader->PrepareTrainingAndTestTree( mycuts, mycutb, "nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0:NormMode=None:SplitMode=Random:!V" );
     //BDT 
-    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" );
-    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT", "!H:!V:NTrees=1000:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" ); //850
-    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTB", "!H:!V:NTrees=400:BoostType=Bagging:SeparationType=GiniIndex:nCuts=20");
-    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTD", "!H:!V:NTrees=400:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
+    //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" );
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTGAlt", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining=True");
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTGAlt_200trees", "!H:!V:NTrees=200:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining=True");
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTGAlt_shrinkage04", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.4:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining=True");
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTGAlt_minNode005", "!H:!V:NTrees=1000:MinNodeSize=5%:BoostType=Grad:Shrinkage=0.10:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining=True");
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTGAlt_negWeights", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:nCuts=200:MaxDepth=2");
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTGAlt_MaxDepth4", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining=True");
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTGAlt_20Cuts", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:nCuts=20:MaxDepth=4:IgnoreNegWeightsInTraining=True");
+    //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTGOtherAn", "!H:!V:NTrees=200:BoostType=Grad:Shrinkage=0.4:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining=True");
+    //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT", "!H:!V:NTrees=1000:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" ); //850
+    //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTB", "!H:!V:NTrees=400:BoostType=Bagging:SeparationType=GiniIndex:nCuts=20");
+    //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTD", "!H:!V:NTrees=400:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
 
     //NN
-    factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" );
+    //factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" );
     // General layout.
     TString layoutString ("Layout=TANH|128,TANH|128,TANH|128,LINEAR");
      
@@ -95,7 +103,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     
     // Standard implementation, no dependencies.
     TString stdOptions = dnnOptions + ":Architecture=STANDARD";
-    factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN", stdOptions);
+    //factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN", stdOptions);
     
     // Multi-core CPU implementation.
     //TString cpuOptions = dnnOptions + ":Architecture=CPU";
