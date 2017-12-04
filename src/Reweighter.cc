@@ -21,7 +21,7 @@ Reweighter::Reweighter(){
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_C, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_UDSG, "incl");    
     //initialize b-tag efficiencies
-    TFile* bTagFile = TFile::Open("weights/bTagEff_deepCSV_medium_cleaned.root");
+    TFile* bTagFile = TFile::Open("weights/bTagEff_deepCSV_medium_cleaned_ewkino.root");
     const std::string quarkFlavors[3] = {"udsg", "charm", "beauty"};
     for(unsigned flav = 0; flav < 3; ++flav){
         bTagEffHist[flav] = (TH1D*) bTagFile->Get((const TString&) "bTagEff_" + quarkFlavors[flav]);
