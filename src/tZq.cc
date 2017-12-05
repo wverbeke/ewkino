@@ -150,9 +150,12 @@ void treeReader::Analyze(){
             }
             //Determine tZq analysis category
             unsigned tzqCat = tzq::cat(jetCount, bJetCount);
+            //compute best Z mass
+            double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
+            //veto events with mll below 30 GeV, corresponding to the tZq sample
+            if(mll <= 30) continue; 
             //Determine mll category
             unsigned mllCat = 1;                      //offZ by default
-            double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
             if( fabs(mll - 91.1876) < 15) mllCat = 0; //offZ    
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];

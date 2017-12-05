@@ -400,11 +400,14 @@ void treeReader::Analyze(){
             for(unsigned j = 1; j < jetCount; ++j){
                 if(fabs(_jetEta[jetInd[j]]) > fabs(_jetEta[highestEtaJ]) ) highestEtaJ = jetInd[j];
             }
-            //Determine tZq analysis category
+            //determine tZq analysis category
             unsigned tzqCat = tzq::cat(jetCount, bJetCount);
-            //Determine mll category
-            unsigned mllCat = 1;                      //offZ by default
+            //determine best Z mass
             double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
+            //veto events with mll below 30 GeV in agreement with the tZq sample
+            if(mll < 30) continue;
+            //determine mll category
+            unsigned mllCat = 1;                      //offZ by default
             if( fabs(mll - 91.1876) < 15) mllCat = 0; //onZ    
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
