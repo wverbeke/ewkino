@@ -1,8 +1,15 @@
 
+//include c++ library classes
+#include <string>
+
+//include ROOT classes
+#include "TFile.h"
+#include "TH1D.h"
+
 void extractPuWeight(const std::string& mcFile){
     //read MC pu distribution from given MC sample
     TFile* inputFile = TFile::Open((const TString&) mcFile);
-    TH1D* mcPuDist = (TH1D*) mcFile->Get("blackJackAndHookers/nTrue");
+    TH1D* mcPuDist = (TH1D*) inputFile->Get("blackJackAndHookers/nTrue");
     //rebin MC distribution to have same binning as data 
     mcPuDist->Rebin(2);
     //pu weights
@@ -17,14 +24,12 @@ void extractPuWeight(const std::string& mcFile){
         dataFile->Close();
     }
     //write pu Weights to file
-    TFile outputFile = TFile::Open("../weights/puWeights2017.root");
+    TFile* outputFile = TFile::Open("../weights/puWeights2017.root");
     for(unsigned e = 0; e < 5; ++e){
         puWeights[e]->Write((const TString&) "puw_Run" + eras[e]);
     }
-    outputFile.Close();
+    outputFile->Close();
 }
-
-
 
 int main(int argc, char* argv[]){
     extractPuWeight("../../ntuples_ewkino/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root");
