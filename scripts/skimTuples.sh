@@ -20,7 +20,7 @@ skimSample(){                                           #function to skim one sa
     for f in $files
         do if (( $count % 50 == 0))
             then qsub $submit -l walltime=04:00:00; > ~/temp.txt 2>> ~/temp.txt
-            while grep "invalid credential;" ~/temp.txt; do
+            while grep "Invalid credential;" ~/temp.txt; do
                 qsub $submit -l walltime=04:00:00; > ~/temp.txt 2>> ~/temp.txt
             done 
             cat ~/temp.txt
@@ -33,7 +33,7 @@ skimSample(){                                           #function to skim one sa
         count=$((count+1))
     done
     qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
-    while grep "invalid credential;" ~/temp.txt; do
+    while grep "Invalid credential;" ~/temp.txt; do
         qsub $submit -l walltime=04:00:00; > ~/temp.txt 2>> ~/temp.txt
     done 
     cat ~/temp.txt
