@@ -13,11 +13,11 @@ void extractPuWeight(const std::string& mcFile){
     //rebin MC distribution to have same binning as data 
     mcPuDist->Rebin(2);
     //pu weights
-    TH1D* puWeights[5]; 
-    for(unsigned e = 0; e < 5; ++e) puWeights[e] = (TH1D*) mcPuDist->Clone(); 
+    TH1D* puWeights[6]; 
+    for(unsigned e = 0; e < 6; ++e) puWeights[e] = (TH1D*) mcPuDist->Clone(); 
     //read data pu distributions 
-    const std::string eras[5] = {"B", "C", "D", "E", "F"};
-    for(unsigned e = 0; e < 5; ++e){
+    const std::string eras[6] = {"inclusive", "B", "C", "D", "E", "F"};
+    for(unsigned e = 0; e < 6; ++e){
         TFile* dataFile = TFile::Open( (const TString&) "weights/pileUpData/dataPuHist_era" + eras[e] + " .root");
         TH1D* dataHist = (TH1D*) dataFile->Get("pileup");
         puWeights[e]->Divide(dataHist);
@@ -25,7 +25,7 @@ void extractPuWeight(const std::string& mcFile){
     }
     //write pu Weights to file
     TFile* outputFile = TFile::Open("weights/puWeights2017.root");
-    for(unsigned e = 0; e < 5; ++e){
+    for(unsigned e = 0; e < 6; ++e){
         puWeights[e]->Write((const TString&) "puw_Run" + eras[e]);
     }
     outputFile->Close();
