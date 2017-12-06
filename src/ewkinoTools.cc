@@ -1,5 +1,6 @@
 #include "../interface/ewkinoTools.h"
 
+//return run period for 2017 data
 unsigned ewk::runPeriod(const unsigned long runNb){
     if(runNb < 297020){
         return 0; //Run A
@@ -11,7 +12,9 @@ unsigned ewk::runPeriod(const unsigned long runNb){
         return 3; //Run D
     } else if(runNb < 304911){
         return 4; //Run E
-    } else{
+    } else if(runNb < 306827){
         return 5; //Run F
+    } else{
+        return 6;
     }
 }
