@@ -111,7 +111,7 @@ void treeReader::Analyze(){
             ++currentSample;
             continue;
         }
-        initSample(2);          //2 = combined luminosity
+        initSample(0);          //2 = combined luminosity
         std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
@@ -153,8 +153,10 @@ void treeReader::Analyze(){
             //compute best Z mass
             double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
             //veto events with mll below 30 GeV, corresponding to the tZq sample
-            if(mll <= 30) continue; 
-            //Determine mll category
+            if(mll < 30) continue; 
+            //apply event weight
+            weight*=eventWeight();
+            //determine mll category
             unsigned mllCat = 1;                      //offZ by default
             if( fabs(mll - 91.1876) < 15) mllCat = 0; //offZ    
             //make LorentzVector for all jets 
@@ -220,8 +222,6 @@ void treeReader::Analyze(){
             }
             //compute top vector
             TLorentzVector topV = (neutrino + lepV[lw] + taggedBJet);
-
-            std::cout << "eventWeight() = " << eventWeight() << std::endl;
 
             //Compute minimum and maximum masses and separations for several objects
             //lepton bjet
@@ -301,7 +301,7 @@ void treeReader::Analyze(){
         }
     }
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WJets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
+    std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
@@ -357,7 +357,7 @@ void treeReader::Analyze(){
     
     //make shape datacards for each category
     const unsigned nBkg = proc.size() - 2;  //number of background processes
-    const std::string bkgNames[nBkg] = {"DY", "TTJets", "WJets", "WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH"}; //rewrite bkg names not to confuse combine
+    const std::string bkgNames[nBkg] = {"DY", "TTJets", "WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH"}; //rewrite bkg names not to confuse combine
 
     const unsigned nSyst = 11 + 1 + 2*nBkg; //11 general uncertainties + stat signal + stat bkg + extra unc per bkg
     std::string systNames[nSyst] = {"lumi", "pdfXsec", "scaleXsec", "JEC", "metUncl", "scale", "pdf", "pu", "btagSF", "id_eff", "trigeff"};
@@ -389,7 +389,7 @@ void treeReader::Analyze(){
         if(syst < 11  + 1 || syst  > 11 + nBkg) systDist[syst] = "lnN"; //no shapes at the moment
         else systDist[syst] = "shape";                                     //statistical shape of BDT
     }
-    const double extraUnc[nBkg] = {1.3, 1.3, 1.3, 1.15, 1.5, 1.15, 1.15, 1.15, 1.15}; //extra flat uncertainties assigned to each background
+    const double extraUnc[nBkg] = {1.3, 1.3, 1.15, 1.5, 1.15, 1.15, 1.15, 1.15}; //extra flat uncertainties assigned to each background
     for(unsigned syst = 12 + nBkg; syst < nSyst; ++syst){//loop over last nBkg uncertainties, being the exta uncertainties for each bkg
         unsigned bkg = syst - 12 - nBkg;//index of the background corresponding to the uncertainty index
         systNames[syst] = "extra" + bkgNames[bkg];
