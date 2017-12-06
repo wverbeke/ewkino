@@ -51,9 +51,19 @@ void treeReader::Analyze(){
         std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
     };
 
+    //read pu weights for every period
+    TFile* puFile = TFile::Open("weights/puWeights2017.root");
+    const std::string eras[6] = {"Incluive", "B", "C", "D", "E", "F"};
+    TH1D* puWeights[6];
+    for(unsigned e = 0; e < 6; ++e){
+        puWeights[e] = (TH1D*) puFile->Get( (const TString&) "puw_Run" + eras[e]);
+    }
+
     //split histograms in run periods
-    const unsigned nRuns = 7;
-    const std::string runNames[nRuns] = {"all2017", "RunA", "RunB", "RunC", "RunD", "RunE", "RunF"};
+    //const unsigned nRuns = 7;
+    //const std::string runNames[nRuns] = {"all2017", "RunA", "RunB", "RunC", "RunD", "RunE", "RunF"};
+    const unsigned nRuns = 6;
+    const std::string runNames[nRuns] = {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"};
     //split histograms in flavor combinations
     const unsigned nFlav = 4;
     const std::string flavNames[nFlav] = {"inclusive", "ee", "em", "mm"};
@@ -141,6 +151,9 @@ void treeReader::Analyze(){
             for(unsigned dist = 9; dist < nDist; ++dist){
                 for(unsigned r = 0; r < nRuns; ++r){
                     if(sam != 0 || r == run || r == 0){
+                        //pu reweighting
+                        if(sam != 0 ) weight*= puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, (float) 99.) ) );
+                        ///////
                         hists[r][flav][dist][sam]->Fill(std::min(fill[dist - 9], maxBin[dist]), weight);
                         hists[r][0][dist][sam]->Fill(std::min(fill[dist - 9], maxBin[dist]), weight);
                     }
@@ -176,7 +189,8 @@ void treeReader::Analyze(){
         }
     }
     //plot all distributions
-    const std::string runString[nRuns] = {"32.5 fb^{-1} (13 TeV)", "2017 Run A", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
+    //const std::string runString[nRuns] = {"32.5 fb^{-1} (13 TeV)", "2017 Run A", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
+    const std::string runString[nRuns] = {"42 fb^{-1} (13 TeV)", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
     const std::string flavString[nFlav] = {"", "ee : ", "e#mu : ", "#mu#mu : "};
     for(unsigned run = 0; run < nRuns; ++run){
         for(unsigned flav = 0; flav < nFlav; ++flav){
