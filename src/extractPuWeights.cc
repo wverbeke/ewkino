@@ -18,17 +18,18 @@ void extractPuWeight(const std::string& mcFile){
     //read data pu distributions 
     const std::string eras[5] = {"B", "C", "D", "E", "F"};
     for(unsigned e = 0; e < 5; ++e){
-        TFile* dataFile = TFile::Open( (const TString&) "../weights/pileUpData/dataPuHist_era" + eras[e] + " .root");
+        TFile* dataFile = TFile::Open( (const TString&) "weights/pileUpData/dataPuHist_era" + eras[e] + " .root");
         TH1D* dataHist = (TH1D*) dataFile->Get("pileup");
         puWeights[e]->Divide(dataHist);
         dataFile->Close();
     }
     //write pu Weights to file
-    TFile* outputFile = TFile::Open("../weights/puWeights2017.root");
+    TFile* outputFile = TFile::Open("weights/puWeights2017.root");
     for(unsigned e = 0; e < 5; ++e){
         puWeights[e]->Write((const TString&) "puw_Run" + eras[e]);
     }
     outputFile->Close();
+    inputFile->Close();
 }
 
 int main(int argc, char* argv[]){
