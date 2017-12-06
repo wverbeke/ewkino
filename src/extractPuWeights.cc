@@ -11,7 +11,7 @@ void extractPuWeight(const std::string& mcFile){
     //read data pu distributions 
     const std::string eras[5] = {"B", "C", "D", "E", "F"};
     for(unsigned e = 0; e < 5; ++e){
-        TFile* dataFile = TFile::Open( (const TString&) "../weights/pileUpDist/dataPuHist_era" + eras[e] + " .root");
+        TFile* dataFile = TFile::Open( (const TString&) "../weights/pileUpData/dataPuHist_era" + eras[e] + " .root");
         TH1D* dataHist = (TH1D*) dataFile->Get("pileup");
         puWeights[e]->Divide(dataHist);
         dataFile->Close();
