@@ -37,7 +37,7 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
         //Determine hcounter for cross section scaling
         sampleFile->cd("blackJackAndHookers");	
         TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
-        Init(sampleTree, true);
+        initTree(sampleTree, true);
 
         double progress = 0; 	//For printing progress bar
         long nEntries = sampleTree->GetEntries();
