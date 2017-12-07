@@ -654,8 +654,8 @@ void treeReader::Analyze(){
             //pTForwardJets = forwardJets.Pt();
             mTW = tools::mt(lepV[lw], met); 
             highestDeepCSV = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
-            numberOfJets = jetCount;
-            numberOfBJets = bJetCount;
+            numberOfJets = (Float_t) jetCount;
+            numberOfBJets = (Float_t) bJetCount;
             pTLeadingLepton = _lPt[ind[0]];
             //pTLeadingJet = leadingJet.Pt();
             //mNotSoForwardJets = std::max(notSoForwardJets.M(), 0.);
@@ -666,8 +666,8 @@ void treeReader::Analyze(){
             maxDeltaPhijj = maxDeltaPhiJetJet;
             maxDeltaRjj = maxDeltaRJetJet;
             maxMjj = std::max(maxMJetJet, 0.);
-            maxMlb = maxMLeptonbJet;
-            minMlb = minMLeptonbJet;
+            maxMlb = std::max(maxMLeptonbJet, 0.);
+            minMlb = std::max(minMLeptonbJet, 0.);
             pTMaxlb = maxpTLeptonbJet;
             //etaZ = fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta());
             maxmTbJetMet = maxmTBJetMET;
