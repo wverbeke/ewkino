@@ -44,7 +44,6 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     //dataloader->AddVariable("maxM2l", 'F');           //not used now due to correlation with 3l variables
     //dataloader->AddVariable("ptMax2l", 'F');          //not used now due to correlation with 3l variables
     dataloader->AddVariable("pT3l", 'F');
-    dataloader->AddVariable("mForwardJetsLeadinBJetW", 'F');
     dataloader->AddVariable("ht", 'F');
     if(mllCat == "offZ") dataloader->AddVariable("mZ", 'F');
     //if(jetsCat != "1bJet_01jets") dataloader->AddVariable("pTForwardJets", 'F');
@@ -53,6 +52,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     //dataloader->AddVariable("missingET", 'F');
     //dataloader->AddVariable("etaZ", 'F');
     //dataloader->AddVariable("maxDeltaPhill", 'F');
+    //dataloader->AddVariable("mForwardJetsLeadinBJetW", 'F');
 
     dataloader->SetSignalWeightExpression("eventWeight");
     dataloader->SetBackgroundWeightExpression("eventWeight");
