@@ -86,7 +86,7 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
 unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsigned lCount){
     unsigned tightC = 0; 
     for(unsigned l = 0; l < lCount; ++l){
-        if(lepIsTight(l)) ++tightC;
+        if(lepIsTight(ind[l])) ++tightC;
         else return tightC;
     }
     return tightC;
