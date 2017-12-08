@@ -41,7 +41,7 @@ void treeReader::setConePt(){
 bool treeReader::lepIsLoose(const unsigned ind){
     if(_lFlavor[l] == 2) return false;  //don't consider taus here
     if(_lPt[l] <= 5) return false;
-    if(fabs(_lEta[l]) > (2.5 - 0.1*_flavors[l])) return false;
+    if(fabs(_lEta[l]) >= (2.5 - 0.1*_flavors[l])) return false;
     if(fabs(_dxy[l]) >= 0.05) return false;
     if(fabs(_dz[l]) >= 0.1) return false;
     if(_3dIPSig[l] >= 8) return false;
@@ -112,7 +112,7 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
 unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsigned lCount){
     unsigned tightC = 0; 
     for(unsigned l = 0; l < lCount; ++l){
-        if(lepIsTight(l)) ++tightC;
+        if(lepIsTight(ind[l])) ++tightC;
         else return tightC;
     }
     return tightC;
