@@ -47,9 +47,11 @@ bool treeReader::eleIsClean(const unsigned ind){
     TLorentzVector ele;
     ele.SetPtEtaPhiE(_lPt[ind], _lEta[ind], _lPhi[ind], _lE[ind]);
     for(unsigned m = 0; m < _nMu; ++m){
-        TLorentzVector mu;
-        mu.SetPtEtaPhiE(_lPt[m], _lEta[m], _lPhi[m], _lE[m]);
-        if(ele.DeltaR(mu) < 0.05) return false;
+        if(lepIsLoose(m)){
+            TLorentzVector mu;
+            mu.SetPtEtaPhiE(_lPt[m], _lEta[m], _lPhi[m], _lE[m]);
+            if(ele.DeltaR(mu) < 0.05) return false;
+        }
     }
     return true;
 }
