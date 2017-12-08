@@ -38,14 +38,35 @@ void treeReader::setConePt(){
     }
 }
 
-bool treeReader::lepIsGood(const unsigned l){
-    //ttH FO definition
+bool treeReader::lepIsLoose(const unsigned ind){
     if(_lFlavor[l] == 2) return false;  //don't consider taus here
-    if(_lPt[l] <= 15) return false;
+    if(_lPt[l] <= 5) return false;
+    if(fabs(_lEta[l]) >= (2.5 - 0.1*_flavors[l])) return false;
     if(fabs(_dxy[l]) >= 0.05) return false;
     if(fabs(_dz[l]) >= 0.1) return false;
     if(_3dIPSig[l] >= 8) return false;
     if(_miniIso[l] >= 0.4) return false;
+    return true;
+}
+
+//remove electrons in a cone of DeltaR = 0.05 around a loose muon
+bool treeReader::eleIsClean(const unsigned ind){
+    TLorentzVector ele;
+    ele.SetPtEtaPhiE(_lPt[ind], _lEta[ind], _lPhi[ind], _lE[ind]);
+    for(unsigned m = 0; m < _nMu; ++m){
+        if(lepIsLoose(m)){
+            TLorentzVector mu;
+            mu.SetPtEtaPhiE(_lPt[m], _lEta[m], _lPhi[m], _lE[m]);
+            if(ele.DeltaR(mu) < 0.05) return false;
+        }
+    }
+    return true;
+}
+
+bool treeReader::lepIsGood(const unsigned l){
+    //ttH FO definition
+    if(!lepIsLoose(l)) return false;
+    if(_lPt[l] <= 15) return false;
     if(_closestJetCsvV2[l] >= 0.8484) return false;
     if(_leptonMvaTTH[l] <= 0.9){
         if(_ptRatio[l] <= 0.5) return false;
@@ -58,6 +79,7 @@ bool treeReader::lepIsGood(const unsigned l){
     } else if(_lFlavor[l] == 0){
         if(!_lElectronPassEmu[l]) return false;
         if(_lElectronMissingHits[l] != 0) return false;
+        if(!eleIsClean(l)) return false;  //clean electrons from loose muons
     }
     return true;
 }
@@ -90,7 +112,7 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
 unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsigned lCount){
     unsigned tightC = 0; 
     for(unsigned l = 0; l < lCount; ++l){
-        if(lepIsTight(l)) ++tightC;
+        if(lepIsTight(ind[l])) ++tightC;
         else return tightC;
     }
     return tightC;
