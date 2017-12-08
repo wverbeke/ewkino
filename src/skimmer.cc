@@ -26,9 +26,11 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     //Determine hcounter and lheCounter for MC cross section scaling and uncertainties
     TH1D* hCounter;
     TH1D* lheCounter;
+    TH1D* nTrueInt;
     if(!isData){
         hCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/hCounter");
         lheCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/lheCounter");
+        nTrueInt = (TH1D*) sampleFile->Get("blackJackAndHookers/nTrue");
     }
     //Get Tree
     TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
@@ -72,6 +74,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     if(!isData){
         hCounter->Write();
         lheCounter->Write();
+        nTrueInt->Write();
     }
     outputTree->Write("",  BIT(2));
     outputFile->Close(); 

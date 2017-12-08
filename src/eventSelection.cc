@@ -38,6 +38,22 @@ void treeReader::setConePt(){
     }
 }
 
+bool treeReader::lepIsLoose(const unsigned ind){
+    return _lEwkLoose[ind];
+}
+
+//remove electrons in a cone of DeltaR = 0.05 around a loose muon
+bool treeReader::eleIsClean(const unsigned ind){
+    TLorentzVector ele;
+    ele.SetPtEtaPhiE(_lPt[ind], _lEta[ind], _lPhi[ind], _lE[ind]);
+    for(unsigned m = 0; m < _nMu; ++m){
+        TLorentzVector mu;
+        mu.SetPtEtaPhiE(_lPt[m], _lEta[m], _lPhi[m], _lE[m]);
+        if(ele.DeltaR(mu) < 0.05) return false;
+    }
+    return true;
+}
+
 bool treeReader::lepIsGood(const unsigned l){
     //ttH FO definition
     if(_lFlavor[l] == 2) return false;  //don't consider taus here
