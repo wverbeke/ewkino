@@ -81,8 +81,8 @@ double treeReader::fakeRateWeight(const unsigned unc){
     for(unsigned l = 0; l < _nLight; ++l){
         if(lepIsGood(l) && !lepIsTight(l) ){
             double fr = 1.;
-            if(_flavors[l] == 0)        fr = reweighter->muonFakeRate(_lPt[l], _lEta[l], unc);
-            else if(_flavors[l] == 0)   fr = reweighter->electronFakeRate(_lPt[l], _lEta[l], unc);
+            if(_lFlavor[l] == 0)        fr = reweighter->muonFakeRate(_lPt[l], _lEta[l], unc);
+            else if(_lFlavor[l] == 0)   fr = reweighter->electronFakeRate(_lPt[l], _lEta[l], unc);
             sf *= -fr/(1 - fr);
         }
     }
