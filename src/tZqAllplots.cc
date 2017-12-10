@@ -265,7 +265,8 @@ void treeReader::Analyze(){
     */
     Float_t asymmetryWlep, topMass, etaMostForward, mTW, highestDeepCSV, numberOfJets, numberOfBJets;
     Float_t pTLeadingLepton, pTLeadingBJet, pTMostForwardJet, mAllJets, maxDeltaPhijj, maxDeltaRjj, maxMlb, maxMjj, pTMaxlb, pTMax2l;
-    Float_t minMlb, maxmTbJetMet, maxpTLeptonMet, pT3l, ht, m3l, mZ;
+    Float_t minMlb, maxmTbmet, maxpTlmet, pT3l, ht, m3l, mZ, deltaRWLeptonTaggedbJet, etaZ, maxDeltaPhibmet, minDeltaPhibmet;
+    Float_t minDeltaPhilb, pTmin2l, minmTbmet, minmTlmet;
     Float_t eventWeight;
     //tree for BDT training
     TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
@@ -296,10 +297,9 @@ void treeReader::Analyze(){
                 tree[t][cat][m]->Branch("maxMlb", &maxMlb, "maxMlb/F");
                 tree[t][cat][m]->Branch("minMlb", &minMlb, "minMlb/F");
                 tree[t][cat][m]->Branch("pTMaxlb", &pTMaxlb, "pTMaxlb/F");
-                tree[t][cat][m]->Branch("maxmTbJetMet", &maxmTbJetMet, "maxmTbJetMet/F");
-                tree[t][cat][m]->Branch("maxpTLeptonMet", &maxpTLeptonMet, "maxpTLeptonMet/F");
+                tree[t][cat][m]->Branch("maxmTbmet", &maxmTbmet, "maxmTbmet/F");
+                tree[t][cat][m]->Branch("maxpTlmet", &maxpTlmet, "maxpTlmet/F");
                 tree[t][cat][m]->Branch("pTMax2l", &pTMax2l, "pTMax2l/F");
-                //tree[t][cat][m]->Branch("etaZ", &etaZ, "etaZ/F");
                 tree[t][cat][m]->Branch("m3l", &m3l, "m3l/F");
                 //tree[t][cat][m]->Branch("maxDeltaPhill", &maxDeltaPhill, "maxDeltaPhill/F");
                 //tree[t][cat][m]->Branch("maxM2l", &maxM2l, "maxM2l/F");
@@ -307,6 +307,15 @@ void treeReader::Analyze(){
                 //tree[t][cat][m]->Branch("mForwardJetsLeadinBJetW", &mForwardJetsLeadinBJetW, "mForwardJetsLeadinBJetW/F");
                 tree[t][cat][m]->Branch("ht", &ht, "ht/F");
                 tree[t][cat][m]->Branch("mZ", &mZ, "mZ/F");
+                tree[t][cat][m]->Branch("deltaRWLeptonTaggedbJet", &deltaRWLeptonTaggedbJet, "deltaRWLeptonTaggedbJet/F");
+                tree[t][cat][m]->Branch("etaZ", &etaZ, "etaZ/F");
+                tree[t][cat][m]->Branch("maxDeltaPhibmet", &maxDeltaPhibmet, "maxDeltaPhibmet/F");
+                tree[t][cat][m]->Branch("minDeltaPhibmet", &minDeltaPhibmet, "minDeltaPhibmet/F");
+                tree[t][cat][m]->Branch("minDeltaPhilb", &minDeltaPhilb, "minDeltaPhilb/F");
+                tree[t][cat][m]->Branch("pTmin2l", &pTmin2l, "pTmin2l/F");
+                tree[t][cat][m]->Branch("minmTbmet", &minmTbmet, "minmTbmet/F");
+                tree[t][cat][m]->Branch("minmTlmet", &minmTlmet, "minmTlmet/F");
+                
                 //event weights
                 tree[t][cat][m]->Branch("eventWeight", &eventWeight, "eventWeight/F");
             }
@@ -654,8 +663,8 @@ void treeReader::Analyze(){
             //pTForwardJets = forwardJets.Pt();
             mTW = tools::mt(lepV[lw], met); 
             highestDeepCSV = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
-            numberOfJets = (Float_t) jetCount;
-            numberOfBJets = (Float_t) bJetCount;
+            numberOfJets = jetCount;
+            numberOfBJets = bJetCount;
             pTLeadingLepton = _lPt[ind[0]];
             //pTLeadingJet = leadingJet.Pt();
             //mNotSoForwardJets = std::max(notSoForwardJets.M(), 0.);
@@ -669,9 +678,8 @@ void treeReader::Analyze(){
             maxMlb = std::max(maxMLeptonbJet, 0.);
             minMlb = std::max(minMLeptonbJet, 0.);
             pTMaxlb = maxpTLeptonbJet;
-            //etaZ = fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta());
-            maxmTbJetMet = maxmTBJetMET;
-            maxpTLeptonMet = maxpTLeptonMET;
+            maxmTbmet = maxmTBJetMET;
+            maxpTlmet = maxpTLeptonMET;
             pTMax2l = maxpTLeptonLepton;
             m3l = (lepV[0] + lepV[1] + lepV[2]).M();
             //maxDeltaPhill = maxDeltaPhiLeptonLepton;
@@ -680,6 +688,14 @@ void treeReader::Analyze(){
             //mForwardJetsLeadinBJetW = std::max((forwardJets + leadingBJet + lepV[lw] + neutrino).M(), 0.);
             ht = HT;
             mZ = mll;
+            deltaRWLeptonTaggedbJet = lepV[lw].DeltaR(taggedBJet);
+            etaZ = fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta());
+            maxDeltaPhibmet = maxDeltaPhiBJetMET;
+            minDeltaPhibmet = minDeltaPhiBJetMET;
+            minDeltaPhilb = minDeltaPhiLeptonbJet;
+            pTmin2l = minpTLeptonLepton;
+            minmTbmet =  minmTBJetMET;
+            minmTlmet = minmTLeptonMET;
             eventWeight = weight;
             /*
             //double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0, bdtGAlt = 0;
@@ -714,7 +730,6 @@ void treeReader::Analyze(){
                 mvaVals[10], mvaVals[11], mvaVals[12], mvaVals[12], mvaVals[13], mvaVals[14], mvaVals[15], mvaVals[16], mvaVals[17], mvaVals[18], mvaVals[19], mvaVals[20], mvaVals[21],
                 mvaVals[22], mvaVals[23], mvaVals[24], mvaVals[25], mvaVals[26], mvaVals[27], mvaVals[28], mvaVals[29],
                 */
-                /*
 
                 _met, mll, tools::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
             (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
@@ -793,7 +808,6 @@ void treeReader::Analyze(){
             tools::mt(jetSystem, met), tools::mt(jetSystem + lepV[0] + lepV[1] + lepV[2], met), 
             (jetSystem + lepV[0] + lepV[1] + lepV[2] + neutrino).M(), jetSystem.M(),
             tools::mt(leadingJet, met), tools::mt(trailingJet, met)
-            */
             };
             for(unsigned m = 0; m < nMll; ++m){
                 if(m == 0 || m == (mllCat + 1) ){
@@ -824,7 +838,6 @@ void treeReader::Analyze(){
     treeFile.Write();
     treeFile.Close();
     //merge histograms with the same physical background
-    /*
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
@@ -908,7 +921,6 @@ void treeReader::Analyze(){
             }
         }
     }
-    */
 }
 int main(){
     treeReader reader;
