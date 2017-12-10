@@ -38,10 +38,12 @@ Reweighter::Reweighter(){
     TFile* muonMiniIsoFile = TFile::Open("weights/muonScaleFactors_miniIso0p4toMediumID.root");
     TFile* muonIPFile = TFile::Open("weights/muonScaleFactors_dxy0p05dz0p1toMediumID.root");
     TFile* muonSIP3DFile = TFile::Open("weights/muonScaleFactors_sip3d4toMediumID.root");
+    TFile* muonLeptonMvaFile = TFile::Open("weights/muonScaleFactors_ttHMvaTight_old.root");
     muonMediumSF = (TH2D*) muonMediumFile->Get("SF");
     muonMiniIsoSF = (TH2D*) muonMiniIsoFile->Get("SF");
     muonIPSF = (TH2D*) muonIPFile->Get("SF");
     muonSIP3DSF = (TH2D*) muonSIP3DFile->Get("SF");
+    muonLeptonMvaSF = (TH2D*) muonLeptonMvaFile->Get("SF");
     //muonMediumFile->Close();
     //muonMiniIsoFile->Close();
     //muonIPFile->Close();
@@ -97,6 +99,7 @@ double Reweighter::muonIdWeight(const double pt, const double eta) const{
     sf *= muonMiniIsoSF->GetBinContent(muonMiniIsoSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
     sf *= muonIPSF->GetBinContent(muonIPSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
     sf *= muonSIP3DSF->GetBinContent(muonSIP3DSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
+    sf *= muonLeptonMvaSF->GetBinContent(muonLeptonMvaSF->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.4) ) );
     return sf;
 }
 
