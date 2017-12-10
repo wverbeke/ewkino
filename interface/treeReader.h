@@ -244,6 +244,7 @@ class treeReader {
         double bTagWeight(const unsigned unc = 0);
         double leptonWeight();
         double eventWeight();
+        double fakeRateWeight(const unsigned unc = 0);
 
     private:
         TTree* fChain;                                                          //current Tree

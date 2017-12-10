@@ -38,10 +38,12 @@ Reweighter::Reweighter(){
     TFile* muonMiniIsoFile = TFile::Open("weights/muonScaleFactors_miniIso0p4toMediumID.root");
     TFile* muonIPFile = TFile::Open("weights/muonScaleFactors_dxy0p05dz0p1toMediumID.root");
     TFile* muonSIP3DFile = TFile::Open("weights/muonScaleFactors_sip3d4toMediumID.root");
+    TFile* muonLeptonMvaFile = TFile::Open("weights/muonScaleFactors_ttHMvaTight_old.root");
     muonMediumSF = (TH2D*) muonMediumFile->Get("SF");
     muonMiniIsoSF = (TH2D*) muonMiniIsoFile->Get("SF");
     muonIPSF = (TH2D*) muonIPFile->Get("SF");
     muonSIP3DSF = (TH2D*) muonSIP3DFile->Get("SF");
+    muonLeptonMvaSF = (TH2D*) muonLeptonMvaFile->Get("SF");
     //muonMediumFile->Close();
     //muonMiniIsoFile->Close();
     //muonIPFile->Close();
@@ -50,6 +52,12 @@ Reweighter::Reweighter(){
     TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_ttHMvaTight.root");
     electronIdSF = (TH2D*) electronIdFile->Get("GsfElectronToTTZ2017");
     //electronIdFile->Close();
+    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
+    const std::string frUnc[3] = {"", "_down", "_up"};
+    for(unsigned unc = 0; unc < 3; ++unc){
+        frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva90_el_data_comb" + frUnc[unc]);
+        frMapMu[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva90_mu_data_comb" + frUnc[unc]);
+    }
 }
 
 Reweighter::~Reweighter(){
@@ -91,9 +99,18 @@ double Reweighter::muonIdWeight(const double pt, const double eta) const{
     sf *= muonMiniIsoSF->GetBinContent(muonMiniIsoSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
     sf *= muonIPSF->GetBinContent(muonIPSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
     sf *= muonSIP3DSF->GetBinContent(muonSIP3DSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
+    sf *= muonLeptonMvaSF->GetBinContent(muonLeptonMvaSF->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.4) ) );
     return sf;
 }
 
 double Reweighter::electronIdWeight(const double pt, const double eta) const{
     return electronIdSF->GetBinContent(electronIdSF->FindBin(std::min(pt, 199.), std::min(fabs(eta), 2.5) ) );
+}
+
+double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
+    return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.4) ) );
+}
+
+double Reweighter::electronFakeRate(const double pt, const double eta, const unsigned unc) const{
+    return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.5) ) );
 }
