@@ -25,6 +25,8 @@ class Reweighter{
         double electronIdWeight(const double pt, const double eta) const;
         double muonWeight(const double pt, const double eta) const{ return muonRecoWeight(eta)*muonIdWeight(pt,eta);}
         double electronWeight(const double pt, const double eta, const double superClusterEta) const{ return electronRecoWeight(superClusterEta, pt)*electronIdWeight(pt,eta);}
+        double muonFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
+        double electronFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
     private:
         //pu scale factors
         TH1D* puWeights[3];
@@ -45,5 +47,8 @@ class Reweighter{
         TH2D* electronIdSF;
         //return jet flavor index 1-> 0, 4 -> 1, 5->2
         unsigned flavorInd(const unsigned jetFlavor) const{ return 0 + (jetFlavor == 4) + 2*(jetFlavor == 5);}
+        //fake rate maps
+        TH2D* frMapEle[3];
+        TH2D* frMapMu[3];
 };
 #endif
