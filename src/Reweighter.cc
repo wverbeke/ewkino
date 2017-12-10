@@ -50,6 +50,12 @@ Reweighter::Reweighter(){
     TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors.root");
     electronIdSF = (TH2D*) electronIdFile->Get("GsfElectronToLeptonMvaVTIDEmuTightIP2DSIP3D8mini04");
     //electronIdFile->Close();
+    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
+    const std::string frUnc[3] = {"", "_down", "_up"};
+    for(unsigned unc = 0; unc < 3; ++unc){
+        frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva90_el_data_comb" + frUnc[unc]);
+        frMapMu[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva90_mu_data_comb" + frUnc[unc]);
+    }
 }
 
 Reweighter::~Reweighter(){
@@ -96,4 +102,12 @@ double Reweighter::muonIdWeight(const double pt, const double eta) const{
 
 double Reweighter::electronIdWeight(const double pt, const double eta) const{
     return electronIdSF->GetBinContent(electronIdSF->FindBin(std::min(pt, 199.), std::min(fabs(eta), 2.5) ) );
+}
+
+double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
+    return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.4) ) );
+}
+
+double Reweighter::electronFakeRate(const double pt, const double eta, const unsigned unc) const{
+    return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.5) ) );
 }
