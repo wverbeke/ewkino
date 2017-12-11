@@ -27,7 +27,12 @@ unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind){
 }
 
 double treeReader::coneCorr(const unsigned ind){
-    return 1. + std::max(_relIso[ind] - 0.1, 0.);
+    //return 1. + std::max(_relIso[ind] - 0.1, 0.);
+    double corr = 1.;
+    if(!lepIsTight(ind)){
+        corr *= 0.9/_ptRatio[ind];
+    }
+    return corr;
 }
 
 void treeReader::setConePt(){
@@ -95,7 +100,7 @@ bool treeReader::lepIsTight(const unsigned l){
 }
 
 unsigned treeReader::selectLep(std::vector<unsigned>& ind){
-    //setConePt(); REMOVE CONE CORRECTION UNTIL MOVING TO FR
+    setConePt();
     ind.clear();
     unsigned lCount = 0;
     for(unsigned l = 0; l < _nLight; ++l){
