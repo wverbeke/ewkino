@@ -261,6 +261,8 @@ class treeReader {
         const double lumi2016 = 44.5;                                           //in units of 1/fb
         const double lumi2017 = 35.867;                 
         
+        bool weightsAreSet = false;                                             //check if weight files have been set up
+        
         // List of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   

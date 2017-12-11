@@ -64,10 +64,9 @@ double treeReader::leptonWeight(){
 }
     
 double treeReader::eventWeight(){
-    //static bool first = true;
-    if(reweighter.use_count() == 0){
+    if(!weightsAreSet){
         reweighter = std::make_shared<Reweighter>();
-        //first = false;
+        weightsAreSet = true;
     }
     double sf = puWeight();
     sf *= bTagWeight();
@@ -77,8 +76,9 @@ double treeReader::eventWeight(){
 
 //fake rate
 double treeReader::fakeRateWeight(const unsigned unc){
-    if(reweighter.use_count() == 0){
+    if(!weightsAreSet){
         reweighter = std::make_shared<Reweighter>();
+        first = false;
     }
     double sf = -1.;
     for(unsigned l = 0; l < _nLight; ++l){
