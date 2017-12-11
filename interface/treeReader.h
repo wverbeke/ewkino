@@ -226,6 +226,11 @@ class treeReader {
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
 
+        //functions to reproduce results of TOP-16-020
+        bool lepIsGood_TOP16_020(const unsigned);
+        bool lepIsTight_TOP16_020(const unsigned);
+        bool selectLep_TOP16_020(std::vector<unsigned>&);
+
         //overlap removal between samples
         bool photonOverlap();                                                                                //sample overlap due to photons
         bool htOverlap();                                                                                    //sample overlap due to HT binning
