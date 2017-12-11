@@ -53,8 +53,8 @@ Reweighter::Reweighter(){
     TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
     const std::string frUnc[3] = {"", "_down", "_up"};
     for(unsigned unc = 0; unc < 3; ++unc){
-        frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva90_el_data_comb" + frUnc[unc]);
-        frMapMu[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva90_mu_data_comb" + frUnc[unc]);
+        frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb" + frUnc[unc]);
+        frMapMu[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_mu_data_comb" + frUnc[unc]);
     }
 }
 
