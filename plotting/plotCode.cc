@@ -93,6 +93,7 @@ Color_t bkgColorHNL(const std::string& bkgName){
 Color_t bkgColortZq(const std::string& bkgName){
     if(bkgName == "tZq") return kRed - 7;
     if(bkgName == "TT" ||  bkgName == "TT + Jets") return kOrange - 2;
+    if(bkgName == "nonprompt" ||  bkgName == "non-prompt") return kOrange - 2;
     if(bkgName == "TT/T + X" || bkgName == "TT + X") return kBlue - 10;
     if(bkgName == "X + #gamma") return kMagenta - 10;
     if(bkgName == "multiboson") return kYellow - 9;
