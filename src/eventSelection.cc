@@ -217,6 +217,14 @@ unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, 
     return nbJets;
 }
 
+//check if leptons are prompt
+bool treeReader::promptLeptons(){
+    for(unsigned l = 0; l < _nLight; ++l){
+        if(lepIsGood(l) && !_lIsPrompt[l]) return false;
+    }
+    return true;
+}
+
 //overlap removal between events
 
 bool treeReader::photonOverlap(){

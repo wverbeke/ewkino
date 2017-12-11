@@ -230,6 +230,9 @@ class treeReader {
         bool photonOverlap();                                                                                //sample overlap due to photons
         bool htOverlap();                                                                                    //sample overlap due to HT binning
 
+        //check if leptons are prompt in MC
+        bool promptLeptons();
+
         //compute b-tagging efficiency
         void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
 
