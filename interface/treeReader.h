@@ -143,6 +143,7 @@ class treeReader {
         Bool_t          _tauVTightMvaNew[nL_max];   
         Bool_t          _tauVTightMvaOld[nL_max];   
         Double_t        _relIso[nL_max];   
+        Double_t        _relIso0p4Mu[nL_max];
         Double_t        _miniIso[nL_max];   
         Double_t        _miniIsoCharged[nL_max];   
         Double_t        _ptRel[nL_max];   
@@ -156,6 +157,7 @@ class treeReader {
         Double_t        _lMuonTrackPtErr[nL_max];
         Bool_t          _lIsPrompt[nL_max];   
         Int_t           _lMatchPdgId[nL_max];   
+        UInt_t          _lProvenance[nL_max];
         UChar_t         _nJets;
         Double_t        _jetPt[nJets_max];   
         Double_t        _jetPt_JECUp[nJets_max];   
@@ -390,6 +392,7 @@ class treeReader {
         TBranch        *b__tauVTightMvaNew;   
         TBranch        *b__tauVTightMvaOld;   
         TBranch        *b__relIso;   
+        TBranch        *b__relIso0p4Mu;
         TBranch        *b__miniIso;   
         TBranch        *b__miniIsoCharged;   
         TBranch        *b__ptRel;   
@@ -403,6 +406,7 @@ class treeReader {
         TBranch        *b__lMuonTrackPtErr;
         TBranch        *b__lIsPrompt;   
         TBranch        *b__lMatchPdgId;   
+        TBranch        *b__lProvenance;
         TBranch        *b__nJets;   
         TBranch        *b__jetPt;   
         TBranch        *b__jetPt_JECUp;   
