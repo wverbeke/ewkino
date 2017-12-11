@@ -78,7 +78,7 @@ double treeReader::eventWeight(){
 double treeReader::fakeRateWeight(const unsigned unc){
     if(!weightsAreSet){
         reweighter = std::make_shared<Reweighter>();
-        first = false;
+        weightsAreSet = true;
     }
     double sf = -1.;
     for(unsigned l = 0; l < _nLight; ++l){
