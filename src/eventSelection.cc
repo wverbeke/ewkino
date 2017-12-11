@@ -135,7 +135,7 @@ bool treeReader::lepIsTight_TOP16_020(const unsigned l){
     return lepIsGood_TOP16_020(l);
 }
 
-bool treeReader::selectLep_TOP16_020(std::vector<unsigned>& ind){
+unsigned treeReader::selectLep_TOP16_020(std::vector<unsigned>& ind){
     ind.clear();
     unsigned lCount = 0;
     for(unsigned l = 0; l < _nLight; ++l){
