@@ -155,7 +155,7 @@ void treeReader::Analyze(){
             //veto events with mll below 30 GeV, corresponding to the tZq sample
             if(mll < 30) continue; 
             //apply event weight
-            weight*=eventWeight();
+            weight*=sfWeight();
             //determine mll category
             unsigned mllCat = 1;                      //offZ by default
             if( fabs(mll - 91.1876) < 15) mllCat = 0; //offZ    

@@ -253,7 +253,7 @@ class treeReader {
         double bTagWeight_b(const unsigned unc = 0);
         double bTagWeight(const unsigned unc = 0);
         double leptonWeight();
-        double eventWeight();
+        double sfWeight();
         double fakeRateWeight(const unsigned unc = 0);
 
     private:

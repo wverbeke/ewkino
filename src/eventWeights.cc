@@ -63,7 +63,7 @@ double treeReader::leptonWeight(){
     return sf;
 }
     
-double treeReader::eventWeight(){
+double treeReader::sfWeight(){
     if(reweighter.use_count() == 0 ){
         reweighter = std::make_shared<Reweighter>();
     }
