@@ -43,7 +43,7 @@ Reweighter::Reweighter(){
     muonMiniIsoSF = (TH2D*) muonMiniIsoFile->Get("SF");
     muonIPSF = (TH2D*) muonIPFile->Get("SF");
     muonSIP3DSF = (TH2D*) muonSIP3DFile->Get("SF");
-    muonLeptonMvaSF = (TH2D*) muonLeptonMvaFile->Get("SF");
+    muonLeptonMvaSF = (TH2D*) muonLeptonMvaFile->Get("sf");
     //muonMediumFile->Close();
     //muonMiniIsoFile->Close();
     //muonIPFile->Close();
