@@ -99,7 +99,7 @@ double Reweighter::muonIdWeight(const double pt, const double eta) const{
     sf *= muonMiniIsoSF->GetBinContent(muonMiniIsoSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
     sf *= muonIPSF->GetBinContent(muonIPSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
     sf *= muonSIP3DSF->GetBinContent(muonSIP3DSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
-    sf *= muonLeptonMvaSF->GetBinContent(muonLeptonMvaSF->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.4) ) );
+    sf *= muonLeptonMvaSF->GetBinContent(muonLeptonMvaSF->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.4) ) );
     return sf;
 }
 
