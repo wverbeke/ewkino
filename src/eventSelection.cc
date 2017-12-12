@@ -127,7 +127,7 @@ bool treeReader::lepIsGood_TOP16_020(const unsigned l){
     if(_lPt[l] <= 25) return false;
     if(fabs(_lEta[l]) > (2.5 - 0.1*_lFlavor[l]) ) return false;
     if(!_lPOGTight[l]) return false;
-    if(_lFlavor[l] == 1 && _relIso[l] > 0.15) return false;
+    if(_lFlavor[l] == 1 && _relIso0p4Mu[l] > 0.15) return false;
     return true;
 }
 
@@ -135,7 +135,7 @@ bool treeReader::lepIsTight_TOP16_020(const unsigned l){
     return lepIsGood_TOP16_020(l);
 }
 
-bool treeReader::selectLep_TOP16_020(std::vector<unsigned>& ind){
+unsigned treeReader::selectLep_TOP16_020(std::vector<unsigned>& ind){
     ind.clear();
     unsigned lCount = 0;
     for(unsigned l = 0; l < _nLight; ++l){

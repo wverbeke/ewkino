@@ -231,7 +231,7 @@ class treeReader {
         //functions to reproduce results of TOP-16-020
         bool lepIsGood_TOP16_020(const unsigned);
         bool lepIsTight_TOP16_020(const unsigned);
-        bool selectLep_TOP16_020(std::vector<unsigned>&);
+        unsigned selectLep_TOP16_020(std::vector<unsigned>&);
 
         //overlap removal between samples
         bool photonOverlap();                                                                                //sample overlap due to photons
