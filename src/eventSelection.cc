@@ -44,14 +44,14 @@ void treeReader::setConePt(){
 }
 
 bool treeReader::elePassVLooseMvaIDSUSY(const unsigned ind){
-    if(!_lFlavor[l] != 0) return true;
-    static const double[2][3] gpCuts = { {-0.48,-0.85}, {-0.67, -0.91}, {-0.49, -0.83} };
-    static const double[3] hzzCuts = {0.46, -0.03, 0.06};
-    unsigned eta = (fabs(_lEta[l]) >= 0.8) + (fabs(_lEta[l]) > 1.479);
+    if(!_lFlavor[ind] != 0) return true;
+    static const double gpCuts[3][2] = { {-0.48,-0.85}, {-0.67, -0.91}, {-0.49, -0.83} };
+    static const double hzzCuts[3] = {0.46, -0.03, 0.06};
+    unsigned eta = (fabs(_lEta[ind]) >= 0.8) + (fabs(_lEta[ind]) > 1.479);
     if(_lPt[ind] > 10){
-        return _lElectronMva[l] > std::min( gpCuts[0][eta], std::max(gpCuts[1][eta], gpCuts[0][eta] + (gpCuts[1][eta] - gpCuts[0][eta])*0.1*(_lPt[l] - 15.) ) );
+        return _lElectronMva[ind] > std::min( gpCuts[eta][0], std::max(gpCuts[eta][1], gpCuts[eta][0] + (gpCuts[eta][1] - gpCuts[eta][0])*0.1*(_lPt[ind] - 15.) ) );
     } else{
-        return _lElectronMvaHZZ[l] > hzzCuts[eta];
+        return _lElectronMvaHZZ[ind] > hzzCuts[eta];
     }
 }    
 
@@ -63,11 +63,11 @@ bool treeReader::lepIsLoose(const unsigned ind){
     if(fabs(_dz[ind]) >= 0.1) return false;
     if(_3dIPSig[ind] >= 8) return false;
     if(_miniIso[ind] >= 0.4) return false;
-    if(_lFlavor[l] == 1){
-        if(!_lPOGLoose[l]) return false;
-    } else if(_lFlavor[l] == 0){
-        if(_lElectronMissingHits[l] > 1) return false;
-        if(!elePassVLooseMvaIDSUSY(l)) return false;
+    if(_lFlavor[ind] == 1){
+        if(!_lPOGLoose[ind]) return false;
+    } else if(_lFlavor[ind] == 0){
+        if(_lElectronMissingHits[ind] > 1) return false;
+        if(!elePassVLooseMvaIDSUSY(ind)) return false;
     }
     return true;
 }

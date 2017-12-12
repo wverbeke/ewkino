@@ -211,6 +211,7 @@ class treeReader {
         unsigned dilFlavorComb(const std::vector<unsigned>&);
         double coneCorr(const unsigned);
         void setConePt();
+        bool elePassVLooseMvaIDSUSY(const unsigned ind);
         bool lepIsLoose(const unsigned);
         bool lepIsGood(const unsigned);
         bool lepIsTight(const unsigned);
