@@ -108,9 +108,9 @@ double Reweighter::electronIdWeight(const double pt, const double eta) const{
 }
 
 double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
-    return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.4) ) );
+    return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.4) ) );
 }
 
 double Reweighter::electronFakeRate(const double pt, const double eta, const unsigned unc) const{
-    return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin(std::min(pt, 100.), std::min(fabs(eta), 2.5) ) );
+    return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.5) ) );
 }
