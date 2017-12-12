@@ -230,6 +230,7 @@ class treeReader {
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
 
         //functions to reproduce results of TOP-16-020
+        bool lepIsVeto_TOP16_020(const unsigned);
         bool lepIsGood_TOP16_020(const unsigned);
         bool lepIsTight_TOP16_020(const unsigned);
         unsigned selectLep_TOP16_020(std::vector<unsigned>&);
