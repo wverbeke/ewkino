@@ -24,7 +24,7 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
     std::set<std::tuple<long unsigned, long unsigned, long unsigned> > usedEvents;
     //Set output file and tree
     outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_temp/" : outputDirectory;
-    const std::string outputFileName = "~/Work/ntuples_tzq/data_combined_trilepton.root";
+    const std::string outputFileName = "~/Work/ntuples_tzq_nextGen/data_combined_trilepton.root";
     TFile* outputFile = new TFile((const TString&) outputFileName ,"RECREATE");
     outputFile->mkdir("blackJackAndHookers");
     outputFile->cd("blackJackAndHookers"); 
@@ -33,15 +33,16 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
     for(std::vector<std::string>::const_iterator it = datasets.cbegin(); it != datasets.cend(); ++it){
         std::cout << *it << std::endl;
         //Read tree	
-        TFile* sampleFile = new TFile( (const TString&)"~/Work/ntuples_tzq/" + *it,"read");	
+        TFile* sampleFile = TFile::Open( (const TString&)"~/Work/ntuples_tzq_nextGen/" + *it,"read");	
         //Determine hcounter for cross section scaling
         sampleFile->cd("blackJackAndHookers");	
         TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
         initTree(sampleTree, true);
 
         double progress = 0; 	//For printing progress bar
-        long nEntries = sampleTree->GetEntries();
-        for (long it=0; it <nEntries; ++it){
+        long unsigned nEntries = sampleTree->GetEntries();
+        std::cout << "entries in " << *it << " : " << nEntries << std::endl;
+        for (long unsigned it=0; it <nEntries; ++it){
             sampleTree->GetEntry(it);
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./ (double) nEntries);
@@ -57,7 +58,7 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
             }
             outputTree->Fill();
         }
-        //sampleFile->Close();
+        sampleFile->Close();
         std::cout << std::endl;
     }
     outputFile->cd("blackJackAndHookers"); 
@@ -67,6 +68,7 @@ void treeReader::combinePD(const std::vector<std::string>& datasets, std::string
 
 int main(int argc, char* argv[]){	
     std::vector<std::string> datasets = {"SingleElectron.root", "SingleMuon.root", "DoubleEG.root", "DoubleMuon.root", "MuonEG.root"}; 
+    //std::vector<std::string> datasets = {"test.root"};
     treeReader reader;
     switch(argc){
         case 1:{
