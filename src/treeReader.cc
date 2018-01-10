@@ -13,21 +13,20 @@ treeReader::treeReader(TTree *tree) : fChain(nullptr)
 
 void treeReader::readSamples(const std::string& list){
     samples.clear();    //clear current sample list
-    //read samples and cross sections from txt file
+    //read sample info (names and xSec) from txt file
     std::ifstream file(list);
-    std::string line;
-    while(std::getline(file, line)){
-        samples.push_back(tools::readSampleLine(line));
+    while(!file.eof()){
+        samples.push_back(Sample(file));
     }
     file.close();       //close file after usage
+    //display samples that have been read 
     for( auto it = samples.cbegin(); it != samples.cend(); ++it){
-        std::cout << std::get<0>(*it) << "     " << std::get<1>(*it) << "      " << std::get<2>(*it) << std::endl;
+        std::cout << *it << std::endl;
     }
 }
 
 void treeReader::initSample(const unsigned period){                             //0 = 2016, 1 = 2017, > 1 = combined
-    isData = (currentSample == 0);
-    sampleFile = std::make_shared<TFile>("../../ntuples_ewkino/"+ (const TString&) std::get<1>(samples[currentSample]),"read"); 
+    sampleFile = samples[currentSample].getFile("../../ntuples_ewkino/"); 
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
     initTree(fChain, isData);
@@ -39,7 +38,7 @@ void treeReader::initSample(const unsigned period){                             
         if(period == 0) dataLumi = lumi2016;
         else if(period == 1) dataLumi = lumi2017;
         else dataLumi = lumi2016 + lumi2017;
-        scale = std::get<2>(samples[currentSample])*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
+        scale = samples[currentSample].getXSec()*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
         delete hCounter;
     }
     ++currentSample;    //increment the current sample for the next iteration

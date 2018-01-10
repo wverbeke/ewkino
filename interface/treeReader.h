@@ -12,6 +12,7 @@
 
 //include other parts of code
 #include "Reweighter.h"
+#include "Sample.h"
 
 class treeReader {
     public :
@@ -253,7 +254,7 @@ class treeReader {
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
-        std::vector<std::tuple<std::string, std::string, double> > samples;     //list of samples
+        std::vector<Sample> samples;                                            //list of samples
         unsigned currentSample = 0;                                             //current index in list
         bool isData = false;
         double scale = 0;
