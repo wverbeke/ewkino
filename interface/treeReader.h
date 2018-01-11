@@ -13,6 +13,7 @@
 //include other parts of code
 #include "Reweighter.h"
 #include "Sample.h"
+#include "HistInfo.h"
 
 class treeReader {
     public :
@@ -255,7 +256,8 @@ class treeReader {
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
         std::vector<Sample> samples;                                            //list of samples
-        unsigned currentSample = 0;                                             //current index in list
+        std::vector<HistInfo> histInfo;                                         //histogram info (binning and distribution names)
+        int currentSample = -1;                                                 //current index in list
         bool isData = false;
         double scale = 0;
         double weight = 1;                                                      //weight of given event
