@@ -4,7 +4,7 @@
 #include <iostream>
 #include <set>
 
-HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, std::shared_ptr< Category > categorization, std::shared_ptr<Sample> sam): cat(categorization), sample(sam){
+HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization): sample(sam), cat(categorization){
     for(auto infoIt = infoList.cbegin(); infoIt != infoList.cend(); ++infoIt){
         collection.push_back(std::vector< std::shared_ptr<TH1D> >() );
         size_t counter = 0;
@@ -15,8 +15,8 @@ HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList
     }
 }
 
-HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, const std::vector < std::vector < std::string > >& categorization, std::shared_ptr<Sample> sam):
-    HistCollectionSample(infoList, std::make_shared<Category>(categorization), sam) {}
+HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, std::shared_ptr<Sample> sam, const std::vector < std::vector < std::string > >& categorization):
+    HistCollectionSample(infoList, sam, std::make_shared<Category>(categorization)) {}
 
 std::shared_ptr<TH1D> HistCollectionSample::access(size_t infoIndex, const std::vector<size_t>& catIndices) const{
     size_t catIndex = cat->getIndex(catIndices);
@@ -53,14 +53,14 @@ HistCollectionSample operator+(const HistCollectionSample& lhs, const HistCollec
 }
 
 
-HistCollection::HistCollection(const std::vector<HistInfo>& infoList, std::shared_ptr< Category > categorization, const std::vector<Sample>& samList){ 
+HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std::vector<Sample>& samList, std::shared_ptr< Category > categorization){ 
     for(auto samIt = samList.cbegin(); samIt != samList.cend(); ++samIt){
-        fullCollection.push_back(HistCollectionSample(infoList, categorization, std::make_shared<Sample>(Sample(*samIt) ) ) );
+        fullCollection.push_back(HistCollectionSample(infoList, std::make_shared<Sample>(Sample(*samIt) ), categorization) );
     }
 }
 
-HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std::vector < std::vector < std::string > >& categorization, const std::vector<Sample>& samList):
-    HistCollection(infoList, std::make_shared<Category>(Category(categorization)), samList) {}
+HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std::vector<Sample>& samList, const std::vector < std::vector < std::string > >& categorization):
+    HistCollection(infoList, samList, std::make_shared<Category>(Category(categorization))) {}
 
 std::shared_ptr<TH1D> HistCollection::access(size_t samIndex, size_t infoIndex, const std::vector<size_t>& catIndices) const{
     return fullCollection[samIndex].access(infoIndex, catIndices);

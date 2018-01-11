@@ -23,8 +23,8 @@ class HistCollectionSample{
     friend class HistCollection;
     public:
         HistCollectionSample() = default;
-        HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Category>, std::shared_ptr<Sample>);
-        HistCollectionSample(const std::vector<HistInfo>&, const std::vector< std::vector< std::string > >&, std::shared_ptr<Sample>);
+        HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Sample>, std::shared_ptr<Category>);
+        HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Sample>, const std::vector< std::vector< std::string > >& categorization = std::vector < std::vector <std::string> >() );
         std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&) const; //access specific histogram
         void store(const std::string&);                                         //write all histograms to ROOT files in given location
         void setNegZero();
@@ -38,8 +38,8 @@ class HistCollectionSample{
 class HistCollection{
     public:
         HistCollection() = default;
-        HistCollection(const std::vector<HistInfo>&, std::shared_ptr<Category>, const std::vector<Sample>&);
-        HistCollection(const std::vector<HistInfo>&, const std::vector< std::vector < std::string > >&, const std::vector<Sample>&);
+        HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, std::shared_ptr<Category>);
+        HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, const std::vector< std::vector < std::string > >& categorization = std::vector < std::vector < std::string> >() );
         std::shared_ptr<TH1D> access(size_t, size_t, const std::vector<size_t>&) const;
         void mergeProcesses();
         void store();
