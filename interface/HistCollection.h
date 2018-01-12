@@ -9,6 +9,7 @@ Required inputs are a collection of HistInfo objects and a categorization.
 //include c++ library classes
 #include <vector>
 #include <memory>
+#include <iostream>
 
 //include ROOT classes
 #include "TH1D.h"
@@ -20,6 +21,7 @@ Required inputs are a collection of HistInfo objects and a categorization.
 
 class HistCollectionSample{
     friend HistCollectionSample operator+(const HistCollectionSample&, const HistCollectionSample&); 
+    friend std::ostream& operator<<(std::ostream&, const HistCollectionSample&);
     friend class HistCollection;
     public:
         HistCollectionSample() = default;
@@ -36,6 +38,7 @@ class HistCollectionSample{
 };
 
 class HistCollection{
+    friend std::ostream& operator<<(std::ostream&, const HistCollection&);
     public:
         HistCollection() = default;
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, std::shared_ptr<Category>);
@@ -44,6 +47,8 @@ class HistCollection{
         void mergeProcesses();
         void store();
         void setNegZero();
+        const HistCollectionSample& operator[](size_t ind) const{return fullCollection[ind];}
+        const HistCollectionSample& operator[](const Sample&) const;
     private:
         std::vector< HistCollectionSample > fullCollection;
 };
