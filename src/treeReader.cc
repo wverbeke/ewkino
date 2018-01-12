@@ -25,32 +25,40 @@ void treeReader::readSamples(const std::string& list){
     }
 }
 
-void treeReader::initSample(const unsigned period){                             //0 = 2016, 1 = 2017, > 1 = combined
-    sampleFile = samples[currentSample].getFile("../../ntuples_ewkino/"); 
+
+void treeReader::initSample(const Sample& samp, const unsigned period){  //0 = 2016, 1 = 2017, > 1 = combined
+    sampleFile = samp.getFile("../../ntuples_ewkino/");
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
-    initTree(fChain, isData);
+    initTree(fChain, samp.isData());
     nEntries = fChain->GetEntries();
-    if(!isData){
+    if(!samp.isData()){
         TH1D* hCounter = new TH1D("hCounter", "Events counter", 1, 0, 1);
         hCounter->Read("hCounter"); 
         double dataLumi;
         if(period == 0) dataLumi = lumi2016;
         else if(period == 1) dataLumi = lumi2017;
         else dataLumi = lumi2016 + lumi2017;
-        scale = samples[currentSample].getXSec()*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
+        scale = samp.getXSec()*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
         delete hCounter;
     }
-    ++currentSample;    //increment the current sample for the next iteration
 }
 
-void treeReader::GetEntry(long unsigned entry)
+void treeReader::initSample(const unsigned period){ //initialize the next sample in the list 
+    initSample(samples[++currentSample]);
+}
+
+void treeReader::GetEntry(const Sample& samp, long unsigned entry)
 {
     if (!fChain) return;
     fChain->GetEntry(entry);
     //Set up correct weights
-    if(!isData) weight = _weight*scale; //MC
+    if(!samp.isData() ) weight = _weight*scale; //MC
     else weight = 1;                               //data
+}
+
+void treeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
+    GetEntry(samples[currentSample], entry);
 }
 
 void treeReader::initTree(TTree *tree, const bool isData)

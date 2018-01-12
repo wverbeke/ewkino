@@ -13,7 +13,7 @@
 //include other parts of code
 #include "Reweighter.h"
 #include "Sample.h"
-#include "HistInfo.h"
+#include "HistCollection.h"
 
 class treeReader {
     public :
@@ -201,10 +201,16 @@ class treeReader {
         //set up tree for analysis
         void readSamples(const std::string& list = ""); //read sample list from file
         void initSample(const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
+        void initSample(const Sample&, const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
 
         //functions to analyze tree
         void GetEntry(long unsigned entry);
+        void GetEntry(const Sample&, long unsigned entry);
         void Analyze();
+        void Analyze(const std::string&, long unsigned, long unsigned);
+        void Analyze(const Sample&, long unsigned, long unsigned);
+        void setup();
+        void splitJobs();
         void Loop(const std::string& sample, const double xSection);
 
         //functions for event selection
@@ -256,7 +262,8 @@ class treeReader {
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
         std::vector<Sample> samples;                                            //list of samples
-        std::vector<HistInfo> histInfo;                                         //histogram info (binning and distribution names)
+        std::vector<HistInfo> histInfo;                                         //histogram info
+        HistCollection histCollection;                                          //collection of histograms
         int currentSample = -1;                                                 //current index in list
         bool isData = false;
         double scale = 0;
