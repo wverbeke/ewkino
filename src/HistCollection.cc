@@ -52,7 +52,6 @@ HistCollectionSample operator+(const HistCollectionSample& lhs, const HistCollec
     return ret;
 }
 
-
 HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std::vector<Sample>& samList, std::shared_ptr< Category > categorization){ 
     for(auto samIt = samList.cbegin(); samIt != samList.cend(); ++samIt){
         fullCollection.push_back(HistCollectionSample(infoList, std::make_shared<Sample>(Sample(*samIt) ), categorization) );

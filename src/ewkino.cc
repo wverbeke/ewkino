@@ -29,6 +29,7 @@
 int main(int argc, const char** argv){
     treeReader reader;
     reader.setup();
+    /*
     if(argc < 2){
         reader.splitJobs();
     } else if(argc == 4){
@@ -37,16 +38,19 @@ int main(int argc, const char** argv){
         if(argv[4] != "submit"){
             reader.Analyze(argv[1], std::stoi(argv[2]), std::stoi(argv[3]) );
         } else{
-            std::system(std::string("echo \"./main " + std::string(argv[1]) + " " + std::string(argv[2]) + " " + std::string(argv[3]) + " > submit.sh").c_str());
-            std::system("qsub submit.sh -l walltime=04:00:00");
+            //std::system(std::string("echo \"./main " + std::string(argv[1]) + " " + std::string(argv[2]) + " " + std::string(argv[3]) + " > submit.sh").c_str());
+            //std::system("qsub submit.sh -l walltime=04:00:00");
+            std::cout << std::string("echo \"./main " + std::string(argv[1]) + " " + std::string(argv[2]) + " " + std::string(argv[3]) + " > submit.sh").c_str() << std::endl;
+            std::cout << "qsub submit.sh -l walltime=04:00:00" << std::endl;
         }
     }
+    */
     return 0;
 }
 
 void treeReader::setup(){
     //read samples and cross sections from txt file
-    readSamples("samples_trilep.txt");
+    readSamples("sampleLists/samples_dilepCR.txt");
     //info on kinematic distributions to plot
     //std::vector< HistInfo > histInfoV;
     //name      xlabel    nBins,  min, max
@@ -69,7 +73,7 @@ void treeReader::setup(){
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 5, 0, 8),
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 5, 0, 8)
     };
-    HistCollection histCollection(histInfo, samples);
+    //HistCollection histCollection(histInfo, samples);
     /*
     const unsigned nDist = histInfoV.size(); //number of distributions to plot
     //initialize vector holding all histograms

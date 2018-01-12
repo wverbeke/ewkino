@@ -15,9 +15,10 @@ void treeReader::readSamples(const std::string& list){
     samples.clear();    //clear current sample list
     //read sample info (names and xSec) from txt file
     std::ifstream file(list);
-    while(!file.eof()){
+    do {
         samples.push_back(Sample(file));
-    }
+    } while(!file.eof());
+    samples.pop_back();
     file.close();       //close file after usage
     //display samples that have been read 
     for( auto it = samples.cbegin(); it != samples.cend(); ++it){

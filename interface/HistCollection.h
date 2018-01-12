@@ -9,6 +9,7 @@ Required inputs are a collection of HistInfo objects and a categorization.
 //include c++ library classes
 #include <vector>
 #include <memory>
+#include <iostream>
 
 //include ROOT classes
 #include "TH1D.h"
@@ -45,7 +46,10 @@ class HistCollection{
         void store();
         void setNegZero();
         void push_back(const HistCollectionSample& colSam) { fullCollection.push_back(colSam); }
+        const HistCollectionSample& operator[](size_t ind) const{return fullCollection[ind];}
+        const HistCollectionSample& operator[](const Sample&) const;
     private:
         std::vector< HistCollectionSample > fullCollection;
+        std::shared_ptr<std::vector<HistInfo>> histInfoV;
 };
 #endif

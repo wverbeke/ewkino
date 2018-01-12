@@ -22,9 +22,8 @@ Sample::Sample(const std::string& line){
 
 Sample::Sample(std::istream& is){
     //read sample info from txt file
-    if(!is.eof()){
-        std::string line;
-        std::getline(is, line);
+    std::string line;
+    if(std::getline(is, line)){
         *this = Sample(line); 
     }
 }
