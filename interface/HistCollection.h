@@ -44,6 +44,7 @@ class HistCollection{
         void mergeProcesses();
         void store();
         void setNegZero();
+        void push_back(const HistCollectionSample& colSam) { fullCollection.push_back(colSam); }
     private:
         std::vector< HistCollectionSample > fullCollection;
 };
