@@ -4,23 +4,47 @@
 #include <iostream>
 #include <set>
 
-HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization): sample(sam), cat(categorization){
-    for(auto infoIt = infoList.cbegin(); infoIt != infoList.cend(); ++infoIt){
+
+HistCollectionSample::HistCollectionSample(std::shared_ptr< std::vector< HistInfo> > infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
+    histInfo(infoList), sample(sam), cat(categorization) {
+    for(auto infoIt = infoList->cbegin(); infoIt != infoList->cend(); ++infoIt){
         collection.push_back(std::vector< std::shared_ptr<TH1D> >() );
+        if(includeSB) sideBand.push_back(std::vector< std::shared_ptr<TH1D> >() );
         size_t counter = 0;
         for(auto catIt = cat->getCat().cbegin(); catIt != cat->getCat().cend(); ++catIt){
             collection[counter].push_back(infoIt->makeHist(*catIt + sample->getFileName() ) );
+            if(includeSB) sideBand[counter].push_back(infoIt->makeHist(*catIt + sample->getFileName() + "_sideband") );  
             ++counter;
         }
     }
 }
 
-HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, std::shared_ptr<Sample> sam, const std::vector < std::vector < std::string > >& categorization):
-    HistCollectionSample(infoList, sam, std::make_shared<Category>(categorization)) {}
+HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
+    HistCollectionSample(std::make_shared< std::vector< HistInfo > >(infoList), sam, categorization, includeSB) {}
+
+HistCollectionSample::HistCollectionSample(std::shared_ptr< std::vector<HistInfo> > infoList, std::shared_ptr<Sample> sam, const std::vector < std::vector < std::string > >& categorization, bool includeSB):
+    HistCollectionSample(infoList, sam, std::make_shared<Category>(categorization), includeSB) {}
+
+HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, std::shared_ptr<Sample> sam, const std::vector < std::vector < std::string > >& categorization, bool includeSB):
+    HistCollectionSample(std::make_shared< std::vector< HistInfo > >(infoList), sam, std::make_shared<Category>(categorization), includeSB) {}
 
 std::shared_ptr<TH1D> HistCollectionSample::access(size_t infoIndex, const std::vector<size_t>& catIndices) const{
     size_t catIndex = cat->getIndex(catIndices);
     return collection[infoIndex][catIndex];
+}
+
+std::shared_ptr<TH1D> HistCollectionSample::accessSB(size_t infoIndex, const std::vector<size_t>& catIndices) const{
+    if(sideBand.empty()){
+        std::cerr << "empty sideband, returning index 0" << std::endl;
+        return 0;
+    }
+    size_t catIndex = cat->getIndex(catIndices);
+    return sideBand[infoIndex][catIndex];
+}
+
+std::shared_ptr<TH1D> HistCollectionSample::access(size_t infoIndex, const std::vector<size_t>& catIndices, bool sb) const{
+    if(sb) return accessSB(infoIndex, catIndices);
+    else   return access(infoIndex, catIndices);
 }
 
 void HistCollectionSample::setNegZero(){
