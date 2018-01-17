@@ -31,7 +31,7 @@ class HistCollectionSample{
         HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Sample>, const std::vector< std::vector< std::string > >& categorization = std::vector < std::vector <std::string> >()
                                 , bool includeSB = false);
         std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb = false) const;         //access specific histogram
-        std::string name(size_t, const std::vector<size_t>&) const;                                      //access name of histogram at this location
+        std::string name(size_t, const std::vector<size_t>&, bool sb = false) const;                     //access name of histogram at this location
         void store(const std::string&);                                                                  //write all histograms to ROOT files in given location
         void setNegZero();
         HistCollectionSample& operator+=(const HistCollectionSample&);
@@ -49,6 +49,7 @@ class HistCollection{
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false);
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, const std::vector< std::vector < std::string > >& categorization = std::vector < std::vector < std::string> >(), bool includeSB = false);
         std::shared_ptr<TH1D> access(size_t, size_t, const std::vector<size_t>&, bool sb = false) const;
+        std::string name(size_t, size_t, const std::vector<size_t>&, bool sb = false) const;
         void mergeProcesses();
         void store();
         void setNegZero();

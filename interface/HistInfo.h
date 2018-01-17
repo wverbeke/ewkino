@@ -20,6 +20,7 @@ class HistInfo{
             return std::make_shared<TH1D>( (const TString&) fileName + histName, (const TString&) fileName + histName + ";" + xLabel + ";Events",  nBins, xMin, xMax);
         }
         double maxBinCenter() { return xMax - 0.5*(xMax - xMin)/nBins; }
+        std::string name() const{return fileName; }
     private:
         std::string fileName;
         std::string xLabel;

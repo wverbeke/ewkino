@@ -25,7 +25,7 @@ Category::Category(const std::vector < std::vector <std::string> >& catVec){
     }
 }
 
-size_t Category::getIndex(const std::vector<pos>& indices){
+size_t Category::getIndex(const std::vector<pos>& indices) const{
     if(indices.size() != ranges.size()){
         std::cerr << "Given vector of indices has a wrong dimension, returning index 0!" << std::endl;
         return 0;
@@ -38,4 +38,8 @@ size_t Category::getIndex(const std::vector<pos>& indices){
         }
         return index;
     }
+}
+
+std::string Category::name(const std::vector<pos>& indices) const{
+    return cat[getIndex(indices)];
 }

@@ -7,10 +7,11 @@
 #include <iostream>
 
 class Category{
-    using pos = std::vector<std::string>::size_type;
+    using pos = size_t;
     public:
         Category(const std::vector < std::vector <std::string> >&);
-        size_t getIndex(const std::vector<pos>&);
+        size_t getIndex(const std::vector<pos>&) const;
+        std::string name(const std::vector<pos>&) const;
         const std::vector<std::string>& getCat() const { return cat; }
     private:
         std::vector< std::string > cat;

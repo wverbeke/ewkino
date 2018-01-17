@@ -41,6 +41,10 @@ std::shared_ptr<TH1D> HistCollectionSample::access(size_t infoIndex, const std::
     }
 }
 
+std::string HistCollectionSample::name(size_t infoIndex, const std::vector<size_t>& catIndices, bool sb) const{
+    return sample->getFileName() + (*histInfo)[infoIndex].name() + cat->name(catIndices) + (sb ? "sideband" : "");
+}
+
 void HistCollectionSample::setNegZero(){
     //only set negative bins in collection to 0, sideband can be negative
     for(auto dIt = collection.begin(); dIt != collection.cend(); ++dIt){
@@ -86,6 +90,10 @@ HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std:
 
 std::shared_ptr<TH1D> HistCollection::access(size_t samIndex, size_t infoIndex, const std::vector<size_t>& catIndices, bool sb) const{
     return fullCollection[samIndex].access(infoIndex, catIndices, sb);
+}
+
+std::string HistCollection::name(size_t samIndex, size_t infoIndex, const std::vector<size_t>& catIndices, bool sb) const{
+    return fullCollection[samIndex].name(infoIndex, catIndices, sb);
 }
 
 void HistCollection::setNegZero(){
