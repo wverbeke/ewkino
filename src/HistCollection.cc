@@ -7,15 +7,15 @@
 
 HistCollectionSample::HistCollectionSample(std::shared_ptr< std::vector< HistInfo> > infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
     histInfo(infoList), sample(sam), cat(categorization) {
+    size_t counter = 0;
     for(auto infoIt = infoList->cbegin(); infoIt != infoList->cend(); ++infoIt){
         collection.push_back(std::vector< std::shared_ptr<TH1D> >() );
         if(includeSB) sideBand.push_back(std::vector< std::shared_ptr<TH1D> >() );
-        size_t counter = 0;
         for(auto catIt = cat->getCat().cbegin(); catIt != cat->getCat().cend(); ++catIt){
             collection[counter].push_back(infoIt->makeHist(*catIt + sample->getFileName() ) );
             if(includeSB) sideBand[counter].push_back(infoIt->makeHist(*catIt + sample->getFileName() + "_sideband") );  
-            ++counter;
         }
+        ++counter;
     }
 }
 
@@ -79,11 +79,14 @@ HistCollectionSample operator+(const HistCollectionSample& lhs, const HistCollec
     return ret;
 }
 
-HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std::vector<Sample>& samList, std::shared_ptr< Category > categorization, bool includeSB){ 
+HistCollection::HistCollection(std::shared_ptr< std::vector < HistInfo > > infoList, const std::vector<Sample>& samList, std::shared_ptr< Category > categorization, bool includeSB){
     for(auto samIt = samList.cbegin(); samIt != samList.cend(); ++samIt){
         fullCollection.push_back(HistCollectionSample(infoList, std::make_shared<Sample>(Sample(*samIt) ), categorization, includeSB) );
     }
 }
+
+HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std::vector<Sample>& samList, std::shared_ptr< Category > categorization, bool includeSB):
+    HistCollection(std::make_shared< std::vector < HistInfo > >(infoList), samList, categorization, includeSB) {}
 
 HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std::vector<Sample>& samList, const std::vector < std::vector < std::string > >& categorization, bool includeSB):
     HistCollection(infoList, samList, std::make_shared<Category>(Category(categorization)), includeSB) {}
@@ -108,6 +111,7 @@ void HistCollection::mergeProcesses(){
     std::set<std::string> usedProcesses;
     for(auto it = fullCollection.cbegin(); it != fullCollection.cend(); ++it){
         if(usedProcesses.find(it->sample->getProc()) != usedProcesses.end()){
+            usedProcesses.insert(it->sample->getProc());
             HistCollectionSample tempSam = *it;
             for(auto jt = it + 1; jt != fullCollection.cend(); ++jt){
                 if(it->sample->getProc() == jt->sample->getProc()){

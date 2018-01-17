@@ -32,6 +32,8 @@ class HistCollectionSample{
                                 , bool includeSB = false);
         std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb = false) const;         //access specific histogram
         std::string name(size_t, const std::vector<size_t>&, bool sb = false) const;                     //access name of histogram at this location
+        size_t catRange(size_t c) const { return cat->getRange(c);}                                      //return range of i-th category
+        size_t infoRange() const { return histInfo->size();}
         void store(const std::string&);                                                                  //write all histograms to ROOT files in given location
         void setNegZero();
         HistCollectionSample& operator+=(const HistCollectionSample&);
@@ -46,10 +48,15 @@ class HistCollectionSample{
 class HistCollection{
     public:
         HistCollection() = default;
+        HistCollection(std::shared_ptr< std::vector < HistInfo > >, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false);
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false);
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, const std::vector< std::vector < std::string > >& categorization = std::vector < std::vector < std::string> >(), bool includeSB = false);
-        std::shared_ptr<TH1D> access(size_t, size_t, const std::vector<size_t>&, bool sb = false) const;
+       // std::shared_ptr<TH1D> access(size_t, size_t, const std::vector<size_t>&, bool sb = false) const{
+        std::shared_ptr<TH1D> access(size_t samIndex, size_t infoIndex, const std::vector<size_t>& catIndices, bool sb = false) const;
         std::string name(size_t, size_t, const std::vector<size_t>&, bool sb = false) const;
+        size_t samRange() const { return fullCollection.size(); }
+        size_t catRange(size_t c) const{ return (*this)[0].catRange(c); }
+        size_t infoRange() const { return (*this)[0].infoRange(); }
         void mergeProcesses();
         void store();
         void setNegZero();
@@ -58,6 +65,5 @@ class HistCollection{
         const HistCollectionSample& operator[](const Sample&) const;
     private:
         std::vector< HistCollectionSample > fullCollection;
-        std::shared_ptr<std::vector<HistInfo>> histInfoV;
 };
 #endif
