@@ -27,14 +27,12 @@ class HistCollectionSample{
         HistCollectionSample(std::shared_ptr<std::vector < HistInfo > >, std::shared_ptr<Sample>, std::shared_ptr<Category>, bool includeSB = false);
         HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Sample>, std::shared_ptr<Category>, bool includeSB = false);
         HistCollectionSample(std::shared_ptr<std::vector < HistInfo > >, std::shared_ptr<Sample>, const std::vector< std::vector< std::string > >& categorization = std::vector < std::vector <std::string> >()
-                                , bool includeSB = false );
+                                , bool includeSB = false);
         HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Sample>, const std::vector< std::vector< std::string > >& categorization = std::vector < std::vector <std::string> >()
-                                , bool includeSB = false );
-        std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&) const;         //access specific histogram
-        std::shared_ptr<TH1D> accessSB(size_t, const std::vector<size_t>&) const;       //access specific histogram in sideband 
-        inline std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb) const; 
-        std::string name(size_t, const std::vector<size_t>&) const;                     //access name of histogram at this location
-        void store(const std::string&);                                                 //write all histograms to ROOT files in given location
+                                , bool includeSB = false);
+        std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb = false) const;         //access specific histogram
+        std::string name(size_t, const std::vector<size_t>&) const;                                      //access name of histogram at this location
+        void store(const std::string&);                                                                  //write all histograms to ROOT files in given location
         void setNegZero();
         HistCollectionSample& operator+=(const HistCollectionSample&);
     private:
@@ -48,9 +46,9 @@ class HistCollectionSample{
 class HistCollection{
     public:
         HistCollection() = default;
-        HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, std::shared_ptr<Category>);
-        HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, const std::vector< std::vector < std::string > >& categorization = std::vector < std::vector < std::string> >() );
-        std::shared_ptr<TH1D> access(size_t, size_t, const std::vector<size_t>&) const;
+        HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false);
+        HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, const std::vector< std::vector < std::string > >& categorization = std::vector < std::vector < std::string> >(), bool includeSB = false);
+        std::shared_ptr<TH1D> access(size_t, size_t, const std::vector<size_t>&, bool sb = false) const;
         void mergeProcesses();
         void store();
         void setNegZero();
