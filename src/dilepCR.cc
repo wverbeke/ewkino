@@ -29,29 +29,28 @@ void treeReader::Analyze(){
     //read samples and cross sections from txt file
     readSamples("sampleLists/samples_dilepCR.txt");
     //info on kinematic distributions to plot
-    std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfo;
     //name      xlabel    nBins,  min, max
     histInfo = {
-        std::make_tuple("sip3d", "SIP_{3D}", 100, 0, 8),
-        std::make_tuple("dxy", "|d_{xy}| (cm)", 100, 0, 0.05),
-        std::make_tuple("dz", "|d_{z}| (cm)", 100, 0, 0.1),
-        std::make_tuple("miniIso", "miniIso", 100, 0, 0.4),
-        std::make_tuple("leptonMvaSUSY", "SUSY lepton MVA value", 100, -1, 1),
-        std::make_tuple("leptonMvaTTH", "TTH lepton MVA value", 100, -1, 1),
-        std::make_tuple("ptRel", "P_{T}^{rel} (GeV)", 100, 0, 200),
-        std::make_tuple("ptRatio", "P_{T}^{ratio}", 100, 0, 2),
-        std::make_tuple("closestJetCsv", "closest jet CSV", 100, 0, 1),
-        std::make_tuple("chargedTrackMult", "closest jet track multiplicity", 20, 0, 20),
-        std::make_tuple("electronMvaGP", "electron GP MVA value", 100, -1, 1),
-        std::make_tuple("muonSegComp", "muon segment compatibility", 100, 0, 1),
-        std::make_tuple("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
-        std::make_tuple("mll", "M_{ll} (GeV)", 200, 12, 200),
-        std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 100, 25, 200),
-        std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 100, 15, 150),
-        std::make_tuple("nVertex", "number of vertices", 100, 0, 100),
-        std::make_tuple("nJets", "number of jets", 10, 0, 10),
-        std::make_tuple("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
-        std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
+        HistInfo("sip3d", "SIP_{3D}", 100, 0, 8),
+        HistInfo("dxy", "|d_{xy}| (cm)", 100, 0, 0.05),
+        HistInfo("dz", "|d_{z}| (cm)", 100, 0, 0.1),
+        HistInfo("miniIso", "miniIso", 100, 0, 0.4),
+        HistInfo("leptonMvaSUSY", "SUSY lepton MVA value", 100, -1, 1),
+        HistInfo("leptonMvaTTH", "TTH lepton MVA value", 100, -1, 1),
+        HistInfo("ptRel", "P_{T}^{rel} (GeV)", 100, 0, 200),
+        HistInfo("ptRatio", "P_{T}^{ratio}", 100, 0, 2),
+        HistInfo("closestJetCsv", "closest jet CSV", 100, 0, 1),
+        HistInfo("chargedTrackMult", "closest jet track multiplicity", 20, 0, 20),
+        HistInfo("electronMvaGP", "electron GP MVA value", 100, -1, 1),
+        HistInfo("muonSegComp", "muon segment compatibility", 100, 0, 1),
+        HistInfo("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
+        HistInfo("mll", "M_{ll} (GeV)", 200, 12, 200),
+        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 100, 25, 200),
+        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 100, 15, 150),
+        HistInfo("nVertex", "number of vertices", 100, 0, 100),
+        HistInfo("nJets", "number of jets", 10, 0, 10),
+        HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
+        HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
     };
     //read pu weights for every period
     TFile* puFile = TFile::Open("weights/puWeights2017.root");
@@ -60,6 +59,7 @@ void treeReader::Analyze(){
     for(unsigned e = 0; e < 6; ++e){
         puWeights[e] = (TH1D*) puFile->Get( (const TString&) "puw_Run" + eras[e]);
     }
+    /*
     //split histograms in run periods
     //const unsigned nRuns = 7;
     //const std::string runNames[nRuns] = {"all2017", "RunA", "RunB", "RunC", "RunD", "RunE", "RunF"};
@@ -94,7 +94,9 @@ void treeReader::Analyze(){
             }
         }
     }
-
+    */
+    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    /*
     //store maxima of histograms for overflow bins
     double maxBin[nDist];
     for(unsigned dist = 0; dist < nDist; ++dist){
@@ -110,7 +112,6 @@ void treeReader::Analyze(){
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar	
-            /*
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
                 tools::printProgress(progress);
@@ -118,8 +119,6 @@ void treeReader::Analyze(){
                 progress = 1.;
                 tools::printProgress(progress);
             }
-            */
-            if(it % 1000000 == 0) std::cout << "." << std::flush;
             GetEntry(it);
             //vector containing good lepton indices
             std::vector<unsigned> ind;
@@ -252,6 +251,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    */
 }
 
 int main(){
