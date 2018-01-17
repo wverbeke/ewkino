@@ -11,6 +11,7 @@ class Category{
     public:
         Category(const std::vector < std::vector <std::string> >&);
         size_t getIndex(const std::vector<pos>&) const;
+        size_t getRange(size_t ind) const { return ranges[ind].size(); }
         std::string name(const std::vector<pos>&) const;
         const std::vector<std::string>& getCat() const { return cat; }
     private:
