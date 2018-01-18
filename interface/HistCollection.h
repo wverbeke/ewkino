@@ -31,9 +31,11 @@ class HistCollectionSample{
                                 , bool includeSB = false);
         HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Sample>, const std::vector< std::vector< std::string > >& categorization = std::vector < std::vector <std::string> >()
                                 , bool includeSB = false);
+        std::shared_ptr<TH1D> access(size_t infoI, size_t catI, bool sb = false) const { return (sb ? sideBand[infoI][catI] : collection[infoI][catI]); }
         std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb = false) const;                //access specific histogram
         std::string name(size_t, const std::vector<size_t>&, bool sb = false) const;                            //access name of histogram at this location
         size_t catRange(size_t c) const { return cat->getRange(c);}                                             //return range of i-th category
+        size_t catSize() const { return cat->size(); }
         size_t infoRange() const { return histInfo->size();}
         void store(const std::string&);                                                                         //write all histograms to ROOT files in given location
         void setNegZero();
@@ -56,20 +58,21 @@ class HistCollection{
         HistCollection(std::shared_ptr< std::vector < HistInfo > >, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false);
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false);
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, const std::vector< std::vector < std::string > >& categorization = std::vector < std::vector < std::string> >(), bool includeSB = false);
-       // std::shared_ptr<TH1D> access(size_t, size_t, const std::vector<size_t>&, bool sb = false) const{
+        std::shared_ptr<TH1D> access(size_t samIndex, size_t infoIndex, const size_t catIndex, bool sb = false) const { return fullCollection[samIndex].access(infoIndex, catIndex, sb); }
         std::shared_ptr<TH1D> access(size_t samIndex, size_t infoIndex, const std::vector<size_t>& catIndices, bool sb = false) const;
         std::string name(size_t, size_t, const std::vector<size_t>&, bool sb = false) const;
         size_t samRange() const { return fullCollection.size(); }
         size_t catRange(size_t c) const{ return (*this)[0].catRange(c); }
+        size_t catSize() const { return (*this)[0].catSize(); }
         size_t infoRange() const { return (*this)[0].infoRange(); }
         void mergeProcesses();
-        void store();
-        void setNegZero();
         void push_back(const HistCollectionSample& colSam) { fullCollection.push_back(colSam); }
         const HistCollectionSample& operator[](size_t ind) const{return fullCollection[ind];}
         const HistCollectionSample& operator[](const Sample&) const;
         Plot getPlot(size_t, const std::vector<size_t>&) const;
+        void printAllPlots() const;
     private:
         std::vector< HistCollectionSample > fullCollection;
+        void setNegZero();
 };
 #endif
