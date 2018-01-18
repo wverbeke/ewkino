@@ -123,3 +123,16 @@ void HistCollection::mergeProcesses(){
     }
     *this = tempCol;
 }
+
+Plot HistCollection::getPlot(size_t infoIndex, const std::vector<size_t>& catIndices){
+    std::shared_ptr<TH1D> obs;
+    std::map< std::string, std::shared_ptr<TH1D> > bkg;
+    for(auto& samCol : fullCollection){
+        if(samCol.isData()){
+            if(obs.use_count() == 0) obs = samCol.access(infoIndex, catIndices);
+            else obs->Add((samCol.access(infoIndex, c atIndices).get());
+        }
+        else bkg[samCol.procName()] = samCol.access(infoIndex, c atIndices);
+    }
+    return Plot(fullCollection[0].infoName(infoIndex) + "_" + fullCollection[1].catName(catindices), obs, bkg);
+}

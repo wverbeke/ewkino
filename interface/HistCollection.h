@@ -18,6 +18,7 @@ Required inputs are a collection of HistInfo objects and a categorization.
 #include "HistInfo.h"
 #include "Category.h"
 #include "Sample.h"
+#include "Plot.h"
 
 class HistCollectionSample{
     friend HistCollectionSample operator+(const HistCollectionSample&, const HistCollectionSample&); 
@@ -30,12 +31,16 @@ class HistCollectionSample{
                                 , bool includeSB = false);
         HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Sample>, const std::vector< std::vector< std::string > >& categorization = std::vector < std::vector <std::string> >()
                                 , bool includeSB = false);
-        std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb = false) const;         //access specific histogram
-        std::string name(size_t, const std::vector<size_t>&, bool sb = false) const;                     //access name of histogram at this location
-        size_t catRange(size_t c) const { return cat->getRange(c);}                                      //return range of i-th category
+        std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb = false) const;                //access specific histogram
+        std::string name(size_t, const std::vector<size_t>&, bool sb = false) const;                            //access name of histogram at this location
+        size_t catRange(size_t c) const { return cat->getRange(c);}                                             //return range of i-th category
         size_t infoRange() const { return histInfo->size();}
-        void store(const std::string&);                                                                  //write all histograms to ROOT files in given location
+        void store(const std::string&);                                                                         //write all histograms to ROOT files in given location
         void setNegZero();
+        bool isData() const { return sample->isData(); }
+        std::string infoName(size_t infoInd) const { return (*histInfo)[infoInd].name(); }
+        std::string procName() const { return sample->getProc(); }
+        std::string catName(const std::vector<size_t>& catIndices) const { return cat->name(catIndices); }
         HistCollectionSample& operator+=(const HistCollectionSample&);
     private:
         std::vector< std::vector < std::shared_ptr<TH1D> > > collection;
@@ -63,6 +68,7 @@ class HistCollection{
         void push_back(const HistCollectionSample& colSam) { fullCollection.push_back(colSam); }
         const HistCollectionSample& operator[](size_t ind) const{return fullCollection[ind];}
         const HistCollectionSample& operator[](const Sample&) const;
+        Plot getPlot(size_t, const std::vector<size_t>&) const;
     private:
         std::vector< HistCollectionSample > fullCollection;
 };
