@@ -68,7 +68,7 @@ class HistCollection{
         size_t catSize() const { return (*this)[0].catSize(); }
         size_t infoRange() const { return (*this)[0].infoRange(); }
         size_t getIndex(const std::vector<size_t>& catIndices) const { return (*this)[0].getIndex(catIndices); }
-        void mergeProcesses();
+        HistCollection mergeProcesses();
         void push_back(const HistCollectionSample& colSam) { fullCollection.push_back(colSam); }
         const HistCollectionSample& operator[](size_t ind) const{return fullCollection[ind];}
         const HistCollectionSample& operator[](const Sample&) const;

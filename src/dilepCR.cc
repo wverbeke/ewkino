@@ -187,7 +187,17 @@ void treeReader::Analyze(){
             }
         }
     }
-    
+    std::cout << "merging processes" << std::endl;
+    HistCollection col = histCollection.mergeProcesses();    
+    std::cout << "processes merged" << std::endl;
+
+    for(unsigned d = 0; d < histInfo.size(); ++d){
+        if(d > 3) break;
+        for(unsigned c = 0; c < histCollection.catSize(); ++c){
+            if(c > 3) break;
+            col.getPlot(d,c).draw();
+        } 
+    }
     /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"obs.", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
