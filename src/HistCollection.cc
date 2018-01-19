@@ -4,9 +4,6 @@
 #include <iostream>
 #include <set>
 
-#include <chrono>
-
-
 HistCollectionSample::HistCollectionSample(std::shared_ptr< std::vector< HistInfo> > infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
     histInfo(infoList), sample(sam), cat(categorization) {
     size_t counter = 0;
