@@ -15,16 +15,18 @@ class HistInfo{
     public:
         HistInfo() = default;
         HistInfo(const std::string& name, const std::string& x, unsigned bins, double min, double max):
-            fileName(name), xLabel(x), nBins(bins), xMin(min), xMax(max) {}
+            fileName(name), xLabel(x), nBins(bins), xMin(min), xMax(max) { setMaxBinCenter(); }
         std::shared_ptr<TH1D> makeHist(const std::string& histName) const{
             return std::make_shared<TH1D>( (const TString&) fileName + histName, (const TString&) fileName + histName + ";" + xLabel + ";Events",  nBins, xMin, xMax);
         }
-        double maxBinCenter() { return xMax - 0.5*(xMax - xMin)/nBins; }
-        std::string name() const{return fileName; }
+        std::string name() const { return fileName; }
+        double maxBinCenter() const { return maxBinC; }
     private:
         std::string fileName;
         std::string xLabel;
         unsigned nBins;
         double xMin, xMax;
+        double maxBinC;
+        double setMaxBinCenter() { maxBinC = xMax - 0.5*(xMax - xMin)/nBins; }
 };
 #endif
