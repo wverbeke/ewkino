@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iomanip>
 #include <tuple>
+#include <stdlib.h>
 
 //include other parts of the code
 #include "../interface/treeReader.h"
@@ -22,7 +23,8 @@
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
-void treeReader::Analyze(){
+
+void treeReader::setup(){
     //Set CMS plotting style
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
@@ -52,31 +54,17 @@ void treeReader::Analyze(){
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
     };
+}
 
-    std::vector< std::tuple < std::string, std::string, unsigned, double , double > > histInfos;
-    //name      xlabel    nBins,  min, max
-    histInfos = {
-        std::make_tuple("sip3d", "SIP_{3D}", 100, 0, 8),
-        std::make_tuple("dxy", "|d_{xy}| (cm)", 100, 0, 0.05),
-        std::make_tuple("dz", "|d_{z}| (cm)", 100, 0, 0.1),
-        std::make_tuple("miniIso", "miniIso", 100, 0, 0.4),
-        std::make_tuple("leptonMvaSUSY", "SUSY lepton MVA value", 100, -1, 1),
-        std::make_tuple("leptonMvaTTH", "TTH lepton MVA value", 100, -1, 1),
-        std::make_tuple("ptRel", "P_{T}^{rel} (GeV)", 100, 0, 200),
-        std::make_tuple("ptRatio", "P_{T}^{ratio}", 100, 0, 2),
-        std::make_tuple("closestJetCsv", "closest jet CSV", 100, 0, 1),
-        std::make_tuple("chargedTrackMult", "closest jet track multiplicity", 20, 0, 20),
-        std::make_tuple("electronMvaGP", "electron GP MVA value", 100, -1, 1),
-        std::make_tuple("muonSegComp", "muon segment compatibility", 100, 0, 1),
-        std::make_tuple("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
-        std::make_tuple("mll", "M_{ll} (GeV)", 200, 12, 200),
-        std::make_tuple("leadPt", "P_{T}^{leading} (GeV)", 100, 25, 200),
-        std::make_tuple("trailPt", "P_{T}^{trailing} (GeV)", 100, 15, 150),
-        std::make_tuple("nVertex", "number of vertices", 100, 0, 100),
-        std::make_tuple("nJets", "number of jets", 10, 0, 10),
-        std::make_tuple("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
-        std::make_tuple("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
-    };
+void treeReader::Analyze(const std::string& sampName, const long unsigned begin, const long unsigned end){
+    auto samIt = std::find_if(samples.cbegin(), samples.cend(), [sampName](const Sample& s) { return s.getFileName() == sampName; } );
+    Analyze(*samIt, begin, end);
+}
+
+void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
+    //set up histogram collection for particular sample
+    HistCollectionSample histCollection = HistCollectionSample(histInfo, std::make_shared<Sample>(samp), { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+
     //read pu weights for every period
     TFile* puFile = TFile::Open("weights/puWeights2017.root");
     const std::string eras[6] = {"Inclusive", "B", "C", "D", "E", "F"};
@@ -85,7 +73,151 @@ void treeReader::Analyze(){
         puWeights[e] = (TH1D*) puFile->Get( (const TString&) "puw_Run" + eras[e]);
     }
 
-    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    const unsigned nDist = histCollection.infoRange();
+    const unsigned nRuns = histCollection.catRange(0);
+    const unsigned nFlav = histCollection.catRange(1);
+    const unsigned nJetCat = histCollection.catRange(2);
+    const unsigned nPuRew = histCollection.catRange(3);
+
+    initSample(samp, 1);  //use 2017 lumi
+    for(long unsigned it = begin; it < end; ++it){
+        GetEntry(samp, it);
+        //vector containing good lepton indices
+        std::vector<unsigned> ind;
+        //select leptons
+        const unsigned lCount = selectLep(ind);
+        if(lCount != 2) continue;
+        //require pt cuts (25, 20) to be passed
+        if(!passPtCuts(ind)) continue;
+        //make lorentzvectors for leptons
+        TLorentzVector lepV[lCount];
+        for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
+        //Cut of Mll at 12 GeV
+        if((lepV[0] + lepV[1]).M() < 12) continue;
+        //reject SS events
+        if(_lCharge[ind[0]] == _lCharge[ind[1]]) continue;
+        //determine flavor compositions
+        unsigned flav = dilFlavorComb(ind) + 1; //reserve 0 for inclusive
+        //order jets and check the number of jets
+        std::vector<unsigned> jetInd;
+        unsigned jetCount = nJets(jetInd);
+
+        //Extra category selection: for DY select onZ, for ttbar select 1 b-jet 2-jets
+        if(flav == 1 || flav == 3){ //OSSF
+            if(fabs((lepV[0] + lepV[1]).M() - 91) > 10) continue;
+            if(nBJets(0,  true, false, 0) != 0) continue;
+        } else if(flav == 2){
+            if(_met < 50) continue;
+            if(jetCount < 2 || nBJets() < 1) continue;
+        }
+        //determine run perios
+        unsigned run;
+        run = ewk::runPeriod(_runNb) + 1 - 1; //reserve 0 for inclusive // -1 because we start at run B 
+        //max pu to extract
+        float max = (run == 0 || run > 3) ? 70 : 60;
+        //loop over leading leptons
+        for(unsigned l = 0; l < 2; ++l){
+            double fill[12] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _leptonMvaSUSY[ind[l]], _leptonMvaTTH[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsvV2[ind[l]], (double) _selectedTrackMult[ind[l]], (_lFlavor[ind[l]] == 0) ? _lElectronMva[ind[l]] : 0,  (_lFlavor[ind[l]] == 1) ? _lMuonSegComp[ind[l]] : 0};
+            //fill histograms
+            for(unsigned j = 0; j < nJetCat; ++j){
+                if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
+                for(unsigned pu = 0; pu < nPuRew; ++pu){
+                    for(unsigned dist = 0; dist < 12; ++dist){
+                        for(unsigned r = 0; r < nRuns; ++r){
+                            if(samp.isData() || r == run || r == 0){
+                                double puw = 1.;
+                                if(!samp.isData() && pu == 1){
+                                    puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
+                                }
+                                histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight*puw); 
+                                histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight*puw);
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        double fill[nDist - 12] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
+        for(unsigned j = 0; j < nJetCat; ++j){
+            if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
+            for(unsigned pu = 0; pu < nPuRew; ++pu){
+                for(unsigned dist = 12; dist < nDist; ++dist){
+                    for(unsigned r = 0; r < nRuns; ++r){
+                        if(!samp.isData() || r == run || r == 0){
+                            double puw = 1.;
+                            if(!samp.isData() && pu == 1){
+                                puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
+                            }
+                            histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist - 12], histInfo[dist].maxBinCenter()), weight*puw);
+                            histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist - 12], histInfo[dist].maxBinCenter()), weight*puw);
+                        }
+                    }
+                }
+            } 
+        }
+    }
+    //store histograms for later merging
+    histCollection.store("tempHists/", begin, end);
+}
+
+
+void treeReader::splitJobs(){
+    setup();    
+    for(unsigned sam = 0; sam < samples.size(); ++sam){
+        initSample(1);
+        for(long unsigned it = 0; it < nEntries; it+=1000000){
+            long unsigned begin = it;
+            long unsigned end = std::min(nEntries, it + 1000000);
+            //make temporary job script 
+            std::ofstream script("runTuples.sh");
+            script << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
+            script << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
+            script << "eval \\`scram runtime -sh\\` \n";
+            script << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
+            script << "./dilepCR " << samples[currentSample].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
+            script.close();
+            //submit job
+            //std::system( ("./dilepCR " + samples[currentSample].getFileName() + " " + std::to_string(begin) + " " + std::to_string(end) ).c_str() );
+            std::system("qsub runTuples.sh -l walltime=04:00:00");
+         }
+    }
+}
+
+int main(int argc, char* argv[]){
+    treeReader reader;
+    reader.setup();
+    //submit single job if sample and range given
+    if(argc == 4){
+        std::string sample(argv[1]);
+        std::string beginStr(argv[2]);
+        std::string endStr(argv[3]);
+        long unsigned begin = std::stoul(beginStr);
+        long unsigned end = std::stoul(endStr);
+        //MODIFY THIS CALL TO ACCEPT A STRING AS SAMPLE
+        //std::cout << sample << "\t" << begin << "\t" << end << std::endl;
+        reader.Analyze(sample, begin, end);
+    //else if(argc == 2){
+    }
+    else{
+        //Analyze all, or split jobs
+        reader.splitJobs();
+    }
+    //} else{
+    //    ;
+    //}
+    return 0;
+}
+/*
+void treeReader::Analyze(){
+    //read pu weights for every period
+    TFile* puFile = TFile::Open("weights/puWeights2017.root");
+    const std::string eras[6] = {"Inclusive", "B", "C", "D", "E", "F"};
+    TH1D* puWeights[6];
+    for(unsigned e = 0; e < 6; ++e){
+        puWeights[e] = (TH1D*) puFile->Get( (const TString&) "puw_Run" + eras[e]);
+    }
+
     const unsigned nDist = histCollection.infoRange();
     const unsigned nRuns = histCollection.catRange(0);
     const unsigned nFlav = histCollection.catRange(1);
@@ -194,9 +326,4 @@ void treeReader::Analyze(){
         } 
     }
 }
-
-int main(){
-    treeReader reader;
-    reader.Analyze();
-    return 0;
-}
+*/

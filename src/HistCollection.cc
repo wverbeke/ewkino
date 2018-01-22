@@ -3,6 +3,10 @@
 //include c++ library classes
 #include <iostream>
 #include <set>
+#include <fstream>
+
+//include ROOT classes
+#include "TROOT.h"
 
 HistCollectionSample::HistCollectionSample(std::shared_ptr< std::vector< HistInfo> > infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
     histInfo(infoList), sample(sam), cat(categorization) {
@@ -40,8 +44,14 @@ std::shared_ptr<TH1D> HistCollectionSample::access(size_t infoIndex, const std::
     }
 }
 
+
+std::string HistCollectionSample::name(size_t infoIndex, size_t catIndex, bool sb) const{
+    return (*histInfo)[infoIndex].name() + (*cat)[catIndex] + sample->getFileName() + (sb ? "sideband" : "");
+}
+
 std::string HistCollectionSample::name(size_t infoIndex, const std::vector<size_t>& catIndices, bool sb) const{
-    return sample->getFileName() + (*histInfo)[infoIndex].name() + cat->name(catIndices) + (sb ? "sideband" : "");
+    size_t catIndex = cat->getIndex(catIndices);
+    return name(infoIndex, catIndex, sb);
 }
 
 void HistCollectionSample::setNegZero(){
@@ -50,6 +60,50 @@ void HistCollectionSample::setNegZero(){
         for(auto cIt = dIt->cbegin(); cIt != dIt->cend(); ++cIt){
             for(unsigned b = 1; b < (*cIt)->GetNbinsX() + 1; ++b){
                 if((*cIt)->GetBinContent(b) < 0.) (*cIt)->SetBinContent(b, 0.);
+            }
+        }
+    }
+}
+
+void HistCollectionSample::store(const std::string& dir, const long unsigned begin, const long unsigned end) const{
+    std::string extra("");
+    if(begin != 0 || end != 0){
+        extra = "_" + std::to_string(begin) + "_" + std::to_string(end);
+    }
+    //create new root file
+    TFile* outFile = TFile::Open((const TString&) dir + "/tempHist_" + sample->getFileName() + extra, "RECREATE"); 
+    for(auto& vec : collection){
+        for(auto& histP : vec){
+            histP->Write();
+        }
+    }
+    outFile->Close();
+}
+
+void HistCollectionSample::read(const std::string& dir){
+    //make list of files in directory
+    std::system( ("for f in " + dir + "/*; do echo $f >> inputList.txt").c_str());
+    std::ifstream inputList("inputList.txt");
+    std::set< std::string > fileList;
+    std::string temp;
+    //fill set with list of files
+    while(std::getline(inputList, temp)){
+        //find correct sample and push back those files
+        if(temp.find(sample->getFileName()) != std::string::npos) fileList.insert(temp);
+    }
+    //reset and refill all current histograms histograms
+    for(unsigned infoInd = 0; infoInd < collection.size(); ++infoInd){
+        for(unsigned c = 0; c < cat->size(); ++c){
+            collection[infoInd][c];
+            for(auto it = fileList.cbegin(); it != fileList.cend(); ++it){
+                TFile* tempFile = TFile::Open((const TString&) dir + "/" + *it);
+                if(it == fileList.cbegin()){
+                    collection[infoInd][c].reset((TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
+                    collection[infoInd][c]->SetDirectory(gROOT);
+                } else{
+                    collection[infoInd][c]->Add((TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
+                }
+                tempFile->Close();
             }
         }
     }

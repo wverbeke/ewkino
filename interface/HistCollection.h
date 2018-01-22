@@ -34,11 +34,13 @@ class HistCollectionSample{
         std::shared_ptr<TH1D> access(size_t infoI, size_t catI, bool sb = false) const { return (sb ? sideBand[infoI][catI] : collection[infoI][catI]); }
         std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb = false) const;                //access specific histogram
         std::string name(size_t, const std::vector<size_t>&, bool sb = false) const;                            //access name of histogram at this location
+        std::string name(size_t, size_t, bool sb = false) const;                                                 
         size_t catRange(size_t c) const { return cat->getRange(c);}                                             //return range of i-th category
         size_t catSize() const { return cat->size(); }
         size_t infoRange() const { return histInfo->size();}
         size_t getIndex(const std::vector<size_t>& catIndices) const { return cat->getIndex(catIndices); }
-        void store(const std::string&);                                                                         //write all histograms to ROOT files in given location
+        void store(const std::string&, const long unsigned begin = 0, const long unsigned end = 0) const;       //write all histograms to ROOT files in given location
+        void read(const std::string&);                                                                          //read histograms from files in given directory
         void setNegZero();
         bool isData() const { return sample->isData(); }
         std::string infoName(size_t infoInd) const { return (*histInfo)[infoInd].name(); }

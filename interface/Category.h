@@ -18,7 +18,7 @@ class Category{
         const std::vector<std::string>& getCat() const { return cat; }
         std::vector < std::string > ::const_iterator cbegin() const { return cat.cbegin(); }
         std::vector < std::string > ::const_iterator cend() const { return cat.cend(); }
-        std::string& operator[](size_t ind) const { return cat[ind]; }
+        const std::string& operator[](size_t ind) const { return cat[ind]; }
     private:
         std::vector< std::string > cat;
         std::vector< pos > ranges;
