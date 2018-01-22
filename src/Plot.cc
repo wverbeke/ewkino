@@ -3,8 +3,10 @@
 //include plotting scripts
 #include "../plotting/plotCode.h"
 
+#include "TCanvas.h"
+
 void Plot::draw(const std::string& analysis, bool log, bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal, const bool sigNorm) const{
-    std::vector< std::string> names;
+    std::vector< std::string> names = {"obs."};
     std::vector< TH1D*> bkgHist;
     for(auto bkgIt = bkg.cbegin(); bkgIt != bkg.cend(); ++bkgIt){
         names.push_back(bkgIt->first);

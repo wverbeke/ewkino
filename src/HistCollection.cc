@@ -59,7 +59,6 @@ HistCollectionSample& HistCollectionSample::operator+=(const HistCollectionSampl
     if(collection.size() != rhs.collection.size() || cat->getCat().size() != rhs.cat->getCat().size()){
         std::cerr << "HistCollection of incompatible dimensions can not be added: returning left hand side!" << std::endl;
     } else{
-        auto start = std::chrono::high_resolution_clock::now();
         for(size_t dist = 0; dist < collection.size(); ++dist){
             for(size_t c = 0; c < collection[dist].size(); ++c){
                 collection[dist][c]->Add(rhs.collection[dist][c].get());
@@ -69,9 +68,6 @@ HistCollectionSample& HistCollectionSample::operator+=(const HistCollectionSampl
                 }
             }
         }
-        auto finish = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = finish - start;
-        std::cout << "merging HistCollections" << procName() << " and " << rhs.procName() << " took:" << elapsed.count() << "s" << std::endl;
     }
     return *this;
 };

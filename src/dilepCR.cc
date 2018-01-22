@@ -187,61 +187,12 @@ void treeReader::Analyze(){
             }
         }
     }
-    std::cout << "merging processes" << std::endl;
     HistCollection col = histCollection.mergeProcesses();    
-    std::cout << "processes merged" << std::endl;
-
     for(unsigned d = 0; d < histInfo.size(); ++d){
-        if(d > 3) break;
         for(unsigned c = 0; c < histCollection.catSize(); ++c){
-            if(c > 3) break;
             col.getPlot(d,c).draw();
         } 
     }
-    /*
-    //merge histograms with the same physical background
-    std::vector<std::string> proc = {"obs.", "DY", "TT + Jets", "WJets", "VV", "TT + X", "T + X"};
-    std::vector< std::vector <std::vector < std::vector< std::vector < std::vector < TH1D*> > > > > > mergedHists(nJetCat);
-    for(unsigned j = 0; j < nJetCat; ++j){
-        mergedHists[j] = std::vector <std::vector < std::vector< std::vector < std::vector < TH1D*> > > > >(nPuRew);
-        for(unsigned pu = 0; pu < nPuRew; ++pu){
-            mergedHists[j][pu] = std::vector <std::vector < std::vector< std::vector < TH1D*> > > >(nRuns);
-            for(unsigned run = 0; run < nRuns; ++run){
-                mergedHists[j][pu][run] = std::vector <std::vector < std::vector < TH1D*> > > (nFlav);
-                for(unsigned flav = 0; flav < nFlav; ++flav){
-                    mergedHists[j][pu][run][flav] = std::vector <std::vector < TH1D*> > (nDist);
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        mergedHists[j][pu][run][flav][dist] = std::vector<TH1D*>(proc.size());
-                        for(size_t m = 0, sam = 0; m < proc.size(); ++m){
-                            mergedHists[j][pu][run][flav][dist][m] = (TH1D*) hists[j][pu][run][flav][dist][sam]->Clone();
-                            while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
-                                mergedHists[j][pu][run][flav][dist][m]->Add(hists[j][pu][run][flav][dist][sam + 1]);
-                                ++sam;
-                            }
-                            ++sam;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    //plot all distributions
-    //const std::string runString[nRuns] = {"32.5 fb^{-1} (13 TeV)", "2017 Run A", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
-    const std::string runString[nRuns] = {"42 fb^{-1} (13 TeV)", "2017 Run B", "2017 Run C", "2017 Run D", "2017 Run E", "2017 Run F"};
-    const std::string flavString[nFlav] = {"", "ee : ", "e#mu : ", "#mu#mu : "};
-    for(unsigned j = 0; j < nJetCat; ++j){
-        for(unsigned pu = 0; pu < nPuRew; ++pu){
-            for(unsigned run = 0; run < nRuns; ++run){
-                for(unsigned flav = 0; flav < nFlav; ++flav){
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        plotDataVSMC(mergedHists[j][pu][run][flav][dist][0], &mergedHists[j][pu][run][flav][dist][1], &proc[0], mergedHists[j][pu][run][flav][dist].size() - 1, "ewkino/dilepCR/" + runNames[run] + "/" + flavNames[flav] + "/" + jetNames[j] + "/" + puNames[pu] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run], "ewkinoDilep", false, true, flavString[flav] + runString[run]);             //linear plots
-                        plotDataVSMC(mergedHists[j][pu][run][flav][dist][0], &mergedHists[j][pu][run][flav][dist][1], &proc[0], mergedHists[j][pu][run][flav][dist].size() - 1, "ewkino/dilepCR/" + runNames[run] + "/" + flavNames[flav] + "/" + jetNames[j] + "/" + puNames[pu] + "/" + std::get<0>(histInfo[dist]) + "_" + flavNames[flav] + "_" + runNames[run] + "_log", "ewkinoDilep", true, true, flavString[flav] + runString[run]);     //log plots
-                    }
-                }
-            }
-        }
-    }
-    */
 }
 
 int main(){
