@@ -54,6 +54,7 @@ void treeReader::setup(){
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
     };
+    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 }
 
 void treeReader::Analyze(const std::string& sampName, const long unsigned begin, const long unsigned end){
@@ -184,6 +185,33 @@ void treeReader::splitJobs(){
     }
 }
 
+void treeReader::plot(const std::string& distName){
+    HistCollection col = histCollection.mergeProcesses();    
+    for(unsigned d = 0; d < histInfo.size(); ++d){
+        if(histInfo[d].name() == distName){
+            for(unsigned c = 0; c < histCollection.catSize(); ++c){
+                col.getPlot(d,c).draw();
+            }
+        }
+    }
+}
+
+void treeReader::readPlots(){
+    histCollection.read("tempHists");
+}
+
+void treeReader::splitPlots(){
+    for(auto& h: histInfo){
+        std::ofstream script("printPlots.sh");
+        script << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
+        script << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
+        script << "eval \\`scram runtime -sh\\` \n";
+        script << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
+        script << "./dilepCR plot " << h.name() << "\n";
+        std::system("qsub printPlots.sh -l walltime=04:00:00");
+    }
+}
+
 int main(int argc, char* argv[]){
     treeReader reader;
     reader.setup();
@@ -198,6 +226,13 @@ int main(int argc, char* argv[]){
         //std::cout << sample << "\t" << begin << "\t" << end << std::endl;
         reader.Analyze(sample, begin, end);
     //else if(argc == 2){
+    }
+    else if(argc > 1 && argv[1] == "plot"){
+        reader.readPlots();
+        if(argc > 2){
+            std::string dist(argv[2]);
+            reader.plot(dist);
+        }
     }
     else{
         //Analyze all, or split jobs

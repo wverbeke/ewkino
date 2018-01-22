@@ -77,6 +77,7 @@ class HistCollection{
         Plot getPlot(size_t, size_t) const;
         Plot getPlot(size_t, const std::vector<size_t>&) const;
         void printAllPlots() const;
+        void read(const std::string&); 
     private:
         std::vector< HistCollectionSample > fullCollection;
         void setNegZero();

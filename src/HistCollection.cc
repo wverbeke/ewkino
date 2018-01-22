@@ -195,3 +195,9 @@ Plot HistCollection::getPlot(size_t infoIndex, size_t catIndex) const{
 Plot HistCollection::getPlot(size_t infoIndex, const std::vector<size_t>& catIndices) const{
     return getPlot(infoIndex, getIndex(catIndices));
 }
+
+void HistCollection::read(const std::string& dir){
+    for(auto& samCol : fullCollection){
+        samCol.read(dir);
+    }
+}

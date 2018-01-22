@@ -213,6 +213,11 @@ class treeReader {
         void splitJobs();
         void Loop(const std::string& sample, const double xSection);
 
+        //new functions for parallel plotting
+        void readPlots();
+        void plot(const std::string&);
+        void splitPlots();
+
         //functions for event selection
         void orderByPt(std::vector<unsigned>&, const double*, const unsigned);
         unsigned dilFlavorComb(const std::vector<unsigned>&);
