@@ -31,6 +31,9 @@ class HistCollectionSample{
                                 , bool includeSB = false);
         HistCollectionSample(const std::vector<HistInfo>&, std::shared_ptr<Sample>, const std::vector< std::vector< std::string > >& categorization = std::vector < std::vector <std::string> >()
                                 , bool includeSB = false);
+        //read histogram collections from ROOT files in given directory (given as string) :
+        HistCollectionSample(const std::string&, std::shared_ptr<std::vector< HistInfo > >, std::shared_ptr<Sample>, std::shared_ptr<Category>, bool includeSB = false);
+
         std::shared_ptr<TH1D> access(size_t infoI, size_t catI, bool sb = false) const { return (sb ? sideBand[infoI][catI] : collection[infoI][catI]); }
         std::shared_ptr<TH1D> access(size_t, const std::vector<size_t>&, bool sb = false) const;                //access specific histogram
         std::string name(size_t, const std::vector<size_t>&, bool sb = false) const;                            //access name of histogram at this location
@@ -40,7 +43,7 @@ class HistCollectionSample{
         size_t infoRange() const { return histInfo->size();}
         size_t getIndex(const std::vector<size_t>& catIndices) const { return cat->getIndex(catIndices); }
         void store(const std::string&, const long unsigned begin = 0, const long unsigned end = 0) const;       //write all histograms to ROOT files in given location
-        void read(const std::string&);                                                                          //read histograms from files in given directory
+        //void read(const std::string&);                                                                          //read histograms from files in given directory
         void setNegZero();
         bool isData() const { return sample->isData(); }
         std::string infoName(size_t infoInd) const { return (*histInfo)[infoInd].name(); }
@@ -62,6 +65,10 @@ class HistCollection{
         HistCollection(std::shared_ptr< std::vector < HistInfo > >, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false);
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false);
         HistCollection(const std::vector<HistInfo>&, const std::vector<Sample>&, const std::vector< std::vector < std::string > >& categorization = std::vector < std::vector < std::string> >(), bool includeSB = false);
+        HistCollection(const std::string&, std::shared_ptr< std::vector < HistInfo > >, const std::vector<Sample>&, std::shared_ptr<Category>, bool includeSB = false); 
+        HistCollection(const std::string&, const std::vector<HistInfo>&, const std::vector<Sample>&, const std::vector< std::vector < std::string >> & categorization = std::vector < std::vector < std::string> >()
+                        , bool includeSB = false);
+
         std::shared_ptr<TH1D> access(size_t samIndex, size_t infoIndex, const size_t catIndex, bool sb = false) const { return fullCollection[samIndex].access(infoIndex, catIndex, sb); }
         std::shared_ptr<TH1D> access(size_t samIndex, size_t infoIndex, const std::vector<size_t>& catIndices, bool sb = false) const;
         std::string name(size_t, size_t, const std::vector<size_t>&, bool sb = false) const;
@@ -77,7 +84,7 @@ class HistCollection{
         Plot getPlot(size_t, size_t) const;
         Plot getPlot(size_t, const std::vector<size_t>&) const;
         void printAllPlots() const;
-        void read(const std::string&); 
+        //void read(const std::string&); 
     private:
         std::vector< HistCollectionSample > fullCollection;
         void setNegZero();

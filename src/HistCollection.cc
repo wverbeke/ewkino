@@ -8,6 +8,8 @@
 //include ROOT classes
 #include "TROOT.h"
 
+#include <chrono>
+
 HistCollectionSample::HistCollectionSample(std::shared_ptr< std::vector< HistInfo> > infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
     histInfo(infoList), sample(sam), cat(categorization) {
     size_t counter = 0;
@@ -30,6 +32,44 @@ HistCollectionSample::HistCollectionSample(std::shared_ptr< std::vector<HistInfo
 
 HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList, std::shared_ptr<Sample> sam, const std::vector < std::vector < std::string > >& categorization, bool includeSB):
     HistCollectionSample(std::make_shared< std::vector< HistInfo > >(infoList), sam, std::make_shared<Category>(categorization), includeSB) {}
+
+
+HistCollectionSample::HistCollectionSample(const std::string& dir, std::shared_ptr< std::vector < HistInfo> > infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
+    histInfo(infoList), cat(categorization), sample(sam)
+{
+    //make list of files in directory
+    std::system("touch inputList.txt");
+    std::system( ("for f in " + dir + "/*; do echo $f >> inputList.txt; done").c_str());
+    //read root file list from txt
+    std::ifstream inputList("inputList.txt");
+    std::set< std::string > fileList;
+    std::string temp;
+    //fill set with list of files
+    while(std::getline(inputList, temp)){
+        //find correct sample and push back those files
+        if(temp.find(sample->getFileName()) != std::string::npos) fileList.insert(temp);
+    }
+    inputList.close();
+    //clean up temporary file
+    std::system("rm inputList.txt");
+    //read histogram collection from files
+    collection = std::vector< std::vector< std::shared_ptr< TH1D > > >(histInfo->size());
+    for(unsigned infoInd = 0; infoInd < histInfo->size(); ++infoInd){
+        collection[infoInd] = std::vector< std::shared_ptr< TH1D > >(cat->size());
+        for(unsigned c = 0; c < cat->size(); ++c){
+            for(auto it = fileList.cbegin(); it != fileList.cend(); ++it){
+                TFile* tempFile = TFile::Open((const TString&) *it);
+                if(it == fileList.cbegin()){
+                    collection[infoInd][c].reset( (TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
+                    collection[infoInd][c]->SetDirectory(gROOT);
+                } else{
+                    collection[infoInd][c]->Add( (TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
+                }
+                tempFile->Close();
+            }
+        }
+    }
+}
 
 std::shared_ptr<TH1D> HistCollectionSample::access(size_t infoIndex, const std::vector<size_t>& catIndices, bool sb) const{
     size_t catIndex = cat->getIndex(catIndices);
@@ -79,10 +119,15 @@ void HistCollectionSample::store(const std::string& dir, const long unsigned beg
     }
     outFile->Close();
 }
-
+/*
 void HistCollectionSample::read(const std::string& dir){
+    auto start = std::chrono::high_resolution_clock::now();
     //make list of files in directory
-    std::system( ("for f in " + dir + "/*; do echo $f >> inputList.txt").c_str());
+    std::system("touch inputList.txt");
+    std::system( ("for f in " + dir + "/*; do echo $f >> inputList.txt; done").c_str());
+    //CHECK, remove later
+    std::system("cp inputList.txt check.txt");
+    ///////
     std::ifstream inputList("inputList.txt");
     std::set< std::string > fileList;
     std::string temp;
@@ -91,23 +136,33 @@ void HistCollectionSample::read(const std::string& dir){
         //find correct sample and push back those files
         if(temp.find(sample->getFileName()) != std::string::npos) fileList.insert(temp);
     }
+    std::system("rm inputList.txt");
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "setting up file list took : " << elapsed.count() << " s" << std::endl;
     //reset and refill all current histograms histograms
     for(unsigned infoInd = 0; infoInd < collection.size(); ++infoInd){
         for(unsigned c = 0; c < cat->size(); ++c){
-            collection[infoInd][c];
+            start = std::chrono::high_resolution_clock::now();
+            //collection[infoInd][c];
             for(auto it = fileList.cbegin(); it != fileList.cend(); ++it){
-                TFile* tempFile = TFile::Open((const TString&) dir + "/" + *it);
+                //TFile* tempFile = TFile::Open((const TString&) dir + "/" + *it);
+                TFile* tempFile = TFile::Open((const TString&) *it);
                 if(it == fileList.cbegin()){
                     collection[infoInd][c].reset((TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
                     collection[infoInd][c]->SetDirectory(gROOT);
                 } else{
-                    collection[infoInd][c]->Add((TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
+                    collection[infoInd][c]->Add( (TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
                 }
                 tempFile->Close();
             }
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            std::cout << "reading one file lasts: " << elapsed.count() << " s" << std::endl;
         }
     }
 }
+*/
 
 HistCollectionSample& HistCollectionSample::operator+=(const HistCollectionSample& rhs){
     if(collection.size() != rhs.collection.size() || cat->getCat().size() != rhs.cat->getCat().size()){
@@ -143,6 +198,15 @@ HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std:
 
 HistCollection::HistCollection(const std::vector<HistInfo>& infoList, const std::vector<Sample>& samList, const std::vector < std::vector < std::string > >& categorization, bool includeSB):
     HistCollection(infoList, samList, std::make_shared<Category>(Category(categorization)), includeSB) {}
+
+HistCollection::HistCollection(const std::string& dir, std::shared_ptr< std::vector < HistInfo > > infoList, const std::vector<Sample>& samList, std::shared_ptr< Category > categorization, bool includeSB){
+    for(auto samIt = samList.cbegin(); samIt != samList.cend(); ++samIt){
+        fullCollection.push_back(HistCollectionSample(dir, infoList, std::make_shared<Sample>(Sample(*samIt) ), categorization, includeSB) );
+    }
+}
+
+HistCollection::HistCollection(const std::string& dir, const std::vector<HistInfo>& infoList, const std::vector<Sample>& samList, const std::vector < std::vector < std::string > >& categorization, bool includeSB):
+    HistCollection(dir, std::make_shared< std::vector < HistInfo > > (infoList), samList, std::make_shared<Category>(Category(categorization)), includeSB) {}
 
 std::shared_ptr<TH1D> HistCollection::access(size_t samIndex, size_t infoIndex, const std::vector<size_t>& catIndices, bool sb) const{
     return fullCollection[samIndex].access(infoIndex, catIndices, sb);
@@ -196,8 +260,10 @@ Plot HistCollection::getPlot(size_t infoIndex, const std::vector<size_t>& catInd
     return getPlot(infoIndex, getIndex(catIndices));
 }
 
+/*
 void HistCollection::read(const std::string& dir){
     for(auto& samCol : fullCollection){
         samCol.read(dir);
     }
 }
+*/
