@@ -19,9 +19,10 @@ skimSample(){                                           #function to skim one sa
     files=${1}/*/*/*root
     for f in $files
         do if (( $count % 50 == 0))
-            then qsub $submit -l walltime=04:00:00; > ~/temp.txt 2>> ~/temp.txt
-            while grep "Invalid credential;" ~/temp.txt; do
-                qsub $submit -l walltime=04:00:00; > ~/temp.txt 2>> ~/temp.txt
+            then qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
+            while grep "Invalid credential" ~/temp.txt; do
+                echo "resubmit"
+                qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
             done 
             cat ~/temp.txt
             makeSubmit $submit $2
@@ -33,8 +34,9 @@ skimSample(){                                           #function to skim one sa
         count=$((count+1))
     done
     qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
-    while grep "Invalid credential;" ~/temp.txt; do
-        qsub $submit -l walltime=04:00:00; > ~/temp.txt 2>> ~/temp.txt
+    while grep "Invalid credential" ~/temp.txt; do
+        echo "resubmit"
+        qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
     done 
     cat ~/temp.txt
     rm ~/temp.txt
@@ -44,7 +46,7 @@ skimSample(){                                           #function to skim one sa
 baseFolder=/pnfs/iihe/cms/store/user/wverbeke/heavyNeutrino
 cd $baseFolder
 foldersMC=*/*ewkinoMCList-v9                               #add suffix for newer versions
-foldersData=*/*Run2017C*2017LeptonicDataList_v9p1
-for d in */*Run2017B*2017LeptonicDataList_v9p1 */*Run2017C*2017LeptonicDataList_v9p1 */*Run2017D*2017LeptonicDataList_v9p1 */*Run2017E*2017LeptonicDataList_v9p1 */*Run2017F*Prompt*2017LeptonicDataList_v9p1 $foldersMC                         #skim all samples 
+foldersData=*/*2016LeptonicDataList_v8
+for d in $foldersData $foldersMC                         #skim all samples 
     do skimSample $d $baseFolder
 done
