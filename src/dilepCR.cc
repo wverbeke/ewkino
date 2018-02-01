@@ -162,9 +162,16 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     histCollection.store("tempHists/", begin, end);
 }
 
+std::ostream& initScript(std::ostream& os){
+     os << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
+     os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
+     os << "eval \\`scram runtime -sh\\` \n";
+     os << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
+     return os;
+}
+
 
 void treeReader::splitJobs(){
-    setup();    
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
         for(long unsigned it = 0; it < nEntries; it+=1000000){
@@ -172,24 +179,23 @@ void treeReader::splitJobs(){
             long unsigned end = std::min(nEntries, it + 1000000);
             //make temporary job script 
             std::ofstream script("runTuples.sh");
-            script << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
-            script << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
-            script << "eval \\`scram runtime -sh\\` \n";
-            script << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
+            initScript(script);
             script << "./dilepCR " << samples[currentSample].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
             //submit job
             //std::system( ("./dilepCR " + samples[currentSample].getFileName() + " " + std::to_string(begin) + " " + std::to_string(end) ).c_str() );
-            std::system("qsub runTuples.sh -l walltime=04:00:00");
+            std::system("qsub runTuples.sh -l walltime=01:00:00");
          }
     }
 }
 
 void treeReader::plot(const std::string& distName){
+    //readPlots();
+    histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     HistCollection col = histCollection.mergeProcesses();    
     for(unsigned d = 0; d < histInfo.size(); ++d){
         if(histInfo[d].name() == distName){
-            for(unsigned c = 0; c < histCollection.catSize(); ++c){
+            for(unsigned c = 0; c < col.catSize(); ++c){
                 col.getPlot(d,c).draw();
             }
         }
@@ -197,24 +203,29 @@ void treeReader::plot(const std::string& distName){
 }
 
 void treeReader::readPlots(){
-    histCollection.read("tempHists");
+    //histCollection.read("tempHists");
 }
 
 void treeReader::splitPlots(){
+    histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    /*
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
-        script << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
-        script << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
-        script << "eval \\`scram runtime -sh\\` \n";
-        script << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
-        script << "./dilepCR plot " << h.name() << "\n";
-        std::system("qsub printPlots.sh -l walltime=04:00:00");
+        initScript(script);
+        script << "./dilepCR plot " << h.name();
+        script.close();
+        std::system("qsub printPlots.sh -l walltime=00:30:00");
     }
+    */
 }
 
 int main(int argc, char* argv[]){
     treeReader reader;
     reader.setup();
+    std::vector<std::string> argvStr;
+    for(unsigned i = 0; i < argc; ++i){
+        argvStr.push_back(std::string(argv[i]));
+    }
     //submit single job if sample and range given
     if(argc == 4){
         std::string sample(argv[1]);
@@ -227,20 +238,19 @@ int main(int argc, char* argv[]){
         reader.Analyze(sample, begin, end);
     //else if(argc == 2){
     }
-    else if(argc > 1 && argv[1] == "plot"){
+    else if(argc > 1 && argvStr[1] == "plot"){
         reader.readPlots();
         if(argc > 2){
             std::string dist(argv[2]);
             reader.plot(dist);
+        } else{
+            reader.splitPlots();           
         }
     }
     else{
         //Analyze all, or split jobs
         reader.splitJobs();
     }
-    //} else{
-    //    ;
-    //}
     return 0;
 }
 /*

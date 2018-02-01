@@ -56,17 +56,17 @@ HistCollectionSample::HistCollectionSample(const std::string& dir, std::shared_p
     collection = std::vector< std::vector< std::shared_ptr< TH1D > > >(histInfo->size());
     for(unsigned infoInd = 0; infoInd < histInfo->size(); ++infoInd){
         collection[infoInd] = std::vector< std::shared_ptr< TH1D > >(cat->size());
-        for(unsigned c = 0; c < cat->size(); ++c){
-            for(auto it = fileList.cbegin(); it != fileList.cend(); ++it){
-                TFile* tempFile = TFile::Open((const TString&) *it);
+        for(auto it = fileList.cbegin(); it != fileList.cend(); ++it){
+            TFile* tempFile = TFile::Open((const TString&) *it);
+            for(unsigned c = 0; c < cat->size(); ++c){
                 if(it == fileList.cbegin()){
                     collection[infoInd][c].reset( (TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
                     collection[infoInd][c]->SetDirectory(gROOT);
                 } else{
                     collection[infoInd][c]->Add( (TH1D*) tempFile->Get((const TString&) name(infoInd, c) ) );
                 }
-                tempFile->Close();
             }
+            tempFile->Close();
         }
     }
 }
