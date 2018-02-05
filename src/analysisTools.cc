@@ -5,6 +5,9 @@
 #include <string>
 #include <tuple>
 #include <fstream>
+//for sleeping:
+#include <chrono>
+#include <thread>
 
 void tools::printProgress(double progress){
     const unsigned barWidth = 100;
@@ -116,3 +119,59 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
     }
     card.close();		
 }
+
+
+//initialize a submission script for running on cluster
+std::ostream& tools::initScript(std::ostream& os){
+     os << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
+     os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
+     os << "eval \\`scram runtime -sh\\` \n";
+     os << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
+     return os;
+}
+
+//submit script as cluster job and catch errors
+void tools::submitScript(const std::string& scriptName, const std::string& walltimeString){
+    //as long as submission failed, sleep and try again
+    bool submitted = false;
+    do{
+        //submit sctipt and pipe output to text file
+        std::system( std::string("qsub " + scriptName + " -l walltime=" + walltimeString + " > submissionOutput.txt").c_str() );
+        std::ifstream submissionOutput("submissionOutput.txt");
+        //check for errors in output file
+        std::string line; 
+        while(std::getline(submissionOutput, line)){
+           if(line.find("Invalid credential") != std::string::npos) submitted = true;
+        }
+        submissionOutput.close();
+        //sleep for 2 seconds before attempting resubmission
+        if(!submitted) std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    } while(!submitted);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

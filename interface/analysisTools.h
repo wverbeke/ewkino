@@ -25,5 +25,9 @@ namespace tools{
     inline double mt(const TLorentzVector& v1, const TLorentzVector& v2){
         return sqrt(2*v1.Pt()*v2.Pt()*( 1 - cos( v1.Phi()-v2.Phi() ) ) );       //this definition assumes the ultarelativistic limit
     }
+    //initialize a submission script
+    std::ostream& initScript(std::ostream&);
+    //submit script of given name and catch submission errors
+    void submitScript(const std::string&, const std::string&); 
 }
 #endif
