@@ -124,7 +124,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 for(unsigned pu = 0; pu < nPuRew; ++pu){
                     for(unsigned dist = 0; dist < 12; ++dist){
                         for(unsigned r = 0; r < nRuns; ++r){
-                            if(samp.isData() || r == run || r == 0){
+                            if(!samp.isData() || r == run || r == 0){
                                 double puw = 1.;
                                 if(!samp.isData() && pu == 1){
                                     puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
@@ -162,7 +162,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 }
 
 void treeReader::splitJobs(){
-    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"flavorInclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
         for(long unsigned it = 0; it < nEntries; it+=1000000){
