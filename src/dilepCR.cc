@@ -54,7 +54,6 @@ void treeReader::setup(){
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
     };
-    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 }
 
 void treeReader::Analyze(const std::string& sampName, const long unsigned begin, const long unsigned end){
@@ -163,6 +162,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 }
 
 void treeReader::splitJobs(){
+    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
         for(long unsigned it = 0; it < nEntries; it+=1000000){
@@ -197,16 +197,14 @@ void treeReader::readPlots(){
 }
 
 void treeReader::splitPlots(){
-    histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
-    /*
+    //histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
-        initScript(script);
+        tools::initScript(script);
         script << "./dilepCR plot " << h.name();
         script.close();
-        std::system("qsub printPlots.sh -l walltime=00:30:00");
+        tools::submitScript("printPlots.sh", "00:30:00");
     }
-    */
 }
 
 int main(int argc, char* argv[]){
@@ -218,8 +216,8 @@ int main(int argc, char* argv[]){
     }
     //submit single job if sample and range given
     if(argc == 4){
-        long unsigned begin = std::stoul(argvstr[2]);
-        long unsigned end = std::stoul(argvstr[3]);
+        long unsigned begin = std::stoul(argvStr[2]);
+        long unsigned end = std::stoul(argvStr[3]);
         //sample, first entry, last entry:
         reader.Analyze(argvStr[1], begin, end);
     }
