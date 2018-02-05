@@ -16,7 +16,7 @@ HistCollectionSample::HistCollectionSample(std::shared_ptr< std::vector< HistInf
     for(auto infoIt = infoList->cbegin(); infoIt != infoList->cend(); ++infoIt){
         collection.push_back(std::vector< std::shared_ptr<TH1D> >() );
         if(includeSB) sideBand.push_back(std::vector< std::shared_ptr<TH1D> >() );
-        for(auto catIt = cat->getCat().cbegin(); catIt != cat->getCat().cend(); ++catIt){
+        for(auto catIt = cat->cbegin(); catIt != cat->cend(); ++catIt){
             collection[counter].push_back(infoIt->makeHist(*catIt + sample->getFileName() ) );
             if(includeSB) sideBand[counter].push_back(infoIt->makeHist(*catIt + sample->getFileName() + "_sideband") );  
         }
@@ -165,7 +165,7 @@ void HistCollectionSample::read(const std::string& dir){
 */
 
 HistCollectionSample& HistCollectionSample::operator+=(const HistCollectionSample& rhs){
-    if(collection.size() != rhs.collection.size() || cat->getCat().size() != rhs.cat->getCat().size()){
+    if(collection.size() != rhs.collection.size() || cat->size() != rhs.cat->size()){
         std::cerr << "HistCollection of incompatible dimensions can not be added: returning left hand side!" << std::endl;
     } else{
         for(size_t dist = 0; dist < collection.size(); ++dist){
