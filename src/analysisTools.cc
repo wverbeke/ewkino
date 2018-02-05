@@ -136,16 +136,22 @@ void tools::submitScript(const std::string& scriptName, const std::string& wallt
     bool submitted = false;
     do{
         //submit sctipt and pipe output to text file
-        std::system( std::string("qsub " + scriptName + " -l walltime=" + walltimeString + " > submissionOutput.txt").c_str() );
+        std::system( std::string("qsub " + scriptName + " -l walltime=" + walltimeString + " > submissionOutput.txt 2>> submissionOutput.txt").c_str() );
         std::ifstream submissionOutput("submissionOutput.txt");
         //check for errors in output file
         std::string line; 
         while(std::getline(submissionOutput, line)){
-           if(line.find("Invalid credential") != std::string::npos) submitted = true;
+            if(line.find("Invalid credential") == std::string::npos){
+                submitted = true;
+                std::cout << line << std::endl;
+            }
         }
         submissionOutput.close();
         //sleep for 2 seconds before attempting resubmission
-        if(!submitted) std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        if(!submitted){
+           std::cerr << "submission failed: reattempting submission" << std::endl;
+           std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        }
     } while(!submitted);
 }
 

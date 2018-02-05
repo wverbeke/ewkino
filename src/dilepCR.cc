@@ -162,15 +162,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     histCollection.store("tempHists/", begin, end);
 }
 
-std::ostream& initScript(std::ostream& os){
-     os << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
-     os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
-     os << "eval \\`scram runtime -sh\\` \n";
-     os << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
-     return os;
-}
-
-
 void treeReader::splitJobs(){
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
@@ -179,12 +170,11 @@ void treeReader::splitJobs(){
             long unsigned end = std::min(nEntries, it + 1000000);
             //make temporary job script 
             std::ofstream script("runTuples.sh");
-            initScript(script);
+            tools::initScript(script);
             script << "./dilepCR " << samples[currentSample].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
             //submit job
-            //std::system( ("./dilepCR " + samples[currentSample].getFileName() + " " + std::to_string(begin) + " " + std::to_string(end) ).c_str() );
-            std::system("qsub runTuples.sh -l walltime=01:00:00");
+            tools::submitScript("runTuples.sh", "01:00:00");
          }
     }
 }
@@ -228,15 +218,10 @@ int main(int argc, char* argv[]){
     }
     //submit single job if sample and range given
     if(argc == 4){
-        std::string sample(argv[1]);
-        std::string beginStr(argv[2]);
-        std::string endStr(argv[3]);
-        long unsigned begin = std::stoul(beginStr);
-        long unsigned end = std::stoul(endStr);
-        //MODIFY THIS CALL TO ACCEPT A STRING AS SAMPLE
-        //std::cout << sample << "\t" << begin << "\t" << end << std::endl;
-        reader.Analyze(sample, begin, end);
-    //else if(argc == 2){
+        long unsigned begin = std::stoul(argvstr[2]);
+        long unsigned end = std::stoul(argvstr[3]);
+        //sample, first entry, last entry:
+        reader.Analyze(argvStr[1], begin, end);
     }
     else if(argc > 1 && argvStr[1] == "plot"){
         reader.readPlots();
@@ -247,9 +232,11 @@ int main(int argc, char* argv[]){
             reader.splitPlots();           
         }
     }
-    else{
+    else if(argc > 1 && argvStr[1] == "run"){
         //Analyze all, or split jobs
         reader.splitJobs();
+    } else{
+        std::cerr << "no valid input given" << std::endl;
     }
     return 0;
 }
