@@ -38,6 +38,6 @@ void extractPuWeight(const std::string& mcFile){
 }
 
 int main(int argc, char* argv[]){
-    extractPuWeight("../../ntuples_ewkino/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root");
+    extractPuWeight("../../ntuples_ewkino/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root");
     return 0;
 }
