@@ -200,7 +200,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     for(unsigned h = 0; h < nBkg; ++h){
         legend.AddEntry(bkgE[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
     }
-    legend.AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
+    legend.AddEntry(bkgTotE, "Total bkg. unc.", "f"); //add total background uncertainty to legend
 
     //add signal to legend if plotting signal
     if(signal != nullptr){
@@ -342,9 +342,9 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     TLegend legend2 = TLegend(0.18,0.85,0.8,0.98,NULL,"brNDC");
     legend2.SetNColumns(3); 
     legend2.SetFillStyle(0); //avoid legend box 
-    legend2.AddEntry(bkgStatErrors, "stat. pred. unc.", "f");
-    legend2.AddEntry(bkgErrors, "total pred. unc.", "f");
-    legend2.AddEntry(obsRatio, "obs./pred.", "pe12");
+    legend2.AddEntry(bkgStatErrors, "Stat. pred. unc.", "f");
+    legend2.AddEntry(bkgErrors, "Total pred. unc.", "f");
+    legend2.AddEntry(obsRatio, "Obs./Pred.", "pe12");
 
     /*
     We will set up the range and label sizes of the plot using bkgErros. As such this histogram always has to be 
@@ -353,7 +353,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgErrors->SetMarkerColor(1);
     bkgErrors->SetLineColor(1);
     bkgErrors->GetYaxis()->SetRangeUser(0.,1.999);
-    bkgErrors->GetYaxis()->SetTitle("obs./pred.");
+    bkgErrors->GetYaxis()->SetTitle("Obs./Pred.");
     bkgErrors->GetYaxis()->SetTitleOffset(1.25/((1.-xPad)/xPad));
     bkgErrors->GetYaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
     bkgErrors->GetXaxis()->SetTitleSize((1.-xPad)/xPad*0.06);

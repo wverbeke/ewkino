@@ -54,7 +54,6 @@ void treeReader::setup(){
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
     };
-    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 }
 
 void treeReader::Analyze(const std::string& sampName, const long unsigned begin, const long unsigned end){
@@ -124,8 +123,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
                 for(unsigned pu = 0; pu < nPuRew; ++pu){
                     for(unsigned dist = 0; dist < 12; ++dist){
+                        if(_lFlavor[ind[l]] == 0 && dist == 11) continue;  //do not plot muonSegComp for electrons
+                        if(_lFlavor[ind[l]] == 1 && dist == 10) continue;  //do not plot electronMva for muons
                         for(unsigned r = 0; r < nRuns; ++r){
-                            if(samp.isData() || r == run || r == 0){
+                            if(!samp.isData() || r == run || r == 0){
                                 double puw = 1.;
                                 if(!samp.isData() && pu == 1){
                                     puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
@@ -163,6 +164,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 }
 
 void treeReader::splitJobs(){
+    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"flavorInclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
         for(long unsigned it = 0; it < nEntries; it+=1000000){
@@ -181,12 +183,27 @@ void treeReader::splitJobs(){
 
 void treeReader::plot(const std::string& distName){
     //readPlots();
-    histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    histCollection = HistCollection("inputList.txt", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     HistCollection col = histCollection.mergeProcesses();    
     for(unsigned d = 0; d < histInfo.size(); ++d){
         if(histInfo[d].name() == distName){
             for(unsigned c = 0; c < col.catSize(); ++c){
-                col.getPlot(d,c).draw();
+                std::string header;
+                std::string categoryName = col[0].catName(c);
+
+                if(categoryName.find("_mm_") != std::string::npos) header += "#mu#mu : ";
+                else if(categoryName.find("_em_") != std::string::npos) header += "e#mu : ";
+                else if(categoryName.find("_ee_") != std::string::npos) header += "ee : ";
+                
+                if(categoryName.find("RunB") != std::string::npos) header += "2017 RunB";
+                else if(categoryName.find("RunC") != std::string::npos) header += "2017 RunC";
+                else if(categoryName.find("RunD") != std::string::npos) header += "2017 RunD";
+                else if(categoryName.find("RunE") != std::string::npos) header += "2017 RunE";
+                else if(categoryName.find("RunF") != std::string::npos) header += "2017 RunF";
+                else( header += "42 fb^{-1}");
+                header += " (13 TeV)";
+
+                col.getPlot(d,c).draw("ewkinoDilep", true, true, header);
             }
         }
     }
@@ -197,16 +214,16 @@ void treeReader::readPlots(){
 }
 
 void treeReader::splitPlots(){
-    histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
-    /*
+    //histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    std::system("touch inputList.txt");
+    std::system("for f in tempHists/*; do echo $f >> inputList.txt; done");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
-        initScript(script);
+        tools::initScript(script);
         script << "./dilepCR plot " << h.name();
         script.close();
-        std::system("qsub printPlots.sh -l walltime=00:30:00");
+        tools::submitScript("printPlots.sh", "00:30:00");
     }
-    */
 }
 
 int main(int argc, char* argv[]){
@@ -218,8 +235,8 @@ int main(int argc, char* argv[]){
     }
     //submit single job if sample and range given
     if(argc == 4){
-        long unsigned begin = std::stoul(argvstr[2]);
-        long unsigned end = std::stoul(argvstr[3]);
+        long unsigned begin = std::stoul(argvStr[2]);
+        long unsigned end = std::stoul(argvStr[3]);
         //sample, first entry, last entry:
         reader.Analyze(argvStr[1], begin, end);
     }
