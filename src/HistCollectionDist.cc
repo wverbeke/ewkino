@@ -73,6 +73,55 @@ void HistCollectionDist::mergeProcesses(){
     collection = mergedCollection; 
 }
 
+std::string HistCollectionDist::name(const size_t categoryIndex) const{
+    return distributionName() + "_" + categoryName(categoryIndex);
+}
+
+std::string HistCollectionDist::plotPath(const size_t categoryIndex) const{
+    std::string path = categoryName(categoryIndex);
+    std::replace(path.begin(), path.end(), '_', '/');
+    if(path.back() != '/') path.append("/");
+    return path;
+}
+
+std::shared_ptr<TH1D> HistCollectionDist::getTotalSideBand(const size_t categoryIndex) const{
+    if(!hasSideBand()){
+        std::cerr<< "Error: requesting totalSideBand for collection without sideband: returning nullptr" << std::endl;
+        return std::shared_ptr<TH1D>(nullptr);
+    }
+    std::shared_ptr<TH1D> totalSideBand = collection.front().access(categoryIndex);
+    for(auto colIt = collection.cbegin() + 1; colIt != collection.cend(); ++colIt){
+        totalSideBand->Add( (colIt->access(categoryIndex)).get() );
+    }
+    //set negative bins to zero
+    setNegativeBinsToZero(totalSideBand);
+    return totalSideBand;
+}
+
+Plot HistCollectionDist::getPlot(const size_t categoryIndex){
+    //merge processes if this did not already happen
+    if(!merged){
+        mergeProcesses();
+        merged = true;
+    }
+    std::shared_ptr<TH1D> obs;                                  //data histogram
+    std::map< std::string, std::shared_ptr<TH1D> > bkgMap;      //background histogram with names
+    for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){
+        if(colIt->isData()){
+            //check whether there was not already a data histogram
+            if( obs.use_count() != 0) std::cerr << "Error: multiple data histograms present in collection, not clear how to make plot" << std::endl;
+            obs = colIt->access(categoryIndex);
+        } else{
+            bkgMap[colIt->sampleProcessName()] = colIt->access(categoryIndex);
+        }        
+    } 
+    //add sideband (nonprompt) to background list if needed
+    if(hasSideBand()){
+        bkgMap["Nonprompt e/#mu"] = getTotalSideBand(categoryIndex);
+    }
+    //return plot initialized with variables computed above
+    return Plot(plotPath(categoryIndex) + name(categoryIndex), obs, bkgMap);
+}
 
 /*
 FileList::FileList(const std::string& directory, const std::string& name): fileName(name){
