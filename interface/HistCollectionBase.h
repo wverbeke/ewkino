@@ -26,7 +26,7 @@ class HistCollectionBase{
     
         std::string infoName() const { return histInfo->name(); }
         std::string sampleFileName() const { return sample->getFileName(); }
-        std::string sampleProcName() const { return sample->getFileName(); }
+        std::string sampleProcessName() const { return sample->getProcessName(); }
         std::string categoryName(size_t categoryIndex) const { return category->name(categoryIndex); }
         std::string categoryName(const std::vector<size_t>& categoryIndices) const { return category->name(categoryIndices); }
         size_t size() const{ return collection.size(); }
@@ -36,6 +36,8 @@ class HistCollectionBase{
         }
         //add two histcollections
         HistCollectionBase& operator+=(const HistCollectionBase& rhs);
+        //set negative bin contents to 0
+        void negBinsToZero() const;
     private:
         std::vector< std::shared_ptr < TH1D > > collection;
         std::vector< std::shared_ptr < TH1D > > sideBand;

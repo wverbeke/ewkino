@@ -33,11 +33,22 @@ HistCollectionBase& HistCollectionBase::operator+=(const HistCollectionBase& rhs
         std::cerr << "Error: attempting to add histCollections of different size: returning *this" << std::endl;
         return *this;
     }
-    if(infoName() != rhs.infoName() || sampleProcName() != rhs.sampleProcName() ){
+    if(infoName() != rhs.infoName() || sampleProcessName() != rhs.sampleProcessName() ){
         std::cerr << "Error: attempting to add histCollections of different distribution or process: returning *this" << std::endl;
         return *this;
     }
     for(size_t h = 0; h < size(); ++h){
         collection[h]->Add( (rhs.collection[h]).get() );
+    }
+    return *this;
+}
+
+void HistCollectionBase::negBinsToZero() const{
+    //loop over all histograms in collection
+    for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){ 
+        //check each bin of the histogram, and set its binContent to 0 if it is negative
+        for(size_t b = 1; b < (*colIt)->GetNbinsX(); ++b){
+            if( (*colIt)->GetBinContent(b) < 0. ) (*colIt)->SetBinContent(b, 0.);
+        }
     }
 }
