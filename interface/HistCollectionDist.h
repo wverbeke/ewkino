@@ -18,8 +18,8 @@ class HistCollectionDist{
         HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const Category&);
         HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const std::vector< std::vector < std::string > >& categoryVec = std::vector< std::vector< std::string > >() );
 
-        Plot getPlot(const size_t categoryIndex); //return plot corresponding to category
-        size_t categorySize() const{ return collection.front().size(); }
+        //output all plots to file, given options will be given to Plot "draw" function
+        void outPutPlots(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, const std::string& header = "", TH1D** bkgSyst = nullptr, const bool* isSMSignal = nullptr, const bool sigNorm = true) const;
     private:
         std::vector< HistCollectionBase > collection;
         std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory
@@ -28,13 +28,13 @@ class HistCollectionDist{
         void negBinsToZero() const;                                     //set negative bin contents to 0
         //make file path for plot depending on category
         std::string plotPath(const size_t categoryIndex) const;
-        //get category name
-        std::string categoryName(size_t categoryIndex) const{ 
-            return collection.front().categoryName(categoryIndex);
-        }
         //get distribution name
         std::string distributionName() const{
             return collection.front().infoName();
+        }
+        //get category name
+        std::string categoryName(size_t categoryIndex) const{ 
+            return collection.front().categoryName(categoryIndex);
         }
         //get name = distribution's name + category's name
         std::string name(const size_t categoryIndex) const;
@@ -44,5 +44,11 @@ class HistCollectionDist{
         bool hasSideBand() const {
             return collection.front().hasSideBand();
         }
+        //amount of categories
+        size_t categorySize() const{ return collection.front().size(); }
+        //return Plot corresponding to categoryIndex
+        Plot getPlot(const size_t categoryIndex);
+        //format plot header, depending on category name
+        std::string plotHeader() const;
 };
 #endif
