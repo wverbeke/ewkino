@@ -23,7 +23,7 @@ class Sample{
         Sample(const std::string& line); 
         Sample(std::istream&); 
         std::string getFileName() const {return fileName;}
-        std::string getProc() const {return process;} 
+        std::string getProcessName() const {return process;} 
         double getXSec() const { return xSec;}
         bool isData() const { return data;}
         std::shared_ptr<TFile> getFile(const std::string&) const;
