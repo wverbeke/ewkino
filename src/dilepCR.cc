@@ -206,7 +206,7 @@ void treeReader::plot(const std::string& distName){
                 header += " (13 TeV)";
                 if(d == 10 && categoryName.find("_mm_") != std::string::npos) continue; //do not plot electronMva for mm category
                 if(d == 11 && categoryName.find("_ee_") != std::string::npos) continue; //do not plot muonSegComp for ee category
-                col.getPlot(c).draw("plots/ewkino", "ewkinoDilep", true, true, header);
+                col.getPlot(c).draw("plots/ewkino/dilepCR", "ewkinoDilep", true, true, header);
                 //col.getPlot(c).draw("ewkinoDilep", true, true, "");
             }
         }
