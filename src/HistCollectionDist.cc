@@ -3,6 +3,8 @@
 //include c++ library classes
 #include <fstream>
 #include <set>
+#include <algorithm>
+
 /*
 HistCollectionDist::HistCollectionDist(const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, const std::shared_ptr < Category >& category){
     for(auto samIt = samples.cbegin(); samIt != samples.cend(); ++samIt){
