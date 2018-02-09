@@ -213,10 +213,6 @@ void treeReader::plot(const std::string& distName){
     }
 }
 
-void treeReader::readPlots(){
-    //histCollection.read("tempHists");
-}
-
 void treeReader::splitPlots(){
     //histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     std::system("touch inputList.txt");
@@ -233,30 +229,13 @@ void treeReader::splitPlots(){
 int main(int argc, char* argv[]){
     treeReader reader;
     reader.setup();
+    //convert all input to std::string format for easier handling
     std::vector<std::string> argvStr;
     for(unsigned i = 0; i < argc; ++i){
         argvStr.push_back(std::string(argv[i]));
     }
-    //submit single job if sample and range given
-    if(argc == 4){
-        long unsigned begin = std::stoul(argvStr[2]);
-        long unsigned end = std::stoul(argvStr[3]);
-        //sample, first entry, last entry:
-        reader.Analyze(argvStr[1], begin, end);
-    }
-    else if(argc > 1 && argvStr[1] == "plot"){
-        reader.readPlots();
-        if(argc > 2){
-            std::string dist(argv[2]);
-            reader.plot(dist);
-        } else{
-            reader.splitPlots();           
-        }
-    }
-    else if(argc > 1 && argvStr[1] == "run"){
-        //Analyze all, or split jobs
-        reader.splitJobs();
-    } else{
+    //no arguments given: full workflow of program
+    if(argc == 1){
         std::cout << "Step 1: Distributing jobs on T2 grid" << std::endl;
         reader.splitJobs();
         std::cout << "Step 2: sleeping until jobs are finished" << std::endl;
@@ -267,6 +246,29 @@ int main(int argc, char* argv[]){
         std::cout << "Step 3: submitting plot jobs" << std::endl;
         reader.splitPlots();
         std::cout << "Program closing, plots will be dumped in specified directory soon" << std::endl;
+    } 
+    //single argument "run" given will do all computations and write output histograms to file
+    else if(argc == 2 && argvStr[1] == "run"){
+        reader.splitJobs();
+    }
+    //single argument "plot" given will submit all jobs for plotting from existing output files
+    else if(argc == 2 && argvStr[1] == "plot"){
+        reader.splitPlots();           
+    }
+    //arguments "plot" and distribution name given plots just this particular distribution
+    else if(argc == 3 && argvStr[1] == "plot"){
+        reader.plot(argvStr[2]);
+    }
+    //submit single histogram computation job
+    else if(argc == 4){
+        long unsigned begin = std::stoul(argvStr[2]);
+        long unsigned end = std::stoul(argvStr[3]);
+        //sample, first entry, last entry:
+        reader.Analyze(argvStr[1], begin, end);
+    }
+    //invalid input given
+    else{
+        std::cerr << "Invalid input given to program: terminating!" << std::endl;
     }
     return 0;
 }

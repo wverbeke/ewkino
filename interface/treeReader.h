@@ -13,7 +13,7 @@
 //include other parts of code
 #include "Reweighter.h"
 #include "Sample.h"
-#include "HistCollection.h"
+#include "HistInfo.h"
 
 class treeReader {
     public :
@@ -214,7 +214,6 @@ class treeReader {
         void Loop(const std::string& sample, const double xSection);
 
         //new functions for parallel plotting
-        void readPlots();
         void plot(const std::string&);
         void splitPlots();
 
@@ -268,7 +267,6 @@ class treeReader {
         std::shared_ptr<TFile> sampleFile;                                      //current sample
         std::vector<Sample> samples;                                            //list of samples
         std::vector<HistInfo> histInfo;                                         //histogram info
-        HistCollection histCollection;                                          //collection of histograms
         int currentSample = -1;                                                 //current index in list
         bool isData = false;
         double scale = 0;
