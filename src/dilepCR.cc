@@ -20,6 +20,8 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 #include "../interface/ewkinoTools.h"
+#include "../interface/HistCollectionSample.h"
+#include "../interface/HistCollectionDist.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -63,7 +65,7 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
     //set up histogram collection for particular sample
-    HistCollectionSample histCollection = HistCollectionSample(histInfo, std::make_shared<Sample>(samp), { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    HistCollectionSample histCollection(histInfo, samp, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 
     //read pu weights for every period
     TFile* puFile = TFile::Open("weights/puWeights2017.root");
@@ -73,11 +75,11 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         puWeights[e] = (TH1D*) puFile->Get( (const TString&) "puw_Run" + eras[e]);
     }
 
-    const unsigned nDist = histCollection.infoRange();
-    const unsigned nRuns = histCollection.catRange(0);
-    const unsigned nFlav = histCollection.catRange(1);
-    const unsigned nJetCat = histCollection.catRange(2);
-    const unsigned nPuRew = histCollection.catRange(3);
+    const unsigned nDist = histInfo.size();
+    const unsigned nRuns = histCollection.categoryRange(0);
+    const unsigned nFlav = histCollection.categoryRange(1);
+    const unsigned nJetCat = histCollection.categoryRange(2);
+    const unsigned nPuRew = histCollection.categoryRange(3);
 
     initSample(samp, 1);  //use 2017 lumi
     for(long unsigned it = begin; it < end; ++it){
@@ -114,7 +116,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         unsigned run;
         run = ewk::runPeriod(_runNb) + 1 - 1; //reserve 0 for inclusive // -1 because we start at run B 
         //max pu to extract
-        float max = (run == 0 || run > 3) ? 70 : 60;
+        float max = (run == 0 || run > 3) ? 80 : 80;
+        //float max = 100;
         //loop over leading leptons
         for(unsigned l = 0; l < 2; ++l){
             double fill[12] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _leptonMvaSUSY[ind[l]], _leptonMvaTTH[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsvV2[ind[l]], (double) _selectedTrackMult[ind[l]], (_lFlavor[ind[l]] == 0) ? _lElectronMva[ind[l]] : 0,  (_lFlavor[ind[l]] == 1) ? _lMuonSegComp[ind[l]] : 0};
@@ -164,7 +167,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 }
 
 void treeReader::splitJobs(){
-    histCollection = HistCollection(histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"flavorInclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
         for(long unsigned it = 0; it < nEntries; it+=1000000){
@@ -182,12 +184,13 @@ void treeReader::splitJobs(){
 }
 
 void treeReader::plot(const std::string& distName){
-    //readPlots();
-    histCollection = HistCollection("inputList.txt", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
-    HistCollection col = histCollection.mergeProcesses();    
-    for(unsigned d = 0; d < histInfo.size(); ++d){
-        if(histInfo[d].name() == distName){
-            for(unsigned c = 0; c < col.catSize(); ++c){
+    //loop over all distributions and find the one to plot
+    for(auto& info: histInfo){
+        if(info.name() == distName){
+            //read collection for this distribution from files
+            HistCollectionDist col("inputList.txt", info, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            for(unsigned c = 0; c < col.categorySize(); ++c){
+                /*
                 std::string header;
                 std::string categoryName = col[0].catName(c);
 
@@ -195,15 +198,18 @@ void treeReader::plot(const std::string& distName){
                 else if(categoryName.find("_em_") != std::string::npos) header += "e#mu : ";
                 else if(categoryName.find("_ee_") != std::string::npos) header += "ee : ";
                 
-                if(categoryName.find("RunB") != std::string::npos) header += "2017 RunB";
-                else if(categoryName.find("RunC") != std::string::npos) header += "2017 RunC";
-                else if(categoryName.find("RunD") != std::string::npos) header += "2017 RunD";
-                else if(categoryName.find("RunE") != std::string::npos) header += "2017 RunE";
-                else if(categoryName.find("RunF") != std::string::npos) header += "2017 RunF";
+                if(categoryName.find("RunB") != std::string::npos) header += "2017 Run B";
+                else if(categoryName.find("RunC") != std::string::npos) header += "2017 Run C";
+                else if(categoryName.find("RunD") != std::string::npos) header += "2017 Run D";
+                else if(categoryName.find("RunE") != std::string::npos) header += "2017 Run E";
+                else if(categoryName.find("RunF") != std::string::npos) header += "2017 Run F";
                 else( header += "42 fb^{-1}");
                 header += " (13 TeV)";
-
-                col.getPlot(d,c).draw("ewkinoDilep", true, true, header);
+                if(d == 10 && categoryName.find("_mm_") != std::string::npos) continue; //do not plot electronMva for mm category
+                if(d == 11 && categoryName.find("_ee_") != std::string::npos) continue; //do not plot muonSegComp for ee category
+                col.getPlot(c).draw("ewkinoDilep", true, true, header);
+                */
+                col.getPlot(c).draw("ewkinoDilep", true, true, "");
             }
         }
     }

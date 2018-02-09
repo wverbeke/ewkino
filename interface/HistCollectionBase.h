@@ -41,6 +41,8 @@ class HistCollectionBase{
         bool hasSideBand() const { return ! (sideBand.empty()); }
         //check if this is a data collection
         bool isData() const { return sample->isData(); }
+        //range for every categorization
+        size_t categoryRange(const size_t c) const { return category->getRange(c); }
     private:
         std::vector< std::shared_ptr < TH1D > > collection;
         std::vector< std::shared_ptr < TH1D > > sideBand;
