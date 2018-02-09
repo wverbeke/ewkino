@@ -185,14 +185,13 @@ void treeReader::splitJobs(){
 
 void treeReader::plot(const std::string& distName){
     //loop over all distributions and find the one to plot
-    for(auto& info: histInfo){
-        if(info.name() == distName){
+    for(size_t d = 0; d < histInfo.size(); ++d){
+        if(histInfo[d].name() == distName){
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", info, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
             for(unsigned c = 0; c < col.categorySize(); ++c){
-                /*
                 std::string header;
-                std::string categoryName = col[0].catName(c);
+                std::string categoryName = col.categoryName(c);
 
                 if(categoryName.find("_mm_") != std::string::npos) header += "#mu#mu : ";
                 else if(categoryName.find("_em_") != std::string::npos) header += "e#mu : ";
@@ -207,9 +206,8 @@ void treeReader::plot(const std::string& distName){
                 header += " (13 TeV)";
                 if(d == 10 && categoryName.find("_mm_") != std::string::npos) continue; //do not plot electronMva for mm category
                 if(d == 11 && categoryName.find("_ee_") != std::string::npos) continue; //do not plot muonSegComp for ee category
-                col.getPlot(c).draw("ewkinoDilep", true, true, header);
-                */
-                col.getPlot(c).draw("ewkinoDilep", true, true, "");
+                col.getPlot(c).draw("plots/ewkino", "ewkinoDilep", true, true, header);
+                //col.getPlot(c).draw("ewkinoDilep", true, true, "");
             }
         }
     }

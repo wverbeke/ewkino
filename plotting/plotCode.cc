@@ -378,8 +378,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     line.Draw("same");
 
     //save canvas to file
-    c->SaveAs((const TString&) "plots/" + file + ".pdf");
-    c->SaveAs((const TString&) "plots/" + file + ".png");
+    c->SaveAs((const TString&) file + ".pdf");
+    c->SaveAs((const TString&) file + ".png");
     
     //Clean up memory 
     delete dataGraph;
