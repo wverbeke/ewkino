@@ -257,7 +257,16 @@ int main(int argc, char* argv[]){
         //Analyze all, or split jobs
         reader.splitJobs();
     } else{
-        std::cerr << "no valid input given" << std::endl;
+        std::cout << "Step 1: Distributing jobs on T2 grid" << std::endl;
+        reader.splitJobs();
+        std::cout << "Step 2: sleeping until jobs are finished" << std::endl;
+        if(tools::runningJobs()) std::cout << "jobs are running!" << std::endl;
+        while(tools::runningJobs()){
+            tools::sleep(60);
+        }
+        std::cout << "Step 3: submitting plot jobs" << std::endl;
+        reader.splitPlots();
+        std::cout << "Program closing, plots will be dumped in specified directory soon" << std::endl;
     }
     return 0;
 }

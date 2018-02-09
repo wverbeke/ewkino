@@ -130,6 +130,10 @@ std::ostream& tools::initScript(std::ostream& os){
      return os;
 }
 
+void tools::sleep(unsigned seconds){
+    std::this_thread::sleep_for(std::chrono::milliseconds(seconds*1000));
+}
+
 //submit script as cluster job and catch errors
 void tools::submitScript(const std::string& scriptName, const std::string& walltimeString){
     //as long as submission failed, sleep and try again
@@ -150,34 +154,23 @@ void tools::submitScript(const std::string& scriptName, const std::string& wallt
         //sleep for 2 seconds before attempting resubmission
         if(!submitted){
            std::cerr << "submission failed: reattempting submission" << std::endl;
-           std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+           sleep(2);
         }
     } while(!submitted);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//check whether there are running jobs
+bool tools::runningJobs(){
+    //pipe qstat output to temporary txt file
+    std::system("qstat -u$USER > runningJobs.txt");
+    std::ifstream jobFile("runningJobs.txt");
+    std::string line;
+    while(std::getline(jobFile, line)){
+        if(line.find("cream02") != std::string::npos){
+            std::system("rm runningJobs.txt");
+            return true;
+        }
+    }
+    std::system("rm runningJobs.txt");
+    return false;
+}

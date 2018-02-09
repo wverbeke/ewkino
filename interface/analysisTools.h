@@ -27,7 +27,11 @@ namespace tools{
     }
     //initialize a submission script
     std::ostream& initScript(std::ostream&);
+    //sleep for x seconds
+    void sleep(unsigned);
     //submit script of given name and catch submission errors
     void submitScript(const std::string&, const std::string&); 
+    //check whether there are running jobs
+    bool runningJobs();
 }
 #endif
