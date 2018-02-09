@@ -21,6 +21,8 @@ class HistCollectionSample{
         }
         //write histograms to ROOT files in given directory, begin and end indicate the event numbers stored in this file
         void store(const std::string&, const long unsigned begin = 0, const long unsigned end = 0) const;
+        //get range of each category
+        size_t categoryRange(const size_t c) const { return collection.front().categoryRange(c); }
     private:
         std::vector < HistCollectionBase > collection;
         std::string sampleFileName() const{
