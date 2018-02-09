@@ -59,7 +59,7 @@ void HistCollectionDist::mergeProcesses(){
         //check if this process is used 
         if(usedProcesses.find( colIt->sampleProcessName() ) != usedProcesses.end() ) continue;
         //add process to merged collection
-        mergedCollection.push_back(collection[0]);
+        mergedCollection.push_back(*colIt);
         usedProcesses.insert(colIt->sampleProcessName());
         //merge all collections containing this process
         for(auto mergeIt = colIt + 1; mergeIt != collection.cend(); ++mergeIt){

@@ -30,7 +30,7 @@ class HistCollectionBase{
         std::string categoryName(const std::vector<size_t>& categoryIndices) const { return category->name(categoryIndices); }
         //full name of every histogram
         std::string name(size_t categoryIndex, const bool sideband = false) const{
-            return histInfo->name() + category->name(categoryIndex) + (sideband ? "sideband" : "");
+            return histInfo->name() + category->name(categoryIndex) + (sideband ? "sideband" : "") + sample->getFileName();
         }
         size_t size() const{ return collection.size(); }
         //add two histcollections

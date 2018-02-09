@@ -33,6 +33,7 @@ class HistCollectionDist{
         */
         //HistCollectionBase& operator[](size_t sampleIndex) const{ return collection[sampleIndex]; }
         Plot getPlot(const size_t categoryIndex); //return plot corresponding to category
+        size_t categorySize() const{ return collection.front().size(); }
     private:
         std::vector< HistCollectionBase > collection;
         std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory

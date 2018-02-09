@@ -52,10 +52,12 @@ HistCollectionBase& HistCollectionBase::operator+=(const HistCollectionBase& rhs
     }
     if(infoName() != rhs.infoName() || sampleProcessName() != rhs.sampleProcessName() ){
         std::cerr << "Error: attempting to add histCollections of different distribution or process: returning *this" << std::endl;
+        std::cerr << "infoName() = " << infoName() << "\t" << "sampleProcessName() = " << sampleProcessName() << std::endl;
+        std::cerr << "rhs.infoName() = " << rhs.infoName() << "\t" << "rhs.sampleProcessName() = " << rhs.sampleProcessName() << std::endl;
         return *this;
     }
     if(hasSideBand() && !rhs.hasSideBand() ){
-        std::cerr << "Error: attempting to add histcollection with sideband to one without sideband: returhing *this" << std::endl;
+        std::cerr << "Error: attempting to add histcollection with sideband to one without sideband: returning *this" << std::endl;
         return *this;
     }
     for(size_t h = 0; h < size(); ++h){
