@@ -6,6 +6,19 @@ HistCollectionSample::HistCollectionSample(const std::vector< std::shared_ptr< H
     }
 }
 
+HistCollectionSample::HistCollectionSample(const std::vector< HistInfo>& infoList, const Sample& sam, const Category& cat){
+    std::shared_ptr< Category > categoryPointer = std::make_shared<Category>(cat);
+    std::shared_ptr< Sample > samplePointer = std::make_shared<Sample>(sam);
+    std::vector < std::shared_ptr< HistInfo > > infoPointerList;
+    for(auto& info: infoList){
+        infoPointerList.push_back(std::make_shared< HistInfo >(info) );
+    }
+    *this = HistCollectionSample(infoPointerList, samplePointer, categoryPointer);
+}
+
+HistCollectionSample::HistCollectionSample(const std::vector< HistInfo>& infoList, const Sample& sam, const std::vector< std::vector < std::string > >& categoryVec):
+    HistCollectionSample(infoList, sam, Category(categoryVec)) {} 
+
 void HistCollectionSample::store(const std::string& directory, const long unsigned begin, const long unsigned end) const{
     //extra string indicating event numbers when sample is split in multiple jobs
     std::string extra("");

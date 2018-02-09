@@ -13,6 +13,8 @@ class HistCollectionSample{
     public:
         //direct initialization:
         HistCollectionSample(const std::vector< std::shared_ptr< HistInfo > >&, const std::shared_ptr< Sample >&, const std::shared_ptr< Category >&);
+        HistCollectionSample(const std::vector< HistInfo>&, const Sample&, const Category&);
+        HistCollectionSample(const std::vector< HistInfo>&, const Sample&, const std::vector< std::vector < std::string > >& categoryVec = std::vector< std::vector < std::string > >());
         //access histograms
         std::shared_ptr< TH1D > access(const size_t infoIndex, const std::vector<size_t>& categoryIndices, const bool sb = false) const{ 
             return collection[infoIndex].access(categoryIndices, sb);
