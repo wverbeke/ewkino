@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= src/Plot.cc src/Category.cc src/Sample.cc src/HistCollection.cc src/treeReader.cc src/dilepCR.cc src/analysisTools.cc src/eventSelection.cc src/ewkinoTools.cc plotting/plotCode.cc plotting/tdrStyle.cc
+SOURCES= src/Plot.cc src/Category.cc src/Sample.cc src/HistCollectionBase.cc src/HistCollectionSample.cc src/HistCollectionDist.cc src/treeReader.cc src/dilepCR.cc src/analysisTools.cc src/eventSelection.cc src/ewkinoTools.cc plotting/plotCode.cc plotting/tdrStyle.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= dilepCR
 
