@@ -3,12 +3,13 @@
 //include c++ library classes
 #include <fstream>
 #include <set>
-
+/*
 HistCollectionDist::HistCollectionDist(const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, const std::shared_ptr < Category >& category){
     for(auto samIt = samples.cbegin(); samIt != samples.cend(); ++samIt){
         collection.push_back(HistCollectionBase(histInfo, *samIt, category) );
     }
 }
+*/
 
 HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, const std::shared_ptr < Category >& category){
     std::vector<std::string> fileNameList = getFileNames(fileList);
@@ -28,6 +29,21 @@ HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::s
         }        
     }
 }
+
+
+HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const Category& category){
+    std::shared_ptr<HistInfo> infoPointer;
+    std::shared_ptr<Category> categoryPointer;
+    std::vector < std::shared_ptr< Sample > > samplePointerList;
+    for(auto& sam: samples){
+        samplePointerList.push_back(std::make_shared< Sample >( sam ) );        
+    }
+    *this = HistCollectionDist(fileList, infoPointer, samplePointerList, categoryPointer);
+}
+
+HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const std::vector< std::vector < std::string > >& categoryVec): 
+    HistCollectionDist(fileList, histInfo, samples, Category(categoryVec) ) {}
+
 
 std::vector<std::string> HistCollectionDist::getFileNames(const std::string& fileName){
     std::vector<std::string> fileList;
@@ -122,20 +138,3 @@ Plot HistCollectionDist::getPlot(const size_t categoryIndex){
     //return plot initialized with variables computed above
     return Plot(plotPath(categoryIndex) + name(categoryIndex), obs, bkgMap);
 }
-
-/*
-FileList::FileList(const std::string& directory, const std::string& name): fileName(name){
-    //list files and pipe to output
-    std::system("ls " + directory + " > " + fileName);
-    file = std::ifstream(fileName); 
-}
-
-FileList::~FileList(){
-    file.close();
-    std::remove(fileName);
-}
-
-bool FileList::getNextFileName(std::string& name){
-    return std::getLine(fileName, name);
-} 
-*/

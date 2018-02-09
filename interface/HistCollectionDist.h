@@ -12,26 +12,12 @@
 class HistCollectionDist{
     public:
         //direct initialization
-        HistCollectionDist(const std::shared_ptr<HistInfo>&, const std::vector< std::shared_ptr< Sample > >&, const std::shared_ptr< Category >&);
+        //HistCollectionDist(const std::shared_ptr<HistInfo>&, const std::vector< std::shared_ptr< Sample > >&, const std::shared_ptr< Category >&);
         //initialize by reading histograms from directory (given as string) :
         HistCollectionDist(const std::string&, const std::shared_ptr< HistInfo >&, const std::vector< std::shared_ptr< Sample > >&, const std::shared_ptr< Category >&);
-        /*
-        std::shared_ptr< TH1D > access(size_t sampleIndex, const std::vector< size_t>& categoryIndices, const bool sb = false) const {
-            return collection[sampleIndex].access(categoryIndices, sb);
-        }
-        */
-        /* 
-        std::string categoryName(const std::vector<size_t>& categoryIndices) const{ 
-            return collection.front.categoryName(categoryIndices);
-        }
-        std::string sampleFileName(size_t sampleIndex) const{
-            return collection[sampleIndex].sampleFileName();
-        }
-        std::string sampleProcName(size_t sampleIndex) const{
-            return collection[sampleIndex].procName();
-        }
-        */
-        //HistCollectionBase& operator[](size_t sampleIndex) const{ return collection[sampleIndex]; }
+        HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const Category&);
+        HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const std::vector< std::vector < std::string > >& categoryVec = std::vector< std::vector< std::string > >() );
+
         Plot getPlot(const size_t categoryIndex); //return plot corresponding to category
         size_t categorySize() const{ return collection.front().size(); }
     private:
@@ -59,20 +45,4 @@ class HistCollectionDist{
             return collection.front().hasSideBand();
         }
 };
-
-/*
-//simple helper class to make list of output files
-class fileList{
-    public:
-        fileList(const std::string&, const std::string&);
-        fileList(const std::string& directory): fileList(directory, "fileList.txt");
-        ~fileList();
-
-        bool getNextFileName(std::string&);
-    private:
-        std::string fileName;
-        std::ifstream& file;
-
-};
-*/
 #endif
