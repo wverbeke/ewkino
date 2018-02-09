@@ -32,8 +32,8 @@ HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::s
 
 
 HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const Category& category){
-    std::shared_ptr<HistInfo> infoPointer;
-    std::shared_ptr<Category> categoryPointer;
+    std::shared_ptr<HistInfo> infoPointer = std::make_shared<HistInfo>(histInfo);
+    std::shared_ptr<Category> categoryPointer = std::make_shared<Category>(category);
     std::vector < std::shared_ptr< Sample > > samplePointerList;
     for(auto& sam: samples){
         samplePointerList.push_back(std::make_shared< Sample >( sam ) );        
