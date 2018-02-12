@@ -9,12 +9,17 @@ cd ewkino
 mkdir -p dilepCR
 cd dilepCR
 #make directories for every run
+
 for dir in all2017 RunA RunB RunC RunD RunE RunF
     do mkdir -p $dir
 done
 for dir in ./*
     do for subdir in inclusive ee em mm
-        do mkdir -p $dir/$subdir
+        do for jetDir in nJetsInclusive 1pt40Jet
+            do for puDir in noPuW PuW
+                do mkdir -p $dir/$subdir/${jetDir}/${puDir}
+            done
+        done
     done
 done
 cd ../..
