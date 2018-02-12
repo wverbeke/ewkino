@@ -221,7 +221,7 @@ int main(int argc, char* argv[]){
         reader.splitJobs();
         std::cout << "Step 2: sleeping until jobs are finished" << std::endl;
         if(tools::runningJobs()) std::cout << "jobs are running!" << std::endl;
-        while(tools::runningJobs()){
+        while(tools::runningJobs("runTuples.sh")){
             tools::sleep(60);
         }
         std::cout << "Step 3: submitting plot jobs" << std::endl;

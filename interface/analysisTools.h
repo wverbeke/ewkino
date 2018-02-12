@@ -32,6 +32,8 @@ namespace tools{
     //submit script of given name and catch submission errors
     void submitScript(const std::string&, const std::string&); 
     //check whether there are running jobs
-    bool runningJobs();
+    bool runningJobs(const std::string& jobName = "");
+    //get current directory
+    std::string currentDirectory();
 }
 #endif

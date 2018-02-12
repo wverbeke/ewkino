@@ -127,6 +127,7 @@ std::ostream& tools::initScript(std::ostream& os){
      os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
      os << "eval \\`scram runtime -sh\\` \n";
      os << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
+     os << "cd " << currentDirectory() << "\n";     //go back to directory from where job was submitted 
      return os;
 }
 
@@ -160,17 +161,43 @@ void tools::submitScript(const std::string& scriptName, const std::string& wallt
 }
 
 //check whether there are running jobs
-bool tools::runningJobs(){
+bool tools::runningJobs(const std::string& jobName){
+    std::string job;
+    //if jobname is not specified, look for any running job:
+    if(jobName == ""){
+        job = "cream02";
+    }
+    //if the jobname is specified limit it to the last 10 characters, since qstat will not display all
+    else{
+        job = std::string(jobName);
+        job = std::string(job.cend() - 11, job.cend());
+    }
     //pipe qstat output to temporary txt file
     std::system("qstat -u$USER > runningJobs.txt");
     std::ifstream jobFile("runningJobs.txt");
     std::string line;
     while(std::getline(jobFile, line)){
-        if(line.find("cream02") != std::string::npos){
+        if(line.find(job) != std::string::npos){
             std::system("rm runningJobs.txt");
             return true;
         }
     }
     std::system("rm runningJobs.txt");
     return false;
+}
+
+//return current working directory as string
+std::string tools::currentDirectory(){
+    static std::string directory = ""; 
+    //if the current directory is not determined yet interact with terminal to retrieve it
+    if(directory == ""){
+        std::system("echo $PWD > directory.txt");
+        std::ifstream directoryFile("directory.txt");
+        std::getline(directoryFile, directory);
+        directoryFile.close();
+        std::system("rm directory.txt");
+        //clean up spaces in resulting string
+        cleanSpaces(directory);
+    }
+    return directory;
 }
