@@ -46,7 +46,7 @@ void treeReader::initSample(const Sample& samp, const unsigned period){  //0 = 2
 }
 
 void treeReader::initSample(const unsigned period){ //initialize the next sample in the list 
-    initSample(samples[++currentSample]);
+    initSample(samples[++currentSample], period);
 }
 
 void treeReader::GetEntry(const Sample& samp, long unsigned entry)

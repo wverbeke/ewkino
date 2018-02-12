@@ -20,7 +20,7 @@ class HistCollectionDist{
 
         //output all plots to file, given options will be given to Plot "draw" function
         //function is non-const because histogram merge might be called before plotting
-        void printPlots(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, const std::string& header = "", TH1D** bkgSyst = nullptr, const bool* isSMSignal = nullptr, const bool sigNorm = true); 
+        void printPlots(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, TH1D** bkgSyst = nullptr, const bool* isSMSignal = nullptr, const bool sigNorm = true); 
     private:
         std::vector< HistCollectionBase > collection;
         std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory

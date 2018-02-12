@@ -15,7 +15,7 @@ HistCollectionDist::HistCollectionDist(const std::shared_ptr < HistInfo >& histI
 
 HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, const std::shared_ptr < Category >& category){
     std::vector<std::string> fileNameList = getFileNames(fileList);
-    for(auto s = 0; s < samples.size(); ++s){
+    for(size_t s = 0; s < samples.size(); ++s){
         bool firstFile = true; //check whether file is first for given sample
         for(auto fileIt = fileNameList.cbegin(); fileIt != fileNameList.cend(); ++fileIt){
             //find the correct sample corresponding to the current file
@@ -164,7 +164,7 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex) const{
 }
 
 
-void HistCollectionDist::printPlots(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal, const bool sigNorm){
+void HistCollectionDist::printPlots(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool* isSMSignal, const bool sigNorm){
     //loop over all categories and output a plot for each one
     for(size_t c = 0; c < categorySize(); ++c){
         //print plot

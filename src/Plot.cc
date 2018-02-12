@@ -21,5 +21,5 @@ void Plot::draw(const std::string& outputDirectory, const std::string& analysis,
     }
     std::string outputDir(outputDirectory);
     if(outputDir.back() != '/') outputDir.append("/");
-    plotDataVSMC(data.get(), &bkgHist[0], &names[0], bkgHist.size(), outputDir + fileName, analysis, log, normToData, header, nullptr, nullptr, nullptr, nullptr, 0, true);
+    plotDataVSMC(data.get(), &bkgHist[0], &names[0], bkgHist.size(), outputDir + fileName, analysis, log, normToData, header, bkgSyst, isSMSignal, nullptr, nullptr, 0, sigNorm);
 }

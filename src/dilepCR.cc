@@ -189,7 +189,7 @@ void treeReader::plot(const std::string& distName){
             //read collection for this distribution from files
             HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
             //print plots for collection
-            col.printPlots("plots/ewkino/dilepCR", "ewkinoDilep", true, true, "");
+            col.printPlots("plots/ewkino/dilepCR", "ewkinoDilep", true, true);
         }
     }
 }
