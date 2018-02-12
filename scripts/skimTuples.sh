@@ -18,13 +18,8 @@ skimSample(){                                           #function to skim one sa
     count=0                                             #file counter
     files=${1}/*/*/*root
     for f in $files
-        do if (( $count % 50 == 0))
-            then qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
-            while grep "Invalid credential" ~/temp.txt; do
-                echo "resubmit"
-                qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
-            done 
-            cat ~/temp.txt
+        do if (( $count % 50 == 0)); then
+            submitJob $submit
             makeSubmit $submit $2
         fi
         #filename=${f##*/}                               
@@ -33,13 +28,7 @@ skimSample(){                                           #function to skim one sa
         echo "${cwd}/../skimTree $f $outputDir/ > ${outputDir}/${filename}_log.txt 2> ${outputDir}/${filename}_err.txt" >> $submit
         count=$((count+1))
     done
-    qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
-    while grep "Invalid credential" ~/temp.txt; do
-        echo "resubmit"
-        qsub $submit -l walltime=04:00:00 > ~/temp.txt 2>> ~/temp.txt
-    done 
-    cat ~/temp.txt
-    rm ~/temp.txt
+    submitJob $submit
     rm $submit                                          #remove temporary submit file
 }
 
