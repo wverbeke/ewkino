@@ -77,7 +77,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
     const unsigned nDist = histInfo.size();
     const unsigned nRuns = histCollection.categoryRange(0);
-    const unsigned nFlav = histCollection.categoryRange(1);
     const unsigned nJetCat = histCollection.categoryRange(2);
     const unsigned nPuRew = histCollection.categoryRange(3);
 
@@ -212,7 +211,7 @@ int main(int argc, char* argv[]){
     reader.setup();
     //convert all input to std::string format for easier handling
     std::vector<std::string> argvStr;
-    for(unsigned i = 0; i < argc; ++i){
+    for(int i = 0; i < argc; ++i){
         argvStr.push_back(std::string(argv[i]));
     }
     //no arguments given: full workflow of program

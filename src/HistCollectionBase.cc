@@ -71,7 +71,7 @@ HistCollectionBase& HistCollectionBase::operator+=(const HistCollectionBase& rhs
 
 void setNegativeBinsToZero(const std::shared_ptr<TH1D>& h){
     //check each bin of the histogram, and set its binContent to 0 if it is negative
-    for(unsigned b = 1; b < h->GetNbinsX() + 1; ++b){
+    for(int b = 1; b < h->GetNbinsX() + 1; ++b){
         if(h->GetBinContent(b) < 0.) h->SetBinContent(b, 0.);
     }
 }

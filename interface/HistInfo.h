@@ -27,6 +27,6 @@ class HistInfo{
         unsigned nBins;
         double xMin, xMax;
         double maxBinC;
-        double setMaxBinCenter() { maxBinC = xMax - 0.5*(xMax - xMin)/nBins; }
+        void setMaxBinCenter() { maxBinC = xMax - 0.5*(xMax - xMin)/nBins; }
 };
 #endif

@@ -1,6 +1,6 @@
 #include "../interface/Sample.h"
 
-bool Sample::setData(){
+void Sample::setData(){
     data = false;
     static std::vector<std::string> dataNames = {"data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG"};
     for(auto it = dataNames.cbegin(); it != dataNames.cend(); ++it){

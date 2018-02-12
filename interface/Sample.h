@@ -28,7 +28,7 @@ class Sample{
         bool isData() const { return data;}
         std::shared_ptr<TFile> getFile(const std::string&) const;
     private:
-        bool setData(); 
+        void setData(); 
         std::string fileName;
         std::string process;
         double xSec;
