@@ -63,6 +63,7 @@ Color_t bkgColorEWK(const std::string& bkgName){
     else if(bkgName == "triboson") return kRed + 1;
     else if(bkgName == "X + #gamma") return kOrange + 7;
     else if(bkgName == "T + X") return kCyan + 1;
+    else return kBlack;
 }
 
 Color_t bkgColorEWKDilept(const std::string bkgName){
@@ -138,7 +139,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
     //Replace data by TGRaphAsymmErrors for plotting
     TGraphAsymmErrors* dataGraph = new TGraphAsymmErrors(data);
-    for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
+    for(int b = 1; b < data->GetNbinsX() + 1; ++b){
         dataGraph->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b), (data->GetBinContent(b) == 0 ) ? 0 : data->GetBinErrorUp(b) );
     }
 
@@ -175,7 +176,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     for(unsigned h = 0; h < nBkg; ++h){
         bkgE[h] = (TH1D*) bkg[h]->Clone(); //CHECK WHETHER THIS IS MEMORY SAFE
         if(bkgSyst != nullptr){
-            for(unsigned bin = 1; bin < bkgE[h]->GetNbinsX() + 1; ++bin){
+            for(int bin = 1; bin < bkgE[h]->GetNbinsX() + 1; ++bin){
                 bkgE[h]->SetBinError(bin, sqrt(bkgE[h]->GetBinError(bin)*bkgE[h]->GetBinError(bin) + bkgSyst[h]->GetBinContent(bin)*bkgSyst[h]->GetBinContent(bin)) );
             }
         }
@@ -200,7 +201,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     for(unsigned h = 0; h < nBkg; ++h){
         legend.AddEntry(bkgE[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
     }
-    legend.AddEntry(bkgTotE, "total bkg. unc.", "f"); //add total background uncertainty to legend
+    legend.AddEntry(bkgTotE, "Total bkg. unc.", "f"); //add total background uncertainty to legend
 
     //add signal to legend if plotting signal
     if(signal != nullptr){
@@ -257,12 +258,12 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     if(!ylog){
         bkgTotE->SetMaximum(totalMax*1.3);
         //hack not to draw 0 observed event points
-        for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
+        for(int b = 1; b < data->GetNbinsX() + 1; ++b){
             if(dataGraph->GetY()[b - 1] == 0)  dataGraph->GetY()[b - 1] += totalMax*10;
         }
     } else{
         double minimum = totalMax; //find pad minimum when plotting on a log scale
-        for(unsigned b = 1; b < bkgTotE->GetNbinsX() + 1; ++b){
+        for(int b = 1; b < bkgTotE->GetNbinsX() + 1; ++b){
             if(bkgTotE->GetBinContent(b) != 0 && bkgTotE->GetBinContent(b) < minimum){
                 minimum = bkgTotE->GetBinContent(b);
             }
@@ -271,7 +272,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         bkgTotE->SetMinimum(minimum/5.);
         bkgTotE->SetMaximum(totalMax*3*SF);
         //hack not to draw 0 observed event points
-        for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
+        for(int b = 1; b < data->GetNbinsX() + 1; ++b){
            if(data->GetBinContent(b) == 0)  dataGraph->GetY()[b - 1] += totalMax*30*SF;
         }
     }			
@@ -332,7 +333,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
     //make TGraph asymmErros to plot data with the correct uncertainties
     TGraphAsymmErrors* obsRatio = new TGraphAsymmErrors(data);
-    for(unsigned b = 1; b < data->GetNbinsX() + 1; ++b){
+    for(int b = 1; b < data->GetNbinsX() + 1; ++b){
         obsRatio->GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
         obsRatio->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), data->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
         if(data->GetBinContent(b) == 0) obsRatio->GetY()[b - 1] += 5;
@@ -342,9 +343,9 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     TLegend legend2 = TLegend(0.18,0.85,0.8,0.98,NULL,"brNDC");
     legend2.SetNColumns(3); 
     legend2.SetFillStyle(0); //avoid legend box 
-    legend2.AddEntry(bkgStatErrors, "stat. pred. unc.", "f");
-    legend2.AddEntry(bkgErrors, "total pred. unc.", "f");
-    legend2.AddEntry(obsRatio, "obs./pred.", "pe12");
+    legend2.AddEntry(bkgStatErrors, "Stat. pred. unc.", "f");
+    legend2.AddEntry(bkgErrors, "Total pred. unc.", "f");
+    legend2.AddEntry(obsRatio, "Obs./Pred.", "pe12");
 
     /*
     We will set up the range and label sizes of the plot using bkgErros. As such this histogram always has to be 
@@ -353,7 +354,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgErrors->SetMarkerColor(1);
     bkgErrors->SetLineColor(1);
     bkgErrors->GetYaxis()->SetRangeUser(0.,1.999);
-    bkgErrors->GetYaxis()->SetTitle("obs./pred.");
+    bkgErrors->GetYaxis()->SetTitle("Obs./Pred.");
     bkgErrors->GetYaxis()->SetTitleOffset(1.25/((1.-xPad)/xPad));
     bkgErrors->GetYaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
     bkgErrors->GetXaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
@@ -378,8 +379,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     line.Draw("same");
 
     //save canvas to file
-    c->SaveAs((const TString&) "plots/" + file + ".pdf");
-    c->SaveAs((const TString&) "plots/" + file + ".png");
+    c->SaveAs((const TString&) file + ".pdf");
+    c->SaveAs((const TString&) file + ".png");
     
     //Clean up memory 
     delete dataGraph;

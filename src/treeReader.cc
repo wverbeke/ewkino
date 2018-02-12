@@ -13,45 +13,53 @@ treeReader::treeReader(TTree *tree) : fChain(nullptr)
 
 void treeReader::readSamples(const std::string& list){
     samples.clear();    //clear current sample list
-    //read samples and cross sections from txt file
+    //read sample info (names and xSec) from txt file
     std::ifstream file(list);
-    std::string line;
-    while(std::getline(file, line)){
-        samples.push_back(tools::readSampleLine(line));
-    }
+    do {
+        samples.push_back(Sample(file));
+    } while(!file.eof());
+    samples.pop_back();
     file.close();       //close file after usage
+    //display samples that have been read 
     for( auto it = samples.cbegin(); it != samples.cend(); ++it){
-        std::cout << std::get<0>(*it) << "     " << std::get<1>(*it) << "      " << std::get<2>(*it) << std::endl;
+        std::cout << *it << std::endl;
     }
 }
 
-void treeReader::initSample(const unsigned period){                             //0 = 2016, 1 = 2017, > 1 = combined
-    isData = (currentSample == 0);
-    sampleFile = std::make_shared<TFile>("../../ntuples_ewkino/"+ (const TString&) std::get<1>(samples[currentSample]),"read"); 
+
+void treeReader::initSample(const Sample& samp, const unsigned period){  //0 = 2016, 1 = 2017, > 1 = combined
+    sampleFile = samp.getFile("../../ntuples_ewkino/");
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
-    initTree(fChain, isData);
+    initTree(fChain, samp.isData());
     nEntries = fChain->GetEntries();
-    if(!isData){
+    if(!samp.isData()){
         TH1D* hCounter = new TH1D("hCounter", "Events counter", 1, 0, 1);
         hCounter->Read("hCounter"); 
         double dataLumi;
         if(period == 0) dataLumi = lumi2016;
         else if(period == 1) dataLumi = lumi2017;
         else dataLumi = lumi2016 + lumi2017;
-        scale = std::get<2>(samples[currentSample])*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
+        scale = samp.getXSec()*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
         delete hCounter;
     }
-    ++currentSample;    //increment the current sample for the next iteration
 }
 
-void treeReader::GetEntry(long unsigned entry)
+void treeReader::initSample(const unsigned period){ //initialize the next sample in the list 
+    initSample(samples[++currentSample], period);
+}
+
+void treeReader::GetEntry(const Sample& samp, long unsigned entry)
 {
     if (!fChain) return;
     fChain->GetEntry(entry);
     //Set up correct weights
-    if(!isData) weight = _weight*scale; //MC
+    if(!samp.isData() ) weight = _weight*scale; //MC
     else weight = 1;                               //data
+}
+
+void treeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
+    GetEntry(samples[currentSample], entry);
 }
 
 void treeReader::initTree(TTree *tree, const bool isData)

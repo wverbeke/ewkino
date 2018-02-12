@@ -12,6 +12,8 @@
 
 //include other parts of code
 #include "Reweighter.h"
+#include "Sample.h"
+#include "HistInfo.h"
 
 class treeReader {
     public :
@@ -199,11 +201,21 @@ class treeReader {
         //set up tree for analysis
         void readSamples(const std::string& list = ""); //read sample list from file
         void initSample(const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
+        void initSample(const Sample&, const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
 
         //functions to analyze tree
         void GetEntry(long unsigned entry);
+        void GetEntry(const Sample&, long unsigned entry);
         void Analyze();
+        void Analyze(const std::string&, long unsigned, long unsigned);
+        void Analyze(const Sample&, long unsigned, long unsigned);
+        void setup();
+        void splitJobs();
         void Loop(const std::string& sample, const double xSection);
+
+        //new functions for parallel plotting
+        void plot(const std::string&);
+        void splitPlots();
 
         //functions for event selection
         void orderByPt(std::vector<unsigned>&, const double*, const unsigned);
@@ -253,8 +265,9 @@ class treeReader {
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
-        std::vector<std::tuple<std::string, std::string, double> > samples;     //list of samples
-        unsigned currentSample = 0;                                             //current index in list
+        std::vector<Sample> samples;                                            //list of samples
+        std::vector<HistInfo> histInfo;                                         //histogram info
+        int currentSample = -1;                                                 //current index in list
         bool isData = false;
         double scale = 0;
         double weight = 1;                                                      //weight of given event
