@@ -20,15 +20,17 @@ fillJob(){
 mergeTuple(){
     > mergeJob.sh
     fillJob $1 mergeJob.sh 
-    bash mergeJob.sh
-    rm mergeJob.sh
+    #bash mergeJob.sh
+    cat mergeJob.sh
+    #rm mergeJob.sh
 }
 
 submitMergeTuple(){
     setCMSSW mergeJob.sh
     fillJob $1 mergeJob.sh
-    qsub mergeJob.sh -l walltime=02:00:00 
-    rm mergeJob.sh
+    #submitJob mergeJob.sh
+    #rm mergeJob.sh
+    cat mergeJob.sh 
 }
 
 skimmedTuples=~/Work/ntuples_temp_*
