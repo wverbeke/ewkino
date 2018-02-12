@@ -42,7 +42,7 @@ std::shared_ptr< TH1D > HistCollectionBase::access(const size_t categoryIndex, c
 
 std::shared_ptr< TH1D > HistCollectionBase::access(const std::vector<size_t>& categoryIndices, const bool sb) const{
     size_t categoryIndex = category->getIndex(categoryIndices);
-    return access(categoryIndex);
+    return access(categoryIndex, sb);
 }
 
 HistCollectionBase& HistCollectionBase::operator+=(const HistCollectionBase& rhs){

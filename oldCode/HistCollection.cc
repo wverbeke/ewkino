@@ -4,6 +4,7 @@
 #include <iostream>
 #include <set>
 #include <fstream>
+#include <algorithm>
 
 //include ROOT classes
 #include "TROOT.h"
@@ -34,14 +35,15 @@ HistCollectionSample::HistCollectionSample(const std::vector<HistInfo>& infoList
     HistCollectionSample(std::make_shared< std::vector< HistInfo > >(infoList), sam, std::make_shared<Category>(categorization), includeSB) {}
 
 
-HistCollectionSample::HistCollectionSample(const std::string& dir, std::shared_ptr< std::vector < HistInfo> > infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
+HistCollectionSample::HistCollectionSample(const std::string& fileListName, std::shared_ptr< std::vector < HistInfo> > infoList, std::shared_ptr<Sample> sam, std::shared_ptr< Category > categorization, bool includeSB):
     histInfo(infoList), cat(categorization), sample(sam)
 {
     //make list of files in directory
-    std::system("touch inputList.txt");
-    std::system( ("for f in " + dir + "/*; do echo $f >> inputList.txt; done").c_str());
+    //std::system("touch inputList.txt");
+    //std::system( ("for f in " + dir + "/*; do echo $f >> inputList.txt; done").c_str());
     //read root file list from txt
-    std::ifstream inputList("inputList.txt");
+    //std::ifstream inputList("inputList.txt");
+    std::ifstream inputList(fileListName);
     std::set< std::string > fileList;
     std::string temp;
     //fill set with list of files
@@ -51,7 +53,7 @@ HistCollectionSample::HistCollectionSample(const std::string& dir, std::shared_p
     }
     inputList.close();
     //clean up temporary file
-    std::system("rm inputList.txt");
+    //std::system("rm inputList.txt");
     //read histogram collection from files
     collection = std::vector< std::vector< std::shared_ptr< TH1D > > >(histInfo->size());
     for(unsigned infoInd = 0; infoInd < histInfo->size(); ++infoInd){
@@ -253,7 +255,11 @@ Plot HistCollection::getPlot(size_t infoIndex, size_t catIndex) const{
         else bkg[samCol.procName()] = samCol.access(infoIndex, catIndex);
     }
     std::cout << fullCollection[0].infoName(infoIndex) + "_" + fullCollection[1].catName(catIndex) << std::endl;
-    return Plot(fullCollection[0].infoName(infoIndex) + "_" + fullCollection[1].catName(catIndex), obs, bkg);
+    //make version of filename with every underscore becoming a subdirectory
+    std::string directoryName = "ewkino/dilepCR/" + fullCollection[1].catName(catIndex);
+    std::replace(directoryName.begin(), directoryName.end(), '_', '/');
+    //////////////////
+    return Plot(directoryName + "/" + fullCollection[0].infoName(infoIndex) + "_" + fullCollection[1].catName(catIndex), obs, bkg);
 }
 
 Plot HistCollection::getPlot(size_t infoIndex, const std::vector<size_t>& catIndices) const{

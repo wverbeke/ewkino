@@ -11,7 +11,7 @@ void extractPuWeight(const std::string& mcFile){
     TFile* inputFile = TFile::Open((const TString&) mcFile);
     TH1D* mcPuDist = (TH1D*) inputFile->Get("blackJackAndHookers/nTrue");
     //rebin MC distribution to have same binning as data 
-    mcPuDist->Rebin(2);
+    //mcPuDist->Rebin(2);
     //normalize histogram to unity
     mcPuDist->Scale(1/mcPuDist->GetSumOfWeights());
     //pu weights

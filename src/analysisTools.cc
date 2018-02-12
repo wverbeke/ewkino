@@ -13,29 +13,29 @@ void tools::printProgress(double progress){
     const unsigned barWidth = 100;
     std::cout << "[";
     unsigned pos = barWidth * progress;
-    for (int i = 0; i < barWidth; ++i) {
-	if (i < pos) std::cout << "=";
-	else if (i == pos) std::cout << ">";
-	else std::cout << " ";
+    for (unsigned i = 0; i < barWidth; ++i) {
+        if (i < pos) std::cout << "=";
+        else if (i == pos) std::cout << ">";
+        else std::cout << " ";
     }
     std::cout << "] " << unsigned(progress * 100.0) << " %\r" << std::flush;
 }
 
 void tools::setNegativeZero(TH1D* h){
-    for(unsigned b = 1; b < h->GetNbinsX() + 1; ++b){
-	if(h->GetBinContent(b) < 0.) h->SetBinContent(b, 0.);	
+    for(int b = 1; b < h->GetNbinsX() + 1; ++b){
+        if(h->GetBinContent(b) < 0.) h->SetBinContent(b, 0.);	
     }
 }
 
 void tools::removeBackSpaces(std::string& s){
     while(s.find_last_of("\t") == s.size() - 1 || s.find(" ") == s.size() - 1){
-	s.erase(s.size() - 1);
+        s.erase(s.size() - 1);
     }
 }
 
 void tools::removeFrontSpaces(std::string&s){
     while(s.find("\t") == 0 || s.find(" ") == 0){
-	s.erase(0, 1);
+        s.erase(0, 1);
     }
 }
 
@@ -80,42 +80,42 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
     //define all backgrounds and their yields
     card << "---------------------------------------------------------------------------------------- \n";
     if(shapeCard){
-	card << "shapes * * " << shapeFileName + ".root  $PROCESS $PROCESS_$SYSTEMATIC\n";
-	card << "---------------------------------------------------------------------------------------- \n";
+        card << "shapes * * " << shapeFileName + ".root  $PROCESS $PROCESS_$SYSTEMATIC\n";
+        card << "---------------------------------------------------------------------------------------- \n";
     }
     card << "bin	";
     for(unsigned proc = 0; proc < nBkg + 1; ++proc){
-	card << "	" << 1;
+        card << "	" << 1;
     }
     card << "\n";
     card << "process";
     card << "	" << sigName;
     for(unsigned bkg = 0; bkg < nBkg; ++bkg){
-	card << "	" << bkgNames[bkg];
+        card << "	" << bkgNames[bkg];
     }
     card << "\n";
     card << "process";
     for(unsigned bkg = 0; bkg < nBkg + 1; ++bkg){
-	card << "	" << bkg;
+        card << "	" << bkg;
     }
     card << "\n";
     card <<	"rate";
     card << "	" << sigYield;
     for(unsigned bkg = 0; bkg < nBkg; ++bkg){
-	if(bkgYield[bkg] <= 0) card << "	" << "0.00";
-	else card << "	" << bkgYield[bkg];
+        if(bkgYield[bkg] <= 0) card << "	" << "0.00";
+        else card << "	" << bkgYield[bkg];
     }
     card << "\n";
     card << "---------------------------------------------------------------------------------------- \n";
     //define sources of systematic uncertainty, what distibution they follow and how large their effect is
     for(unsigned syst = 0; syst < nSyst; ++syst){
-	card << systNames[syst] << "	" << systDist[syst];
-	for(unsigned proc = 0; proc < nBkg + 1; ++proc){
-	    card << "	";
-	    if(systUnc[syst][proc] == 0) card << "-";
-	    else card << systUnc[syst][proc];
-	}
-	card << "\n";
+        card << systNames[syst] << "	" << systDist[syst];
+        for(unsigned proc = 0; proc < nBkg + 1; ++proc){
+            card << "	";
+            if(systUnc[syst][proc] == 0) card << "-";
+            else card << systUnc[syst][proc];
+        }
+        card << "\n";
     }
     card.close();		
 }
@@ -123,12 +123,12 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
 
 //initialize a submission script for running on cluster
 std::ostream& tools::initScript(std::ostream& os){
-     os << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
-     os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
-     os << "eval \\`scram runtime -sh\\` \n";
-     os << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
-     os << "cd " << currentDirectory() << "\n";     //go back to directory from where job was submitted 
-     return os;
+    os << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
+    os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
+    os << "eval \\`scram runtime -sh\\` \n";
+    os << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
+    os << "cd " << currentDirectory() << "\n";     //go back to directory from where job was submitted 
+    return os;
 }
 
 void tools::sleep(unsigned seconds){
@@ -154,8 +154,8 @@ void tools::submitScript(const std::string& scriptName, const std::string& wallt
         submissionOutput.close();
         //sleep for 2 seconds before attempting resubmission
         if(!submitted){
-           std::cerr << "submission failed: reattempting submission" << std::endl;
-           sleep(2);
+            std::cerr << "submission failed: reattempting submission" << std::endl;
+            sleep(2);
         }
     } while(!submitted);
 }
