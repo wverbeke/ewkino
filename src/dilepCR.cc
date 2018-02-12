@@ -189,32 +189,13 @@ void treeReader::plot(const std::string& distName){
         if(histInfo[d].name() == distName){
             //read collection for this distribution from files
             HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
-            for(unsigned c = 0; c < col.categorySize(); ++c){
-                std::string header;
-                std::string categoryName = col.categoryName(c);
-
-                if(categoryName.find("_mm_") != std::string::npos) header += "#mu#mu : ";
-                else if(categoryName.find("_em_") != std::string::npos) header += "e#mu : ";
-                else if(categoryName.find("_ee_") != std::string::npos) header += "ee : ";
-                
-                if(categoryName.find("RunB") != std::string::npos) header += "2017 Run B";
-                else if(categoryName.find("RunC") != std::string::npos) header += "2017 Run C";
-                else if(categoryName.find("RunD") != std::string::npos) header += "2017 Run D";
-                else if(categoryName.find("RunE") != std::string::npos) header += "2017 Run E";
-                else if(categoryName.find("RunF") != std::string::npos) header += "2017 Run F";
-                else( header += "42 fb^{-1}");
-                header += " (13 TeV)";
-                if(d == 10 && categoryName.find("_mm_") != std::string::npos) continue; //do not plot electronMva for mm category
-                if(d == 11 && categoryName.find("_ee_") != std::string::npos) continue; //do not plot muonSegComp for ee category
-                col.getPlot(c).draw("plots/ewkino/dilepCR", "ewkinoDilep", true, true, header);
-                //col.getPlot(c).draw("ewkinoDilep", true, true, "");
-            }
+            //print plots for collection
+            col.printPlots("plots/ewkino/dilepCR", "ewkinoDilep", true, true, "");
         }
     }
 }
 
 void treeReader::splitPlots(){
-    //histCollection = HistCollection("tempHists", histInfo, samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
     std::system("touch inputList.txt");
     std::system("for f in tempHists/*; do echo $f >> inputList.txt; done");
     for(auto& h: histInfo){

@@ -140,3 +140,34 @@ Plot HistCollectionDist::getPlot(const size_t categoryIndex){
     //return plot initialized with variables computed above
     return Plot(plotPath(categoryIndex) + name(categoryIndex), obs, bkgMap);
 }
+
+
+//extract the correct plot header for each category
+std::string HistCollectionDist::plotHeader(const size_t categoryIndex) const{
+    //final return value
+    std::string header;
+    //name of this category
+    std::string category = categoryName(categoryIndex); 
+    //check for particular flavor combination 
+    if(category.find("_mm_") != std::string::npos) header += "#mu#mu : ";
+    else if(category.find("_em_") != std::string::npos) header += "e#mu : ";
+    else if(category.find("_ee_") != std::string::npos) header += "ee : ";
+    //check for particular Run era
+    if(category.find("RunB") != std::string::npos) header += "2017 Run B";
+    else if(category.find("RunC") != std::string::npos) header += "2017 Run C";
+    else if(category.find("RunD") != std::string::npos) header += "2017 Run D";
+    else if(category.find("RunE") != std::string::npos) header += "2017 Run E";
+    else if(category.find("RunF") != std::string::npos) header += "2017 Run F";
+    else( header += "42 fb^{-1}"); //default case just displays the luminosity
+    header += " (13 TeV)";
+    return header;
+}
+
+
+void HistCollectionDist::printPlots(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal, const bool sigNorm){
+    //loop over all categories and output a plot for each one
+    for(size_t c = 0; c < categorySize(); ++c){
+        //print plot
+        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c), bkgSyst, isSMSignal, sigNorm);
+    }           
+}

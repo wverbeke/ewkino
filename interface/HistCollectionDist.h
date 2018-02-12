@@ -19,7 +19,8 @@ class HistCollectionDist{
         HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const std::vector< std::vector < std::string > >& categoryVec = std::vector< std::vector< std::string > >() );
 
         //output all plots to file, given options will be given to Plot "draw" function
-        void outPutPlots(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, const std::string& header = "", TH1D** bkgSyst = nullptr, const bool* isSMSignal = nullptr, const bool sigNorm = true) const;
+        //function is non-const because histogram merge might be called before plotting
+        void printPlots(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, const std::string& header = "", TH1D** bkgSyst = nullptr, const bool* isSMSignal = nullptr, const bool sigNorm = true); 
     private:
         std::vector< HistCollectionBase > collection;
         std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory
@@ -33,7 +34,7 @@ class HistCollectionDist{
             return collection.front().infoName();
         }
         //get category name
-        std::string categoryName(size_t categoryIndex) const{ 
+        std::string categoryName(const size_t categoryIndex) const{ 
             return collection.front().categoryName(categoryIndex);
         }
         //get name = distribution's name + category's name
@@ -49,6 +50,6 @@ class HistCollectionDist{
         //return Plot corresponding to categoryIndex
         Plot getPlot(const size_t categoryIndex);
         //format plot header, depending on category name
-        std::string plotHeader() const;
+        std::string plotHeader(const size_t categoryIndex) const;
 };
 #endif
