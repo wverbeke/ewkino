@@ -1,9 +1,9 @@
 CC=g++
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= src/extractPuWeights.cc
+SOURCES= ../src/kinematicTools.cc testKinematics.cc
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE= extractPuWeights
+EXECUTABLE= testKinematics
 
 all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
