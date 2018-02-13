@@ -68,6 +68,7 @@ double kinematics::mass(const TLorentzVector& lhs, const TLorentzVector& rhs){
 }
 
 double kinematics::mt(const TLorentzVector& lhs, const TLorentzVector& rhs){
+    //this definition assumed the ultrarelativistic limit!
     return sqrt(2*lhs.Pt()*rhs.Pt()*( 1 - cos( lhs.Phi()-rhs.Phi() ) ) ); 
 }
 
