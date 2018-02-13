@@ -9,4 +9,4 @@ all:
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
 	
 clean:
-	rm -rf *o $(EXECUTABLE)b
+	rm -rf *o $(EXECUTABLE)
