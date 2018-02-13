@@ -80,6 +80,10 @@ double kinematics::deltaPhi(const TLorentzVector& lhs, const TLorentzVector& rhs
     return fabs(lhs.DeltaPhi(rhs));
 }
 
+double kinematics::pt(const TLorentzVector& lhs,  const TLorentzVector& rhs){
+    return (lhs + rhs).Pt();
+}
+
 /*
  * find the minima and maxima of several kinematic quantities for two separate arrays of lorentz vectors
  */
@@ -115,6 +119,14 @@ double kinematics::maxMT(const TLorentzVector* vecLeft, const std::vector<unsign
     return maxVar(vecLeft, indicesLeft, vecRight, indicesRight, mt);
 }
 
+double kinematics::minPT(const TLorentzVector* vecLeft, const std::vector<unsigned>& indicesLeft, const TLorentzVector* vecRight, const std::vector<unsigned>& indicesRight){
+    return minVar(vecLeft, indicesLeft, vecRight, indicesRight, pt);
+}
+
+double kinematics::maxPT(const TLorentzVector* vecLeft, const std::vector<unsigned>& indicesLeft, const TLorentzVector* vecRight, const std::vector<unsigned>& indicesRight){
+    return maxVar(vecLeft, indicesLeft, vecRight, indicesRight, pt);
+}
+
 /*
  * find the minima and maxima of several kinematic quantities in one array of lorentz vectors 
  */
@@ -148,4 +160,12 @@ double kinematics::minMT(const TLorentzVector* vec, const std::vector<unsigned>&
 
 double kinematics::maxMT(const TLorentzVector* vec, const std::vector<unsigned>& indices){
     return maxVar(vec, indices, mt);
+}
+
+double kinematics::minPT(const TLorentzVector* vec, const std::vector<unsigned>& indices){
+    return minVar(vec, indices, pt);
+}
+
+double kinematics::maxPT(const TLorentzVector* vec, const std::vector<unsigned>& indices){
+    return maxVar(vec, indices, pt);
 }

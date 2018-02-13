@@ -16,6 +16,7 @@ namespace kinematics{
     double mt(const TLorentzVector&, const TLorentzVector&);
     double deltaR(const TLorentzVector&, const TLorentzVector&);
     double deltaPhi(const TLorentzVector&, const TLorentzVector&);
+    double pt(const TLorentzVector&, const TLorentzVector&);
 
     /*
      * functions to compute kinematic extrema in the event
@@ -30,6 +31,8 @@ namespace kinematics{
     double maxDeltaPhi(const TLorentzVector*, const std::vector<unsigned>&, const TLorentzVector*, const std::vector<unsigned>&);
     double minMT(const TLorentzVector*, const std::vector<unsigned>&, const TLorentzVector*, const std::vector<unsigned>&);
     double maxMT(const TLorentzVector*, const std::vector<unsigned>&, const TLorentzVector*, const std::vector<unsigned>&);
+    double minPT(const TLorentzVector*, const std::vector<unsigned>&, const TLorentzVector*, const std::vector<unsigned>&);
+    double maxPT(const TLorentzVector*, const std::vector<unsigned>&, const TLorentzVector*, const std::vector<unsigned>&);
 
     //parameters are one TLorentzVector, and a vector with the relevant indices to access the correct elements
     double minMass(const TLorentzVector*, const std::vector<unsigned>&);
@@ -40,6 +43,8 @@ namespace kinematics{
     double maxDeltaPhi(const TLorentzVector*, const std::vector<unsigned>&);
     double minMT(const TLorentzVector*, const std::vector<unsigned>&);
     double maxMT(const TLorentzVector*, const std::vector<unsigned>&);
+    double minPT(const TLorentzVector*, const std::vector<unsigned>&);
+    double maxPT(const TLorentzVector*, const std::vector<unsigned>&);
 
     //helper functions to avoid duplicate loop code
     /*
