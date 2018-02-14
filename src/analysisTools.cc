@@ -121,9 +121,32 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
 }
 
 
+//call std::system with std::string argyment
+void tools::system(const std::string& command){
+    std::system(command.c_str() );
+}
+
+void tools::deleteFile(const std::string& fileName){
+    system( "rm " + fileName );
+}
+
+//get CMSSW version that is currently used
+std::string tools::CMSSWDirectory(){
+    //cache CMSSW version in static string
+    static std::string cmsswDir = "";
+    if(cmsswDir == ""){
+        system("echo $CMSSW_BASE > cmsswDir.txt");
+        std::ifstream cmsswFile("cmsswDir.txt");
+        std::getline(cmsswFile, cmsswDir);
+        deleteFile("cmsswDir.txt");
+        cleanSpaces(cmsswDir);
+    }
+    return cmsswDir;
+}
+
 //initialize a submission script for running on cluster
 std::ostream& tools::initScript(std::ostream& os){
-    os << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
+    os << "cd " << CMSSWDirectory() << "\n";
     os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
     os << "eval \\`scram runtime -sh\\` \n";
     os << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
@@ -141,7 +164,7 @@ void tools::submitScript(const std::string& scriptName, const std::string& wallt
     bool submitted = false;
     do{
         //submit sctipt and pipe output to text file
-        std::system( std::string("qsub " + scriptName + " -l walltime=" + walltimeString + " > submissionOutput.txt 2>> submissionOutput.txt").c_str() );
+        system( "qsub " + scriptName + " -l walltime=" + walltimeString + " > submissionOutput.txt 2>> submissionOutput.txt" );
         std::ifstream submissionOutput("submissionOutput.txt");
         //check for errors in output file
         std::string line; 
@@ -173,16 +196,16 @@ bool tools::runningJobs(const std::string& jobName){
         job = std::string(job.cend() - 11, job.cend());
     }
     //pipe qstat output to temporary txt file
-    std::system("qstat -u$USER > runningJobs.txt");
+    system("qstat -u$USER > runningJobs.txt");
     std::ifstream jobFile("runningJobs.txt");
     std::string line;
     while(std::getline(jobFile, line)){
         if(line.find(job) != std::string::npos){
-            std::system("rm runningJobs.txt");
+            system("rm runningJobs.txt");
             return true;
         }
     }
-    std::system("rm runningJobs.txt");
+    deleteFile("runningJobs.txt");
     return false;
 }
 
@@ -191,11 +214,11 @@ std::string tools::currentDirectory(){
     static std::string directory = ""; 
     //if the current directory is not determined yet interact with terminal to retrieve it
     if(directory == ""){
-        std::system("echo $PWD > directory.txt");
+        system("echo $PWD > directory.txt");
         std::ifstream directoryFile("directory.txt");
         std::getline(directoryFile, directory);
         directoryFile.close();
-        std::system("rm directory.txt");
+        deleteFile("directory.txt");
         //clean up spaces in resulting string
         cleanSpaces(directory);
     }
@@ -205,16 +228,12 @@ std::string tools::currentDirectory(){
 //output list of files in given directory to a txt file
 void tools::makeFileList(const std::string& directory, const std::string& outputFileName){
     //first clean up file if it already existed
-    std::system( std::string("rm " + outputFileName).c_str() );
+    system( "rm " + outputFileName );
     //remake the file
-    std::system( std::string("touch " + outputFileName).c_str() );
+    system( "touch " + outputFileName);
     //append / to directory name if needed
     std::string extraSlash = "";
     if(directory.back() != '/') extraSlash = "/";
     //pipe directory contents to file
-    std::system( std::string("for f in " + directory + extraSlash + "*; do echo $f >> " + outputFileName + "; done").c_str() );
-}
-
-void tools::deleteFile(const std::string& fileName){
-    std::system( std::string("rm " + fileName).c_str() );
+    system( "for f in " + directory + extraSlash + "*; do echo $f >> " + outputFileName + "; done");
 }
