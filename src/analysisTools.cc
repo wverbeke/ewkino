@@ -201,3 +201,20 @@ std::string tools::currentDirectory(){
     }
     return directory;
 }
+
+//output list of files in given directory to a txt file
+void tools::makeFileList(const std::string& directory, const std::string& outputFileName){
+    //first clean up file if it already existed
+    std::system( std::string("rm " + outputFileName).c_str() );
+    //remake the file
+    std::system( std::string("touch " + outputFileName).c_str() );
+    //append / to directory name if needed
+    std::string extraSlash = "";
+    if(directory.back() != '/') extraSlash = "/";
+    //pipe directory contents to file
+    std::system( std::string("for f in " + directory + extraSlash + "*; do echo $f >> " + outputFileName + "; done").c_str() );
+}
+
+void tools::deleteFile(const std::string& fileName){
+    std::system( std::string("rm " + fileName).c_str() );
+}
