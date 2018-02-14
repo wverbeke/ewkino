@@ -33,14 +33,6 @@ cd ..
 
 #set up tZq plots 
 cd tZq 
-for d in . 36fb 81fb; do
-    for dir in mllInclusive onZ offZ; do
-        for subdir in nJetsInclusive 0bJets_01Jets 0bJets_2Jets 1bJet_01jets 1bJet_23Jets 1bJet_4Jets 2bJets 
-            do mkdir -p ${d}/${dir}/${subdir}
-        done
-    done 
-done
-cd ..
 
 mkdir tZq/dataFakes/
 cd tZq/dataFakes/
@@ -53,13 +45,21 @@ for d in . 36fb 81fb; do
 done
 cd ../..
 
-mkdir tZq/controlR/
-cd tZq/controlR/
-for d in . 36fb 81fb; do
-    for dir in nJetsInclusive 0bJets_01Jets 0bJets_2Jets 1bJet_01jets 1bJet_23Jets 1bJet_4Jets 2bJets
-        do mkdir -p ${d}/${dir}
-    done
-done
+#mkdir tZq/controlR/
+#cd tZq/controlR/
+#for d in . 36fb 81fb; do
+#    for dir in nJetsInclusive 0bJets_01Jets 0bJets_2Jets 1bJet_01jets 1bJet_23Jets 1bJet_4Jets 2bJets
+#        do mkdir -p ${d}/${dir}
+#    done
+#done
+#
+#for dir1 in 2016 2017; do
+#    for dir2 in mllInclusive onZ offZ; do
+#        for dir3 in inclusive 0bJets_01Jets 0bJets_2Jets 1bJet_01jets 1bJet_23Jets 1bJet_4Jets 2bJets; do
+#            mkdir -p ${dir1}/${dir2}/${dir3}
+#        done
+#    done 
+#done
 cd ..
 
 
