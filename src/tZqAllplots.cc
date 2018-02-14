@@ -794,7 +794,8 @@ void treeReader::plot(const std::string& distName){
             //read collection for this distribution from files
             HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
             //print plots for collection
-            col.printPlots("plots/tZq/2016", "tzq", true, true);
+            col.printPlots("plots/tZq/2016", "tzq", false);
+            col.printPlots("plots/tZq/2016", "tzq", true);
         }
     }
 }
