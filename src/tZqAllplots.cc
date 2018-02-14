@@ -274,11 +274,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         maxBin[dist] = std::get<4>(histInfo[dist]) - 0.5*(std::get<4>(histInfo[dist]) - std::get<3>(histInfo[dist]) )/std::get<2>(histInfo[dist]);
     }
     */
+    /*
     Float_t asymmetryWlep, topMass, etaMostForward, mTW, highestDeepCSV, numberOfJets, numberOfBJets;
     Float_t pTLeadingLepton, pTLeadingBJet, pTMostForwardJet, mAllJets, maxDeltaPhijj, maxDeltaRjj, maxMlb, maxMjj, pTMaxlb, pTMax2l;
     Float_t minMlb, maxmTbmet, maxpTlmet, pT3l, ht, m3l, mZ, deltaRWLeptonTaggedbJet, etaZ, maxDeltaPhibmet, minDeltaPhibmet;
     Float_t minDeltaPhilb, pTmin2l, minmTbmet, minmTlmet, missingEt, maxmTjmet;
     Float_t eventWeight;
+    */
     //tree for BDT training
     /*
     TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
@@ -380,18 +382,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     */
     //loop over all sample
     initSample(samp, 0);          //Use 2016 lumi
-    double progress = 0; 	//for printing progress bar
     for(long unsigned it = begin; it < end; ++it){
         //print progress bar	
-        /*
-        if(it%100 == 0 && it != 0){
-            progress += (double) (100./nEntries);
-            tools::printProgress(progress);
-        } else if(it == nEntries -1){
-            progress = 1.;
-            tools::printProgress(progress);
-        }
-        */
         GetEntry(samp, it);
         //vector containing good lepton indices
         std::vector<unsigned> ind;
@@ -585,6 +577,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned j = 0; j < jetCount; ++j){
             if(jetV[jetInd[j]].DeltaR(lepV[lw]) < deltaRWLepClosestJet) deltaRWLepClosestJet = jetV[jetInd[j]].DeltaR(lepV[lw]);
         }
+        /*
         //Fill tree for BDT training
         asymmetryWlep = _lEta[ind[lw]]*_lCharge[ind[lw]];
         topMass = std::max(topV.M(), 0.);
@@ -628,6 +621,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         missingEt = _met;
         maxmTjmet = maxmTJetMET;
         eventWeight = weight;
+        */
         double bdt = 0, bdt2 = 0;
         if(tzqCat != 0){
             //bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
@@ -793,6 +787,8 @@ void treeReader::plot(const std::string& distName){
             std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
             //read collection for this distribution from files
             HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+            //blind onZ categories
+            col.blindData("onZ"); 
             //print plots for collection
             col.printPlots("plots/tZq/2016", "tzq", false);
             col.printPlots("plots/tZq/2016", "tzq", true);
