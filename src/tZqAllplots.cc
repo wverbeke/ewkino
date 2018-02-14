@@ -244,8 +244,6 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 }
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    std::cout << "samp.getFileName() == " << samp.getFileName() << std::endl;
     //set up histogram collection for particular sample
     HistCollectionSample histCollection(histInfo, samp, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_4Jets", "2bJets"} });
     //store relevant info from histCollection
@@ -763,9 +761,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
     }
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    std::cout << "Storing histograms" << std::endl;
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~" << std::endl; 
     //write histcollection to file
     histCollection.store("tempHists_tZq/", begin, end);
     //Save training tree
@@ -798,14 +793,13 @@ void treeReader::plot(const std::string& distName){
             //read collection for this distribution from files
             HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_4Jets", "2bJets"} });
             //print plots for collection
-            col.printPlots("plots/tZq/36fb", "tzq", true, true);
+            col.printPlots("plots/tZq/2016", "tzq", true, true);
         }
     }
 }
 
 void treeReader::splitPlots(){
-    std::system("touch inputList.txt");
-    std::system("for f in tempHists/*; do echo $f >> inputList.txt; done");
+    tools::makeFileList("tempHists_tZq", "inputList.txt");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
         tools::initScript(script);
