@@ -245,7 +245,7 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
     //set up histogram collection for particular sample
-    HistCollectionSample histCollection(histInfo, samp, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_4Jets", "2bJets"} });
+    HistCollectionSample histCollection(histInfo, samp, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
     //store relevant info from histCollection
     const unsigned nDist = histInfo.size();                              //number of distributions to plot
     const unsigned nCat = histCollection.categoryRange(1);                //Several categories enriched in different processes
@@ -790,8 +790,9 @@ void treeReader::plot(const std::string& distName){
     //loop over all distributions and find the one to plot
     for(size_t d = 0; d < histInfo.size(); ++d){
         if(histInfo[d].name() == distName){
+            std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_4Jets", "2bJets"} });
+            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
             //print plots for collection
             col.printPlots("plots/tZq/2016", "tzq", true, true);
         }
