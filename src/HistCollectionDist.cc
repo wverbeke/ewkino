@@ -202,3 +202,13 @@ void HistCollectionDist::blindData(const size_t categoryIndex) const{
         }
     }
 }
+
+void HistCollectionDist::blindData(const std::string& catName) const{
+    //blind data for any category containing the given name
+    for(size_t c = 0; c < categorySize(); ++c){
+        if(categoryName(c).find(catName) != std::string::npos){
+            blindData(c);
+        }
+    }
+}
+
