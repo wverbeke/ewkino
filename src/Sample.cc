@@ -35,7 +35,7 @@ Sample::Sample(std::istream& is){
 
 std::shared_ptr<TFile> Sample::getFile(const std::string& directory) const{
     std::string temp = directory;
-    if(*(temp.cend() - 1) != '/') temp.pop_back();
+    if(*(temp.cend() - 1) == '/') temp.pop_back();
     return std::make_shared<TFile>((const TString&) temp + "/" + fileName, "read");
 }
 
