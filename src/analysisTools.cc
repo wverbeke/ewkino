@@ -123,7 +123,7 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
 
 //initialize a submission script for running on cluster
 std::ostream& tools::initScript(std::ostream& os){
-    os << "cd /user/wverbeke/CMSSW_9_4_2/src \n";
+    os << "cd /user/wverbeke/CMSSW_9_4_4/src \n";
     os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
     os << "eval \\`scram runtime -sh\\` \n";
     os << "cd /user/wverbeke/Work/AnalysisCode/ewkino/ \n";
