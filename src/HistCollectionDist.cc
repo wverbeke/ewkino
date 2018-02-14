@@ -171,3 +171,34 @@ void HistCollectionDist::printPlots(const std::string& outputDirectory, const st
         getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c), bkgSyst, isSMSignal, sigNorm);
     }           
 }
+
+//routine that sets data equal to the total background, thus blinding the data
+void HistCollectionDist::blindData(const size_t categoryIndex) const{
+    //find the HistCollectionBase objects corresponding to data
+    for(auto& dataCollection: collection){
+        //verify we have data
+        if(!dataCollection.isData()) continue;
+        //for every category set data equal to total background
+        bool first = true;
+        for(auto& bkgCollection: collection){
+            //add sideband containing nonprompt background if it exists
+            if(bkgCollection.hasSideBand()){
+                if(first){
+                    dataCollection.access(categoryIndex) = std::shared_ptr<TH1D>( (TH1D*) bkgCollection.access(categoryIndex, true)->Clone() );
+                    first = false;
+                } else{
+                    dataCollection.access(categoryIndex)->Add(bkgCollection.access(categoryIndex, true).get());
+                }
+            }
+            //only add main band for MC 
+            if(bkgCollection.isData()) continue;
+            //compute total background
+            if(first){
+                dataCollection.access(categoryIndex) = std::shared_ptr<TH1D>( (TH1D*) bkgCollection.access(categoryIndex, false)->Clone() );
+                first = false;
+            } else{
+                dataCollection.access(categoryIndex)->Add(bkgCollection.access(categoryIndex, false).get());
+            }
+        }
+    }
+}
