@@ -40,11 +40,13 @@ double kinematics::extremum(const TLorentzVector* vec, const std::vector<unsigne
         double (&computeVar)(const TLorentzVector&, const TLorentzVector&), const double& (& getExtremum) (const double&, const double&), double initVar)
 {
     double extremum = initVar;
-    //check all combinations of different lorentzVectors for extrema
-    for(unsigned outer = 0; outer < indices.size() - 1; ++outer){
-        for(unsigned inner = outer + 1; inner < indices.size(); ++inner){
-            double var = computeVar(vec[indices[inner]], vec[indices[outer]]);
-            extremum = getExtremum(var, extremum);
+    if(indices.size() != 0){    //safety, second loop diverges for 0 element array without this condition
+        //check all combinations of different lorentzVectors for extrema
+        for(unsigned outer = 0; outer < indices.size() - 1; ++outer){
+            for(unsigned inner = outer + 1; inner < indices.size(); ++inner){
+                double var = computeVar(vec[indices[inner]], vec[indices[outer]]);
+                extremum = getExtremum(var, extremum);
+            }
         }
     }
     return ( (extremum != initVar) ? extremum : 0 );
