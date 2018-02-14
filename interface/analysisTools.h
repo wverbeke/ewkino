@@ -32,5 +32,9 @@ namespace tools{
     bool runningJobs(const std::string& jobName = "");
     //get current directory
     std::string currentDirectory();
+    //list all files in a directory and save this to a txt file of given name
+    void makeFileList(const std::string&, const std::string&);
+    //delete file of given name
+    void deleteFile(const std::string&);
 }
 #endif

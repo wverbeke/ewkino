@@ -195,8 +195,7 @@ void treeReader::plot(const std::string& distName){
 }
 
 void treeReader::splitPlots(){
-    std::system("touch inputList.txt");
-    std::system("for f in tempHists/*; do echo $f >> inputList.txt; done");
+    tools::makeFileList("tempHists", "inputList.txt");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
         tools::initScript(script);
