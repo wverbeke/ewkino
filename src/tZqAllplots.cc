@@ -15,8 +15,6 @@
 #include <iomanip>
 #include <tuple>
 
-#include <chrono>
-
 //include other parts of the code
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
@@ -253,7 +251,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     //store relevant info from histCollection
     const unsigned nDist = histInfo.size();                              //number of distributions to plot
     const unsigned nCat = histCollection.categoryRange(1);                //Several categories enriched in different processes
-    const unsigned nMll = histCollection.categoryRange(2);                //categories based on dilepton Mass
+    const unsigned nMll = histCollection.categoryRange(0);                //categories based on dilepton Mass
     /*
     const std::string mllNames[nMll] = {"mllInclusive", "onZ", "offZ"};
     const std::string catNames[nCat] = {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_4Jets", "2bJets"};
@@ -396,11 +394,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             tools::printProgress(progress);
         }
         */
-        auto tge1 = std::chrono::high_resolution_clock::now();
         GetEntry(samp, it);
-        auto tge2 = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsedGe = tge2 - tge1;
-        std::cout << "GetEntry took " << elapsedGe.count() << " seconds" << std::endl;
         //vector containing good lepton indices
         std::vector<unsigned> ind;
         //select leptons
@@ -507,10 +501,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //initialize lepton indices
         std::vector<unsigned> lepVecInd;
 
-        auto t1 = std::chrono::high_resolution_clock::now();
         for(unsigned l = 0; l < lCount; ++l) lepVecInd.push_back(l); 
         //lepton Jet 
-        std::cout << "before lepton Jet" << std::endl;
         double minMLeptonJet = kinematics::minMass(lepV, lepVecInd, jetV, jetInd);
         double maxMLeptonJet = kinematics::maxMass(lepV, lepVecInd, jetV, jetInd);
         double minDeltaRLeptonJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, jetInd);
@@ -519,8 +511,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         double maxDeltaPhiLeptonJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, jetInd);
         double minpTLeptonJet = kinematics::minPT(lepV, lepVecInd, jetV, jetInd);
         double maxpTLeptonJet = kinematics::maxPT(lepV, lepVecInd, jetV, jetInd);
+
         //lepton bjet
-        std::cout << "before lepton bJet" << std::endl;
         double minMLeptonbJet = kinematics::minMass(lepV, lepVecInd, jetV, bJetInd);
         double maxMLeptonbJet = kinematics::maxMass(lepV, lepVecInd, jetV, bJetInd);
         double minDeltaRLeptonbJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, bJetInd);
@@ -531,7 +523,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         double maxpTLeptonbJet = kinematics::maxPT(lepV, lepVecInd, jetV, bJetInd);
 
         //jet jet
-        std::cout << "before jet jet" << std::endl;
         double minMJetJet = kinematics::minMass(jetV, jetInd);
         double maxMJetJet = kinematics::maxMass(jetV, jetInd);
         double minDeltaRJetJet = kinematics::minDeltaR(jetV, jetInd);
@@ -541,7 +532,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         double minpTJetJet = kinematics::minPT(jetV, jetInd);
         double maxpTJetJet = kinematics::maxPT(jetV, jetInd);
         
-        std::cout << "before lepton lepton" << std::endl;
         //lepton lepton 
         double minMLeptonLepton = kinematics::minMass(lepV, lepVecInd);
         double maxMLeptonLepton = kinematics::maxMass(lepV, lepVecInd);
@@ -555,7 +545,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //set met index
         std::vector<unsigned> metIndex = {0};
 
-        std::cout << "before lepton MET" << std::endl;
         //lepton + MET 
         double minDeltaPhiLeptonMET = kinematics::minDeltaPhi(lepV, lepVecInd, &met, metIndex);
         double maxDeltaPhiLeptonMET = kinematics::maxDeltaPhi(lepV, lepVecInd, &met, metIndex);
@@ -564,7 +553,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         double minpTLeptonMET = kinematics::minPT(lepV, lepVecInd, &met, metIndex);
         double maxpTLeptonMET = kinematics::maxPT(lepV, lepVecInd, &met, metIndex);
 
-        std::cout << "before jet MET" << std::endl;
         //jet + MET
         double minDeltaPhiJetMET = kinematics::minDeltaPhi(jetV, jetInd, &met, metIndex);
         double maxDeltaPhiJetMET = kinematics::maxDeltaPhi(jetV, jetInd, &met, metIndex);
@@ -573,7 +561,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         double minpTJetMET = kinematics::minPT(jetV, jetInd, &met, metIndex);
         double maxpTJetMET = kinematics::maxPT(jetV, jetInd, &met, metIndex);
 
-        std::cout << "before bJet MET" << std::endl;
         //bjet + MET 
         double minDeltaPhiBJetMET = kinematics::minDeltaPhi(jetV, bJetInd, &met, metIndex);
         double maxDeltaPhiBJetMET = kinematics::maxDeltaPhi(jetV, bJetInd, &met, metIndex);
@@ -585,7 +572,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //auto t2 = std::chrono::high_resolution_clock::now();
         //std::chrono::duration<double> elapsed = t2 - t1;
         //std::cout << "Finding all kinematic extrema took " << elapsed.count() << " seconds" << std::endl;
-        /*
         //compute HT
         double HT = 0;
         for(unsigned j = 0; j < jetCount; ++j){
@@ -650,7 +636,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             //bdt2 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method 1000 Trees");
         }
         //double bdt = 0;
-        */
         /*
         //double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0, bdtGAlt = 0;
         //double bdtGAlt_200trees = 0, bdtGAlt_shrinkage04 = 0, bdtGAlt_minNode005 = 0, bdtGAlt_negWeights = 0, bdtGAlt_MaxDepth4 = 0, bdtGAlt_20cuts = 0;
@@ -680,7 +665,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //distributions to plot
         //double fill[nDist] = {bdt, bdtG, bdtD, bdtB, mlp, deepNN, bdtGAlt, 
         //    bdtGAlt_200trees, bdtGAlt_shrinkage04, bdtGAlt_minNode005, bdtGAlt_negWeights, bdtGAlt_MaxDepth4, bdtGAlt_20cuts,
-        /*
         double fill[nDist] = {
             //mvaVals[0], mvaVals[1], mvaVals[2], mvaVals[3], mvaVals[4], mvaVals[5], mvaVals[6], mvaVals[7], mvaVals[8], mvaVals[9], 
             //mvaVals[10], mvaVals[11], mvaVals[12], mvaVals[12], mvaVals[13], mvaVals[14], mvaVals[15], mvaVals[16], mvaVals[17], mvaVals[18], mvaVals[19], mvaVals[20], mvaVals[21],
@@ -778,13 +762,12 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 }
             }
         }
-        */
     }
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
     std::cout << "Storing histograms" << std::endl;
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~" << std::endl; 
     //write histcollection to file
-    histCollection.store("tempHists/", begin, end);
+    histCollection.store("tempHists_tZq/", begin, end);
     //Save training tree
     //treeFile.Write();
     //treeFile.Close();
