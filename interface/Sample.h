@@ -27,7 +27,7 @@ class Sample{
         double getXSec() const { return xSec; }
         bool isData() const { return data; }
         bool isSMSignal() const { return smSignal; }
-        bool isBSMSignal() const { return newPhysicsSignal; }
+        bool isNewPhysicsSignal() const { return newPhysicsSignal; }
         std::shared_ptr<TFile> getFile(const std::string&) const;
     private:
         void setData(); 
