@@ -183,22 +183,21 @@ void HistCollectionDist::blindData(const size_t categoryIndex) const{
         for(auto& bkgCollection: collection){
             //add sideband containing nonprompt background if it exists
             if(bkgCollection.hasSideBand()){
+                //be careful when resetting data shared_ptr, access copies the pointer, so overwriting this will just disentangle the pointer from the original!
                 if(first){
-                    dataCollection.access(categoryIndex) = std::shared_ptr<TH1D>( (TH1D*) bkgCollection.access(categoryIndex, true)->Clone() );
+                    dataCollection.access(categoryIndex)->Reset();
                     first = false;
-                } else{
-                    dataCollection.access(categoryIndex)->Add(bkgCollection.access(categoryIndex, true).get());
-                }
+                } 
+                dataCollection.access(categoryIndex)->Add(bkgCollection.access(categoryIndex, true).get());
             }
             //only add main band for MC 
             if(bkgCollection.isData()) continue;
             //compute total background
             if(first){
-                dataCollection.access(categoryIndex) = std::shared_ptr<TH1D>( (TH1D*) bkgCollection.access(categoryIndex, false)->Clone() );
+                dataCollection.access(categoryIndex)->Reset();
                 first = false;
-            } else{
-                dataCollection.access(categoryIndex)->Add(bkgCollection.access(categoryIndex, false).get());
             }
+            dataCollection.access(categoryIndex)->Add(bkgCollection.access(categoryIndex, false).get());
         }
     }
 }
