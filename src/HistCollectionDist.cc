@@ -109,6 +109,8 @@ std::shared_ptr<TH1D> HistCollectionDist::getTotalSideBand(const size_t category
     }
     std::shared_ptr<TH1D> totalSideBand = collection.front().access(categoryIndex);
     for(auto colIt = collection.cbegin() + 1; colIt != collection.cend(); ++colIt){
+        //do not add signal to the total sideband
+        if(colIt->isSMSignal() || colIt->isNewPhysicsSignal() ) continue;
         totalSideBand->Add( (colIt->access(categoryIndex)).get() );
     }
     //set negative bins to zero
@@ -116,31 +118,56 @@ std::shared_ptr<TH1D> HistCollectionDist::getTotalSideBand(const size_t category
     return totalSideBand;
 }
 
+
+//get a map containing all background histograms, their names and whether they are a SM signal, for given category
+//this map is used by the Plot class for plotting
+std::map< std::string , std::pair< std::shared_ptr< TH1D >, bool > > HistCollectionDist::getBkgMap(const size_t categoryIndex) const{
+    std::map< std::string, std::pair < std::shared_ptr<TH1D>, bool > > bkgMap;
+    //add mainband MC backgrounds
+    for(auto& bkgCol : collection){
+        //only consider MC
+        if(!bkgCol.isData()){
+            //safety check to make sure files for same processes were already merged
+            if(bkgMap.count(bkgCol.sampleProcessName()) != 0){
+                std::cerr << "Error: finding several background collections of same process: check whether backgrounds were merged!" << std::endl;
+            }
+            bkgMap[bkgCol.sampleProcessName()] = {bkgCol.access(categoryIndex), bkgCol.isSMSignal()};
+        }
+    }
+    //add nonPrompt background from sidebands if they exist
+    if(hasSideBand()){
+        bkgMap["Nonprompt e/#mu"] = {getTotalSideBand(categoryIndex), false};
+    }   
+    return bkgMap;
+}
+
+//get histogram containing the observed yield in given category
+std::shared_ptr<TH1D> HistCollectionDist::getObsHist(const size_t categoryIndex) const{
+    std::shared_ptr< TH1D > obs;
+    for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){
+        if(colIt->isData()){
+            //check whether there was not already a data histogram (keep looping for safety-check)
+            if( obs.use_count() != 0) std::cerr << "Error: multiple data histograms present in collection, not clear how to make plot" << std::endl;
+            obs = colIt->access(categoryIndex);
+        }
+    }
+    return obs;
+}
+
+//get plot for given categoryIndex
 Plot HistCollectionDist::getPlot(const size_t categoryIndex){
     //merge processes if this did not already happen
     if(!merged){
         mergeProcesses();
         merged = true;
     }
-    std::shared_ptr<TH1D> obs;                                  //data histogram
-    std::map< std::string, std::shared_ptr<TH1D> > bkgMap;      //background histogram with names
-    for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){
-        if(colIt->isData()){
-            //check whether there was not already a data histogram
-            if( obs.use_count() != 0) std::cerr << "Error: multiple data histograms present in collection, not clear how to make plot" << std::endl;
-            obs = colIt->access(categoryIndex);
-        } else{
-            bkgMap[colIt->sampleProcessName()] = colIt->access(categoryIndex);
-        }        
-    } 
-    //add sideband (nonprompt) to background list if needed
-    if(hasSideBand()){
-        bkgMap["Nonprompt e/#mu"] = getTotalSideBand(categoryIndex);
-    }
-    //return plot initialized with variables computed above
-    return Plot(plotPath(categoryIndex) + name(categoryIndex), obs, bkgMap);
+    //return plot object
+    return Plot(
+        plotPath(categoryIndex) + name(categoryIndex),  //name of plot
+        getObsHist(categoryIndex),      //observed yield
+        getBkgMap(categoryIndex)        //background information
+        );
 }
-
 
 //extract the correct plot header for each category
 std::string HistCollectionDist::plotHeader(const size_t categoryIndex) const{
@@ -164,11 +191,11 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex) const{
 }
 
 
-void HistCollectionDist::printPlots(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool* isSMSignal, const bool sigNorm){
+void HistCollectionDist::printPlots(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool sigNorm){
     //loop over all categories and output a plot for each one
     for(size_t c = 0; c < categorySize(); ++c){
         //print plot
-        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c), bkgSyst, isSMSignal, sigNorm);
+        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c), bkgSyst, sigNorm);
     }           
 }
 

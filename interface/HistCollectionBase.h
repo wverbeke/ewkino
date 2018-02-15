@@ -28,19 +28,31 @@ class HistCollectionBase{
         std::string sampleProcessName() const { return sample->getProcessName(); }
         std::string categoryName(size_t categoryIndex) const { return category->name(categoryIndex); }
         std::string categoryName(const std::vector<size_t>& categoryIndices) const { return category->name(categoryIndices); }
+
         //full name of every histogram
         std::string name(size_t categoryIndex, const bool sideband = false) const{
             return histInfo->name() + category->name(categoryIndex) + (sideband ? "sideband" : "") + sample->getFileName();
         }
         size_t size() const{ return collection.size(); }
+
         //add two histcollections
         HistCollectionBase& operator+=(const HistCollectionBase& rhs);
+
         //set negative bin contents to 0
         void negBinsToZero() const;
+
         //check if collection contains sideband
         bool hasSideBand() const { return ! (sideBand.empty()); }
+
         //check if this is a data collection
         bool isData() const { return sample->isData(); }
+
+        //check if this is a SM signal
+        bool isSMSignal() const { return sample->isSMSignal(); }
+
+        //check if this a new physics signal
+        bool isNewPhysicsSignal() const { return sample->isNewPhysicsSignal(); }
+
         //range for every categorization
         size_t categoryRange(const size_t c) const { return category->getRange(c); }
     private:

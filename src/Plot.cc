@@ -5,21 +5,66 @@
 
 #include "TCanvas.h"
 
-void Plot::draw(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal, const bool sigNorm) const{
+void Plot::draw(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, const std::string& header, TH1D** bkgSyst, const bool sigNorm) const{
     std::vector< std::string> names = {"Obs."};
     std::vector< TH1D*> bkgHist;
-    std::map < std::string, std::string > translation;
-    translation["TT"] = "TT + Jets";
-    translation["WJets"] = "WJets";
-    translation["TTX"] = "TT + X";
-    translation["ST"] = "T + X";
-    translation["DY"] = "DY";
-    translation["VV"] = "VV";
+    //warning, vector of booleans can not be used because it is a bit-field in c++!
+    bool isSMSignalVec[(const size_t) bkg.size()];
+    size_t counter = 0; //to keep track of array index
     for(auto bkgIt = bkg.cbegin(); bkgIt != bkg.cend(); ++bkgIt){
-        names.push_back(translation[bkgIt->first]);
-        bkgHist.push_back(bkgIt->second.get());
+        //first part of a bkg entry is the background name 
+        //the second entry is the histogram itself and whether it is an SM signal
+        names.push_back( newName(bkgIt->first) );
+        isSMSignalVec[counter] = bkgIt->second.second;
+        bkgHist.push_back(bkgIt->second.first.get());
+        ++counter;
     }
     std::string outputDir(outputDirectory);
     if(outputDir.back() != '/') outputDir.append("/");
-    plotDataVSMC(data.get(), &bkgHist[0], &names[0], bkgHist.size(), outputDir + fileName + (log ? "_log" : "_lin"), analysis, log, normToData, header, bkgSyst, isSMSignal, nullptr, nullptr, 0, sigNorm);
+
+    //call plotting function
+    plotDataVSMC(
+        data.get(),     //data histogram
+        &bkgHist[0],    //pointer to first element of bkgHist ( function expects array )
+        &names[0],      //bkg names
+        bkgHist.size(), //number of backgrounds
+        outputDir + fileName + (log ? "_log" : "_lin"),  //name of output file
+        analysis, //the analysis determines the color scheme
+        log,    //plot on a log scale
+        normToData,     //normalize background to data or not 
+        header,         //plot header
+        bkgSyst,        //background systematics
+        isSMSignalVec, //array of booleans whether given process is SM signal
+        nullptr,        //new physics signals CURRENTLY NOT IMPLEMENTED
+        nullptr,        
+        0, 
+        sigNorm);
+}
+
+
+std::map < std::string, std::string> Plot::processNameMap = 
+        {
+        {"TT", "TT + Jets"},
+        {"WJets", "WJets"},
+        {"TTX", "TT + X"},
+        {"ST", "T + X"},
+        {"DY", "DY"},
+        {"VV", "VV"},
+        {"TTZ", "TT + Z"},
+        {"Xgamma", "X + #gamma"},
+        {"ZZH", "ZZ/H"},
+        {"tZq", "tZq"},
+        {"WZ", "WZ"},
+        {"multiboson", "Mulitboson"}
+        };
+
+
+//extract name of background from map
+std::string Plot::newName(const std::string& backgroundName) const{
+    //if old name is stored in the map return the new name, otherwise keep the old one
+    if(processNameMap.count(backgroundName) == 1){
+        return processNameMap[backgroundName];
+    } else{
+        return backgroundName;
+    }
 }
