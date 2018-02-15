@@ -26,16 +26,25 @@ Sample::Sample(const std::string& line){
     //read all variables on the line
     std::istringstream stream(line);
     stream >> process >> fileName >> xSecString >> signalString;
+
     //if not Xsection is specified it is zero
     xSec = (xSecString == "" ? 0 : std::stod(xSecString) );
+
     //determine whether process is some kind of signal
     smSignal = (signalString.find("SMSignal") != std::string::npos);
     newPhysicsSignal = (signalString.find("newPhysicsSignal") != std::string::npos);
+
     //signal can not be both SM and BSM sigal
     if(smSignal && newPhysicsSignal){
         std::cerr << "Error in sample construction: sample is both SM and BSM signal" << std::endl;
     }
+
     setData();
+
+    //data has no xSection
+    if(isData() && xSecString != ""){
+        std::cerr << "xSection specified for data: are you sure this was intended?" << std::endl;
+    }
 }
 
 Sample::Sample(std::istream& is){
