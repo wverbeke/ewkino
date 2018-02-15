@@ -19,13 +19,15 @@ class Sample{
     friend std::ostream& operator<<(std::ostream& os, const Sample&); 
     public:
         Sample() = default;
-        Sample(const std::string& file, const std::string& proc, double cross = 0);
+        //Sample(const std::string& file, const std::string& proc, double cross = 0);
         Sample(const std::string& line); 
         Sample(std::istream&); 
-        std::string getFileName() const {return fileName;}
-        std::string getProcessName() const {return process;} 
-        double getXSec() const { return xSec;}
-        bool isData() const { return data;}
+        std::string getFileName() const { return fileName; }
+        std::string getProcessName() const { return process; } 
+        double getXSec() const { return xSec; }
+        bool isData() const { return data; }
+        bool isSMSignal() const { return smSignal; }
+        bool isBSMSignal() const { return newPhysicsSignal; }
         std::shared_ptr<TFile> getFile(const std::string&) const;
     private:
         void setData(); 
@@ -33,5 +35,7 @@ class Sample{
         std::string process;
         double xSec;
         bool data;
+        bool smSignal;
+        bool newPhysicsSignal;
 };
 #endif
