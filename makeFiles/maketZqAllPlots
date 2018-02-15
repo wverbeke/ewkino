@@ -1,4 +1,4 @@
-CC=g++
+CC=g++ -Wall -Wno-reorder -Wextra
 CFLAGS= -Wl,--no-as-needed,-lTMVA
 LDFLAGS=`root-config --glibs --cflags`
 SOURCES= plotting/drawLumi.cc src/Plot.cc src/kinematicTools.cc src/Sample.cc src/Category.cc src/HistCollectionBase.cc src/HistCollectionDist.cc src/HistCollectionSample.cc  src/treeReader.cc src/tZqAllplots.cc src/analysisTools.cc src/eventSelection.cc src/trilepTools.cc src/tZqTools.cc bTagSFCode/BTagCalibrationStandalone.cc src/Reweighter.cc src/eventWeights.cc plotting/plotCode.cc plotting/tdrStyle.cc
