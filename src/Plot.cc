@@ -55,7 +55,7 @@ std::map < std::string, std::string> Plot::processNameMap =
         {"ZZH", "ZZ/H"},
         {"tZq", "tZq"},
         {"WZ", "WZ"},
-        {"multiboson", "Mulitboson"}
+        {"multiboson", "Multiboson"}
         };
 
 
