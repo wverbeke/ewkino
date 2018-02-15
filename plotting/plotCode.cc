@@ -98,6 +98,7 @@ Color_t bkgColortZq(const std::string& bkgName){
     if(bkgName == "TT/T + X" || bkgName == "TT + X") return kBlue - 10;
     if(bkgName == "X + #gamma") return kMagenta - 10;
     if(bkgName == "multiboson") return kYellow - 9;
+    if(bkgName == "Multiboson") return kYellow - 9;
     if(bkgName == "Drell-Yan" || bkgName == "DY") return kViolet - 7;
     if(bkgName == "WJets") return kSpring + 2;
     if(bkgName == "TT + Z") return kBlue - 6; 
