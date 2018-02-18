@@ -46,6 +46,8 @@ void Plot::draw(const std::string& outputDirectory, const std::string& analysis,
 std::map < std::string, std::string> Plot::processNameMap = 
         {
         {"TT", "TT + Jets"},
+        {"TTDiLep", "TT dilep."},
+        {"TTSingleLep", "TT semilep."},
         {"WJets", "WJets"},
         {"TTX", "TT + X"},
         {"ST", "T + X"},
