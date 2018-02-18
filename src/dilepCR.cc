@@ -125,8 +125,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
                 for(unsigned pu = 0; pu < nPuRew; ++pu){
                     for(unsigned dist = 0; dist < 12; ++dist){
-                        if(_lFlavor[ind[l]] == 0 && dist == 11) continue;  //do not plot muonSegComp for electrons
-                        if(_lFlavor[ind[l]] == 1 && dist == 10) continue;  //do not plot electronMva for muons
+                        //if(_lFlavor[ind[l]] == 0 && dist == 11) continue;  //do not plot muonSegComp for electrons
+                        //if(_lFlavor[ind[l]] == 1 && dist == 10) continue;  //do not plot electronMva for muons
                         for(unsigned r = 0; r < nRuns; ++r){
                             if(!samp.isData() || r == run || r == 0){
                                 double puw = 1.;

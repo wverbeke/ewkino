@@ -118,6 +118,9 @@ class treeReader {
         Double_t        _3dIP[nL_max];   
         Double_t        _3dIPSig[nL_max];   
         Float_t         _lElectronMva[nL_max];   
+        Float_t         _lElectronMvaHZZ[nL_max];
+        Float_t         _lElectronMvaFall17Iso[nL_max];
+        Float_t         _lElectronMvaFall17NoIso[nL_max];
         Bool_t          _lElectronPassEmu[nL_max];   
         Bool_t          _lElectronPassConvVeto[nL_max];
         Bool_t          _lElectronChargeConst[nL_max];
@@ -143,6 +146,13 @@ class treeReader {
         Bool_t          _tauTightMvaNew[nL_max];   
         Bool_t          _tauVTightMvaNew[nL_max];   
         Bool_t          _tauVTightMvaOld[nL_max];   
+        Double_t        _tauAgainstElectronMVA6Raw[nL_max];
+        Double_t        _tauCombinedIsoDBRaw3Hits[nL_max];
+        Double_t        _tauIsoMVAPWdR03oldDMwLT[nL_max];
+        Double_t        _tauIsoMVADBdR03oldDMwLT[nL_max];
+        Double_t        _tauIsoMVADBdR03newDMwLT[nL_max];
+        Double_t        _tauIsoMVAPWnewDMwLT[nL_max];
+        Double_t        _tauIsoMVAPWoldDMwLT[nL_max];
         Double_t        _relIso[nL_max];   
         Double_t        _relIso0p4Mu[nL_max];
         Double_t        _miniIso[nL_max];   
@@ -159,6 +169,7 @@ class treeReader {
         Bool_t          _lIsPrompt[nL_max];   
         Int_t           _lMatchPdgId[nL_max];   
         UInt_t          _lProvenance[nL_max];
+        UInt_t          _lProvenanceCompressed[nL_max];
         UChar_t         _nJets;
         Double_t        _jetPt[nJets_max];   
         Double_t        _jetPt_JECUp[nJets_max];   
@@ -372,6 +383,9 @@ class treeReader {
         TBranch        *b__3dIP;   
         TBranch        *b__3dIPSig;   
         TBranch        *b__lElectronMva;   
+        TBranch        *b__lElectronMvaHZZ;
+        TBranch        *b__lElectronMvaFall17Iso;
+        TBranch        *b__lElectronMvaFall17NoIso;
         TBranch        *b__lElectronPassEmu;   
         TBranch        *b__lElectronPassConvVeto;
         TBranch        *b__lElectronChargeConst;
@@ -397,6 +411,13 @@ class treeReader {
         TBranch        *b__tauTightMvaNew;   
         TBranch        *b__tauVTightMvaNew;   
         TBranch        *b__tauVTightMvaOld;   
+        TBranch        *b__tauAgainstElectronMVA6Raw;
+        TBranch        *b__tauCombinedIsoDBRaw3Hits;
+        TBranch        *b__tauIsoMVAPWdR03oldDMwLT;
+        TBranch        *b__tauIsoMVADBdR03oldDMwLT;
+        TBranch        *b__tauIsoMVADBdR03newDMwLT;
+        TBranch        *b__tauIsoMVAPWnewDMwLT;
+        TBranch        *b__tauIsoMVAPWoldDMwLT;
         TBranch        *b__relIso;   
         TBranch        *b__relIso0p4Mu;
         TBranch        *b__miniIso;   
@@ -413,6 +434,7 @@ class treeReader {
         TBranch        *b__lIsPrompt;   
         TBranch        *b__lMatchPdgId;   
         TBranch        *b__lProvenance;
+        TBranch        *b__lProvenanceCompressed;
         TBranch        *b__nJets;   
         TBranch        *b__jetPt;   
         TBranch        *b__jetPt_JECUp;   
