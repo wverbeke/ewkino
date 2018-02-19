@@ -19,16 +19,22 @@ class to easily make and write a file of root trees for BDT training
 
 class TrainingTree{
     public:
-        TrainingTree(const std::shared_ptr<Sample>&, const std::shared_ptr<Category>&, const std::vector<std::string>&);
-        TrainingTree(const std::shared_ptr<Sample>&, const std::shared_ptr<Category>&, const std::map<std::string, double>&);
-        void fill(const size_t categoryIndex, const std::map<std::string, double>&);
+        //TrainingTree(const std::shared_ptr<Sample>&, const std::shared_ptr<Category>&, const std::vector<std::string>&);
+        TrainingTree(const std::shared_ptr<Sample>&, const std::shared_ptr<Category>&, const std::map< std::string, double >&);
+        TrainingTree(const Sample&, const Category&, const std::map<std::string, double>&);
+        TrainingTree(const Sample&, const std::vector < std::vector < std::string > >&, const std::map< std::string, double >&);
+        ~TrainingTree();
+
+        void fill(const size_t, const bool, const std::map<std::string, double>&);
+
         void write(const std::string& );
     private:
         std::shared_ptr< Category > category;
         std::shared_ptr< Sample > sample;
-        std::map< std::string, double >& variableMap;
-        std::vector< std::shared_ptr< TTree > > signalTrees;
-        std::vector< std::shared_ptr< TTree > > backgroundTrees;
+        std::map< std::string, double > variableMap;
+        std::vector< TTree* > signalTrees;
+        std::vector< TTree* > backgroundTrees;
+        TFile* treeFile;
         
         //set up tree branch adresses
         void setBranches();
