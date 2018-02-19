@@ -1,7 +1,5 @@
 #include "../interface/TrainingTree.h"
 
-#include <iostream>
-
 TrainingTree::TrainingTree(const std::shared_ptr< Sample >& sam, const std::shared_ptr< Category >& cat, const std::map < std::string, double >& varMap):
     sample(sam), category(cat), variableMap(varMap)
 {
