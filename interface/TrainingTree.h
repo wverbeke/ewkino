@@ -25,8 +25,8 @@ class TrainingTree{
         TrainingTree(const Sample&, const std::vector < std::vector < std::string > >&, const std::map< std::string, float >&, const bool isSignal);
         ~TrainingTree();
 
-        //fill tree entry in given category's tree
-        void fill(const size_t, const std::map<std::string, float>&);
+        //fill tree entry for given category
+        void fill(const std::vector< size_t>&, const std::map< std::string, float>&);
         
         //void write(const std::string& );
     private:
@@ -41,6 +41,9 @@ class TrainingTree{
     
         //name of tree, depending on whether the category and whether it is signal
         std::string treeName(const size_t, const bool);
+
+        //fill tree entry in given category's tree
+        void fill(const size_t, const std::map<std::string, float>&);
 };
 
 //merge all training trees in given directory

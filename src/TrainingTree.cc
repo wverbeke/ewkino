@@ -49,6 +49,11 @@ void TrainingTree::fill(const size_t categoryIndex, const std::map< std::string,
     }
     trainingTrees[categoryIndex]->Fill();
 }
+
+void TrainingTree::fill(const std::vector< size_t>& categoryIndices, const std::map< std::string, float>& varMap){   
+    size_t categoryIndex = category->getIndex(categoryIndices);
+    fill(categoryIndex, varMap);
+}
 /*
 void trainingTree::write(const std::string& directory) const{
     TFile treeFile((const TString) formatedDirectoryName(directory) + bdtTrainingTree.root","RECREATE");
