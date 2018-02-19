@@ -17,16 +17,24 @@ int main(){
 
     //try to make a training tree for every sample
     //variable map:
-    std::map< std::string, double> variableMap;
+    std::map< std::string, float> variableMap;
     variableMap["testVar1"] = 0;
     variableMap["testVar2"] = 0;
     variableMap["testVar3"] = 0;
+    unsigned j = 0;
     for(auto& sam : samples){
-        TrainingTree testTree(sam, { {"A", "B", "C"}, {"X", "Y", "Z"} }, variableMap);
+        TrainingTree* tree;
+        if(j%2 == 0) tree = new TrainingTree(sam, { {"A", "B", "C"}, {"X", "Y", "Z"} }, variableMap, true);
+        else tree = new TrainingTree(sam, { {"A", "B", "C"}, {"X", "Y", "Z"} }, variableMap, false);
         for(unsigned c = 0; c < 9; ++c){
-            testTree.fill(c, true, variableMap); 
-            testTree.fill(c, false, variableMap); 
+            for(int i = 0; i < 100; ++i){
+                variableMap["testVar1"] = (double) i;
+                variableMap["testVar2"] = (double) i;
+                variableMap["testVar3"] = (double) i;
+                tree->fill(c, variableMap); 
+            }
         }
+        delete tree;
     }
     return 0;
 
