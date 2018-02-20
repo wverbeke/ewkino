@@ -664,7 +664,9 @@ void treeReader::plot(const std::string& distName){
             //read collection for this distribution from files
             HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
             //blind onZ categories
-            col.blindData("onZ"); 
+            col.blindData("onZ_1bJet23Jets"); 
+            col.blindData("onZ_1bJet4Jets"); 
+            col.blindData("onZ_2bJets"); 
             //print plots for collection
             bool is2016 = true;
             col.printPlots("plots/tZq/2016", is2016, "tzq", false);
