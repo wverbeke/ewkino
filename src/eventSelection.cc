@@ -283,10 +283,29 @@ bool treeReader::promptLeptons(){
 //overlap removal between events
 
 bool treeReader::photonOverlap(const Sample& samp){
+    /*
     if(samp.getFileName().find("DYJetsToLL") != std::string::npos){
         return _zgEventType > 2; 
     } else if(samp.getFileName().find("TTTo2L") != std::string::npos || samp.getFileName().find("TTJets") != std::string::npos ){
         return _ttgEventType > 2;
+    }
+    return false;
+    */
+    if( (samp.getFileName().find("DYJetsToLL") != std::string::npos ) || (samp.getFileName().find("TTJets") != std::string::npos ) ){
+        for(unsigned l = 0; l < _nLight; ++l){
+            if(lepIsGood(l) && _lMatchPdgId[l] == 22){
+                return true;
+            }
+        }
+    } else if( ( samp.getFileName().find("ZGTo2LG") != std::string::npos ) || ( samp.getFileName().find("TTGJets") != std::string::npos ) || ( samp.getFileName().find("TGJets") != std::string::npos )
+            || ( samp.getFileName().find("WGToLNuG") != std::string::npos) ){
+        bool ret = true;
+        for(unsigned l = 0; l < _nLight; ++l){
+            if(lepIsGood(l) && _lMatchPdgId[l] == 22){
+                ret = false;
+            }
+        }
+        return ret;
     }
     return false;
 }

@@ -34,7 +34,7 @@ cd ..
 #set up tZq plots 
 cd tZq 
 for dir1 in 2016 2017; do
-    for dir2 in mllInclusive onZ offZ; do
+    for dir2 in mllInclusive onZ offZ noOSSF; do
         for dir3 in nJetsInclusive 0bJets01Jets 0bJets2Jets 1bJet01jets 1bJet23Jets 1bJet4Jets 2bJets; do
             mkdir -p ${dir1}/${dir2}/${dir3}
         done
