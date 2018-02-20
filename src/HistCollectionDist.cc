@@ -164,7 +164,7 @@ Plot HistCollectionDist::getPlot(const size_t categoryIndex){
     //return plot object
     return Plot(
         plotPath(categoryIndex) + name(categoryIndex),  //name of plot
-        getObsHist(categoryIndex),      //observed yield
+        { ( categoryIsBlinded(categoryIndex) ? "Total bkg.": "Obs." ), getObsHist(categoryIndex) },        //observed yield and its name
         getBkgMap(categoryIndex)        //background information
         );
 }
@@ -200,7 +200,7 @@ void HistCollectionDist::printPlots(const std::string& outputDirectory, const st
 }
 
 //routine that sets data equal to the total background, thus blinding the data
-void HistCollectionDist::blindData(const size_t categoryIndex) const{
+void HistCollectionDist::blindData(const size_t categoryIndex){
     //find the HistCollectionBase objects corresponding to data
     for(auto& dataCollection: collection){
         //verify we have data
@@ -227,14 +227,21 @@ void HistCollectionDist::blindData(const size_t categoryIndex) const{
             dataCollection.access(categoryIndex)->Add(bkgCollection.access(categoryIndex, false).get());
         }
     }
+    //add this category to the list of categories that were blinded
+    blindedCategories.insert(categoryIndex);
 }
 
-void HistCollectionDist::blindData(const std::string& catName) const{
+void HistCollectionDist::blindData(const std::string& catName){
     //blind data for any category containing the given name
     for(size_t c = 0; c < categorySize(); ++c){
         if(categoryName(c).find(catName) != std::string::npos){
             blindData(c);
         }
     }
+}
+
+//check if particular category was blinded 
+bool HistCollectionDist::categoryIsBlinded(const size_t categoryIndex) const{
+    return ( blindedCategories.find(categoryIndex) != blindedCategories.cend() );
 }
 

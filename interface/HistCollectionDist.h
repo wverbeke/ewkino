@@ -2,6 +2,7 @@
 #define HistCollectionDist_H
 
 //include c++ library classes
+#include <set>
 
 //include other parts of code 
 #include "HistCollectionBase.h"
@@ -23,7 +24,7 @@ class HistCollectionDist{
         void printPlots(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, TH1D** bkgSyst = nullptr, const bool sigNorm = true); 
 
         //routine to blind data in given category, if no name is given all categories are blinded!
-        void blindData(const std::string& catName = "") const;
+        void blindData(const std::string& catName = "");
     private:
         std::vector< HistCollectionBase > collection;
         std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory
@@ -73,6 +74,10 @@ class HistCollectionDist{
         std::string plotHeader(const size_t categoryIndex) const;
 
         //blind data given a category index
-        void blindData(const size_t) const;
+        void blindData(const size_t);
+
+        //keep track of blinded categories for legend names in plots    
+        std::set<size_t> blindedCategories;
+        bool categoryIsBlinded(const size_t categoryIndex) const;
 };
 #endif

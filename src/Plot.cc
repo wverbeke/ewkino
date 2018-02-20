@@ -6,7 +6,8 @@
 #include "TCanvas.h"
 
 void Plot::draw(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, const std::string& header, TH1D** bkgSyst, const bool sigNorm) const{
-    std::vector< std::string> names = {"Obs."};
+    //first name given to plotting function is that of the data (or pseudodata)
+    std::vector< std::string> names = { data.first };
     std::vector< TH1D*> bkgHist;
     //warning, vector of booleans can not be used because it is a bit-field in c++!
     bool isSMSignalVec[(const size_t) bkg.size()];
@@ -24,7 +25,7 @@ void Plot::draw(const std::string& outputDirectory, const std::string& analysis,
 
     //call plotting function
     plotDataVSMC(
-        data.get(),     //data histogram
+        data.second.get(),     //data histogram
         &bkgHist[0],    //pointer to first element of bkgHist ( function expects array )
         &names[0],      //bkg names
         bkgHist.size(), //number of backgrounds
@@ -45,6 +46,8 @@ void Plot::draw(const std::string& outputDirectory, const std::string& analysis,
 std::map < std::string, std::string> Plot::processNameMap = 
         {
         {"TT", "TT + Jets"},
+        {"TTDiLep", "TT dilep."},
+        {"TTSingleLep", "TT semilep."},
         {"WJets", "WJets"},
         {"TTX", "TT + X"},
         {"ST", "T + X"},

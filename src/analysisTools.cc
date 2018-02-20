@@ -237,3 +237,11 @@ void tools::makeFileList(const std::string& directory, const std::string& output
     //pipe directory contents to file
     system( "for f in " + directory + extraSlash + "*; do echo $f >> " + outputFileName + "; done");
 }
+
+//add training / to directoryName if needed
+std::string formattedDirectoryName(const std::string& directory){
+    std::string formated(directory);
+    if(formated.back() != '/') formated.append("/");
+    return formated;
+}
+

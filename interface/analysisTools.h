@@ -53,5 +53,8 @@ namespace tools{
 
     //list all files in a directory and save this to a txt file of given name
     void makeFileList(const std::string&, const std::string&);
+
+    //add training / to directoryName if needed
+    std::string formatedDirectoryName(const std::string&);     
 }
 #endif

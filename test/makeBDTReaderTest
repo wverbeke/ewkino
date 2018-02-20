@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wno-reorder -Wextra
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= ../src/Category.cc ../src/BDTReader.cc testBDTReader.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= testBDTReader
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
