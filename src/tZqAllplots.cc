@@ -15,6 +15,8 @@
 #include <iomanip>
 #include <tuple>
 
+#include <chrono>
+
 //include other parts of the code
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
@@ -218,6 +220,8 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     //categorization
     Category categorization({ {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
 
@@ -260,6 +264,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"etaZ", 0.},
             {"maxDeltaPhibmet", 0.},
             {"minDeltaPhibmet", 0.},
+            {"minDeltaPhilb", 0.},
             {"pTmin2l", 0.},
             {"minmTbmet", 0.},
             {"minmTlmet", 0.},
@@ -318,7 +323,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
         }
         //find W lepton 
-        unsigned lw;
+        unsigned lw = 999;
         for(unsigned l = 0; l < lCount; ++l){
             if( l != bestZ.first && l != bestZ.second ) lw = l;
         }
@@ -450,9 +455,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         double minpTBJetMET = kinematics::minPT(jetV, bJetInd, &met, metIndex);
         double maxpTBJetMET = kinematics::maxPT(jetV, bJetInd, &met, metIndex);
 
-        //auto t2 = std::chrono::high_resolution_clock::now();
-        //std::chrono::duration<double> elapsed = t2 - t1;
-        //std::cout << "Finding all kinematic extrema took " << elapsed.count() << " seconds" << std::endl;
         //compute HT
         double HT = 0;
         for(unsigned j = 0; j < jetCount; ++j){
@@ -468,90 +470,49 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned j = 0; j < jetCount; ++j){
             if(jetV[jetInd[j]].DeltaR(lepV[lw]) < deltaRWLepClosestJet) deltaRWLepClosestJet = jetV[jetInd[j]].DeltaR(lepV[lw]);
         }
-        /*
-        //Fill tree for BDT training
-        asymmetryWlep = _lEta[ind[lw]]*_lCharge[ind[lw]];
-        topMass = std::max(topV.M(), 0.);
-        etaMostForward = fabs(highestEtaJet.Eta());
-        //pTForwardJets = forwardJets.Pt();
-        mTW = kinematics::mt(lepV[lw], met); 
-        highestDeepCSV = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
-        numberOfJets = jetCount;
-        numberOfBJets = bJetCount;
-        pTLeadingLepton = _lPt[ind[0]];
-        //pTLeadingJet = leadingJet.Pt();
-        //mNotSoForwardJets = std::max(notSoForwardJets.M(), 0.);
-        pTLeadingBJet = leadingBJet.Pt();
-        pTMostForwardJet = highestEtaJet.Pt();
-        //missingET = _met;
-        mAllJets = std::max(jetSystem.M(), 0.); 
-        maxDeltaPhijj = maxDeltaPhiJetJet;
-        maxDeltaRjj = maxDeltaRJetJet;
-        maxMjj = std::max(maxMJetJet, 0.);
-        maxMlb = std::max(maxMLeptonbJet, 0.);
-        minMlb = std::max(minMLeptonbJet, 0.);
-        pTMaxlb = maxpTLeptonbJet;
-        maxmTbmet = maxmTBJetMET;
-        maxpTlmet = maxpTLeptonMET;
-        pTMax2l = maxpTLeptonLepton;
-        m3l = (lepV[0] + lepV[1] + lepV[2]).M();
-        //maxDeltaPhill = maxDeltaPhiLeptonLepton;
-        //maxM2l = maxMLeptonLepton;
-        pT3l = (lepV[0] + lepV[1] + lepV[2]).Pt();
-        //mForwardJetsLeadinBJetW = std::max((forwardJets + leadingBJet + lepV[lw] + neutrino).M(), 0.);
-        ht = HT;
-        mZ = mll;
-        deltaRWLeptonTaggedbJet = lepV[lw].DeltaR(taggedBJet);
-        etaZ = fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta());
-        maxDeltaPhibmet = maxDeltaPhiBJetMET;
-        minDeltaPhibmet = minDeltaPhiBJetMET;
-        minDeltaPhilb = minDeltaPhiLeptonbJet;
-        pTmin2l = minpTLeptonLepton;
-        minmTbmet =  minmTBJetMET;
-        minmTlmet = minmTLeptonMET;
-        missingEt = _met;
-        maxmTjmet = maxmTJetMET;
-        eventWeight = weight;
-        */
+        
+        bdtVariableMap["asymmetryWlep"] = _lEta[ind[lw]]*_lCharge[ind[lw]];
+        bdtVariableMap["topMass"] =  std::max(topV.M(), 0.);
+        bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
+        bdtVariableMap["mTW"] = kinematics::mt(lepV[lw], met);
+        bdtVariableMap["highestDeepCSV"] = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
+        bdtVariableMap["numberOfJets"] = jetCount;
+        bdtVariableMap["numberOfBJets"] = bJetCount;
+        bdtVariableMap["pTLeadingLepton"] = _lPt[ind[0]];
+        bdtVariableMap["pTLeadingBJet"] = leadingBJet.Pt();
+        bdtVariableMap["pTMostForwardJet"] = highestEtaJet.Pt();
+        bdtVariableMap["mAllJets"] = std::max(jetSystem.M(), 0.);
+        bdtVariableMap["maxDeltaPhijj"] = maxDeltaPhiJetJet;
+        bdtVariableMap["maxDeltaRjj"] = maxDeltaRJetJet;
+        bdtVariableMap["maxMjj"] = std::max(maxMJetJet, 0.);
+        bdtVariableMap["maxMlb"] = std::max(maxMLeptonbJet, 0.);
+        bdtVariableMap["minMlb"] = std::max(minMLeptonbJet, 0.);
+        bdtVariableMap["pTMaxlb"] = maxpTLeptonbJet;
+        bdtVariableMap["maxmTbmet"] = maxmTBJetMET;
+        bdtVariableMap["maxpTlmet"] = maxpTLeptonMET;
+        bdtVariableMap["pTMax2l"] = maxpTLeptonLepton;
+        bdtVariableMap["m3l"] = (lepV[0] + lepV[1] + lepV[2]).M();
+        bdtVariableMap["pT3l"] = (lepV[0] + lepV[1] + lepV[2]).Pt();
+        bdtVariableMap["ht"] = HT;
+        bdtVariableMap["mZ"] = mll;
+        bdtVariableMap["deltaRWLeptonTaggedbJet"] = lepV[lw].DeltaR(taggedBJet);
+        bdtVariableMap["etaZ"] = fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta());
+        bdtVariableMap["maxDeltaPhibmet"] = maxDeltaPhiBJetMET;
+        bdtVariableMap["minDeltaPhibmet"] = minDeltaPhiBJetMET;
+        bdtVariableMap["minDeltaPhilb"] = minDeltaPhiLeptonbJet;
+        bdtVariableMap["pTmin2l"] = minpTLeptonLepton;
+        bdtVariableMap["minmTbmet"] = minmTBJetMET;
+        bdtVariableMap["minmTlmet"] = minmTLeptonMET;
+        bdtVariableMap["missingEt"] = _met;
+        bdtVariableMap["maxmTjmet"] = maxmTJetMET;
+        bdtVariableMap["eventWeight"] = weight;
+
         double bdt = 0, bdt2 = 0;
         if(tzqCat != 0){
             //bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
             //bdt2 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method 1000 Trees");
         }
-        //double bdt = 0;
-        /*
-        //double bdt = 0, bdtG = 0, bdtD = 0, bdtB = 0, mlp = 0, deepNN = 0, bdtGAlt = 0;
-        //double bdtGAlt_200trees = 0, bdtGAlt_shrinkage04 = 0, bdtGAlt_minNode005 = 0, bdtGAlt_negWeights = 0, bdtGAlt_MaxDepth4 = 0, bdtGAlt_20cuts = 0;
-        std::vector<double> mvaVals(30);
-        for(unsigned i = 0; i < mvaMethods.size(); ++i){
-           if(tzqCat != 0 ) mvaVals[i] =  mvaReader[mllCat][tzqCat]->EvaluateMVA(mvaMethods[i] + " method");
-           else mvaVals[i] = 0;
-        }
-        */
-        /*
-        if(catNames[tzqCat + 1] != "0bJets_01Jets"){
-            bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDT method");
-            bdtG = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
-            bdtD = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTD method");
-            bdtB = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTB method");
-            mlp = mvaReader[mllCat][tzqCat]->EvaluateMVA("MLP method");
-            deepNN = mvaReader[mllCat][tzqCat]->EvaluateMVA("DNN method");
-            bdtGAlt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt method");
-            bdtGAlt_200trees = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_200trees method");
-            bdtGAlt_shrinkage04 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_shrinkage04 method");
-            bdtGAlt_minNode005 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_minNode005 method");
-            bdtGAlt_negWeights = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_negWeights method");
-            bdtGAlt_MaxDepth4 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_MaxDepth4 method");
-            bdtGAlt_20cuts = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTGAlt_20Cuts method");
-        }
-        */
-        //distributions to plot
-        //double fill[nDist] = {bdt, bdtG, bdtD, bdtB, mlp, deepNN, bdtGAlt, 
-        //    bdtGAlt_200trees, bdtGAlt_shrinkage04, bdtGAlt_minNode005, bdtGAlt_negWeights, bdtGAlt_MaxDepth4, bdtGAlt_20cuts,
         double fill[nDist] = {
-            //mvaVals[0], mvaVals[1], mvaVals[2], mvaVals[3], mvaVals[4], mvaVals[5], mvaVals[6], mvaVals[7], mvaVals[8], mvaVals[9], 
-            //mvaVals[10], mvaVals[11], mvaVals[12], mvaVals[12], mvaVals[13], mvaVals[14], mvaVals[15], mvaVals[16], mvaVals[17], mvaVals[18], mvaVals[19], mvaVals[20], mvaVals[21],
-            //mvaVals[22], mvaVals[23], mvaVals[24], mvaVals[25], mvaVals[26], mvaVals[27], mvaVals[28], mvaVals[29],
             bdt, bdt, bdt2, bdt2, 
             _met, mll, kinematics::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
         (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
@@ -636,8 +597,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 for(unsigned cat = 0; cat < nCat; ++cat){
                     if(cat == 0 || cat == (tzqCat + 1) ){
                         //Fill training tree
-                        //if(currentSample == 2) tree[0][cat][m]->Fill();
-                        //else if(currentSample > 2 && std::get<0>(samples[sam]) != "DY" ) tree[1][cat][m]->Fill(); //fluctuations on DY sample too big for training
+                        if(samp.getProcessName() != "DY" ) trainingTree.fill({m, cat}, bdtVariableMap); //fluctuations on DY sample too big for training
                         for(unsigned dist = 0; dist < nDist; ++dist){
                             histCollection.access(dist, {m, cat})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
                         }
@@ -648,9 +608,12 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     }
     //write histcollection to file
     histCollection.store("tempHists_tZq/", begin, end);
-    //Save training tree
-    //treeFile.Write();
-    //treeFile.Close();
+
+    auto finish = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> elapsed = finish - start;
+
+    std::cout << "Elapsed time: " << elapsed.count() << std::endl;
 }
 
 void treeReader::splitJobs(){
@@ -697,78 +660,6 @@ void treeReader::splitPlots(){
         tools::submitScript("printPlots.sh", "00:30:00");
     }
 }
-
-
- 
-
-    //TEMPORARY//////
-    //replace data with sum of all backgrounds
-    /*
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                mergedHists[m][cat][dist][0] = (TH1D*) mergedHists[m][cat][dist][1]->Clone(); 
-                for(unsigned p = 2; p < proc.size(); ++p){
-                    mergedHists[m][cat][dist][0]->Add(mergedHists[m][cat][dist][p]);
-                }
-            }
-        }
-    }
-    ////////////////
-    //Make 81 fb copy of all histograms
-    TH1D* mergedHists_81fb[nMll][nCat][nDist][(const size_t) proc.size()];
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned p = 0; p < proc.size(); ++p){
-                    mergedHists_81fb[m][cat][dist][p] = (TH1D*) mergedHists[m][cat][dist][p]->Clone();
-                    mergedHists_81fb[m][cat][dist][p]->Scale((lumi2017 + lumi2016)/lumi2016);
-                }
-            }
-        }
-    }
-    const std::string sigNames[1] = {"tZq shape"};
-    std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
-    for(unsigned m = 0; m < nMll; ++m){
-        signal[m] = std::vector< std::vector < TH1D* > >(nCat);
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            signal[m][cat] = std::vector<TH1D*>(nDist);
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                signal[m][cat][dist] = (TH1D*) mergedHists[m][cat][dist][1]->Clone();
-            }
-        }
-    }
-    //make 81 fb copy of signal
-    TH1D* signal_81fb[nMll][nCat][nDist];
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                signal_81fb[m][cat][dist] = (TH1D*) mergedHists_81fb[m][cat][dist][1]->Clone();
-            }
-       } 
-    }
-    //plot all distributions
-    const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                if(dist > 28 && dist < 56) continue;
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/36fb/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m], "tzq", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal);             //linear plots
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/36fb/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m] + "_withSignal", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal, &signal[m][cat][dist], sigNames, 1);             //linear plots with signal
-
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/36fb/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal);    //log plots
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/36fb/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_withSignal_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal, &signal[m][cat][dist], sigNames, 1);    //log plots with signal
-
-                //plotDataVSMC(mergedHists_81fb[m][cat][dist][0], &mergedHists_81fb[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/81fb/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m], "tzq", false, false, "81 fb^{-1} (13 TeV)", nullptr, isSMSignal);             //linear plots
-                //plotDataVSMC(mergedHists_81fb[m][cat][dist][0], &mergedHists_81fb[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/81fb/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m] + "_withSignal", "tzq", false, false, "81 fb^{-1} (13 TeV)", nullptr, isSMSignal, &signal[m][cat][dist], sigNames, 1);             //linear plots with signal
-
-                //plotDataVSMC(mergedHists_81fb[m][cat][dist][0], &mergedHists_81fb[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/81fb/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_log", "tzq", true, false, "81 fb^{-1} (13 TeV)", nullptr, isSMSignal);    //log plots
-                //plotDataVSMC(mergedHists_81fb[m][cat][dist][0], &mergedHists_81fb[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/81fb/" + mllNames[m] + "/" + catNames[cat] + "/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_withSignal_log", "tzq", true, false, "81 fb^{-1} (13 TeV)", nullptr, isSMSignal, &signal[m][cat][dist], sigNames, 1);    //log plots with signal
-            }
-        }
-    }
-}
-*/
 
 int main(int argc, char* argv[]){
     treeReader reader;

@@ -23,7 +23,7 @@ TLorentzVector tzq::findBestNeutrinoAndTop(const TLorentzVector& wLep, const TLo
     std::pair<double, double> pzSol = trilep::neutrinoPZ(wLep, met);
     TLorentzVector neutrinoPlus(met.Px(), met.Py(), pzSol.first, sqrt(met.Px()*met.Px() + met.Py()*met.Py() + pzSol.first*pzSol.first) );
     TLorentzVector neutrinoMin(met.Px(), met.Py(), pzSol.second, sqrt(met.Px()*met.Px() + met.Py()*met.Py() + pzSol.second*pzSol.second) );
-    bool plus;  //true if + solution is chosen, otherwise false
+    bool plus = true;  //true if + solution is chosen, otherwise false
     if(bJetI.size() == 0){
         taggedJetI[0] = jetI[0];
     } else if(bJetI.size() == 1){
