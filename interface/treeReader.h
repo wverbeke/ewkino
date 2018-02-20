@@ -259,7 +259,9 @@ class treeReader {
 
         //overlap removal between samples
         bool photonOverlap();                                                                                //sample overlap due to photons
+        bool photonOverlap(const Sample&);
         bool htOverlap();                                                                                    //sample overlap due to HT binning
+        bool htOverlap(const Sample&);
 
         //check if leptons are prompt in MC
         bool promptLeptons();

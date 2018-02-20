@@ -26,6 +26,7 @@ std::string BDTReader::mvaMethodName(const size_t categoryIndex) const{
 float BDTReader::computeBDT(const size_t categoryIndex, const std::map < std::string, float>& varMap){
 
     //check if input map has the correct size
+    /*
     if(variableMap.size() != varMap.size()){
         std::cerr << "Error: trying to set TrainingTree map equal to a map of different size! returning control" << std::endl;
         return 0.;
@@ -35,6 +36,10 @@ float BDTReader::computeBDT(const size_t categoryIndex, const std::map < std::st
     auto variableMapIt = variableMap.begin();
     for(auto tempIt = varMap.cbegin(); tempIt != varMap.cend(); ++tempIt, ++variableMapIt){
         variableMapIt->second = tempIt->second;
+    }
+    */
+    for(auto it = varMap.cbegin(); it != varMap.cend(); ++it){
+        variableMap[it->first] = it->second;
     }
 
     //retrieve bdt output and return
