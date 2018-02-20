@@ -666,8 +666,9 @@ void treeReader::plot(const std::string& distName){
             //blind onZ categories
             col.blindData("onZ"); 
             //print plots for collection
-            col.printPlots("plots/tZq/2016", "tzq", false);
-            col.printPlots("plots/tZq/2016", "tzq", true);
+            bool is2016 = true;
+            col.printPlots("plots/tZq/2016", is2016, "tzq", false);
+            col.printPlots("plots/tZq/2016", is2016, "tzq", true);
         }
     }
 }
