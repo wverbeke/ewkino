@@ -68,6 +68,7 @@ bool treeReader::lepIsLoose(const unsigned ind){
     } else if(_lFlavor[ind] == 0){
         if(_lElectronMissingHits[ind] > 1) return false;
         if(!elePassVLooseMvaIDSUSY(ind)) return false;
+        if(!eleIsClean(ind)) return false;
     }
     return true;
 }
@@ -99,7 +100,6 @@ bool treeReader::lepIsGood(const unsigned l){
     }
     if(_lFlavor[l] == 0){
         if(!_lElectronPassEmu[l]) return false;
-        if(!eleIsClean(l)) return false;  //clean electrons from loose muons
     }
     return true;
 }
@@ -113,7 +113,6 @@ bool treeReader::lepIsTight(const unsigned l){
 }
 
 unsigned treeReader::selectLep(std::vector<unsigned>& ind){
-    setConePt();
     ind.clear();
     unsigned lCount = 0;
     for(unsigned l = 0; l < _nLight; ++l){
@@ -123,6 +122,11 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
         }
     }
     if(lCount < 2) return 0;
+
+    //set cone pt's after baseline object selection
+    setConePt();
+
+    //order particles by pT
     orderByPt(ind, _lPt, lCount);
     return lCount;	
 }
