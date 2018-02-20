@@ -297,7 +297,7 @@ bool treeReader::photonOverlap(const Sample& samp){
                 return true;
             }
         }
-    } else if( ( samp.getFileName().find("ZGToLNuG") != std::string::npos ) || ( samp.getFileName().find("TTGJets") != std::string::npos ) || ( samp.getFileName().find("TGJets") != std::string::npos )){
+    } else if( ( samp.getFileName().find("ZGTo2LG") != std::string::npos ) || ( samp.getFileName().find("TTGJets") != std::string::npos ) || ( samp.getFileName().find("TGJets") != std::string::npos )){
         bool ret = true;
         for(unsigned l = 0; l < _nLight; ++l){
             if(lepIsGood(l) && _lMatchPdgId[l] == 22){
