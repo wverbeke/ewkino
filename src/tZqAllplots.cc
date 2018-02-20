@@ -25,6 +25,8 @@
 #include "../interface/HistCollectionDist.h"
 #include "../interface/HistCollectionSample.h"
 #include "../interface/kinematicTools.h"
+#include "../interface/TrainingTree.h"
+#include "../interface/BDTReader.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -49,35 +51,6 @@ void treeReader::setup(){
         /*
         HistInfo("bdt", "BDT output", 30, -0.35, 0.35),
         HistInfo("bdtG", "BDTG output", 30, -1, 1),
-        HistInfo("bdtD", "BDTD output", 30, -0.5, 0.5),
-        HistInfo("bdtB", "BDTB output", 30, -1, 1),
-        HistInfo("mlp", "MLP output", 30, 0, 1),
-        HistInfo("deepNN", "deep neural network output", 30, 0, 1),
-        HistInfo("bdtGAlt", "alternate BDTG output", 30, -1, 1),
-        HistInfo("bdtG_200trees", "BDTG output (200 trees)", 30, -1, 1),
-        HistInfo("bdtG_shrinkage04", "BDTG output (shrinkage 0.4)", 30, -1, 1),
-        HistInfo("bdtG_minNode005", "BDTG output (min node size 5%)", 30, -1, 1),
-        HistInfo("bdtG_negWeights", "BDTG output (include neg. weights)", 30, -1, 1),
-        HistInfo("bdtG_MaxDepth4", "BDTG output (max depth 4)", 30, -1, 1),
-        HistInfo("bdtG_20Cuts", "BDTG output (20 points cut grid)", 30, -1, 1),
-        HistInfo("bdtG_20Cuts_10bins", "BDTG output (20 points cut grid)", 10, -1, 1),
-        HistInfo("BDTGAlt_negWeights_SDivSqrtSPlusB", "BDTG output (neg. weights, s/sqrt(s + b) )", 30, -1, 1),
-        HistInfo("BDTGAlt_shrinkage02_20Cuts", "BDTG output (shrinkage 0.2, 20 cuts)", 30, -1, 1),
-        HistInfo("BDTGAlt_shrinkage04_20Cuts",  "BDTG output (shrinkage 0.4, 20 cuts)", 30, -1, 1),
-        HistInfo("BDTGAlt_shrinkage02_20Cuts_depth3", "BDTG output (shrinkage 0.2, 20 cuts, depth 3)", 30, -1, 1),
-        HistInfo("BDTGAlt_200trees_MaxDepth3_shrinkage02", "BDTG output (200 trees, shrinkage 0.2, depth 3)", 30, -1, 1),
-        HistInfo("BDTGAlt_MaxDepth3", "BDTG output (depth 3)", 30, -1, 1),
-        HistInfo("BDTGAlt_Decorrelate", "BDTG output (decorrelated)", 30, -1, 1),
-        HistInfo("BDTAda_200Cuts",  "BDTAda output (200 cuts)", 30, -0.35, 0.35),
-        HistInfo("BDTAda_200Cuts_Depth2", "BDTAda output (depth 2)", 30, -0.35, 0.35),
-        HistInfo("BDTAda_200Cuts_Depth2_Beta01", "BDTAda output (200 cuts, depth 2, beta 0.1)", 30, -0.35, 0.35),
-        HistInfo("BDTAda_200Cuts_Depth2_200Trees", "BDTAda output (200 cuts, 200 trees, depth 2)", 30, -0.35, 0.35),
-        HistInfo("BDTAda_200Cuts_SDivSqrtSPlusB", "BDTAda output (200 cuts, s/sqrt(s + b) )", 30, -0.35, 0.35),
-        HistInfo("BDTAda_200Cuts_ignoreNegative", "BDTAda output (200 cuts, ignora neg. weights)", 30, -0.35, 0.35),
-        HistInfo("BDTAda_200Cuts_Decorrelate", "BDTAda output (200 cuts, decorrelated)", 30, -0.35, 0.35),
-        HistInfo("BDTB_200Cuts", "BDTB output (200 cuts)", 30, -1, 1),
-        HistInfo("BDTB_200Cuts_Depth3", "BDTB output (200 cuts, depth 3)", 30, -1, 1),
-        HistInfo("BDTB_200Cuts_1000Trees", "BDTB output (200 cuts, 1000 trees)", 30, -1, 1),
         */
         ////
         HistInfo("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
@@ -244,142 +217,60 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 }
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
+
+    //categorization
+    Category categorization({ {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+
     //set up histogram collection for particular sample
-    HistCollectionSample histCollection(histInfo, samp, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+    HistCollectionSample histCollection(histInfo, samp, categorization);
+
     //store relevant info from histCollection
     const unsigned nDist = histInfo.size();                              //number of distributions to plot
     const unsigned nCat = histCollection.categoryRange(1);                //Several categories enriched in different processes
     const unsigned nMll = histCollection.categoryRange(0);                //categories based on dilepton Mass
-    /*
-    const std::string mllNames[nMll] = {"mllInclusive", "onZ", "offZ"};
-    const std::string catNames[nCat] = {"nJetsInclusive", "0bJets_01Jets", "0bJets_2Jets", "1bJet_01jets", "1bJet_23Jets", "1bJet_4Jets", "2bJets"};
-    //initialize vector holding all histograms
-    std::vector< std::vector < std::vector< std::vector< TH1D* > > > > hists(nMll);
-    for(unsigned m = 0; m < nMll; ++m){
-        hists[m] = std::vector< std::vector < std::vector< TH1D* > > >(nCat);
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                hists[m][cat].push_back(std::vector < TH1D* >() );
-                for(size_t sam = 0; sam < samples.size(); ++sam){
-                    hists[m][cat][dist].push_back(nullptr);
-                    hists[m][cat][dist][sam] = new TH1D( (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + catNames[cat] + mllNames[m]), (const TString&) (std::get<1>(samples[sam]) + std::get<0>(histInfo[dist]) + catNames[cat] + mllNames[m] + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  std::get<2>(histInfo[dist]), std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
-                }
-            }
-        }
-    }
 
-    //store maxima of histograms for overflow bins
-    double maxBin[nDist];
-    for(unsigned dist = 0; dist < nDist; ++dist){
-        maxBin[dist] = std::get<4>(histInfo[dist]) - 0.5*(std::get<4>(histInfo[dist]) - std::get<3>(histInfo[dist]) )/std::get<2>(histInfo[dist]);
-    }
-    */
-    /*
-    Float_t asymmetryWlep, topMass, etaMostForward, mTW, highestDeepCSV, numberOfJets, numberOfBJets;
-    Float_t pTLeadingLepton, pTLeadingBJet, pTMostForwardJet, mAllJets, maxDeltaPhijj, maxDeltaRjj, maxMlb, maxMjj, pTMaxlb, pTMax2l;
-    Float_t minMlb, maxmTbmet, maxpTlmet, pT3l, ht, m3l, mZ, deltaRWLeptonTaggedbJet, etaZ, maxDeltaPhibmet, minDeltaPhibmet;
-    Float_t minDeltaPhilb, pTmin2l, minmTbmet, minmTlmet, missingEt, maxmTjmet;
-    Float_t eventWeight;
-    */
-    //tree for BDT training
-    /*
-    TFile treeFile("trainingTrees/bdtTrainingTree.root","RECREATE");
-    TTree *tree[2][nCat][nMll];
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            tree[0][cat][m] = new TTree((const TString&) "signalTree" + catNames[cat] + mllNames[m],(const TString&) "tZq signal tree" + catNames[cat] + mllNames[m]);
-            tree[1][cat][m] = new TTree((const TString&) "backgroundTree" + catNames[cat] + mllNames[m], (const TString&) "tZq background tree" + catNames[cat] + mllNames[m]);
-            for(unsigned t = 0; t < 2; ++t){
-                tree[t][cat][m]->Branch("asymmetryWlep", &asymmetryWlep, "asymmetryWlep/F");
-                tree[t][cat][m]->Branch("topMass", &topMass, "topMass/F");
-                //tree[t][cat][m]->Branch("pTForwardJets", &pTForwardJets, "pTForwardJets/F");
-                tree[t][cat][m]->Branch("etaMostForward", &etaMostForward, "etaMostForward/F");
-                tree[t][cat][m]->Branch("mTW", &mTW, "mTW/F");
-                tree[t][cat][m]->Branch("highestDeepCSV", &highestDeepCSV, "highestDeepCSV/F");
-                tree[t][cat][m]->Branch("numberOfJets", &numberOfJets, "numberOfJets/F");
-                tree[t][cat][m]->Branch("numberOfBJets", &numberOfBJets, "numberOfBJets/F");
-                //tree[t][cat][m]->Branch("pTLeadingJet", &pTLeadingJet, "pTLeadingJet/F");
-                tree[t][cat][m]->Branch("pTLeadingLepton", &pTLeadingLepton, "pTLeadingLepton/F");
-                tree[t][cat][m]->Branch("pTLeadingBJet", &pTLeadingBJet, "pTLeadingBJet/F");
-                tree[t][cat][m]->Branch("pTMostForwardJet", &pTMostForwardJet, "pTMostFowardJet/F");
-                //tree[t][cat][m]->Branch("mNotSoForwardJets", &mNotSoForwardJets, "mNotSoForwardJets/F");
-                //tree[t][cat][m]->Branch("missingET", &missingET, "missingET/F");
-                tree[t][cat][m]->Branch("mAllJets", &mAllJets, "mAllJets/F");
-                tree[t][cat][m]->Branch("maxDeltaPhijj", &maxDeltaPhijj, "maxDeltaPhijj/F");
-                tree[t][cat][m]->Branch("maxDeltaRjj", &maxDeltaRjj, "maxDeltaRjj/F");
-                tree[t][cat][m]->Branch("maxMjj", &maxMjj, "maxMjj/F");
-                tree[t][cat][m]->Branch("maxMlb", &maxMlb, "maxMlb/F");
-                tree[t][cat][m]->Branch("minMlb", &minMlb, "minMlb/F");
-                tree[t][cat][m]->Branch("pTMaxlb", &pTMaxlb, "pTMaxlb/F");
-                tree[t][cat][m]->Branch("maxmTbmet", &maxmTbmet, "maxmTbmet/F");
-                tree[t][cat][m]->Branch("maxpTlmet", &maxpTlmet, "maxpTlmet/F");
-                tree[t][cat][m]->Branch("pTMax2l", &pTMax2l, "pTMax2l/F");
-                tree[t][cat][m]->Branch("m3l", &m3l, "m3l/F");
-                //tree[t][cat][m]->Branch("maxDeltaPhill", &maxDeltaPhill, "maxDeltaPhill/F");
-                //tree[t][cat][m]->Branch("maxM2l", &maxM2l, "maxM2l/F");
-                tree[t][cat][m]->Branch("pT3l", &pT3l, "pT3l/F");
-                //tree[t][cat][m]->Branch("mForwardJetsLeadinBJetW", &mForwardJetsLeadinBJetW, "mForwardJetsLeadinBJetW/F");
-                tree[t][cat][m]->Branch("ht", &ht, "ht/F");
-                tree[t][cat][m]->Branch("mZ", &mZ, "mZ/F");
-                tree[t][cat][m]->Branch("deltaRWLeptonTaggedbJet", &deltaRWLeptonTaggedbJet, "deltaRWLeptonTaggedbJet/F");
-                tree[t][cat][m]->Branch("etaZ", &etaZ, "etaZ/F");
-                tree[t][cat][m]->Branch("maxDeltaPhibmet", &maxDeltaPhibmet, "maxDeltaPhibmet/F");
-                tree[t][cat][m]->Branch("minDeltaPhibmet", &minDeltaPhibmet, "minDeltaPhibmet/F");
-                tree[t][cat][m]->Branch("minDeltaPhilb", &minDeltaPhilb, "minDeltaPhilb/F");
-                tree[t][cat][m]->Branch("pTmin2l", &pTmin2l, "pTmin2l/F");
-                tree[t][cat][m]->Branch("minmTbmet", &minmTbmet, "minmTbmet/F");
-                tree[t][cat][m]->Branch("minmTlmet", &minmTlmet, "minmTlmet/F");
-                tree[t][cat][m]->Branch("missingEt", &missingEt, "missingEt/F");
-                tree[t][cat][m]->Branch("maxmTjmet", &maxmTjmet, "maxmTjmet/F");
-                
-                //event weights
-                tree[t][cat][m]->Branch("eventWeight", &eventWeight, "eventWeight/F");
-            }
-        }
-    }
-    */
-    /*
-    const std::vector<std::string> mvaMethods = {"BDT", "BDTG", "BDTD", "BDTB", "MLP", "DNN", "BDTGAlt", "BDTGAlt_200trees", "BDTGAlt_shrinkage04", "BDTGAlt_minNode005", "BDTGAlt_negWeights", "BDTGAlt_MaxDepth4", "BDTGAlt_20Cuts",
-                                     "BDTGAlt_negWeights_SDivSqrtSPlusB", "BDTGAlt_shrinkage02_20Cuts", "BDTGAlt_shrinkage04_20Cuts", "BDTGAlt_shrinkage02_20Cuts_depth3", "BDTGAlt_200trees_MaxDepth3_shrinkage02",
-                                     "BDTGAlt_MaxDepth3", "BDTGAlt_Decorrelate",
-                                     "BDTAda_200Cuts", "BDTAda_200Cuts_Depth2", "BDTAda_200Cuts_Depth2_Beta01", "BDTAda_200Cuts_Depth2_200Trees", "BDTAda_200Cuts_SDivSqrtSPlusB", "BDTAda_200Cuts_ignoreNegative",
-                                     "BDTAda_200Cuts_Decorrelate",
-                                     "BDTB_200Cuts", "BDTB_200Cuts_Depth3", "BDTB_200Cuts_1000Trees"}; 
-    //MVA reader 
-    TMVA::Reader *mvaReader[nMll][nCat]; //one BDT for every category
-    for(unsigned m = 0; m < nMll - 1; ++m){
-        for(unsigned cat = 0; cat < nCat - 1; ++cat){
-            mvaReader[m][cat] = new TMVA::Reader( "!Color:!Silent" );
-            mvaReader[m][cat]->AddVariable("asymmetryWlep", &asymmetryWlep);
-            if(catNames[cat + 1] != "0bJets_01Jets" && catNames[cat + 1] != "0bJets_2Jets") mvaReader[m][cat]->AddVariable("deltaRWLeptonTaggedbJet", &deltaRWLeptonTaggedbJet);
-            mvaReader[m][cat]->AddVariable("etaZ", &etaZ);
-            if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets" && catNames[cat + 1]  != "1bJet_4Jets" && catNames[cat + 1] != "2bJets") mvaReader[m][cat]->AddVariable("pTLeadingBJet", &pTLeadingBJet);
-            mvaReader[m][cat]->AddVariable("pTMostForwardJet", &pTMostForwardJet);
-            mvaReader[m][cat]->AddVariable("highestDeepCSV", &highestDeepCSV);
-            mvaReader[m][cat]->AddVariable("etaMostForward", &etaMostForward);
-            mvaReader[m][cat]->AddVariable("pTLeadingLepton", &pTLeadingLepton);
-            mvaReader[m][cat]->AddVariable("m3l", &m3l);
-            if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets" && catNames[cat + 1]  != "1bJet_4Jets" && catNames[cat + 1] != "2bJets") mvaReader[m][cat]->AddVariable("maxDeltaPhijj", &maxDeltaPhijj);
-            if(catNames[cat + 1] != "1bJet_01jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("maxMjj", &maxMjj);
-            if(catNames[cat + 1] != "0bJets_01Jets" && catNames[cat + 1] != "0bJets_2Jets") mvaReader[m][cat]->AddVariable("minDeltaPhibmet", &minDeltaPhibmet);
-            if(catNames[cat + 1] != "0bJets_01Jets" && catNames[cat + 1] != "0bJets_2Jets") mvaReader[m][cat]->AddVariable("minDeltaPhilb", &minDeltaPhilb);
-            if(catNames[cat + 1] == "1bJet_4Jets" || catNames[cat + 1] == "2bJets")  mvaReader[m][cat]->AddVariable("minMlb", &minMlb);
-            if(catNames[cat + 1] != "0bJets_2Jets" && catNames[cat + 1] != "0bJets_01Jets")  mvaReader[m][cat]->AddVariable("maxMlb", &maxMlb);
-            if(catNames[cat + 1] == "1bJet_4Jets" || catNames[cat + 1] == "2bJets") mvaReader[m][cat]->AddVariable("ht", &ht);
-            if(catNames[cat + 1] == "1bJet_4Jets" || catNames[cat + 1] == "2bJets") mvaReader[m][cat]->AddVariable("numberOfJets", &numberOfJets);
-            if(catNames[cat + 1] == "2bJets") mvaReader[m][cat]->AddVariable("numberOfBJets", &numberOfBJets);
-            if(catNames[cat + 1] != "0bJets_01Jets" && catNames[cat + 1] != "0bJets_2Jets") mvaReader[m][cat]->AddVariable("maxmTbmet", &maxmTbmet);
-            mvaReader[m][cat]->AddVariable("pTmin2l", &pTmin2l);
-            mvaReader[m][cat]->AddVariable("mTW", &mTW);
-            mvaReader[m][cat]->AddVariable("topMass", &topMass);
-            //mvaReader[m][cat]->BookMVA("BDTG method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTG_m1Cuts_Depth4_baggedGrad_6000trees_shrinkage0p05.weights.xml");
-            //mvaReader[m][cat]->BookMVA("BDTG method 1000 Trees", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_BDTG_m1Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml");
-            //for(auto it = mvaMethods.cbegin(); it != mvaMethods.cend(); ++it){
-            //    mvaReader[m][cat]->BookMVA(*it + " method", "bdtTraining/bdtWeights/" + catNames[cat + 1] + "_" + mllNames[m + 1] + "_" + *it + ".weights.xml");
-            //}
-        }
-    }
-    */
+    //variables to write to tree for bdt training and used for bdt computation
+    std::map < std::string, float > bdtVariableMap =
+        {   
+            {"asymmetryWlep", 0.},
+            {"topMass", 0.},
+            {"etaMostForward", 0.},
+            {"mTW", 0.},
+            {"highestDeepCSV", 0.},
+            {"numberOfJets", 0.},
+            {"numberOfBJets", 0.},
+            {"pTLeadingLepton", 0.},
+            {"pTLeadingBJet", 0.},
+            {"pTMostForwardJet", 0.},
+            {"mAllJets", 0.},
+            {"maxDeltaPhijj", 0.},
+            {"maxDeltaRjj", 0.},
+            {"maxMjj", 0.},
+            {"maxMlb", 0.},
+            {"minMlb", 0.},
+            {"pTMaxlb", 0.},
+            {"maxmTbmet", 0.},
+            {"maxpTlmet", 0.},
+            {"pTMax2l", 0.},
+            {"m3l", 0.},
+            {"pT3l", 0.},
+            {"ht", 0.},
+            {"mZ", 0.},
+            {"deltaRWLeptonTaggedbJet", 0.},
+            {"etaZ", 0.},
+            {"maxDeltaPhibmet", 0.},
+            {"minDeltaPhibmet", 0.},
+            {"pTmin2l", 0.},
+            {"minmTbmet", 0.},
+            {"minmTlmet", 0.},
+            {"missingEt", 0.},
+            {"maxmTjmet", 0.},
+            {"eventWeight", 0.}
+        };
+    
+    //training tree writer
+    TrainingTree trainingTree(samp, categorization, bdtVariableMap, samp.isSMSignal() ); 
+
     //loop over all sample
     initSample(samp, 0);          //Use 2016 lumi
     for(long unsigned it = begin; it < end; ++it){
