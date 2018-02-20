@@ -274,7 +274,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         };
     
     //training tree writer
-    TrainingTree trainingTree(samp, categorization, bdtVariableMap, samp.isSMSignal() ); 
+    TrainingTree trainingTree("trainingTrees/" + std::to_string(begin) + "_" + std::to_string(end) ,samp, categorization, bdtVariableMap, samp.isSMSignal() ); 
 
     //loop over all sample
     initSample(samp, 0);          //Use 2016 lumi
