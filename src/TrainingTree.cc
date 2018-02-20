@@ -1,18 +1,18 @@
 #include "../interface/TrainingTree.h"
 
-TrainingTree::TrainingTree(const std::shared_ptr< Sample >& sam, const std::shared_ptr< Category >& cat, const std::map < std::string, float >& varMap, const bool isSignal):
+TrainingTree::TrainingTree(const std::string& fileName, const std::shared_ptr< Sample >& sam, const std::shared_ptr< Category >& cat, const std::map < std::string, float >& varMap, const bool isSignal):
     sample(sam), category(cat), variableMap(varMap)
 {
-    treeFile = TFile::Open( (const TString&) "trainingTrees/bdtTrainingTree" + sam->getFileName() + ".root","RECREATE");
+    treeFile = TFile::Open( (const TString&) fileName + sam->getFileName() + ".root","RECREATE");
     setBranches(isSignal); 
 }
 
 
-TrainingTree::TrainingTree(const Sample& sam, const Category& cat, const std::map < std::string, float >& varMap, const bool isSignal):
-    TrainingTree( std::make_shared< Sample >(sam), std::make_shared< Category >(cat), varMap, isSignal) {}
+TrainingTree::TrainingTree(const std::string& fileName, const Sample& sam, const Category& cat, const std::map < std::string, float >& varMap, const bool isSignal):
+    TrainingTree(fileName, std::make_shared< Sample >(sam), std::make_shared< Category >(cat), varMap, isSignal) {}
 
-TrainingTree::TrainingTree(const Sample& sam, const std::vector < std::vector < std::string > >& categoryNames, const std::map < std::string, float >& varMap, const bool isSignal):
-    TrainingTree( sam, Category(categoryNames), varMap, isSignal) {} 
+TrainingTree::TrainingTree(const std::string& fileName, const Sample& sam, const std::vector < std::vector < std::string > >& categoryNames, const std::map < std::string, float >& varMap, const bool isSignal):
+    TrainingTree(fileName, sam, Category(categoryNames), varMap, isSignal) {} 
 
 
 //close outputfile that was opened in constructor and write trees to file

@@ -25,8 +25,8 @@ int main(){
     unsigned j = 0;
     for(auto& sam : samples){
         TrainingTree* tree;
-        if(j%2 == 0) tree = new TrainingTree(sam, { {"A", "B", "C"}, {"X", "Y", "Z"} }, variableMap, true);
-        else tree = new TrainingTree(sam, { {"A", "B", "C"}, {"X", "Y", "Z"} }, variableMap, false);
+        if(j%2 == 0) tree = new TrainingTree("testTree.root", sam, { {"A", "B", "C"}, {"X", "Y", "Z"} }, variableMap, true);
+        else tree = new TrainingTree("testTree.root", sam, { {"A", "B", "C"}, {"X", "Y", "Z"} }, variableMap, false);
         for(unsigned c = 0; c < 3; ++c){
             for(unsigned d = 0; d < 3; ++d){
                 for(int i = 0; i < 100; ++i){

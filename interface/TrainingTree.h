@@ -20,9 +20,9 @@ class to easily make and write a file of root trees for BDT training
 class TrainingTree{
     public:
         //TrainingTree(const std::shared_ptr<Sample>&, const std::shared_ptr<Category>&, const std::vector<std::string>&);
-        TrainingTree(const std::shared_ptr<Sample>&, const std::shared_ptr<Category>&, const std::map< std::string, float >&, const bool isSignal);
-        TrainingTree(const Sample&, const Category&, const std::map<std::string, float>&, const bool isSignal);
-        TrainingTree(const Sample&, const std::vector < std::vector < std::string > >&, const std::map< std::string, float >&, const bool isSignal);
+        TrainingTree(const std::string&, const std::shared_ptr<Sample>&, const std::shared_ptr<Category>&, const std::map< std::string, float >&, const bool isSignal);
+        TrainingTree(const std::string&, const Sample&, const Category&, const std::map<std::string, float>&, const bool isSignal);
+        TrainingTree(const std::string&, const Sample&, const std::vector < std::vector < std::string > >&, const std::map< std::string, float >&, const bool isSignal);
         ~TrainingTree();
 
         //fill tree entry for given category
