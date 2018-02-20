@@ -170,7 +170,7 @@ Plot HistCollectionDist::getPlot(const size_t categoryIndex){
 }
 
 //extract the correct plot header for each category
-std::string HistCollectionDist::plotHeader(const size_t categoryIndex) const{
+std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const bool is2016) const{
     //final return value
     std::string header;
     //name of this category
@@ -185,17 +185,24 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex) const{
     else if(category.find("RunD") != std::string::npos) header += "2017 Run D";
     else if(category.find("RunE") != std::string::npos) header += "2017 Run E";
     else if(category.find("RunF") != std::string::npos) header += "2017 Run F";
-    else( header += "42 fb^{-1}"); //default case just displays the luminosity
+    //default case just displays the luminosity
+    else{
+        if(is2016){
+            header += "35.9 fb^{-1}";
+        } else{
+            header += "41.4 fb^{-1}";
+        }
+    }
     header += " (13 TeV)";
     return header;
 }
 
 
-void HistCollectionDist::printPlots(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool sigNorm){
+void HistCollectionDist::printPlots(const std::string& outputDirectory, const bool is2016, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool sigNorm){
     //loop over all categories and output a plot for each one
     for(size_t c = 0; c < categorySize(); ++c){
         //print plot
-        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c), bkgSyst, sigNorm);
+        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c, is2016), bkgSyst, sigNorm);
     }           
 }
 
