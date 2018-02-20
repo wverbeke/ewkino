@@ -292,8 +292,8 @@ class treeReader {
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;
-        const double lumi2016 = 44.5;                                           //in units of 1/fb
-        const double lumi2017 = 35.867;                 
+        const double lumi2017 = 41.37;                                          //in units of 1/fb
+        const double lumi2016 = 35.867;                 
         
         // List of branches
         TBranch        *b__runNb;   

@@ -21,7 +21,7 @@ class HistCollectionDist{
 
         //output all plots to file, given options will be given to Plot "draw" function
         //function is non-const because histogram merge might be called before plotting
-        void printPlots(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, TH1D** bkgSyst = nullptr, const bool sigNorm = true); 
+        void printPlots(const std::string& outputDirectory, const bool is2016 = true, const std::string& analysis = "", bool log = false, bool normToData = false, TH1D** bkgSyst = nullptr, const bool sigNorm = true); 
 
         //routine to blind data in given category, if no name is given all categories are blinded!
         void blindData(const std::string& catName = "");
@@ -71,7 +71,7 @@ class HistCollectionDist{
         Plot getPlot(const size_t categoryIndex);
 
         //format plot header, depending on category name
-        std::string plotHeader(const size_t categoryIndex) const;
+        std::string plotHeader(const size_t categoryIndex, const bool is2016) const;
 
         //blind data given a category index
         void blindData(const size_t);
