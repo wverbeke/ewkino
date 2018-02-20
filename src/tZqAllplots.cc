@@ -287,32 +287,43 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         const unsigned lCount = selectLep(ind);
         if(lCount != 3) continue;
         if(tightLepCount(ind, lCount) != 3) continue; //require 3 tight leptons
+
         //require pt cuts (25, 15, 10) to be passed
         if(!passPtCuts(ind)) continue;
+
         //require presence of OSSF pair
         if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
+
         //remove overlap between samples
-        //if(photonOverlap()) continue;
+        if(photonOverlap(samp)) continue;
+
         //make lorentzvectors for leptons
         TLorentzVector lepV[lCount];
         for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
+
         //find best Z candidate
         std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, ind, _lFlavor, _lCharge, lCount);
+
         //make ordered jet and bjet collections
         std::vector<unsigned> jetInd, bJetInd;
         unsigned jetCount = nJets(jetInd);
         unsigned bJetCount = nBJets(bJetInd);
+
         //find highest eta jet
         unsigned highestEtaJ = (jetCount == 0) ? 99 : jetInd[0];
         for(unsigned j = 1; j < jetCount; ++j){
             if(fabs(_jetEta[jetInd[j]]) > fabs(_jetEta[highestEtaJ]) ) highestEtaJ = jetInd[j];
         }
+
         //determine tZq analysis category
         unsigned tzqCat = tzq::cat(jetCount, bJetCount);
+
         //determine best Z mass
         double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
+
         //veto events with mll below 30 GeV in agreement with the tZq sample
         if(mll < 30) continue;
+
         //determine mll category
         unsigned mllCat = 1;                      //offZ by default
         if( fabs(mll - 91.1876) < 15) mllCat = 0; //onZ    
@@ -322,25 +333,30 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned j = 0; j < _nJets; ++j){
             jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
         }
+
         //find W lepton 
         unsigned lw = 999;
         for(unsigned l = 0; l < lCount; ++l){
             if( l != bestZ.first && l != bestZ.second ) lw = l;
         }
+
         //make met vector 
         TLorentzVector met;
         met.SetPtEtaPhiE(_met, 0, _metPhi, _met);
         //reconstruct top mass and tag jets
+
         std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
         TLorentzVector neutrino = tzq::findBestNeutrinoAndTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
 
-        //tested up to here!
         //forward jet sum
         TLorentzVector forwardJets(0,0,0,0);
+
         //not so forward jet sum
         TLorentzVector notSoForwardJets(0,0,0,0);
+
         //super forward jet sum
         TLorentzVector superForwardJets(0,0,0,0);
+
         //jet sum 
         TLorentzVector jetSystem(0,0,0,0);
         for(unsigned j = 0; j < jetCount; ++j){
@@ -349,6 +365,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             if(fabs(_jetEta[jetInd[j]]) >= 0.8) notSoForwardJets += jetV[jetInd[j]];
             if(fabs(_jetEta[jetInd[j]]) >= 3.0) superForwardJets += jetV[jetInd[j]];
         } 
+
         //find jets with highest DeepCSV and CSVv2 values
         unsigned highestDeepCSVI = (jetCount == 0) ? 0 : jetInd[0], highestCSVv2I = (jetCount == 0) ? 0 : jetInd[0];
         for(unsigned j = 1; j < jetCount; ++j){
@@ -383,6 +400,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         }
         //compute top vector
         TLorentzVector topV = (neutrino + lepV[lw] + taggedBJet);
+
         //Compute minimum and maximum masses and separations for several objects
         //initialize lepton indices
         std::vector<unsigned> lepVecInd;
@@ -460,11 +478,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned j = 0; j < jetCount; ++j){
             HT += _jetPt[jetInd[j]];
         }
+
         //find most forward lepton
         unsigned mostForwardLepInd = ind[0];
         for(unsigned l = 1; l < lCount; ++l){
             if(fabs(_lEta[ind[l]]) > fabs(_lEta[mostForwardLepInd]) ) mostForwardLepInd = ind[l];
         }
+
         //find closest jet to W lepton
         double deltaRWLepClosestJet = 99999.;
         for(unsigned j = 0; j < jetCount; ++j){
@@ -512,6 +532,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             //bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
             //bdt2 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method 1000 Trees");
         }
+
         double fill[nDist] = {
             bdt, bdt, bdt2, bdt2, 
             _met, mll, kinematics::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
@@ -592,6 +613,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         (jetSystem + lepV[0] + lepV[1] + lepV[2] + neutrino).M(), jetSystem.M(),
         kinematics::mt(leadingJet, met), kinematics::mt(trailingJet, met)
         };
+
         for(unsigned m = 0; m < nMll; ++m){
             if(m == 0 || m == (mllCat + 1) ){
                 for(unsigned cat = 0; cat < nCat; ++cat){
@@ -606,13 +628,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
     }
+
     //write histcollection to file
     histCollection.store("tempHists_tZq/", begin, end);
 
+    //timer
     auto finish = std::chrono::high_resolution_clock::now();
-
     std::chrono::duration<double> elapsed = finish - start;
-
     std::cout << "Elapsed time: " << elapsed.count() << std::endl;
 }
 
