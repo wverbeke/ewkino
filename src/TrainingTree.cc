@@ -43,9 +43,13 @@ void TrainingTree::fill(const size_t categoryIndex, const std::map< std::string,
     /*
     consider to replace map copy here with vector for efficiency!
     */
-    //variableMap = varMap;
-    for(auto it = varMap.cbegin(); it != varMap.cend(); ++it){
-        variableMap[it->first] = it->second;
+    if(variableMap.size() != varMap.size()){
+        std::cerr << "Error: trying to set TrainingTree map equal to a map of different size! returning control" << std::endl;
+        return;
+    }
+    auto variableMapIt = variableMap.begin();
+    for(auto tempIt = varMap.cbegin(); tempIt != varMap.cend(); ++tempIt, ++variableMapIt){
+        variableMapIt->second = tempIt->second;
     }
     trainingTrees[categoryIndex]->Fill();
 }
