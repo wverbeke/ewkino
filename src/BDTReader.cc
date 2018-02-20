@@ -28,7 +28,7 @@ float BDTReader::computeBDT(const size_t categoryIndex, const std::map < std::st
     //check if input map has the correct size
     if(variableMap.size() != varMap.size()){
         std::cerr << "Error: trying to set TrainingTree map equal to a map of different size! returning control" << std::endl;
-        return;
+        return 0.;
     }
 
     //optimized way of copying the map's floats 
