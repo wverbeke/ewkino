@@ -24,7 +24,9 @@ std::string BDTReader::mvaMethodName(const size_t categoryIndex) const{
 
 //compute mva value for given category's mva
 float BDTReader::computeBDT(const size_t categoryIndex, const std::map < std::string, float>& varMap){
-    variableMap = varMap;
+    for(auto mapIt = varMap.cbegin(); mapIt != varMap.cend(); ++mapIt){
+        variableMap[mapIt->first] = mapIt->second;
+    }
     return ( readers[categoryIndex]->EvaluateMVA(methodName) );
 }
 
