@@ -223,7 +223,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     auto start = std::chrono::high_resolution_clock::now();
 
     //categorization
-    Category categorization({ {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+    Category categorization({ {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
 
     //set up histogram collection for particular sample
     HistCollectionSample histCollection(histInfo, samp, categorization);
@@ -292,7 +292,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         if(!passPtCuts(ind)) continue;
 
         //require presence of OSSF pair
-        if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
+        //if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
 
         //remove overlap between samples
         if(photonOverlap(samp)) continue;
@@ -324,9 +324,22 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //veto events with mll below 30 GeV in agreement with the tZq sample
         if(mll < 30) continue;
 
-        //determine mll category
-        unsigned mllCat = 1;                      //offZ by default
-        if( fabs(mll - 91.1876) < 15) mllCat = 0; //onZ    
+        //determine mll/flavor category 
+
+        //OSSF pair present:
+        unsigned mllCat = 99;
+        if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) == 0){
+            if( fabs(mll - 91.1876) < 15){
+                //onZ
+                mllCat = 0;
+            } else{
+                //offZ
+                mllCat = 1;
+            }
+        //no OSSF pair present
+        } else{
+            mllCat = 2;
+        }
 
         //make LorentzVector for all jets 
         TLorentzVector jetV[(const unsigned) _nJets];
@@ -615,7 +628,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         };
 
         for(unsigned m = 0; m < nMll; ++m){
-            if(m == 0 || m == (mllCat + 1) ){
+            //m = 0 is onZ + offZ
+            if( (m == 0 && mllCat != 2) || m == (mllCat + 1) ){
                 for(unsigned cat = 0; cat < nCat; ++cat){
                     if(cat == 0 || cat == (tzqCat + 1) ){
                         //Fill training tree
@@ -662,11 +676,14 @@ void treeReader::plot(const std::string& distName){
         if(histInfo[d].name() == distName){
             std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
             //blind onZ categories
             col.blindData("onZ_1bJet23Jets"); 
             col.blindData("onZ_1bJet4Jets"); 
             col.blindData("onZ_2bJets"); 
+            col.blindData("mllInclusive_1bJet23Jets");
+            col.blindData("mllInclusive_1bJet4Jets");
+            col.blindData("mllInclusive_2bJets");
             //print plots for collection
             bool is2016 = true;
             col.printPlots("plots/tZq/2016", is2016, "tzq", false);
