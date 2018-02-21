@@ -15,7 +15,8 @@ double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc){
     double pData = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
         if(_jetHadronFlavor[j] == jetFlavor){
-            if(jetIsGood(j, 25., unc, true) && fabs(_jetEta[j]) < 2.4){
+            //QUESTION: should JEC and b-tag weights also be varied up and down at the same time when computing systematics?
+            if(jetIsGood(j, 25., 0, true) && fabs(_jetEta[j]) < 2.4){
                 double sf = reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], _jetDeepCsv_b[j] + _jetDeepCsv_bb[j], unc);
                 double eff = reweighter->bTagEff(_jetHadronFlavor[j], _jetPt[j], _jetEta[j]);
                 if(bTagged(j, 1, true)){
