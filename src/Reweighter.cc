@@ -76,10 +76,20 @@ Reweighter::Reweighter(){
     muonLeptonMvaFile->Close();
 
     //read electron id SF weights       
+    /*
     TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_ttHMvaTight.root");
     electronIdSF = (TH2D*) electronIdFile->Get("GsfElectronToTTZ2017");
     electronIdSF->SetDirectory(gROOT);
     electronIdFile->Close();
+    */
+    TFile* electronGeneralIdFile = TFile::Open("weights/electronIDScaleFactors.root");
+    electronEmuIPMvaLooseSF = (TH2D*) electronGeneralIdFile->Get("GsfElectronToMVAVLooseFOIDEmuTightIP2D");
+    electronEmuIPMvaLooseSF->SetDirectory(gROOT);
+    electronMiniIsoSF = (TH2D*) electronGeneralIdFile->Get("MVAVLooseElectronToMini4");
+    electronMiniIsoSF->SetDirectory(gROOT);
+    //WARNING: should this be applied considering we have no conersion veto??
+    electronConvVetoMissingHitsSF = (TH2D*) electronGeneralIdFile->Get("MVAVLooseElectronToConvVetoIHit1");
+    electronConvVetoMissingHitsSF->SetDirectory(gROOT);
 
     TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
     const std::string frUnc[3] = {"", "_down", "_up"};
@@ -95,12 +105,15 @@ Reweighter::Reweighter(){
 Reweighter::~Reweighter(){
     delete bTagCalib;
     delete bTagCalibReader;
+
     for(unsigned v = 0; v < 3; ++v){
         delete puWeights[v];
     }
+
     for(unsigned flav = 0; flav < 3; ++flav){
         delete bTagEffHist[flav];
     }
+
     delete muonRecoSF;
     delete electronRecoSF;
     delete muonMediumSF;
@@ -108,7 +121,11 @@ Reweighter::~Reweighter(){
     delete muonIPSF;
     delete muonSIP3DSF;
     delete muonLeptonMvaSF;
-    delete electronIdSF;
+
+    delete electronEmuIPMvaLooseSF;
+    delete electronMiniIsoSF;
+    delete electronConvVetoMissingHitsSF;
+
     for(unsigned unc = 0; unc < 3; ++unc){
         delete frMapEle[unc];
         delete frMapMu[unc];
@@ -169,7 +186,13 @@ double Reweighter::muonIdWeight(const double pt, const double eta) const{
 
 double Reweighter::electronIdWeight(const double pt, const double eta) const{
     //!!!! To be split for 2016 and 2017 data !!!!
-    return electronIdSF->GetBinContent(electronIdSF->FindBin(std::min(pt, 199.), std::min(fabs(eta), 2.5) ) );
+    //return electronIdSF->GetBinContent(electronIdSF->FindBin(std::min(pt, 199.), std::min(fabs(eta), 2.5) ) );
+
+    //Use TTH analysis weights for now:
+    double sf = electronEmuIPMvaLooseSF->GetBinContent( electronEmuIPMvaLooseSF->FindBin(std::min(pt, 199.), std::min( fabs(eta), 2.5 ) ) );
+    sf *= electronMiniIsoSF->GetBinContent( electronMiniIsoSF->FindBin(std::min(pt, 199.), std::min( fabs(eta), 2.5 ) ) );
+    sf *= electronConvVetoMissingHitsSF->GetBinContent( electronConvVetoMissingHitsSF->FindBin(std::min(pt, 199.), std::min( fabs(eta), 2.5 ) ) );
+    return sf;
 }
 
 double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
