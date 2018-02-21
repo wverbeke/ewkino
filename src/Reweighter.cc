@@ -171,7 +171,7 @@ double Reweighter::muonRecoWeight(const double eta) const{
 
 double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
     //!!!! To be split for 2016 and 2017 data !!!!
-    return electronRecoSF->GetBinContent( electronRecoSF->FindBin( std::max(-2.5, std::min(superClusterEta, 2.5)) , std::max(40., std::min(pt, 499.) )  ) );
+    return electronRecoSF->GetBinContent( electronRecoSF->FindBin( std::max(-2.49, std::min(superClusterEta, 2.49)) , std::max(40., std::min(pt, 499.) )  ) );
 }
 
 double Reweighter::muonIdWeight(const double pt, const double eta) const{
