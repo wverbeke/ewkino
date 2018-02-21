@@ -325,7 +325,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         if(mll < 30) continue;
 
         //determine mll/flavor category 
-
         //OSSF pair present:
         unsigned mllCat = 99;
         if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) == 0){
@@ -340,6 +339,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         } else{
             mllCat = 2;
         }
+
+        //apply event weight
+        weight*=sfWeight();
 
         //make LorentzVector for all jets 
         TLorentzVector jetV[(const unsigned) _nJets];
@@ -665,7 +667,7 @@ void treeReader::splitJobs(){
             script << "./tZqAllPlots " << samples[currentSample].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
             //submit job
-            tools::submitScript("runTuples.sh", "01:00:00");
+            tools::submitScript("runTuples.sh", "00:20:00");
          }
     }
 }
@@ -699,7 +701,7 @@ void treeReader::splitPlots(){
         tools::initScript(script);
         script << "./tZqAllPlots plot " << h.name();
         script.close();
-        tools::submitScript("printPlots.sh", "00:30:00");
+        tools::submitScript("printPlots.sh", "00:15:00");
     }
 }
 
