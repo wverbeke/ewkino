@@ -301,8 +301,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         TLorentzVector lepV[lCount];
         for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
 
-        //find best Z candidate
-        std::pair<unsigned, unsigned> bestZ = trilep::bestZ(lepV, ind, _lFlavor, _lCharge, lCount);
 
         //make ordered jet and bjet collections
         std::vector<unsigned> jetInd, bJetInd;
@@ -318,15 +316,26 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //determine tZq analysis category
         unsigned tzqCat = tzq::cat(jetCount, bJetCount);
 
+        //check if OSSF pair is present 
+        bool isOSSF = (trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) == 0);
+
+        //find best Z candidate
+        std::pair<unsigned, unsigned> bestZ;
+        if(isOSSF){
+           bestZ = trilep::bestZ(lepV, ind, _lFlavor, _lCharge, lCount);
+        } else {
+            //pick leading leptons if there is no OSSF pair present 
+            bestZ = {ind[0], ind[1]};
+        }
+
         //determine best Z mass
         double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
 
         //veto events with mll below 30 GeV in agreement with the tZq sample
-        if(mll < 30) continue;
+        if(isOSSF && ( mll < 30) ) continue;
 
-        //determine mll/flavor category 
-        //OSSF pair present:
         unsigned mllCat = 99;
+        //determine mll/flavor category 
         if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) == 0){
             if( fabs(mll - 91.1876) < 15){
                 //onZ
@@ -338,12 +347,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //no OSSF pair present
         } else{
             mllCat = 2;
-            std::cout << "mllCat is noOSSF ! " << std::endl;
         }
 
         //apply event weight
         weight*=sfWeight();
-        //std::cout << "sfWeight() = " << sfWeight()  << std::endl;
 
         //make LorentzVector for all jets 
         TLorentzVector jetV[(const unsigned) _nJets];
