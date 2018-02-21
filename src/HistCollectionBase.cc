@@ -25,12 +25,10 @@ HistCollectionBase::HistCollectionBase(const std::string& inputFileName, const s
     //read correct histogram for every category
     for(size_t c = 0; c < category->size(); ++c){
         collection.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (const TString&) name(c) ) ) );
-        collection[c]->Sumw2();
         //take away ownership from inputFile so root does not delete histogram
         collection[c]->SetDirectory(gROOT);
         if(includeSB){
             sideBand.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (const TString&) name(c, true) ) ) );
-            sideBand[c]->Sumw2();
             sideBand[c]->SetDirectory(gROOT);
         }
     }
