@@ -38,9 +38,9 @@ Reweighter::Reweighter(){
     //Read Muon reco SF Weights
     TFile* muonRecoFile = TFile::Open("weights/muonTrackingSF_2016.root");
     muonRecoSF = (TGraph*) muonRecoFile->Get("ratio_eff_eta3_dr030e030_corr");
-    muonRecoSF->SetDirectory(gROOT);
     //WARNING: not clear how ownership works for TGraph, can not set directory
     //make sure the TGraph is not DELETED when file is closed!
+    //muonRecoSF->SetDirectory(gROOT);
     muonRecoFile->Close();
 
     //Read Electron reco SF Weights
