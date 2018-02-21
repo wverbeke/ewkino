@@ -23,6 +23,9 @@ class Reweighter{
         //b-tag weight
         double bTagWeight(const unsigned jetFlavor, const double jetPt, const double jetEta, const double jetCSV, const unsigned unc = 0) const;
 
+        //b-tagging efficiency
+        double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
+
         //lepton id + reconstruction weight
         double muonWeight(const double pt, const double eta) const{ 
             return muonRecoWeight(eta)*muonIdWeight(pt,eta);
@@ -35,6 +38,7 @@ class Reweighter{
         //fakerates 
         double muonFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
         double electronFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
+
     private:
         //pu scale factors
         TH1D* puWeights[3];
@@ -56,7 +60,10 @@ class Reweighter{
         TH2D* muonLeptonMvaSF;
 
         //electron id scale factors
-        TH2D* electronIdSF;
+        //TH2D* electronIdSF;
+        TH2D* electronEmuIPMvaLooseSF;
+        TH2D* electronMiniIsoSF;
+        TH2D* electronConvVetoMissingHitsSF;
 
         //return jet flavor index 1-> 0, 4 -> 1, 5->2
         unsigned flavorInd(const unsigned jetFlavor) const{ 
@@ -74,8 +81,5 @@ class Reweighter{
         //id weights
         double muonIdWeight(const double pt, const double eta) const;
         double electronIdWeight(const double pt, const double eta) const;
-
-        //b-tagging efficiency
-        double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
 };
 #endif
