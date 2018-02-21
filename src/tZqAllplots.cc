@@ -350,7 +350,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         }
 
         //apply event weight
-        weight*=sfWeight();
+        if(!samp.isData() ){
+            weight*=sfWeight();
+        }
 
         //make LorentzVector for all jets 
         TLorentzVector jetV[(const unsigned) _nJets];
