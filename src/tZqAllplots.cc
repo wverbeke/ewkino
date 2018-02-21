@@ -338,10 +338,12 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //no OSSF pair present
         } else{
             mllCat = 2;
+            std::cout << "mllCat is noOSSF ! " << std::endl;
         }
 
         //apply event weight
         weight*=sfWeight();
+        //std::cout << "sfWeight() = " << sfWeight()  << std::endl;
 
         //make LorentzVector for all jets 
         TLorentzVector jetV[(const unsigned) _nJets];
