@@ -20,7 +20,7 @@ class HistCollectionBaseNuisances : public HistCollectionBase{
         std::shared_ptr<TH1D> accessNuisance(const size_t nuisanceIndex, const size_t categoryIndex, const bool sb);
         std::shared_ptr<TH1D> accessNuisance(const size_t nuisanceIndex, const std::vector< size_t >& categoryIndices, const bool sb);
 
-        void negBinsToZero();
+        void negBinsToZero() const;
 
    private:
         std::vector < std::vector < std::shared_ptr < TH1D > > > nuisanceCollection;

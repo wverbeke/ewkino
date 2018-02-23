@@ -64,3 +64,16 @@ std::shared_ptr<TH1D> HistCollectionBaseNuisances::accessNuisance(const size_t n
     size_t categoryIndex = getCategoryIndex(categoryIndices);
     return accessNuisance(nuisanceIndex, categoryIndex, sb);
 }
+
+
+void HistCollectionBaseNuisances::negBinsToZero() const{
+    /*
+    Note that only mainband collection is affected here since sideband is allowed to remain negative
+    */
+    HistCollectionBase::negBinsToZero();
+    for(auto& nuisance : nuisanceCollection){
+        for(auto& category : nuisance){
+            setNegativeBinsToZero(category);
+        }
+    }
+}
