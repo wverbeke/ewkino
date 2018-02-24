@@ -202,8 +202,7 @@ bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsig
     //No eta cut applied for jets in this analysis!
 
     //only select loose jets:
-    //0: no id, 1 : loose id, 2 : tight id
-    if(_jetId[ind] < 1 ) return false;
+    if(!_JetIsLoose[j]) return false;
 
     switch(unc){
         case 0: if(_jetPt[ind] < ptCut) return false; break;
