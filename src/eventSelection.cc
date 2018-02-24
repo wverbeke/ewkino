@@ -113,7 +113,7 @@ bool treeReader::jetIsClean(const unsigned ind){
 
 bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean){
     //only select loose jets:
-    if(!_JetIsLoose[j]) return false;
+    if(!_jetIsLoose[ind]) return false;
 
     if(fabs(_jetEta[ind]) >= 2.4) return false;
 
@@ -199,11 +199,38 @@ bool treeReader::promptLeptons(){
 
 //overlap removal between events
 
+bool treeReader::lepFromMEExtConversion(const unsigned l){
+    bool fromConversion = (_lMatchPdgId[l] == 22);
+    bool promptConversion = (_lIsPrompt[l] && _lProvenanceConversion[l] == 0);
+    return (fromConversion && promptConversion);
+}
+
 bool treeReader::photonOverlap(const Sample& samp){
-    if(samp.getFileName().find("DYJetsToLL") != std::string::npos){
-        return _zgEventType > 2; 
-    } else if(samp.getFileName().find("TTTo2L") != std::string::npos || samp.getFileName().find("TTJets") != std::string::npos ){
-        return _ttgEventType > 2;
+
+    bool isInclusiveSample = (samp.getFileName().find("DYJetsToLL") != std::string::npos) || 
+        (samp.getFileName().find("TTTo2L") != std::string::npos) || 
+        (samp.getFileName().find("TTJets") != std::string::npos );
+
+    bool isPhotonSample = (samp.getFileName().find("ZGTo2LG") != std::string::npos) ||
+        (samp.getFileName().find("TTGJets") != std::string::npos) ||
+        (samp.getFileName().find("WGToLNuG") != std::string::npos);
+
+    //require inclusive sample to contain no external conversions
+    if(isInclusiveSample){
+       for(unsigned l = 0; l < _nLight; ++l){
+            if(lepIsGood(l) && lepFromMEExtConversion(l) ){
+                return true;
+            }
+        } 
+    //require photon samples to have atlease one external conversion
+    } if(isPhotonSample){
+        bool hasConversion = false;
+        for(unsigned l = 0; l < _nLight; ++l){
+            if(lepIsGood(l) && lepFromMEExtConversion(l) ){
+                hasConversion = true;
+            }
+        }
+        return !(hasConversion);
     }
     return false;
 }
