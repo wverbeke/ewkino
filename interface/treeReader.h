@@ -240,6 +240,7 @@ class treeReader {
         bool lepIsLoose(const unsigned);
         bool lepIsGood(const unsigned);
         bool lepIsTight(const unsigned);
+        bool lepFromMEExtConversion(const unsigned);
         bool eleIsClean(const unsigned);
         unsigned selectLep(std::vector<unsigned>&);
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned);
