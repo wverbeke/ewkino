@@ -113,8 +113,7 @@ bool treeReader::jetIsClean(const unsigned ind){
 
 bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean){
     //only select loose jets:
-    //0: no id, 1 : loose id, 2 : tight id
-    if(_jetId[ind] < 1 ) return false;
+    if(!_JetIsLoose[j]) return false;
 
     if(fabs(_jetEta[ind]) >= 2.4) return false;
 
