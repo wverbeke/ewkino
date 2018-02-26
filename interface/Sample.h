@@ -25,16 +25,19 @@ class Sample{
         std::string getFileName() const { return fileName; }
         std::string getProcessName() const { return process; } 
         double getXSec() const { return xSec; }
-        bool isData() const { return data; }
+        bool isData() const { return isDataSample; }
+        bool is2017() const { return is2017Sample; }
         bool isSMSignal() const { return smSignal; }
         bool isNewPhysicsSignal() const { return newPhysicsSignal; }
         std::shared_ptr<TFile> getFile(const std::string&) const;
     private:
         void setData(); 
+        void set2017();
         std::string fileName;
         std::string process;
         double xSec;
-        bool data;
+        bool isDataSample;
+        bool is2017Sample;
         bool smSignal;
         bool newPhysicsSignal;
 };

@@ -1,20 +1,18 @@
 #include "../interface/Sample.h"
 
 void Sample::setData(){
-    data = false;
+    isDataSample = false;
     static std::vector<std::string> dataNames = {"data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG"};
     for(auto it = dataNames.cbegin(); it != dataNames.cend(); ++it){
         if(fileName.find(*it) != std::string::npos){
-            data = true;
+            isDataSample = true;
         }
     }
 }
 
-/*
-Sample::Sample(const std::string& file, const std::string& proc, double cross): fileName(file), process(proc), xSec(cross){
-    setData();
+void Sample::set2017(){
+    is2017Sample = (fileName.find("Fall17") != std::string::npos);
 }
-*/
 
 Sample::Sample(const std::string& line){
     /*
@@ -40,6 +38,7 @@ Sample::Sample(const std::string& line){
     }
 
     setData();
+    set2017();
 
     //data has no xSection
     if(isData() && xSecString != ""){
@@ -66,6 +65,6 @@ std::shared_ptr<TFile> Sample::getFile(const std::string& directory) const{
 
 //print Sample info
 std::ostream& operator<<(std::ostream& os, const Sample& sam){
-    os << sam.process << "\t" << sam.fileName << "\t" << sam.xSec << "\t" << ( sam.data ? "data" : "MC") << (sam.smSignal ? "\tSM signal" : "") << (sam.newPhysicsSignal ? "\tBSM signal" : "");
+    os << sam.process << "\t" << sam.fileName << "\t" << sam.xSec << "\t" << ( sam.isData() ? "data" : "MC") << "\t" << ( sam.is2017() ? "Fall17" : "Summer16" ) << (sam.smSignal ? "\tSM signal" : "") << (sam.newPhysicsSignal ? "\tBSM signal" : "");
     return os;
 }
