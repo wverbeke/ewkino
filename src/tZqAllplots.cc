@@ -281,6 +281,15 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     for(long unsigned it = begin; it < end; ++it){
         //print progress bar	
         GetEntry(samp, it);
+
+        for(unsigned j = 0; j < _nJets; ++j){
+            TLorentzVector jet;
+            jet.SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
+            if(jet.M() < 0){
+                std::cout << "jet of negative mass = " << jet.M() << std::endl;
+            }
+        }
+
         //vector containing good lepton indices
         std::vector<unsigned> ind;
         //select leptons
@@ -352,12 +361,18 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //apply event weight
         if(!samp.isData() ){
             weight*=sfWeight();
+            //std::cout << "sfWeight() = " << sfWeight() << std::endl;
         }
 
         //make LorentzVector for all jets 
         TLorentzVector jetV[(const unsigned) _nJets];
         for(unsigned j = 0; j < _nJets; ++j){
             jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
+            /*
+            if(jetV[j].M() < 0){
+                std::cout << "jet has negative mass = " << jetV[j].M() << std::endl;
+            }
+            */
         }
 
         //find W lepton 
@@ -694,9 +709,11 @@ void treeReader::plot(const std::string& distName){
             col.blindData("onZ_1bJet23Jets"); 
             col.blindData("onZ_1bJet4Jets"); 
             col.blindData("onZ_2bJets"); 
+            col.blindData("onZ_nJetsInclusive"); 
             col.blindData("mllInclusive_1bJet23Jets");
             col.blindData("mllInclusive_1bJet4Jets");
             col.blindData("mllInclusive_2bJets");
+            col.blindData("mllInclusive_nJetsInclusive"); 
             //print plots for collection
             bool is2016 = true;
             col.printPlots("plots/tZq/2016", is2016, "tzq", false);
