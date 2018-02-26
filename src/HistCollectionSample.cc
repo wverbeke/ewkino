@@ -1,23 +1,23 @@
 #include "../interface/HistCollectionSample.h"
 
-HistCollectionSample::HistCollectionSample(const std::vector< std::shared_ptr< HistInfo > >& infoList, const std::shared_ptr<Sample>& sam, const std::shared_ptr<Category>& cat){
+HistCollectionSample::HistCollectionSample(const std::vector< std::shared_ptr< HistInfo > >& infoList, const std::shared_ptr<Sample>& sam, const std::shared_ptr<Category>& cat, const bool includeSB){
     for(auto it = infoList.cbegin(); it != infoList.cend(); ++it){
-        collection.push_back(HistCollectionBase(*it, sam, cat));
+        collection.push_back(HistCollectionBase(*it, sam, cat, includeSB));
     }
 }
 
-HistCollectionSample::HistCollectionSample(const std::vector< HistInfo>& infoList, const Sample& sam, const Category& cat){
+HistCollectionSample::HistCollectionSample(const std::vector< HistInfo>& infoList, const Sample& sam, const Category& cat, const bool includeSB){
     std::shared_ptr< Category > categoryPointer = std::make_shared<Category>(cat);
     std::shared_ptr< Sample > samplePointer = std::make_shared<Sample>(sam);
     std::vector < std::shared_ptr< HistInfo > > infoPointerList;
     for(auto& info: infoList){
         infoPointerList.push_back(std::make_shared< HistInfo >(info) );
     }
-    *this = HistCollectionSample(infoPointerList, samplePointer, categoryPointer);
+    *this = HistCollectionSample(infoPointerList, samplePointer, categoryPointer, includeSB);
 }
 
-HistCollectionSample::HistCollectionSample(const std::vector< HistInfo>& infoList, const Sample& sam, const std::vector< std::vector < std::string > >& categoryVec):
-    HistCollectionSample(infoList, sam, Category(categoryVec)) {} 
+HistCollectionSample::HistCollectionSample(const std::vector< HistInfo>& infoList, const Sample& sam, const std::vector< std::vector < std::string > >& categoryVec, const bool includeSB):
+    HistCollectionSample(infoList, sam, Category(categoryVec), includeSB) {} 
 
 void HistCollectionSample::store(const std::string& directory, const long unsigned begin, const long unsigned end) const{
     //extra string indicating event numbers when sample is split in multiple jobs
@@ -35,5 +35,3 @@ void HistCollectionSample::store(const std::string& directory, const long unsign
     }
     outputFile->Close();
 }
-
-

@@ -7,9 +7,13 @@
 HistCollectionBase::HistCollectionBase(const std::shared_ptr< HistInfo >& info, const std::shared_ptr< Sample >& sam, const std::shared_ptr< Category >& cat, const bool includeSB):
     histInfo(info), sample(sam), category(cat){
     //make histogram for every category
-    for(auto catIt = cat->cbegin(); catIt != cat->cend(); ++catIt){
-        collection.push_back( info->makeHist(*catIt + sample->getFileName() ) );
-        if(includeSB) sideBand.push_back(  info->makeHist(*catIt + sample->getFileName() + "_sideband") );
+    for(size_t c = 0; c < category->size(); ++c){
+        collection.push_back( info->makeHist( category->name(c) +sample->getFileName() ) );
+        collection[c]->Sumw2();
+        if(includeSB){
+            sideBand.push_back(  info->makeHist( category->name(c) +sample->getFileName() + "_sideband") );
+            sideBand[c]->Sumw2();
+        }
     }
 }
 
