@@ -19,6 +19,9 @@ class Category{
         constIterator cbegin() const { return cat.cbegin(); }
         constIterator cend()   const { return cat.cend();   }
         const std::string& operator[](size_t ind) const { return cat[ind]; }
+
+        //find all category indices that contain given name
+        std::vector<size_t> findCategoriesByName(const std::string&) const;
     private:
         std::vector< std::string > cat;
         std::vector< pos > ranges;
