@@ -28,7 +28,7 @@ void treeReader::readSamples(const std::string& list){
 
 
 void treeReader::initSample(const Sample& samp, const unsigned period){  //0 = 2016, 1 = 2017, > 1 = combined
-    sampleFile = samp.getFile("../../ntuples_ewkino_new/");
+    sampleFile = samp.getFile("../../ntuples_ewkino/");
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
     initTree(fChain, samp.isData());
