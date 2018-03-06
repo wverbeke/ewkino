@@ -27,8 +27,8 @@ class HistCollectionDist{
         //routine to blind data in given category, if no name is given all categories are blinded!
         void blindData(const std::string& catName = "");
 
-        //rebin histograms
-        void rebin(const int) const;
+        //rebin histograms for categories with a certain name
+        void rebin(const std::string&, const int) const;
     private:
         std::vector< HistCollectionBase > collection;
         std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory

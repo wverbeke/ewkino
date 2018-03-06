@@ -255,9 +255,9 @@ bool HistCollectionDist::categoryIsBlinded(const size_t categoryIndex) const{
     return ( blindedCategories.find(categoryIndex) != blindedCategories.cend() );
 }
 
-//rebin all histograms
-void HistCollectionDist::rebin(const int numberOfBinsToMerge) const{
+//rebin histograms for categories containing a certain name
+void HistCollectionDist::rebin(const std::string& categoryName, const int numberOfBinsToMerge) const{
     for(auto& baseCollection : collection){
-        baseCollection.rebin(numberOfBinsToMerge);
+        baseCollection.rebin(categoryName, numberOfBinsToMerge);
     }    
 }

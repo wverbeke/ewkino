@@ -90,12 +90,27 @@ void HistCollectionBase::negBinsToZero() const{
     }
 }
 
-void HistCollectionBase::rebin(const int numberOfBinsToMerge) const{
-    for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){
-        (*colIt)->Rebin(numberOfBinsToMerge);
+
+//find category names containing given string
+std::vector<size_t> HistCollectionBase::findCategoriesByName(const std::string& nameToFind) const{
+    std::vector<size_t> matchingCategories;
+    for(size_t c = 0; c < category->size(); ++c){
+        if( category->name(c).find(nameToFind) != std::string::npos ){
+            matchingCategories.push_back(c);
+        }
     }
+    return matchingCategories;
 }
 
+//rebin histograms corresponding to given categoryIndex
+void HistCollectionBase::rebin(const size_t categoryIndex, const int numberOfBinsToMerge) const{
+    collection[categoryIndex]->Rebin(numberOfBinsToMerge);
+}
 
-
-
+//rebin histograms for all categories whose names contain given string
+void HistCollectionBase::rebin(const std::string& categoryName, const int numberOfBinsToMerge) const{
+    std::vector<size_t> matchingCategories = findCategoriesByName(categoryName);
+    for(auto& c : matchingCategories){
+        rebin(c, numberOfBinsToMerge);
+    }
+}
