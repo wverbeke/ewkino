@@ -89,3 +89,13 @@ void HistCollectionBase::negBinsToZero() const{
         setNegativeBinsToZero(*colIt); 
     }
 }
+
+void HistCollectionBase::rebin(const int numberOfBinsToMerge) const{
+    for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){
+        (*colIt)->Rebin(numberOfBinsToMerge);
+    }
+}
+
+
+
+

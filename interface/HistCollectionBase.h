@@ -41,6 +41,9 @@ class HistCollectionBase{
         //set negative bin contents to 0
         void negBinsToZero() const;
 
+        //rebin all histograms with certain value
+        void rebin(const int) const;
+
         //check if collection contains sideband
         bool hasSideBand() const { return ! (sideBand.empty()); }
 
