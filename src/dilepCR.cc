@@ -20,6 +20,7 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 #include "../interface/ewkinoTools.h"
+#include "../interface/trilepTools.h"
 #include "../interface/HistCollectionSample.h"
 #include "../interface/HistCollectionDist.h"
 #include "../plotting/plotCode.h"
@@ -39,18 +40,24 @@ void treeReader::setup(){
         HistInfo("dxy", "|d_{xy}| (cm)", 100, 0, 0.05),
         HistInfo("dz", "|d_{z}| (cm)", 100, 0, 0.1),
         HistInfo("miniIso", "miniIso", 100, 0, 0.4),
+        HistInfo("relIso", "relIso_{#DeltaR 0.3}", 100, 0, 1),
         HistInfo("leptonMvaSUSY", "SUSY lepton MVA value", 100, -1, 1),
         HistInfo("leptonMvaTTH", "TTH lepton MVA value", 100, -1, 1),
         HistInfo("ptRel", "P_{T}^{rel} (GeV)", 100, 0, 200),
         HistInfo("ptRatio", "P_{T}^{ratio}", 100, 0, 2),
         HistInfo("closestJetCsv", "closest jet CSV", 100, 0, 1),
         HistInfo("chargedTrackMult", "closest jet track multiplicity", 20, 0, 20),
-        HistInfo("electronMvaGP", "electron GP MVA value", 100, -1, 1),
+        HistInfo("electronMvaGP", "electron GP Spring 16 MVA value", 100, -1, 1),
+        HistInfo("electronMvaHZZ", "electron HZZ Spring 16 MVA value", 100, -1, 1),
+        HistInfo("electronMvaFall17NoIso", "electron Fall 17 no iso MVA value", 100, -1, 1),
+        HistInfo("electronMvaFall17Iso", "electron HZZ Fall 17 iso MVA value", 100, -1, 1),
         HistInfo("muonSegComp", "muon segment compatibility", 100, 0, 1),
         HistInfo("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
         HistInfo("mll", "M_{ll} (GeV)", 200, 12, 200),
         HistInfo("leadPt", "P_{T}^{leading} (GeV)", 100, 25, 200),
         HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 100, 15, 150),
+        HistInfo("leadinEta", "|#eta|^{leading}", 100, 0, 2.5),
+        HistInfo("trailingEta", "|#eta|^{trailing}", 100, 0, 2.5),
         HistInfo("nVertex", "number of vertices", 100, 0, 100),
         HistInfo("nJets", "number of jets", 10, 0, 10),
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
@@ -65,7 +72,7 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
     //set up histogram collection for particular sample
-    HistCollectionSample histCollection(histInfo, samp, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    HistCollectionSample histCollection(histInfo, samp, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 
     //read pu weights for every period
     TFile* puFile = TFile::Open("weights/puWeights2017.root");
@@ -85,6 +92,15 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         GetEntry(samp, it);
         //vector containing good lepton indices
         std::vector<unsigned> ind;
+
+        //require met filters and triggers
+        //bool fail2016Trigger = ( (!_2016_e) && (!_2016_m) && (!_2016_em) && (!_2016_ee) && (!_2016_mm) );
+        /*
+        bool fail2017Trigger = ( (!_2017_e) && (!_2017_m) && (!_2017_em) && (!_2017_ee) && (!_2017_mm) );
+        if( (samp.isData() || samp.is2017() ) && fail2017Trigger) continue;
+        */
+        //if( ! _passMETFilters ) continue;
+
         //select leptons
         const unsigned lCount = selectLep(ind);
         if(lCount != 2) continue;
@@ -96,9 +112,11 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //Cut of Mll at 12 GeV
         if((lepV[0] + lepV[1]).M() < 12) continue;
         //reject SS events
-        if(_lCharge[ind[0]] == _lCharge[ind[1]]) continue;
+        //if(_lCharge[ind[0]] == _lCharge[ind[1]]) continue;
         //determine flavor compositions
         unsigned flav = dilFlavorComb(ind) + 1; //reserve 0 for inclusive
+        //determine whether there is an OS lepton pair 
+        bool hasOS = (trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 2); 
         //order jets and check the number of jets
         std::vector<unsigned> jetInd;
         unsigned jetCount = nJets(jetInd);
@@ -107,9 +125,16 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         if(flav == 1 || flav == 3){ //OSSF
             if(fabs((lepV[0] + lepV[1]).M() - 91) > 10) continue;
             if(nBJets(0,  true, false, 0) != 0) continue;
+            if(!hasOS) continue;
         } else if(flav == 2){
             if(_met < 50) continue;
             if(jetCount < 2 || nBJets() < 1) continue;
+            if(!hasOS && (jetCount < 3 || jetCount > 4)) continue;
+        }
+
+        //new flavor categorization
+        if(flav == 2 && !hasOS){
+            flav = 4;
         }
         //determine run perios
         unsigned run;
@@ -119,14 +144,19 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //float max = 100;
         //loop over leading leptons
         for(unsigned l = 0; l < 2; ++l){
-            double fill[12] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _leptonMvaSUSY[ind[l]], _leptonMvaTTH[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsvV2[ind[l]], (double) _selectedTrackMult[ind[l]], (_lFlavor[ind[l]] == 0) ? _lElectronMva[ind[l]] : 0,  (_lFlavor[ind[l]] == 1) ? _lMuonSegComp[ind[l]] : 0};
+            double fill[16] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _relIso[ind[l]], _leptonMvaSUSY[ind[l]], _leptonMvaTTH[ind[l]], _ptRel[ind[l]], _ptRatio[ind[l]], _closestJetCsvV2[ind[l]], (double) _selectedTrackMult[ind[l]], (_lFlavor[ind[l]] == 0) ? _lElectronMva[ind[l]] : 0,  
+                (_lFlavor[ind[l]] == 0) ? _lElectronMvaHZZ[ind[l]] : 0,
+                (_lFlavor[ind[l]] == 0) ? _lElectronMvaFall17NoIso[ind[l]] : 0,
+                (_lFlavor[ind[l]] == 0) ? _lElectronMvaFall17Iso[ind[l]] : 0,
+                (_lFlavor[ind[l]] == 1) ? _lMuonSegComp[ind[l]] : 0
+            };
             //fill histograms
             for(unsigned j = 0; j < nJetCat; ++j){
                 if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
                 for(unsigned pu = 0; pu < nPuRew; ++pu){
-                    for(unsigned dist = 0; dist < 12; ++dist){
-                        //if(_lFlavor[ind[l]] == 0 && dist == 11) continue;  //do not plot muonSegComp for electrons
-                        //if(_lFlavor[ind[l]] == 1 && dist == 10) continue;  //do not plot electronMva for muons
+                    for(unsigned dist = 0; dist < 16; ++dist){
+                        if(_lFlavor[ind[l]] == 0 && dist == 15) continue;  //do not plot muonSegComp for electrons
+                        if(_lFlavor[ind[l]] == 1 && (dist == 11 || dist == 12 || dist == 13 || dist == 14) ) continue;  //do not plot electronMva for muons
                         for(unsigned r = 0; r < nRuns; ++r){
                             if(!samp.isData() || r == run || r == 0){
                                 double puw = 1.;
@@ -142,19 +172,19 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 }
             }
         }
-        double fill[nDist - 12] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
+        double fill[nDist - 16] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets()}; //replace 0 by _met for correct trees
         for(unsigned j = 0; j < nJetCat; ++j){
             if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
             for(unsigned pu = 0; pu < nPuRew; ++pu){
-                for(unsigned dist = 12; dist < nDist; ++dist){
+                for(unsigned dist = 16; dist < nDist; ++dist){
                     for(unsigned r = 0; r < nRuns; ++r){
                         if(!samp.isData() || r == run || r == 0){
                             double puw = 1.;
                             if(!samp.isData() && pu == 1){
                                 puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
                             }
-                            histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist - 12], histInfo[dist].maxBinCenter()), weight*puw);
-                            histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist - 12], histInfo[dist].maxBinCenter()), weight*puw);
+                            histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist - 16], histInfo[dist].maxBinCenter()), weight*puw);
+                            histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist - 16], histInfo[dist].maxBinCenter()), weight*puw);
                         }
                     }
                 }
@@ -168,9 +198,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 void treeReader::splitJobs(){
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
-        for(long unsigned it = 0; it < nEntries; it+=1000000){
+        for(long unsigned it = 0; it < nEntries; it+=500000){
             long unsigned begin = it;
-            long unsigned end = std::min(nEntries, it + 1000000);
+            long unsigned end = std::min(nEntries, it + 500000);
             //make temporary job script 
             std::ofstream script("runTuples.sh");
             tools::initScript(script);
@@ -187,9 +217,11 @@ void treeReader::plot(const std::string& distName){
     for(size_t d = 0; d < histInfo.size(); ++d){
         if(histInfo[d].name() == distName){
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
             //print plots for collection
             bool is2016 = false;
+            //rebin same-sign category because of low statistics
+            col.rebin("same-sign", 5);
             col.printPlots("plots/ewkino/dilepCR", is2016, "ewkinoDilep", true, true);
         }
     }
