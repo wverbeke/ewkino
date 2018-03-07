@@ -72,7 +72,7 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
     //set up histogram collection for particular sample
-    HistCollectionSample histCollection(histInfo, samp, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    HistCollectionSample histCollection(histInfo, samp, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 
     //read pu weights for every period
     TFile* puFile = TFile::Open("weights/puWeights2017.root");
@@ -122,19 +122,19 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         unsigned jetCount = nJets(jetInd);
 
         //Extra category selection: for DY select onZ, for ttbar select 1 b-jet 2-jets
-        if(flav == 1 || flav == 3){ //OSSF
-            if(fabs((lepV[0] + lepV[1]).M() - 91) > 10) continue;
+        if((flav == 1 || flav == 3) && hasOS){ //OSSF
+            if( fabs((lepV[0] + lepV[1]).M() - 91) > 10 ) continue;
             if(nBJets(0,  true, false, 0) != 0) continue;
-            if(!hasOS) continue;
-        } else if(flav == 2){
+            //if(!hasOS) continue;
+        } else if(flav == 2 || !hasOS){
             if(_met < 50) continue;
             if(jetCount < 2 || nBJets() < 1) continue;
             if(!hasOS && (jetCount < 3 || jetCount > 4)) continue;
         }
 
-        //new flavor categorization
-        if(flav == 2 && !hasOS){
-            flav = 4;
+        //new flavor categorization if the leptons are SS
+        if(!hasOS){
+            flav += 3;
         }
         //determine run perios
         unsigned run;
@@ -217,7 +217,7 @@ void treeReader::plot(const std::string& distName){
     for(size_t d = 0; d < histInfo.size(); ++d){
         if(histInfo[d].name() == distName){
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
             //print plots for collection
             bool is2016 = false;
             //rebin same-sign category because of low statistics
