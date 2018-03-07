@@ -3,6 +3,7 @@
 #include <math.h>
 #include <iterator>
 #include <utility>
+#include <iostream>
 //include Root classes
 #include "TCanvas.h"
 #include "TLine.h"
@@ -123,6 +124,23 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
 }
 
 void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
+    
+    //do not make empty plots
+    bool isEmpty = true;
+    for(unsigned h = 0; h < nBkg; ++h){
+        if(bkg[h]->GetSumOfWeights() > 0){
+            isEmpty = false;
+            break;
+        }  
+    }
+    if(data->GetSumOfWeights() > 0.){
+        isEmpty = false;
+    } 
+    if(isEmpty){
+        std::cerr << "attempting to print empty plot, returning control" << std::endl;
+        return;
+    }
+
     //set background histogram colors
     for(unsigned h = 0; h < nBkg; ++h){
         StackCol(bkg[h], bkgColor(names[h + 1], analysis) ); //first name is data
