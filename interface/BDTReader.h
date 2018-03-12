@@ -6,7 +6,6 @@ class to facilitate extraction of bdt output from xml files
 #define BDTReader_H
 
 //include other parts of code 
-#include "../interface/Category.h"
 
 //include c++ library functions
 #include <memory>
