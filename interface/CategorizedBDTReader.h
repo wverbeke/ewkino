@@ -7,6 +7,7 @@ multi category bdt reader
 
 //include other parts of code 
 #include "../interface/BDTReader.h"
+#include "../interface/Category.h"
 
 //include c++ library functions
 #include <memory>

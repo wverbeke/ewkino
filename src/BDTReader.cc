@@ -1,7 +1,7 @@
 #include "../interface/BDTReader.h"
 
 BDTReader::BDTReader(const std::string& bdtName, const std::string& xmlFileName, const std::shared_ptr< std::map < std::string, float > >& varMap):
-    methodName(bdtName), variableMap(varMap)
+    variableMap(varMap), methodName(bdtName)
 {
     reader.reset( new TMVA::Reader("!Color:!Silent") );
     //set all variables
@@ -9,6 +9,10 @@ BDTReader::BDTReader(const std::string& bdtName, const std::string& xmlFileName,
     //book method 
     reader->BookMVA(methodName, xmlFileName); 
 }
+
+BDTReader::BDTReader(const std::string& bdtName, const std::string& xmlFileName, const std::map < std::string, float >& varMap):
+    BDTReader(bdtName, xmlFileName, std::make_shared< std::map < std::string, float> >(varMap) ) {} 
+
 
 
 void BDTReader::addVariables() const{
