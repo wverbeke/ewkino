@@ -69,7 +69,7 @@ void treeReader::setup(){
         HistInfo("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
         HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200),
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
-        HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
+        HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8)
     };
 }
 
@@ -83,7 +83,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     auto start = std::chrono::high_resolution_clock::now();
 
     //categorization
-    Category categorization({ {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+    Category categorization({ {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
 
     //set up histogram collection for particular sample
     HistCollectionSample histCollection(histInfo, samp, categorization);
@@ -105,7 +105,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"deltaRWlepRecoilingJet", 0.},
             {"etaTaggedRecoilJet", 0.},
             {"etaLeadingJet", 0.},
-            {"mtop", 0.},
+            {"topMass", 0.},
             {"nJets", 0.},
             {"pTTaggedRecoilJet", 0.},
             {"etaZboson", 0.},
@@ -145,9 +145,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         }
         if(vetoLeptonCount > 3) continue;
 
-
         //require presence of OSSF pair
-        //if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
+        if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
 
         //remove overlap between samples
         if(photonOverlap(samp)) continue;
@@ -160,19 +159,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //make ordered jet and bjet collections
         std::vector<unsigned> jetInd, bJetInd;
         unsigned jetCount = nJets(jetInd);
-        unsigned bJetCount = nBJets(bJetInd);
-
-        //find highest eta jet
-        unsigned highestEtaJ = (jetCount == 0) ? 99 : jetInd[0];
-        for(unsigned j = 1; j < jetCount; ++j){
-            if(fabs(_jetEta[jetInd[j]]) > fabs(_jetEta[highestEtaJ]) ) highestEtaJ = jetInd[j];
-        }
-
-        //determine tZq analysis category
-        unsigned tzqCat = tzq::cat(jetCount, bJetCount);
-
-        //check if OSSF pair is present 
-        bool isOSSF = (trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) == 0);
+        unsigned bJetCount = nBJets(bJetInd, 0, false);
 
         //find best Z candidate
         std::pair<unsigned, unsigned> bestZ;
@@ -186,39 +173,25 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //determine best Z mass
         double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
 
-        //veto events with mll below 30 GeV in agreement with the tZq sample
-        if(isOSSF && ( mll < 30) ) continue;
+        //require presence of Z mass
+        if(fabs(mll - 91.1876) >= 15) continue;
 
-        unsigned mllCat = 99;
-        //determine mll/flavor category 
-        if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) == 0){
-            if( fabs(mll - 91.1876) < 15){
-                //onZ
-                mllCat = 0;
-            } else{
-                //offZ
-                mllCat = 1;
-            }
-        //no OSSF pair present
-        } else{
-            mllCat = 2;
-        }
+        //only retain useful categories 
+        unsigned tZqOldANCategory = 999;
+        if(bJetCount == 0){
+            tZqOldANCategory = 0;
+        } else if(bJetCount == 1 && (jetCount == 2 || jetCount == 3)
 
         //apply event weight
         if(!samp.isData() ){
-            weight*=sfWeight();
-            //std::cout << "sfWeight() = " << sfWeight() << std::endl;
+            //APPLY PU AND BTAG WEIGHTS HERE 
+            //weight*=sfWeight();
         }
 
         //make LorentzVector for all jets 
         TLorentzVector jetV[(const unsigned) _nJets];
         for(unsigned j = 0; j < _nJets; ++j){
             jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
-            /*
-            if(jetV[j].M() < 0){
-                std::cout << "jet has negative mass = " << jetV[j].M() << std::endl;
-            }
-            */
         }
 
         //find W lepton 
@@ -235,24 +208,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
         TLorentzVector neutrino = tzq::findBestNeutrinoAndTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
 
-        //forward jet sum
-        TLorentzVector forwardJets(0,0,0,0);
-
-        //not so forward jet sum
-        TLorentzVector notSoForwardJets(0,0,0,0);
-
-        //super forward jet sum
-        TLorentzVector superForwardJets(0,0,0,0);
-
-        //jet sum 
-        TLorentzVector jetSystem(0,0,0,0);
-        for(unsigned j = 0; j < jetCount; ++j){
-            jetSystem += jetV[jetInd[j]];
-            if(fabs(_jetEta[jetInd[j]]) >= 2.4) forwardJets += jetV[jetInd[j]];
-            if(fabs(_jetEta[jetInd[j]]) >= 0.8) notSoForwardJets += jetV[jetInd[j]];
-            if(fabs(_jetEta[jetInd[j]]) >= 3.0) superForwardJets += jetV[jetInd[j]];
-        } 
-
         //find jets with highest DeepCSV and CSVv2 values
         unsigned highestDeepCSVI = (jetCount == 0) ? 0 : jetInd[0], highestCSVv2I = (jetCount == 0) ? 0 : jetInd[0];
         for(unsigned j = 1; j < jetCount; ++j){
@@ -262,243 +217,82 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     
         //initialize new vectors to make sure everything is defined for 0 jet events!
         TLorentzVector leadingJet(0,0,0,0);
-        TLorentzVector trailingJet(0,0,0,0);
-        TLorentzVector highestEtaJet(0,0,0,0);
         TLorentzVector recoilingJet(0,0,0,0);
         TLorentzVector taggedBJet(0,0,0,0);
         TLorentzVector leadingBJet(0,0,0,0);
-        TLorentzVector trailingBJet(0,0,0,0);
-        TLorentzVector highestDeepCSVJet(0,0,0,0);
         TLorentzVector highestCSVv2Jet(0,0,0,0);
         if(taggedJetI[0] != 99) taggedBJet = jetV[taggedJetI[0]];
         if(taggedJetI[1] != 99) recoilingJet = jetV[taggedJetI[1]];
         if(jetCount != 0){
             leadingJet = jetV[jetInd[0]];
-            if(jetCount > 1) trailingJet = jetV[jetInd[jetInd.size() - 1]];
-            highestEtaJet = jetV[highestEtaJ];
-            highestDeepCSVJet = jetV[highestDeepCSVI];
             highestCSVv2Jet = jetV[highestCSVv2I]; 
         }
         if(bJetCount != 0){
             leadingBJet = jetV[bJetInd[0]];
-            if(bJetCount > 1) trailingBJet = jetV[bJetInd[bJetInd.size() - 1]];
         } else if(jetCount > 1){
             leadingBJet = jetV[jetInd[1]];
         }
         //compute top vector
         TLorentzVector topV = (neutrino + lepV[lw] + taggedBJet);
 
-        //Compute minimum and maximum masses and separations for several objects
-        //initialize lepton indices
-        std::vector<unsigned> lepVecInd;
-
-        for(unsigned l = 0; l < lCount; ++l) lepVecInd.push_back(l); 
-        //lepton Jet 
-        double minMLeptonJet = kinematics::minMass(lepV, lepVecInd, jetV, jetInd);
-        double maxMLeptonJet = kinematics::maxMass(lepV, lepVecInd, jetV, jetInd);
-        double minDeltaRLeptonJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, jetInd);
-        double maxDeltaRLeptonJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, jetInd);
-        double minDeltaPhiLeptonJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, jetInd);
-        double maxDeltaPhiLeptonJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, jetInd);
-        double minpTLeptonJet = kinematics::minPT(lepV, lepVecInd, jetV, jetInd);
-        double maxpTLeptonJet = kinematics::maxPT(lepV, lepVecInd, jetV, jetInd);
-
-        //lepton bjet
-        double minMLeptonbJet = kinematics::minMass(lepV, lepVecInd, jetV, bJetInd);
-        double maxMLeptonbJet = kinematics::maxMass(lepV, lepVecInd, jetV, bJetInd);
-        double minDeltaRLeptonbJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, bJetInd);
-        double maxDeltaRLeptonbJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, bJetInd);
-        double minDeltaPhiLeptonbJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, bJetInd);
-        double maxDeltaPhiLeptonbJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, bJetInd);
-        double minpTLeptonbJet = kinematics::minPT(lepV, lepVecInd, jetV, bJetInd);
-        double maxpTLeptonbJet = kinematics::maxPT(lepV, lepVecInd, jetV, bJetInd);
-
-        //jet jet
-        double minMJetJet = kinematics::minMass(jetV, jetInd);
-        double maxMJetJet = kinematics::maxMass(jetV, jetInd);
-        double minDeltaRJetJet = kinematics::minDeltaR(jetV, jetInd);
-        double maxDeltaRJetJet = kinematics::maxDeltaR(jetV, jetInd);
-        double minDeltaPhiJetJet = kinematics::minDeltaPhi(jetV, jetInd);
-        double maxDeltaPhiJetJet = kinematics::maxDeltaPhi(jetV, jetInd);
-        double minpTJetJet = kinematics::minPT(jetV, jetInd);
-        double maxpTJetJet = kinematics::maxPT(jetV, jetInd);
-        
-        //lepton lepton 
-        double minMLeptonLepton = kinematics::minMass(lepV, lepVecInd);
-        double maxMLeptonLepton = kinematics::maxMass(lepV, lepVecInd);
-        double minDeltaRLeptonLepton = kinematics::minDeltaR(lepV, lepVecInd);
-        double maxDeltaRLeptonLepton = kinematics::maxDeltaR(lepV, lepVecInd);
-        double minDeltaPhiLeptonLepton = kinematics::minDeltaPhi(lepV, lepVecInd);
-        double maxDeltaPhiLeptonLepton = kinematics::maxDeltaPhi(lepV, lepVecInd);
-        double minpTLeptonLepton = kinematics::minPT(lepV, lepVecInd);
-        double maxpTLeptonLepton = kinematics::maxPT(lepV, lepVecInd);
-         
-        //set met index
-        std::vector<unsigned> metIndex = {0};
-
-        //lepton + MET 
-        double minDeltaPhiLeptonMET = kinematics::minDeltaPhi(lepV, lepVecInd, &met, metIndex);
-        double maxDeltaPhiLeptonMET = kinematics::maxDeltaPhi(lepV, lepVecInd, &met, metIndex);
-        double minmTLeptonMET = kinematics::minMT(lepV, lepVecInd, &met, metIndex);
-        double maxmTLeptonMET = kinematics::maxMT(lepV, lepVecInd, &met, metIndex);
-        double minpTLeptonMET = kinematics::minPT(lepV, lepVecInd, &met, metIndex);
-        double maxpTLeptonMET = kinematics::maxPT(lepV, lepVecInd, &met, metIndex);
-
-        //jet + MET
-        double minDeltaPhiJetMET = kinematics::minDeltaPhi(jetV, jetInd, &met, metIndex);
-        double maxDeltaPhiJetMET = kinematics::maxDeltaPhi(jetV, jetInd, &met, metIndex);
-        double minmTJetMET = kinematics::minMT(jetV, jetInd, &met, metIndex);
-        double maxmTJetMET = kinematics::maxMT(jetV, jetInd, &met, metIndex);
-        double minpTJetMET = kinematics::minPT(jetV, jetInd, &met, metIndex);
-        double maxpTJetMET = kinematics::maxPT(jetV, jetInd, &met, metIndex);
-
-        //bjet + MET 
-        double minDeltaPhiBJetMET = kinematics::minDeltaPhi(jetV, bJetInd, &met, metIndex);
-        double maxDeltaPhiBJetMET = kinematics::maxDeltaPhi(jetV, bJetInd, &met, metIndex);
-        double minmTBJetMET = kinematics::minMT(jetV, bJetInd, &met, metIndex);
-        double maxmTBJetMET = kinematics::maxMT(jetV, bJetInd, &met, metIndex);
-        double minpTBJetMET = kinematics::minPT(jetV, bJetInd, &met, metIndex);
-        double maxpTBJetMET = kinematics::maxPT(jetV, bJetInd, &met, metIndex);
-
-        //compute HT
-        double HT = 0;
-        for(unsigned j = 0; j < jetCount; ++j){
-            HT += _jetPt[jetInd[j]];
-        }
-
-        //find most forward lepton
-        unsigned mostForwardLepInd = ind[0];
-        for(unsigned l = 1; l < lCount; ++l){
-            if(fabs(_lEta[ind[l]]) > fabs(_lEta[mostForwardLepInd]) ) mostForwardLepInd = ind[l];
-        }
-
         //find closest jet to W lepton
         double deltaRWLepClosestJet = 99999.;
         for(unsigned j = 0; j < jetCount; ++j){
             if(jetV[jetInd[j]].DeltaR(lepV[lw]) < deltaRWLepClosestJet) deltaRWLepClosestJet = jetV[jetInd[j]].DeltaR(lepV[lw]);
         }
-        
+ 
         bdtVariableMap["asymmetryWlep"] = _lEta[ind[lw]]*_lCharge[ind[lw]];
+        bdtVariableMap["etaWLep"] = _lEta[ind[lw]];
+        bdtVariableMap["highestCSVv2"] = _jetCsvV2[highestCSVv2I];
+        bdtVariableMap["deltaPhiWlepTaggedbJet"] = fabs( lepV[lw].DeltaPhi(taggedBJet) );
+        bdtVariableMap["deltaPhiWlepZ"] = fabs(lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ) );
+        bdtVariableMap["deltaRWLepClosestJet"] = deltaRWLepClosestJet;
+        bdtVariableMap["deltaRWlepRecoilingJet"] = lepV[lw].DeltaR(recoilingJet);
+        bdtVariableMap["etaTaggedRecoilJet"] = fabs(recoilingJet.Eta());
+        bdtVariableMap["etaLeadingJet"] = fabs(_jetEta[jetInd[0]]);
         bdtVariableMap["topMass"] =  std::max(topV.M(), 0.);
-        bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
-        bdtVariableMap["mTW"] = kinematics::mt(lepV[lw], met);
-        bdtVariableMap["highestDeepCSV"] = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
-        bdtVariableMap["numberOfJets"] = jetCount;
-        bdtVariableMap["numberOfBJets"] = bJetCount;
-        bdtVariableMap["pTLeadingLepton"] = _lPt[ind[0]];
-        bdtVariableMap["pTLeadingBJet"] = leadingBJet.Pt();
-        bdtVariableMap["pTMostForwardJet"] = highestEtaJet.Pt();
-        bdtVariableMap["mAllJets"] = std::max(jetSystem.M(), 0.);
-        bdtVariableMap["maxDeltaPhijj"] = maxDeltaPhiJetJet;
-        bdtVariableMap["maxDeltaRjj"] = maxDeltaRJetJet;
-        bdtVariableMap["maxMjj"] = std::max(maxMJetJet, 0.);
-        bdtVariableMap["maxMlb"] = std::max(maxMLeptonbJet, 0.);
-        bdtVariableMap["minMlb"] = std::max(minMLeptonbJet, 0.);
-        bdtVariableMap["pTMaxlb"] = maxpTLeptonbJet;
-        bdtVariableMap["maxmTbmet"] = maxmTBJetMET;
-        bdtVariableMap["maxpTlmet"] = maxpTLeptonMET;
-        bdtVariableMap["pTMax2l"] = maxpTLeptonLepton;
-        bdtVariableMap["m3l"] = (lepV[0] + lepV[1] + lepV[2]).M();
-        bdtVariableMap["pT3l"] = (lepV[0] + lepV[1] + lepV[2]).Pt();
-        bdtVariableMap["ht"] = HT;
-        bdtVariableMap["mZ"] = mll;
-        bdtVariableMap["deltaRWLeptonTaggedbJet"] = lepV[lw].DeltaR(taggedBJet);
-        bdtVariableMap["etaZ"] = fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta());
-        bdtVariableMap["maxDeltaPhibmet"] = maxDeltaPhiBJetMET;
-        bdtVariableMap["minDeltaPhibmet"] = minDeltaPhiBJetMET;
-        bdtVariableMap["minDeltaPhilb"] = minDeltaPhiLeptonbJet;
-        bdtVariableMap["pTmin2l"] = minpTLeptonLepton;
-        bdtVariableMap["minmTbmet"] = minmTBJetMET;
-        bdtVariableMap["minmTlmet"] = minmTLeptonMET;
-        bdtVariableMap["missingEt"] = _met;
-        bdtVariableMap["maxmTjmet"] = maxmTJetMET;
+        bdtVariableMap["nJets"] = jetCount;
+        bdtVariableMap["pTTaggedRecoilJet"] = recoilingJet.Pt();
+        bdtVariableMap["etaZboson"] = ( (lepV[bestZ.first] + lepV[bestZ.second]).Eta() );
+        bdtVariableMap["deltaRZTop"] = topV.M().DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) );
+        bdtVariableMap["pTZboson"] = (lepV[bestZ.first] + lepV[bestZ.second]).Pt();
         bdtVariableMap["eventWeight"] = weight;
 
-        double bdt = 0, bdt2 = 0;
+        double bdt = 0;
         if(tzqCat != 0){
             //bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
-            //bdt2 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method 1000 Trees");
         }
 
+        HistInfo("mll", "M_{ll} (GeV)", 60, 12, 200),
+        HistInfo("mt", "M_{T} (GeV)", 30, 0, 300),
+        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
+        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
+        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200),
+        HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
+        HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8)
+
         double fill[nDist] = {
-            bdt, bdt, bdt2, bdt2, 
-            _met, mll, kinematics::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
-        (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
-         highestEtaJet.Pt(), std::max(topV.M(), 0.), (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
-
-        (highestEtaJet + leadingBJet + lepV[lw] + neutrino).M(),
-        (highestEtaJet + leadingBJet + lepV[lw]).M(),
-        (highestEtaJet + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
-        (highestEtaJet + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-
-        (recoilingJet + taggedBJet + lepV[lw] + neutrino).M(),
-        (recoilingJet + taggedBJet + lepV[lw]).M(),
-        (recoilingJet + taggedBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-        (recoilingJet + taggedBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-
-        (forwardJets + leadingBJet + lepV[lw] + neutrino).M(),
-        (forwardJets + leadingBJet + lepV[lw]).M(),
-        (forwardJets + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-        (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-
-        std::max(0., forwardJets.M()),
-        std::max(0., notSoForwardJets.M()),
-        std::max(0., superForwardJets.M()),
-
-        (highestEtaJet + leadingBJet + lepV[lw] + neutrino).Pt(),
-        (highestEtaJet + leadingBJet + lepV[lw]).Pt(),
-        (highestEtaJet + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second] ).Pt(),
-        (highestEtaJet + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-
-        (recoilingJet + taggedBJet + lepV[lw] + neutrino).Pt(),
-        (recoilingJet + taggedBJet + lepV[lw]).Pt(),
-        (recoilingJet + taggedBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-        (recoilingJet + taggedBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-
-        (forwardJets + leadingBJet + lepV[lw] + neutrino).Pt(),
-        (forwardJets + leadingBJet + lepV[lw]).Pt(),
-        (forwardJets + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-        (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-
-        forwardJets.Pt(),
-        notSoForwardJets.Pt(),
-        superForwardJets.Pt(),
-    
-        fabs(forwardJets.Eta()),
-        fabs(notSoForwardJets.Eta()),
-        fabs(superForwardJets.Eta()),
-
-        _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI],
-        _jetDeepCsv_b[highestDeepCSVI],
-        _jetDeepCsv_bb[highestDeepCSVI],
-        _jetCsvV2[highestCSVv2I],
-        highestDeepCSVJet.Pt(),
-        taggedBJet.DeltaR(recoilingJet),
-        leadingBJet.DeltaR(highestEtaJet),
-        highestDeepCSVJet.DeltaR(highestEtaJet),
-
-        minMLeptonJet, maxMLeptonJet, minMLeptonbJet, maxMLeptonbJet, minMJetJet, maxMJetJet, minMLeptonLepton, maxMLeptonLepton,
-        minDeltaPhiLeptonJet, maxDeltaPhiLeptonJet, minDeltaPhiLeptonbJet, maxDeltaPhiLeptonbJet, minDeltaPhiJetJet, maxDeltaPhiJetJet, minDeltaPhiLeptonLepton, maxDeltaPhiLeptonLepton,
-        minDeltaRLeptonJet, maxDeltaRLeptonJet, minDeltaRLeptonbJet, maxDeltaRLeptonbJet, minDeltaRJetJet, maxDeltaRJetJet, minDeltaRLeptonLepton, maxDeltaRLeptonLepton,
-        minpTLeptonJet, maxpTLeptonJet, minpTLeptonbJet, maxpTLeptonbJet, minpTJetJet, maxpTJetJet, minpTLeptonLepton, maxpTLeptonLepton,
-        HT,
-        (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-        fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta()),
-
-        fabs(_lEta[mostForwardLepInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
-        (lepV[0] + lepV[1] + lepV[2]).Pt(), fabs(_lEta[ind[0]])*_lCharge[ind[0]], fabs(_lEta[ind[1]])*_lCharge[ind[1]], fabs(_lEta[ind[2]])*_lCharge[ind[2]], fabs(_lEta[ind[lw]])*_lCharge[ind[lw]],
-
-        deltaRWLepClosestJet, fabs(lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ) ), fabs(lepV[lw].DeltaPhi(taggedBJet)), lepV[lw].DeltaR(recoilingJet), topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
-        topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-
-        kinematics::mt(lepV[0] + lepV[1] + lepV[2], met), kinematics::mt(lepV[bestZ.first] + lepV[bestZ.second], met),
-        minDeltaPhiLeptonMET, maxDeltaPhiLeptonMET, minDeltaPhiJetMET, maxDeltaPhiJetMET, minDeltaPhiBJetMET, maxDeltaPhiBJetMET,
-        minmTLeptonMET, maxmTLeptonMET, minmTJetMET, maxmTJetMET, minmTBJetMET, maxmTBJetMET,
-        minpTLeptonMET, maxpTLeptonMET, minpTJetMET, maxpTJetMET, minpTBJetMET, maxpTBJetMET,
-        kinematics::mt(lepV[0], met), kinematics::mt(lepV[1], met), kinematics::mt(lepV[2], met),
-        kinematics::mt(jetSystem, met), kinematics::mt(jetSystem + lepV[0] + lepV[1] + lepV[2], met), 
-        (jetSystem + lepV[0] + lepV[1] + lepV[2] + neutrino).M(), jetSystem.M(),
-        kinematics::mt(leadingJet, met), kinematics::mt(trailingJet, met)
+            bdt, 
+            _lEta[ind[lw]]*_lCharge[ind[lw]],
+            _lEta[ind[lw]],
+            _jetCsvV2[highestCSVv2I],
+            _fabs( lepV[lw].DeltaPhi(taggedBJet) ),
+            _fabs(lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ) ),   
+            _deltaRWLepClosestJet,
+            lepV[lw].DeltaR(recoilingJet),
+            fabs(recoilingJet.Eta()),
+            fabs(_jetEta[jetInd[0]]),
+            std::max(topV.M(), 0.),
+            jetCount,
+            recoilingJet.Pt(),
+            ( (lepV[bestZ.first] + lepV[bestZ.second]).Eta() ),
+            topV.M().DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
+            (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+            mll,
+            kinematics::mt(lepV[lw], met),
+            _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]],
+            (double) nBJets(),
+            (double) nBJets(0, false); 
         };
 
         for(unsigned m = 0; m < nMll; ++m){
