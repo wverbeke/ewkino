@@ -101,6 +101,9 @@ class treeReader {
         Int_t           _HLT_TripleMu_5_3_3_Mass3p8to60_DZ_prescale;
         Bool_t          _TripleMu_12_10_5;
         Bool_t          _passMETFilters;
+        //TEMPORARY FOR TEST, CAN BE REMOVED LATER
+        Bool_t          _Flag_BadPFMuonFilter;
+        Bool_t          _Flag_BadChargedCandidateFilter;
         UChar_t         _nL;
         UChar_t         _nMu;
         UChar_t         _nEle;
@@ -372,6 +375,10 @@ class treeReader {
         TBranch        *b__HLT_TripleMu_5_3_3_Mass3p8to60_DZ_prescale;   
         TBranch        *b__TripleMu_12_10_5;   
         TBranch        *b__passMETFilters;   
+        //TEMPORARY FOR CHECK, CAN BE REMOVED LATER
+        TBranch        *b__Flag_BadPFMuonFilter;
+        TBranch        *b__Flag_BadChargedCandidateFilter;
+        //////////////////////////////////////////
         TBranch        *b__nL;   
         TBranch        *b__nMu;   
         TBranch        *b__nEle;   

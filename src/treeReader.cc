@@ -132,6 +132,10 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_TripleMu_12_10_5", &_TripleMu_12_10_5, &b__TripleMu_12_10_5);
     }
     fChain->SetBranchAddress("_passMETFilters", &_passMETFilters, &b__passMETFilters);
+    //TEMPORARY FOR CHECK, CAN BE REMOVED LATER
+    fChain->SetBranchAddress("_Flag_BadPFMuonFilter", &_Flag_BadPFMuonFilter, &b__Flag_BadPFMuonFilter);
+    fChain->SetBranchAddress("_Flag_BadPFMuonFilter", &_Flag_BadPFMuonFilter, &b__Flag_BadPFMuonFilter);
+    ///////////////////////////////////////////
     fChain->SetBranchAddress("_nL", &_nL, &b__nL);
     fChain->SetBranchAddress("_nMu", &_nMu, &b__nMu);
     fChain->SetBranchAddress("_nEle", &_nEle, &b__nEle);
@@ -201,8 +205,10 @@ void treeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_jetPt", _jetPt, &b__jetPt);
     fChain->SetBranchAddress("_jetPt_JECUp", _jetPt_JECUp, &b__jetPt_JECUp);
     fChain->SetBranchAddress("_jetPt_JECDown", _jetPt_JECDown, &b__jetPt_JECDown);
+    /*
     fChain->SetBranchAddress("_jetPt_JERUp", _jetPt_JERUp, &b__jetPt_JERUp);
     fChain->SetBranchAddress("_jetPt_JERDown", _jetPt_JERDown, &b__jetPt_JERDown);
+    */
     fChain->SetBranchAddress("_jetEta", _jetEta, &b__jetEta);
     fChain->SetBranchAddress("_jetPhi", _jetPhi, &b__jetPhi);
     fChain->SetBranchAddress("_jetE", _jetE, &b__jetE);
@@ -327,6 +333,10 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_TripleMu_12_10_5", &_TripleMu_12_10_5, "_TripleMu_12_10_5/O");
     }
     outputTree->Branch("_passMETFilters", &_passMETFilters, "_passMETFilters/O");
+    //TEMPORARY FOR CHECK, CAN BE REMOVED LATER
+    outputTree->Branch("_Flag_BadPFMuonFilter", &_Flag_BadPFMuonFilter, "_Flag_BadPFMuonFilter/O");
+    outputTree->Branch("_Flag_BadChargedCandidateFilter", &_Flag_BadChargedCandidateFilter, "_Flag_BadChargedCandidateFilter/O");
+    //////////////////////////////////////////
     outputTree->Branch("_nL",                           &_nL,                           "_nL/b");
     outputTree->Branch("_nMu",                          &_nMu,                          "_nMu/b");
     outputTree->Branch("_nEle",                         &_nEle,                         "_nEle/b");
@@ -396,8 +406,10 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_jetPt",                     &_jetPt,                    "_jetPt[_nJets]/D");
     outputTree->Branch("_jetPt_JECUp",               &_jetPt_JECUp,              "_jetPt_JECUp[_nJets]/D");
     outputTree->Branch("_jetPt_JECDown",             &_jetPt_JECDown,            "_jetPt_JECDown[_nJets]/D");
+    /*
     outputTree->Branch("_jetPt_JERUp",               &_jetPt_JERUp,              "_jetPt_JERUp[_nJets]/D");
     outputTree->Branch("_jetPt_JERDown",             &_jetPt_JERDown,            "_jetPt_JERDown[_nJets]/D");
+    */
     outputTree->Branch("_jetEta",                    &_jetEta,                   "_jetEta[_nJets]/D");
     outputTree->Branch("_jetPhi",                    &_jetPhi,                   "_jetPhi[_nJets]/D");
     outputTree->Branch("_jetE",                      &_jetE,                     "_jetE[_nJets]/D");
@@ -406,7 +418,6 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_jetDeepCsv_b",              &_jetDeepCsv_b,             "_jetDeepCsv_b[_nJets]/D");
     outputTree->Branch("_jetDeepCsv_c",              &_jetDeepCsv_c,             "_jetDeepCsv_c[_nJets]/D");
     outputTree->Branch("_jetDeepCsv_bb",             &_jetDeepCsv_bb,            "_jetDeepCsv_bb[_nJets]/D");
-    //outputTree->Branch("_jetDeepCsv_cc",             &_jetDeepCsv_cc,            "_jetDeepCsv_cc[_nJets]/D");
     outputTree->Branch("_jetHadronFlavor",           &_jetHadronFlavor,          "_jetHadronFlavor[_nJets]/i");
     outputTree->Branch("_jetIsLoose",                &_jetIsLoose,               "_jetIsLoose[_nJets]/i");
     outputTree->Branch("_jetIsTight",                &_jetIsTight,               "_jetIsTight[_nJets]/i");
