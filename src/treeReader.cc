@@ -101,7 +101,7 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_HLT_IsoMu27_prescale", &_HLT_IsoMu27_prescale, &b__HLT_IsoMu27_prescale);
         fChain->SetBranchAddress("_HLT_IsoMu30", &_HLT_IsoMu30, &b__HLT_IsoMu30);
         fChain->SetBranchAddress("_HLT_IsoMu30_prescale", &_HLT_IsoMu30_prescale, &b__HLT_IsoMu30_prescale);
-        fChain->SetBranchAddress("_pass_mee", &_pass_mee, &b__pass_mee);
+        fChain->SetBranchAddress("_pass_eem", &_pass_eem, &b__pass_eem);
         fChain->SetBranchAddress("_HLT_Mu8_DiEle12_CaloIdL_TrackIdL", &_HLT_Mu8_DiEle12_CaloIdL_TrackIdL, &b__HLT_Mu8_DiEle12_CaloIdL_TrackIdL);
         fChain->SetBranchAddress("_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_prescale", &_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_prescale, &b__HLT_Mu8_DiEle12_CaloIdL_TrackIdL_prescale);
         fChain->SetBranchAddress("_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ", &_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ, &b__HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ);
@@ -119,7 +119,7 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_HLT_DoubleMu4_Mass8_DZ_PFHT350_prescale", &_HLT_DoubleMu4_Mass8_DZ_PFHT350_prescale, &b__HLT_DoubleMu4_Mass8_DZ_PFHT350_prescale);
         fChain->SetBranchAddress("_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8", &_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8, &b__HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8);
         fChain->SetBranchAddress("_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_prescale", &_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_prescale, &b__HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_prescale);
-        fChain->SetBranchAddress("_pass_mme", &_pass_mme, &b__pass_mme);
+        fChain->SetBranchAddress("_pass_emm", &_pass_emm, &b__pass_emm);
         fChain->SetBranchAddress("_HLT_DiMu9_Ele9_CaloIdL_TrackIdL", &_HLT_DiMu9_Ele9_CaloIdL_TrackIdL, &b__HLT_DiMu9_Ele9_CaloIdL_TrackIdL);
         fChain->SetBranchAddress("_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_prescale", &_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_prescale, &b__HLT_DiMu9_Ele9_CaloIdL_TrackIdL_prescale);
         fChain->SetBranchAddress("_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ", &_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ, &b__HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ);
@@ -305,7 +305,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_HLT_IsoMu27_prescale", &_HLT_IsoMu27_prescale, "_HLT_IsoMu27_prescale/O");
         outputTree->Branch("_HLT_IsoMu30", &_HLT_IsoMu30, "_HLT_IsoMu30/O");
         outputTree->Branch("_HLT_IsoMu30_prescale", &_HLT_IsoMu30_prescale, "_HLT_IsoMu30_prescale/O");
-        outputTree->Branch("_pass_mee", &_pass_mee, "_pass_mee/O");
+        outputTree->Branch("_pass_eem", &_pass_eem, "_pass_eem/O");
         outputTree->Branch("_HLT_Mu8_DiEle12_CaloIdL_TrackIdL", &_HLT_Mu8_DiEle12_CaloIdL_TrackIdL, "_HLT_Mu8_DiEle12_CaloIdL_TrackIdL/O");
         outputTree->Branch("_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_prescale", &_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_prescale, "_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_prescale/O");
         outputTree->Branch("_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ", &_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ, "_HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ/O");
@@ -323,7 +323,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_HLT_DoubleMu4_Mass8_DZ_PFHT350_prescale", &_HLT_DoubleMu4_Mass8_DZ_PFHT350_prescale, "_HLT_DoubleMu4_Mass8_DZ_PFHT350_prescale/O");
         outputTree->Branch("_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8", &_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8, "_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8/O");
         outputTree->Branch("_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_prescale", &_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_prescale, "_HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_prescale/O");
-        outputTree->Branch("_pass_mme", &_pass_mme, "_pass_mme/O");
+        outputTree->Branch("_pass_emm", &_pass_emm, "_pass_emm/O");
         outputTree->Branch("_HLT_DiMu9_Ele9_CaloIdL_TrackIdL", &_HLT_DiMu9_Ele9_CaloIdL_TrackIdL, "_HLT_DiMu9_Ele9_CaloIdL_TrackIdL/O");
         outputTree->Branch("_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_prescale", &_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_prescale, "_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_prescale/O");
         outputTree->Branch("_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ", &_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ, "_HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ/O");

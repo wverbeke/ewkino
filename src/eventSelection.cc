@@ -1,7 +1,7 @@
 #include "../interface/treeReader.h"
 
 
-void treeReader::orderByPt(std::vector<unsigned>& ind, const double* pt, const unsigned count){
+void treeReader::orderByPt(std::vector<unsigned>& ind, const double* pt, const unsigned count) const{
     std::vector<std::pair<double, unsigned>> ptMap;
     for(unsigned p = 0; p < count; ++p){
         ptMap.push_back({pt[ind[p]], ind[p]});
@@ -12,7 +12,7 @@ void treeReader::orderByPt(std::vector<unsigned>& ind, const double* pt, const u
     }
 }
 
-unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind){
+unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind) const{
     unsigned flavCount[3] = {0,0,0};
     for(unsigned l = 0; l < 2; ++l) ++flavCount[_lFlavor[ind[l]]];
     if(flavCount[2] == 0){
@@ -26,7 +26,7 @@ unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind){
     return 5; //tt
 }
 
-double treeReader::coneCorr(const unsigned ind){
+double treeReader::coneCorr(const unsigned ind) const{
     return 1. + std::max(_relIso[ind] - 0.1, 0.);
 }
 
@@ -38,12 +38,12 @@ void treeReader::setConePt(){
     }
 }
 
-bool treeReader::lepIsLoose(const unsigned ind){
+bool treeReader::lepIsLoose(const unsigned ind) const{
     return _lEwkLoose[ind];
 }
 
 //remove electrons in a cone of DeltaR = 0.05 around a loose muon
-bool treeReader::eleIsClean(const unsigned ind){
+bool treeReader::eleIsClean(const unsigned ind) const{
     TLorentzVector ele;
     ele.SetPtEtaPhiE(_lPt[ind], _lEta[ind], _lPhi[ind], _lE[ind]);
     for(unsigned m = 0; m < _nMu; ++m){
@@ -56,7 +56,7 @@ bool treeReader::eleIsClean(const unsigned ind){
     return true;
 }
 
-bool treeReader::lepIsGood(const unsigned l){
+bool treeReader::lepIsGood(const unsigned l) const{
     //temporary selection for dileptonCR, update later
     if(!_lEwkLoose[l]) return false;
     if(_lFlavor[l] == 0 && !_lElectronPassEmu[l]) return false;
@@ -64,11 +64,11 @@ bool treeReader::lepIsGood(const unsigned l){
     return true;
 }
 
-bool treeReader::lepIsTight(const unsigned l){
+bool treeReader::lepIsTight(const unsigned l) const{
     return _lEwkTight[l];
 }
 
-unsigned treeReader::selectLep(std::vector<unsigned>& ind){
+unsigned treeReader::selectLep(std::vector<unsigned>& ind) const{
     //setConePt(); REMOVE CONE CORRECTION UNTIL MOVING TO FR
     ind.clear();
     unsigned lCount = 0;
@@ -83,7 +83,7 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
     return lCount;	
 }
 
-unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsigned lCount){
+unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsigned lCount) const{
     unsigned tightC = 0; 
     for(unsigned l = 0; l < lCount; ++l){
         if(lepIsTight(ind[l])) ++tightC;
@@ -92,13 +92,13 @@ unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsig
     return tightC;
 }
 
-bool treeReader::passPtCuts(const std::vector<unsigned>& ind){
+bool treeReader::passPtCuts(const std::vector<unsigned>& ind) const{
     if(_lPt[ind[0]] <= 25) return false;
     if(_lPt[ind[1]] <= 15) return false;
     return true;
 }
 
-bool treeReader::jetIsClean(const unsigned ind){
+bool treeReader::jetIsClean(const unsigned ind) const{
     TLorentzVector jet;	
     jet.SetPtEtaPhiE(_jetPt[ind], _jetEta[ind], _jetPhi[ind], _jetE[ind]);
     for(unsigned l = 0; l < _nLight; ++l){
@@ -111,7 +111,7 @@ bool treeReader::jetIsClean(const unsigned ind){
     return true;
 }
 
-bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean){
+bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean) const{
     //only select loose jets:
     if(!_jetIsLoose[ind]) return false;
 
@@ -128,7 +128,7 @@ bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsig
     return !clean || jetIsClean(ind);
 }
 
-unsigned treeReader::nJets(const unsigned unc, const bool clean){
+unsigned treeReader::nJets(const unsigned unc, const bool clean) const{
     unsigned nJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
         if(jetIsGood(j, 30, unc, clean)) ++nJets;
@@ -136,7 +136,7 @@ unsigned treeReader::nJets(const unsigned unc, const bool clean){
     return nJets;
 }
 
-unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, const bool clean){
+unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, const bool clean) const{
     unsigned nJets = 0;
     jetInd.clear();
     for(unsigned j = 0; j < _nJets; ++j){
@@ -149,22 +149,22 @@ unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, co
     return nJets;
 }
 
-bool treeReader::bTaggedDeepCSV(const unsigned ind, const unsigned wp){
+bool treeReader::bTaggedDeepCSV(const unsigned ind, const unsigned wp) const{
     static const double bTagWP[3] = {0.2219, 0.6324,  0.8958};
     return (_jetDeepCsv_b[ind] + _jetDeepCsv_bb[ind]) > bTagWP[wp];
 }
 
-bool treeReader::bTaggedCSVv2(const unsigned ind, const unsigned wp){
+bool treeReader::bTaggedCSVv2(const unsigned ind, const unsigned wp) const{
     static const double bTagWP[3] = {0.5426, 0.8484, 0.9535};
     return _jetCsvV2[ind] > bTagWP[wp];
 }
 
-bool treeReader::bTagged(const unsigned ind, const unsigned wp, const bool deepCSV){
+bool treeReader::bTagged(const unsigned ind, const unsigned wp, const bool deepCSV) const{
     if(deepCSV) return bTaggedDeepCSV(ind, wp);
-    else        return bTaggedCSVv2(ind, wp);
+    else return bTaggedCSVv2(ind, wp);
 }
 
-unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp){
+unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp) const{
     unsigned nbJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
         if(jetIsGood(j, 25, unc, clean)){
@@ -174,7 +174,7 @@ unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool c
     return nbJets;
 }
 
-unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp){
+unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp) const{
     unsigned nbJets = 0;
     bJetInd.clear();
     for(unsigned j = 0; j < _nJets; ++j){
@@ -190,7 +190,7 @@ unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, 
 }
 
 //check if leptons are prompt
-bool treeReader::promptLeptons(){
+bool treeReader::promptLeptons() const{
     for(unsigned l = 0; l < _nLight; ++l){
         if(lepIsGood(l) && !_lIsPrompt[l]) return false;
     }
@@ -199,13 +199,13 @@ bool treeReader::promptLeptons(){
 
 //overlap removal between events
 
-bool treeReader::lepFromMEExtConversion(const unsigned l){
+bool treeReader::lepFromMEExtConversion(const unsigned l) const{
     bool fromConversion = (_lMatchPdgId[l] == 22);
     bool promptConversion = (_lIsPrompt[l] && _lProvenanceConversion[l] == 0);
     return (fromConversion && promptConversion);
 }
 
-bool treeReader::photonOverlap(const Sample& samp){
+bool treeReader::photonOverlap(const Sample& samp) const{
 
     bool isInclusiveSample = (samp.getFileName().find("DYJetsToLL") != std::string::npos) || 
         (samp.getFileName().find("TTTo2L") != std::string::npos) || 
@@ -235,11 +235,11 @@ bool treeReader::photonOverlap(const Sample& samp){
     return false;
 }
 
-bool treeReader::photonOverlap(){
+bool treeReader::photonOverlap() const{
     return photonOverlap(samples[currentSample - 1]);
 }
 
-bool treeReader::htOverlap(const Sample& samp){
+bool treeReader::htOverlap(const Sample& samp) const{
     if(samp.getFileName().find("DYJetsToLL_M-50_Tune") != std::string::npos){
         return _gen_HT > 70.;
     } else if(samp.getFileName().find("DYJetsToLL_M-10_50_Tune") != std::string::npos){
@@ -248,6 +248,25 @@ bool treeReader::htOverlap(const Sample& samp){
     return false;
 }
 
-bool treeReader::htOverlap(){
+bool treeReader::htOverlap() const{
     return htOverlap(samples[currentSample - 1]);
+}
+
+bool treeReader::passSingleLeptonTriggers() const{
+    return (_pass_e || _pass_m);
+}
+
+bool treeReader::passDileptonTriggers() const{
+    return (_pass_ee || _pass_em || _pass_mm);
+}
+
+bool treeReader::passTrileptonTriggers() const{
+    return (_pass_eee || _pass_eem || _pass_emm || _pass_mmm); 
+}
+
+bool treeReader::passTriggerCocktail() const{
+    bool pass = passSingleLeptonTriggers() ||
+        passDileptonTriggers() ||
+        passTrileptonTriggers();
+    return pass;
 }
