@@ -7,7 +7,6 @@
 //include ROOT classes
 #include "TROOT.h"
 
-
 HistCollectionBaseNuisances::HistCollectionBaseNuisances(const std::shared_ptr<HistInfo>& info, const std::shared_ptr<Sample>& sam, const std::shared_ptr<Category>& cat, 
     const std::vector < std::string >& nuisanceNames, const bool includeSB): HistCollectionBase(info, sam, cat, includeSB)
 {
