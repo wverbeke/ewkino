@@ -5,12 +5,12 @@
 #include "../interface/treeReader.h"
 
 //pu SF 
-inline double treeReader::puWeight(const unsigned period, const unsigned unc){
+inline double treeReader::puWeight(const unsigned period, const unsigned unc) const{
     return reweighter->puWeight(_nTrueInt, period, unc);
 }
 
 //b-tagging SF for given flavor
-double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc){
+double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) const{
     double pMC = 1.;
     double pData = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
@@ -33,27 +33,27 @@ double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc){
 }
 
 //light flavor b-tagging SF
-double treeReader::bTagWeight_udsg(const unsigned unc){
+double treeReader::bTagWeight_udsg(const unsigned unc) const{
     return bTagWeight(0, unc);
 }
 
 //heavy flavor b-tagging SF
-double treeReader::bTagWeight_c(const unsigned unc){
+double treeReader::bTagWeight_c(const unsigned unc) const{
     return bTagWeight(4, unc);
 }
 
 //beauty flavor b-tagging SF
-double treeReader::bTagWeight_b(const unsigned unc){
+double treeReader::bTagWeight_b(const unsigned unc) const{
     return bTagWeight(5, unc);
 }
 
 //total b-tagging SF
-double treeReader::bTagWeight(const unsigned unc){
+double treeReader::bTagWeight(const unsigned unc) const{
     return bTagWeight_udsg(unc)*bTagWeight_c(unc)*bTagWeight_b(unc); 
 }
 
 //total lepton SF
-double treeReader::leptonWeight(){
+double treeReader::leptonWeight() const{
     double sf = 1.;
     for(unsigned l = 0; l < _nLight; ++l){
         if(lepIsTight(l)){
@@ -64,9 +64,10 @@ double treeReader::leptonWeight(){
     return sf;
 }
     
-double treeReader::eventWeight(){
+double treeReader::eventWeight() const{
     if(reweighter.use_count() == 0 ){
-        reweighter = std::make_shared<Reweighter>();
+        //reweighter = std::make_shared<Reweighter>();
+        reweighter.reset(new Reweighter); 
     }
     double sf = puWeight();
     sf *= bTagWeight();
@@ -75,7 +76,7 @@ double treeReader::eventWeight(){
 }
 
 //fake rate
-double treeReader::fakeRateWeight(const unsigned unc){
+double treeReader::fakeRateWeight(const unsigned unc) const{
     if(reweighter.use_count() == 0 ){
         reweighter = std::make_shared<Reweighter>();
     }

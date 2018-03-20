@@ -280,16 +280,16 @@ class treeReader {
 
         //event weights
         std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class
-        double puWeight(const unsigned period = 0, const unsigned unc = 0);
-        double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0);
-        double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0); //more efficient version if jets were already selected 
-        double bTagWeight_udsg(const unsigned unc = 0);
-        double bTagWeight_c(const unsigned unc = 0);
-        double bTagWeight_b(const unsigned unc = 0);
-        double bTagWeight(const unsigned unc = 0);
-        double leptonWeight();
-        double eventWeight();
-        double fakeRateWeight(const unsigned unc = 0);
+        double puWeight(const unsigned period = 0, const unsigned unc = 0) const;
+        double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0) const;
+        double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0) const; //more efficient version if jets were already selected 
+        double bTagWeight_udsg(const unsigned unc = 0) const;
+        double bTagWeight_c(const unsigned unc = 0) const;
+        double bTagWeight_b(const unsigned unc = 0) const;
+        double bTagWeight(const unsigned unc = 0) const;
+        double leptonWeight() const;
+        double eventWeight() const;
+        double fakeRateWeight(const unsigned unc = 0) const;
 
     private:
         TTree* fChain;                                                          //current Tree
