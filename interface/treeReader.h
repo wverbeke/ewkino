@@ -128,8 +128,11 @@ class treeReader {
         Bool_t          _lElectronPassConvVeto[nL_max];
         Bool_t          _lElectronChargeConst[nL_max];
         UInt_t          _lElectronMissingHits[nL_max];
-        Double_t        _leptonMvaSUSY[nL_max];   
-        Double_t        _leptonMvaTTH[nL_max];
+        Double_t        _leptonMvaSUSY16[nL_max];   
+        Double_t        _leptonMvaTTH16[nL_max];
+        Double_t        _leptonMvatZqTTV16[nL_max];
+        Double_t        _leptonMvaSUSY17[nL_max];
+        Double_t        _leptonMvaTTH17[nL_max];
         Bool_t          _lHNLoose[nL_max];   
         Bool_t          _lHNFO[nL_max];   
         Bool_t          _lHNTight[nL_max];   
@@ -403,8 +406,11 @@ class treeReader {
         TBranch        *b__lElectronPassConvVeto;
         TBranch        *b__lElectronChargeConst;
         TBranch        *b__lElectronMissingHits;
-        TBranch        *b__leptonMvaSUSY;
-        TBranch        *b__leptonMvaTTH;
+        TBranch        *b__leptonMvaSUSY16;
+        TBranch        *b__leptonMvaTTH16;
+        TBranch        *b__leptonMvatZqTTV16;
+        TBranch        *b__leptonMvaSUSY17;
+        TBranch        *b__leptonMvaTTH17;
         TBranch        *b__lHNLoose;   
         TBranch        *b__lHNFO;   
         TBranch        *b__lHNTight;   
