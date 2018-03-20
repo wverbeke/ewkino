@@ -71,7 +71,7 @@ class treeReader {
         Int_t           _HLT_IsoMu27_prescale;
         Bool_t          _HLT_IsoMu30;
         Int_t           _HLT_IsoMu30_prescale;
-        Bool_t          _pass_mee;
+        Bool_t          _pass_eem;
         Bool_t          _HLT_Mu8_DiEle12_CaloIdL_TrackIdL;
         Int_t           _HLT_Mu8_DiEle12_CaloIdL_TrackIdL_prescale;
         Bool_t          _HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ;
@@ -89,7 +89,7 @@ class treeReader {
         Int_t           _HLT_DoubleMu4_Mass8_DZ_PFHT350_prescale;
         Bool_t          _HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8;
         Int_t           _HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_prescale;
-        Bool_t          _pass_mme;
+        Bool_t          _pass_emm;
         Bool_t          _HLT_DiMu9_Ele9_CaloIdL_TrackIdL;
         Int_t           _HLT_DiMu9_Ele9_CaloIdL_TrackIdL_prescale;
         Bool_t          _HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ;
@@ -238,59 +238,66 @@ class treeReader {
         void splitPlots();
 
         //functions for event selection
-        void orderByPt(std::vector<unsigned>&, const double*, const unsigned);
-        unsigned dilFlavorComb(const std::vector<unsigned>&);
-        double coneCorr(const unsigned);
+        void orderByPt(std::vector<unsigned>&, const double*, const unsigned) const;
+        unsigned dilFlavorComb(const std::vector<unsigned>&) const;
+        double coneCorr(const unsigned) const;
         void setConePt();
-        bool elePassVLooseMvaIDSUSY(const unsigned ind);
-        bool lepIsLoose(const unsigned);
-        bool lepIsGood(const unsigned);
-        bool lepIsTight(const unsigned);
-        bool lepFromMEExtConversion(const unsigned);
-        bool eleIsClean(const unsigned);
-        unsigned selectLep(std::vector<unsigned>&);
-        unsigned tightLepCount(const std::vector<unsigned>&, const unsigned);
-        bool passPtCuts(const std::vector<unsigned>&);
-        bool jetIsClean(const unsigned);
-        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true);
-        unsigned nJets(const unsigned unc = 0, const bool clean = true);                                        //without jet pt ordering
-        unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true);         //with jet pt ordering
-        bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1);
-        bool bTaggedCSVv2(const unsigned ind, const unsigned wp = 1);
-        bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true);
-        unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
-        unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1);
+
+        bool elePassVLooseMvaIDSUSY(const unsigned ind) const;
+        bool lepIsLoose(const unsigned) const;
+        bool lepIsGood(const unsigned) const;
+        bool lepIsTight(const unsigned) const;
+        bool lepFromMEExtConversion(const unsigned) const;
+        bool eleIsClean(const unsigned) const;
+        unsigned selectLep(std::vector<unsigned>&) const;
+        unsigned tightLepCount(const std::vector<unsigned>&, const unsigned) const;
+        bool passPtCuts(const std::vector<unsigned>&) const;
+        bool jetIsClean(const unsigned) const;
+        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true) const;
+        unsigned nJets(const unsigned unc = 0, const bool clean = true) const;                                   //without jet pt ordering
+        unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;    //with jet pt ordering
+        bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1) const;
+        bool bTaggedCSVv2(const unsigned ind, const unsigned wp = 1) const;
+        bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true) const;
+        unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
+        unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
+
+        //trigger decitions
+        bool passSingleLeptonTriggers() const;
+        bool passDileptonTriggers() const;
+        bool passTrileptonTriggers() const;
+        bool passTriggerCocktail() const;
 
         //functions to reproduce results of TOP-16-020
-        bool lepIsVeto_TOP16_020(const unsigned);
-        bool lepIsGood_TOP16_020(const unsigned);
-        bool lepIsTight_TOP16_020(const unsigned);
-        unsigned selectLep_TOP16_020(std::vector<unsigned>&);
+        bool lepIsVeto_TOP16_020(const unsigned) const;
+        bool lepIsGood_TOP16_020(const unsigned) const;
+        bool lepIsTight_TOP16_020(const unsigned) const;
+        unsigned selectLep_TOP16_020(std::vector<unsigned>&) const;
 
         //overlap removal between samples
-        bool photonOverlap();                                                                                //sample overlap due to photons
-        bool photonOverlap(const Sample&);
-        bool htOverlap();                                                                                    //sample overlap due to HT binning
-        bool htOverlap(const Sample&);
+        bool photonOverlap() const;                                                                          //sample overlap due to photons
+        bool photonOverlap(const Sample&) const;
+        bool htOverlap() const;                                                                              //sample overlap due to HT binning
+        bool htOverlap(const Sample&) const;
 
         //check if leptons are prompt in MC
-        bool promptLeptons();
+        bool promptLeptons() const;
 
         //compute b-tagging efficiency
         void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
 
         //event weights
         std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class
-        double puWeight(const unsigned period = 0, const unsigned unc = 0);
-        double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0);
-        double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0); //more efficient version if jets were already selected 
-        double bTagWeight_udsg(const unsigned unc = 0);
-        double bTagWeight_c(const unsigned unc = 0);
-        double bTagWeight_b(const unsigned unc = 0);
-        double bTagWeight(const unsigned unc = 0);
-        double leptonWeight();
-        double sfWeight();
-        double fakeRateWeight(const unsigned unc = 0);
+        double puWeight(const unsigned period = 0, const unsigned unc = 0) const;
+        double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0) const;
+        double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0) const; //more efficient version if jets were already selected 
+        double bTagWeight_udsg(const unsigned unc = 0) const;
+        double bTagWeight_c(const unsigned unc = 0) const;
+        double bTagWeight_b(const unsigned unc = 0) const;
+        double bTagWeight(const unsigned unc = 0) const;
+        double leptonWeight() const;
+        double sfWeight() const;
+        double fakeRateWeight(const unsigned unc = 0) const;
 
     private:
         TTree* fChain;                                                          //current Tree
@@ -355,7 +362,7 @@ class treeReader {
         TBranch        *b__HLT_IsoMu27_prescale;   
         TBranch        *b__HLT_IsoMu30;   
         TBranch        *b__HLT_IsoMu30_prescale;   
-        TBranch        *b__pass_mee;   
+        TBranch        *b__pass_eem;   
         TBranch        *b__HLT_Mu8_DiEle12_CaloIdL_TrackIdL;   
         TBranch        *b__HLT_Mu8_DiEle12_CaloIdL_TrackIdL_prescale;   
         TBranch        *b__HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ;   
@@ -373,7 +380,7 @@ class treeReader {
         TBranch        *b__HLT_DoubleMu4_Mass8_DZ_PFHT350_prescale;   
         TBranch        *b__HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8;   
         TBranch        *b__HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_prescale;   
-        TBranch        *b__pass_mme;   
+        TBranch        *b__pass_emm;   
         TBranch        *b__HLT_DiMu9_Ele9_CaloIdL_TrackIdL;   
         TBranch        *b__HLT_DiMu9_Ele9_CaloIdL_TrackIdL_prescale;   
         TBranch        *b__HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ;   
