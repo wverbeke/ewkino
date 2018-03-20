@@ -139,44 +139,6 @@ unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsig
     return tightC;
 }
 
-bool treeReader::lepIsVeto_TOP16_020(const unsigned l) const{
-    if(_lPt[l] <= 10) return false;
-    if(fabs(_lEta[l]) >= (2.5 - 0.1*_lFlavor[l])) return false;
-    if(_lFlavor[l] == 0){
-        return _lPOGVeto[l];
-    } else if(_lFlavor[l] == 1){
-        if(!_lPOGLoose[l]) return false;
-        return _relIso0p4Mu[l] < 0.25;
-    }
-    return false;
-}
-
-bool treeReader::lepIsGood_TOP16_020(const unsigned l) const{
-    if(_lPt[l] <= 25) return false;
-    if(fabs(_lEta[l]) > (2.5 - 0.1*_lFlavor[l]) ) return false;
-    if(!_lPOGTight[l]) return false;
-    if(_lFlavor[l] == 1 && _relIso0p4Mu[l] > 0.15) return false;
-    return true;
-}
-
-bool treeReader::lepIsTight_TOP16_020(const unsigned l) const{
-    return lepIsGood_TOP16_020(l);
-}
-
-unsigned treeReader::selectLep_TOP16_020(std::vector<unsigned>& ind) const{
-    ind.clear();
-    unsigned lCount = 0;
-    for(unsigned l = 0; l < _nLight; ++l){
-        if(lepIsGood_TOP16_020(l)){
-            ++lCount;
-            ind.push_back(l);
-        }
-    }
-    if(lCount < 2) return 0;
-    orderByPt(ind, _lPt, lCount);
-    return lCount;
-}
-
 bool treeReader::passPtCuts(const std::vector<unsigned>& ind) const{
     if(_lPt[ind[0]] <= 25) return false;
     if(_lPt[ind[1]] <= 15) return false;
@@ -259,6 +221,7 @@ unsigned treeReader::nBJets(const unsigned unc, const bool deepCSV, const bool c
     }
     return nbJets;
 }
+
 
 unsigned treeReader::nBJets(std::vector<unsigned>& bJetInd, const unsigned unc, const bool deepCSV, const bool clean, const unsigned wp) const{
     unsigned nbJets = 0;

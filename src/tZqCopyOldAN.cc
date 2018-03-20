@@ -15,8 +15,6 @@
 #include <iomanip>
 #include <tuple>
 
-#include <chrono>
-
 //include other parts of the code
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
@@ -80,8 +78,6 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
 
-    auto start = std::chrono::high_resolution_clock::now();
-
     //categorization
     Category categorization({ {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
 
@@ -91,7 +87,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     //store relevant info from histCollection
     const unsigned nDist = histInfo.size();                              //number of distributions to plot
     const unsigned nCat = histCollection.categoryRange(1);                //Several categories enriched in different processes
-    const unsigned nMll = histCollection.categoryRange(0);                //categories based on dilepton Mass
 
     //variables to write to tree for bdt training and used for bdt computation
     std::map < std::string, float > bdtVariableMap =
@@ -110,7 +105,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"pTTaggedRecoilJet", 0.},
             {"etaZboson", 0.},
             {"deltaRZTop", 0.},
-            {"pTZboson", 0.}  
+            {"pTZboson", 0.},
             {"eventWeight", 0.}
         };
     
@@ -158,17 +153,24 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         //make ordered jet and bjet collections
         std::vector<unsigned> jetInd, bJetInd;
-        unsigned jetCount = nJets(jetInd);
-        unsigned bJetCount = nBJets(bJetInd, 0, false);
+        unsigned jetCount = nJets_TOP16_020(jetInd);
+        unsigned bJetCount = nBJets_TOP16_020(bJetInd, 0, false, true, 0); 
+
+        //veto events which have a jet in eta 2.69-3 with pt below 50 GeV
+        bool badJetFound = false;
+        for(unsigned j = 0; j < jetCount; ++j){
+            bool inEE = ( fabs(_jetEta[j]) > 2.69 ) && ( fabs(_jetEta[j]) < 3. );
+            bool lowpT = ( _jetPt[j] > 30 ) && (_jetPt[j] < 50);
+            if(inEE && lowpT){
+                badJetFound = true;
+                break;
+            }
+        }
+        if(badJetFound) continue;
 
         //find best Z candidate
         std::pair<unsigned, unsigned> bestZ;
-        if(isOSSF){
-           bestZ = trilep::bestZ(lepV, ind, _lFlavor, _lCharge, lCount);
-        } else {
-            //pick leading leptons if there is no OSSF pair present 
-            bestZ = {ind[0], ind[1]};
-        }
+        bestZ = trilep::bestZ(lepV, ind, _lFlavor, _lCharge, lCount);
 
         //determine best Z mass
         double mll = (lepV[bestZ.first] + lepV[bestZ.second]).M();
@@ -176,11 +178,35 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //require presence of Z mass
         if(fabs(mll - 91.1876) >= 15) continue;
 
+        //find W lepton 
+        unsigned lw = 999;
+        for(unsigned l = 0; l < lCount; ++l){
+            if( l != bestZ.first && l != bestZ.second ) lw = l;
+        }
+
+        //make met vector 
+        TLorentzVector met;
+        met.SetPtEtaPhiE(_met, 0, _metPhi, _met);
+        //MET and MT Cuts 
+        if(_met <= 10) continue;
+        if(kinematics::mt(lepV[lw], met) <= 10) continue;
+
+
         //only retain useful categories 
         unsigned tZqOldANCategory = 999;
         if(bJetCount == 0){
             tZqOldANCategory = 0;
-        } else if(bJetCount == 1 && (jetCount == 2 || jetCount == 3)
+        } else if(bJetCount == 1){
+            if(jetCount == 2 || jetCount == 3){
+                tZqOldANCategory = 1;
+             } else if(jetCount > 3){
+                 tZqOldANCategory = 2;
+             }
+        } else{
+            tZqOldANCategory = 3;
+        }
+        //don't consider uncategorized events
+        if(tZqOldANCategory == 999) continue;
 
         //apply event weight
         if(!samp.isData() ){
@@ -194,17 +220,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
         }
 
-        //find W lepton 
-        unsigned lw = 999;
-        for(unsigned l = 0; l < lCount; ++l){
-            if( l != bestZ.first && l != bestZ.second ) lw = l;
-        }
-
-        //make met vector 
-        TLorentzVector met;
-        met.SetPtEtaPhiE(_met, 0, _metPhi, _met);
         //reconstruct top mass and tag jets
-
         std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
         TLorentzVector neutrino = tzq::findBestNeutrinoAndTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
 
@@ -254,70 +270,50 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["nJets"] = jetCount;
         bdtVariableMap["pTTaggedRecoilJet"] = recoilingJet.Pt();
         bdtVariableMap["etaZboson"] = ( (lepV[bestZ.first] + lepV[bestZ.second]).Eta() );
-        bdtVariableMap["deltaRZTop"] = topV.M().DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) );
+        bdtVariableMap["deltaRZTop"] = topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) );
         bdtVariableMap["pTZboson"] = (lepV[bestZ.first] + lepV[bestZ.second]).Pt();
         bdtVariableMap["eventWeight"] = weight;
 
         double bdt = 0;
-        if(tzqCat != 0){
-            //bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
-        }
-
-        HistInfo("mll", "M_{ll} (GeV)", 60, 12, 200),
-        HistInfo("mt", "M_{T} (GeV)", 30, 0, 300),
-        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
-        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
-        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200),
-        HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
-        HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8)
+        //bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
 
         double fill[nDist] = {
             bdt, 
             _lEta[ind[lw]]*_lCharge[ind[lw]],
             _lEta[ind[lw]],
             _jetCsvV2[highestCSVv2I],
-            _fabs( lepV[lw].DeltaPhi(taggedBJet) ),
-            _fabs(lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ) ),   
-            _deltaRWLepClosestJet,
+            fabs( lepV[lw].DeltaPhi(taggedBJet) ),
+            fabs(lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ) ),   
+            deltaRWLepClosestJet,
             lepV[lw].DeltaR(recoilingJet),
             fabs(recoilingJet.Eta()),
             fabs(_jetEta[jetInd[0]]),
             std::max(topV.M(), 0.),
-            jetCount,
+            (double) jetCount,
             recoilingJet.Pt(),
             ( (lepV[bestZ.first] + lepV[bestZ.second]).Eta() ),
-            topV.M().DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
+            topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
             (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
             mll,
             kinematics::mt(lepV[lw], met),
             _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]],
             (double) nBJets(),
-            (double) nBJets(0, false); 
+            (double) nBJets(0, false)
         };
 
-        for(unsigned m = 0; m < nMll; ++m){
-            //m = 0 is onZ + offZ
-            if( (m == 0 && mllCat != 2) || m == (mllCat + 1) ){
-                for(unsigned cat = 0; cat < nCat; ++cat){
-                    if(cat == 0 || cat == (tzqCat + 1) ){
-                        //Fill training tree
-                        if(samp.getProcessName() != "DY" ) trainingTree.fill({m, cat}, bdtVariableMap); //fluctuations on DY sample too big for training
-                        for(unsigned dist = 0; dist < nDist; ++dist){
-                            histCollection.access(dist, {m, cat})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
-                        }
-                    }
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            if(cat == 0 || cat == (tZqOldANCategory + 1) ){
+                //Fill training tree
+                if(samp.getProcessName() != "DY" ) trainingTree.fill({0, cat}, bdtVariableMap); //fluctuations on DY sample too big for training
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    histCollection.access(dist, {0, cat})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
                 }
             }
         }
     }
 
     //write histcollection to file
-    histCollection.store("tempHists_tZq/", begin, end);
-
-    //timer
-    auto finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "Elapsed time: " << elapsed.count() << std::endl;
+    histCollection.store("tempHists_tZq_TOP_16_020/", begin, end);
 }
 
 void treeReader::splitJobs(){
@@ -330,7 +326,7 @@ void treeReader::splitJobs(){
             //make temporary job script 
             std::ofstream script("runTuples.sh");
             tools::initScript(script);
-            script << "./tZqAllPlots " << samples[currentSample].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
+            script << "./tZqCopyOldAN " << samples[currentSample].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
             //submit job
             tools::submitScript("runTuples.sh", "00:20:00");
@@ -344,16 +340,7 @@ void treeReader::plot(const std::string& distName){
         if(histInfo[d].name() == distName){
             std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
-            //blind onZ categories
-            col.blindData("onZ_1bJet23Jets"); 
-            col.blindData("onZ_1bJet4Jets"); 
-            col.blindData("onZ_2bJets"); 
-            col.blindData("onZ_nJetsInclusive"); 
-            col.blindData("mllInclusive_1bJet23Jets");
-            col.blindData("mllInclusive_1bJet4Jets");
-            col.blindData("mllInclusive_2bJets");
-            col.blindData("mllInclusive_nJetsInclusive"); 
+            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
             //print plots for collection
             bool is2016 = true;
             col.printPlots("plots/tZq/2016", is2016, "tzq", false);
@@ -363,11 +350,11 @@ void treeReader::plot(const std::string& distName){
 }
 
 void treeReader::splitPlots(){
-    tools::makeFileList("tempHists_tZq", "inputList.txt");
+    tools::makeFileList("tempHists_tZq_TOP_16_020", "inputList.txt");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
         tools::initScript(script);
-        script << "./tZqAllPlots plot " << h.name();
+        script << "./tZqCopyOldAN plot " << h.name();
         script.close();
         tools::submitScript("printPlots.sh", "00:15:00");
     }
