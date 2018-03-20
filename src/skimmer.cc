@@ -49,10 +49,10 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     std::cout << "output file : " << outputFileName << std::endl;
     
     std::shared_ptr<TFile> outputFile = std::make_shared<TFile>((const TString&) outputFileName ,"RECREATE");
-    std::shared_ptr<TTree> outputTree = std::make_shared<TTree>("blackJackAndHookersTree","blackJackAndHookersTree");
     outputFile->mkdir("blackJackAndHookers");
     outputFile->cd("blackJackAndHookers"); 
-    setOutputTree(outputTree.get(), isData);
+    TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
+    setOutputTree(outputTree, isData);
 
     double progress = 0; 	//For printing progress bar
     long nEntries = sampleTree->GetEntries();

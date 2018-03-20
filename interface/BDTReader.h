@@ -6,7 +6,6 @@ class to facilitate extraction of bdt output from xml files
 #define BDTReader_H
 
 //include other parts of code 
-#include "../interface/Category.h"
 
 //include c++ library functions
 #include <memory>
@@ -19,26 +18,17 @@ class to facilitate extraction of bdt output from xml files
 
 class BDTReader{
     public:
-        BDTReader(const std::string&, const std::shared_ptr<Category>&, const std::map< std::string, float>&);
-        BDTReader(const std::string&, const Category&, const std::map < std::string, float >&);
-        BDTReader(const std::string&, const std::vector < std::vector < std::string > >&, const std::map < std::string, float >&);
-            
+        BDTReader(const std::string&, const std::string&, const std::shared_ptr < std::map < std::string, float> >&); 
+        BDTReader(const std::string&, const std::string&, const std::map < std::string, float>&); 
         //get the BDT output for this category's BDT 
-        float computeBDT(const std::vector< size_t > &, const std::map < std::string, float>& );
-        
+        float computeBDT(const std::map < std::string, float>& );
+
     private:
-        std::vector< std::shared_ptr< TMVA::Reader > > readers;
-        std::shared_ptr<Category> category;
-        std::map<std::string, float> variableMap;
+        std::shared_ptr< TMVA::Reader > reader;
+        std::shared_ptr< std::map < std::string, float> > variableMap;
         std::string methodName;
 
         //add variables to bdt 
-        void addVariables(const std::shared_ptr< TMVA::Reader>&);
-        
-        //get name of method (xml file) for given category
-        std::string mvaMethodName(const size_t) const;
-
-        //get the BDT output for this category's BDT 
-        float computeBDT(const size_t categoryIndex, const std::map < std::string, float>& );
+        void addVariables() const;
 };
-#endif
+#endif 

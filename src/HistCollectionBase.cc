@@ -89,3 +89,16 @@ void HistCollectionBase::negBinsToZero() const{
         setNegativeBinsToZero(*colIt); 
     }
 }
+
+//rebin histograms corresponding to given categoryIndex
+void HistCollectionBase::rebin(const size_t categoryIndex, const int numberOfBinsToMerge) const{
+    collection[categoryIndex]->Rebin(numberOfBinsToMerge);
+}
+
+//rebin histograms for all categories whose names contain given string
+void HistCollectionBase::rebin(const std::string& categoryName, const int numberOfBinsToMerge) const{
+    std::vector<size_t> matchingCategories = category->findCategoriesByName(categoryName);
+    for(auto& c : matchingCategories){
+        rebin(c, numberOfBinsToMerge);
+    }
+}

@@ -4,33 +4,32 @@
 source setCMSSW.sh
 
 fillJob(){
-    echo "name=\${$1%/}" >> $2
-    echo 'name=${name##*/}' >> $2
-    echo 'name=${name#ntuples_temp_*}' >> $2
-    echo 'name=${name}.root' >> $2
-    echo 'if [ ! -d ~/Work/ntuples_ewkino ]' >> $2
-    echo '    then mkdir ~/Work/ntuples_ewkino' >> $2
-    echo 'fi' >> $2
-    echo 'if [ -f ~/Work/ntuples_ewkino/$name ]' >> $2
-    echo '    then rm ~/Work/ntuples_ewkino/$name' >> $2
-    echo 'fi' >> $2
-    echo 'hadd ~/Work/ntuples_ewkino/$name ${1}/*root' >> $2
+    name=${1%/}
+    name=${name##*/}
+    name=${name#ntuples_temp_*}
+    name=${name}.root
+    if [ ! -d ~/Work/ntuples_ewkino ]
+        then mkdir ~/Work/ntuples_ewkino
+    fi
+    echo "if [ -f ~/Work/ntuples_ewkino/$name ]" >> $2
+    echo "    then rm ~/Work/ntuples_ewkino/$name" >> $2
+    echo "fi" >> $2
+    echo "hadd ~/Work/ntuples_ewkino/$name ${1}/*root" >> $2
 }
 
 mergeTuple(){
     > mergeJob.sh
     fillJob $1 mergeJob.sh 
-    #bash mergeJob.sh
-    cat mergeJob.sh
-    #rm mergeJob.sh
+    bash mergeJob.sh
+    rm mergeJob.sh
 }
 
 submitMergeTuple(){
+    > mergeJob.sh
     setCMSSW mergeJob.sh
     fillJob $1 mergeJob.sh
-    #submitJob mergeJob.sh
-    #rm mergeJob.sh
-    cat mergeJob.sh 
+    submitJob mergeJob.sh
+    rm mergeJob.sh
 }
 
 skimmedTuples=~/Work/ntuples_temp_*

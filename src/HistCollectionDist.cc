@@ -13,7 +13,9 @@ HistCollectionDist::HistCollectionDist(const std::shared_ptr < HistInfo >& histI
 }
 */
 
-HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, const std::shared_ptr < Category >& category){
+HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, 
+    const std::shared_ptr < Category >& category, const bool sideBand)
+{
     std::vector<std::string> fileNameList = getFileNames(fileList);
     for(size_t s = 0; s < samples.size(); ++s){
         bool firstFile = true; //check whether file is first for given sample
@@ -21,11 +23,11 @@ HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::s
             //find the correct sample corresponding to the current file
             if(fileIt->find(samples[s]->getFileName()) != std::string::npos){
                 if(firstFile){
-                    collection.push_back(HistCollectionBase(*fileIt, histInfo, samples[s], category) );
+                    collection.push_back(HistCollectionBase(*fileIt, histInfo, samples[s], category, sideBand) );
                     firstFile = false;
                 }
                 else{
-                    collection[s] += HistCollectionBase(*fileIt, histInfo, samples[s], category);
+                    collection[s] += HistCollectionBase(*fileIt, histInfo, samples[s], category, sideBand);
                 }
             }
         }        
@@ -33,18 +35,18 @@ HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::s
 }
 
 
-HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const Category& category){
+HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const Category& category, const bool sideBand){
     std::shared_ptr<HistInfo> infoPointer = std::make_shared<HistInfo>(histInfo);
     std::shared_ptr<Category> categoryPointer = std::make_shared<Category>(category);
     std::vector < std::shared_ptr< Sample > > samplePointerList;
     for(auto& sam: samples){
         samplePointerList.push_back(std::make_shared< Sample >( sam ) );        
     }
-    *this = HistCollectionDist(fileList, infoPointer, samplePointerList, categoryPointer);
+    *this = HistCollectionDist(fileList, infoPointer, samplePointerList, categoryPointer, sideBand);
 }
 
-HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const std::vector< std::vector < std::string > >& categoryVec): 
-    HistCollectionDist(fileList, histInfo, samples, Category(categoryVec) ) {}
+HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const std::vector< std::vector < std::string > >& categoryVec, const bool sideBand): 
+    HistCollectionDist(fileList, histInfo, samples, Category(categoryVec) , sideBand) {}
 
 
 std::vector<std::string> HistCollectionDist::getFileNames(const std::string& fileName){
@@ -166,6 +168,7 @@ Plot HistCollectionDist::getPlot(const size_t categoryIndex){
         plotPath(categoryIndex) + name(categoryIndex),  //name of plot
         { ( categoryIsBlinded(categoryIndex) ? "Total bkg.": "Obs." ), getObsHist(categoryIndex) },        //observed yield and its name
         getBkgMap(categoryIndex)        //background information
+        //std::map< std::string, std::shared_ptr< TH1D > >(),     //empty uncertainty map: PLOTTING UNCERTAINTIES CURRENTLY NOT IMPLEMENTED
         );
 }
 
@@ -252,3 +255,9 @@ bool HistCollectionDist::categoryIsBlinded(const size_t categoryIndex) const{
     return ( blindedCategories.find(categoryIndex) != blindedCategories.cend() );
 }
 
+//rebin histograms for categories containing a certain name
+void HistCollectionDist::rebin(const std::string& categoryName, const int numberOfBinsToMerge) const{
+    for(auto& baseCollection : collection){
+        baseCollection.rebin(categoryName, numberOfBinsToMerge);
+    }    
+}

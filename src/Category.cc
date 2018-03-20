@@ -43,3 +43,13 @@ size_t Category::getIndex(const std::vector<pos>& indices) const{
 std::string Category::name(const std::vector<pos>& indices) const{
     return cat[getIndex(indices)];
 }
+
+std::vector<size_t> Category::findCategoriesByName(const std::string& nameToFind) const{
+    std::vector<size_t> matchingCategories;
+    for(size_t c = 0; c < size(); ++c){
+        if( name(c).find(nameToFind) != std::string::npos ){
+            matchingCategories.push_back(c);
+        }
+    }
+    return matchingCategories;
+}

@@ -170,6 +170,7 @@ class treeReader {
         Int_t           _lMatchPdgId[nL_max];   
         UInt_t          _lProvenance[nL_max];
         UInt_t          _lProvenanceCompressed[nL_max];
+        UInt_t          _lProvenanceConversion[nL_max];
         UChar_t         _nJets;
         Double_t        _jetPt[nJets_max];   
         Double_t        _jetPt_JECUp[nJets_max];   
@@ -185,7 +186,9 @@ class treeReader {
         Double_t        _jetDeepCsv_c[nJets_max];   
         Double_t        _jetDeepCsv_bb[nJets_max];   
         UInt_t          _jetHadronFlavor[nJets_max];   
-        UInt_t          _jetId[nJets_max];   
+        Bool_t          _jetIsLoose[nJets_max];
+        Bool_t          _jetIsTight[nJets_max];
+        Bool_t          _jetIsTightLepVeto[nJets_max];
         Double_t        _met;
         Double_t        _metJECDown;
         Double_t        _metJECUp;
@@ -237,6 +240,7 @@ class treeReader {
         bool lepIsLoose(const unsigned);
         bool lepIsGood(const unsigned);
         bool lepIsTight(const unsigned);
+        bool lepFromMEExtConversion(const unsigned);
         bool eleIsClean(const unsigned);
         unsigned selectLep(std::vector<unsigned>&);
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned);
@@ -444,6 +448,7 @@ class treeReader {
         TBranch        *b__lMatchPdgId;   
         TBranch        *b__lProvenance;
         TBranch        *b__lProvenanceCompressed;
+        TBranch        *b__lProvenanceConversion;
         TBranch        *b__nJets;   
         TBranch        *b__jetPt;   
         TBranch        *b__jetPt_JECUp;   
@@ -460,6 +465,9 @@ class treeReader {
         TBranch        *b__jetDeepCsv_bb;   
         TBranch        *b__jetHadronFlavor;   
         TBranch        *b__jetId;   
+        TBranch        *b__jetIsLoose;
+        TBranch        *b__jetIsTight;
+        TBranch        *b__jetIsTightLepVeto;
         TBranch        *b__met;   
         TBranch        *b__metJECDown;   
         TBranch        *b__metJECUp;   

@@ -15,9 +15,10 @@ class HistCollectionDist{
         //direct initialization
         //HistCollectionDist(const std::shared_ptr<HistInfo>&, const std::vector< std::shared_ptr< Sample > >&, const std::shared_ptr< Category >&);
         //initialize by reading histograms from directory (given as string) :
-        HistCollectionDist(const std::string&, const std::shared_ptr< HistInfo >&, const std::vector< std::shared_ptr< Sample > >&, const std::shared_ptr< Category >&);
-        HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const Category&);
-        HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const std::vector< std::vector < std::string > >& categoryVec = std::vector< std::vector< std::string > >() );
+        HistCollectionDist(const std::string&, const std::shared_ptr< HistInfo >&, const std::vector< std::shared_ptr< Sample > >&, const std::shared_ptr< Category >&, const bool sideBand = false);
+        HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const Category&, const bool sideBand = false);
+        HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const std::vector< std::vector < std::string > >& categoryVec = std::vector< std::vector< std::string > >(), 
+            const bool sideBand = false);
 
         //output all plots to file, given options will be given to Plot "draw" function
         //function is non-const because histogram merge might be called before plotting
@@ -25,6 +26,9 @@ class HistCollectionDist{
 
         //routine to blind data in given category, if no name is given all categories are blinded!
         void blindData(const std::string& catName = "");
+
+        //rebin histograms for categories with a certain name
+        void rebin(const std::string&, const int) const;
     private:
         std::vector< HistCollectionBase > collection;
         std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory

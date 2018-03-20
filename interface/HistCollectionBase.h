@@ -41,6 +41,9 @@ class HistCollectionBase{
         //set negative bin contents to 0
         void negBinsToZero() const;
 
+        //rebin all histograms in category with certain value
+        void rebin(const std::string&, const int) const;
+
         //check if collection contains sideband
         bool hasSideBand() const { return ! (sideBand.empty()); }
 
@@ -61,6 +64,9 @@ class HistCollectionBase{
         std::shared_ptr< Category > category;
         std::shared_ptr< Sample >   sample;
         std::shared_ptr< HistInfo > histInfo;
+       
+        //rebin all histograms of given category index
+        void rebin(const size_t, const int) const;
 };
 //set all negative bins in histogram to zero
 void setNegativeBinsToZero(const std::shared_ptr< TH1D >&);

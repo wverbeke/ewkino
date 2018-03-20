@@ -7,6 +7,11 @@ cwd=$(pwd)                                          #current working directory n
 
 skimSample(){                                           #function to skim one sample
     name="${1%/*}"                                      #remove everything before the last "/" in the path to the sample
+    if [[ $1 = *"Fall17"* ]] || [[ $1 = *"Run2017"* ]]; then
+        name="${name}_Fall17"
+    else 
+        name="${name}_Summer16"
+    fi
     echo "$name"
     outputDir=~/Work/ntuples_temp_${name}
     if [ ! -d "$outputDir" ]; then                      #make output directory if it doesn't exist 
@@ -34,8 +39,9 @@ skimSample(){                                           #function to skim one sa
 
 baseFolder=/pnfs/iihe/cms/store/user/wverbeke/heavyNeutrino
 cd $baseFolder
-foldersMC=*/*ewkinoMCList-v9                               #add suffix for newer versions
-foldersData=*/*2016LeptonicDataList_v8
-for d in $foldersData $foldersMC                         #skim all samples 
+foldersMC=*/*ewkino2017MCList-v15p5                              #add suffix for newer versions
+foldersMC2=*/*ewkino2016MCList-v15p5                              #add suffix for newer versions
+foldersData=*/*2017LeptonicDataList_v15p5
+for d in $foldersMC $foldersMC2 $foldersData                         #skim all samples 
     do skimSample $d $baseFolder
 done
