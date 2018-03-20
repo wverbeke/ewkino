@@ -78,7 +78,7 @@ double treeReader::eventWeight() const{
 //fake rate
 double treeReader::fakeRateWeight(const unsigned unc) const{
     if(reweighter.use_count() == 0 ){
-        reweighter = std::make_shared<Reweighter>();
+        reweighter.reset(new Reweighter);
     }
     double sf = -1.;
     for(unsigned l = 0; l < _nLight; ++l){

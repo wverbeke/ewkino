@@ -247,7 +247,7 @@ class treeReader {
         bool lepIsTight(const unsigned) const;
         bool lepFromMEExtConversion(const unsigned) const;
         bool eleIsClean(const unsigned) const;
-        unsigned selectLep(std::vector<unsigned>&) const;
+        unsigned selectLep(std::vector<unsigned>&);
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned) const;
         bool passPtCuts(const std::vector<unsigned>&) const;
         bool jetIsClean(const unsigned) const;
