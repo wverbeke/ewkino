@@ -229,6 +229,7 @@ class treeReader {
         void Analyze();
         void Analyze(const std::string&, long unsigned, long unsigned);
         void Analyze(const Sample&, long unsigned, long unsigned);
+        void Analyze(const Sample&);
         void setup();
         void splitJobs();
         void Loop(const std::string& sample, const double xSection);
@@ -259,6 +260,9 @@ class treeReader {
         bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true) const;
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
+
+        //baseline selection for leptonMva training
+        bool lepPassBaseline(const unsigned) const;
 
         //trigger decitions
         bool passSingleLeptonTriggers() const;
