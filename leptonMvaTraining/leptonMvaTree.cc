@@ -66,7 +66,7 @@ void treeReader::Analyze(const Sample& samp){
             {"dxy", 0.},
             {"dz", 0.},
             {"segmentCompatibility", 0.},
-            {"electronMva", 0.}
+            {"electronMva", 0.},
             {"eventWeight", 0.}
         };
 
@@ -75,7 +75,21 @@ void treeReader::Analyze(const Sample& samp){
 
 
     initSample(samp, 1);  //use 2017 lumi
+
+    std::cout<< samp.getFileName() << " : " << nEntries << " entries" << std::endl;
+    double progress = 0;    //for printing progress bar
+
     for(long unsigned it = 0; it < nEntries; ++it){
+
+       //print progress bar    
+       if(it%100 == 0 && it != 0){
+           progress += (double) (100./nEntries);
+           tools::printProgress(progress);
+       } else if(it == nEntries -1){
+           progress = 1.;
+           tools::printProgress(progress);
+       }
+
         GetEntry(samp, it);
     
         for(unsigned l = 0; l < _nLight; ++l){
