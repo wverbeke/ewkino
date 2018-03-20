@@ -64,7 +64,7 @@ double treeReader::leptonWeight() const{
     return sf;
 }
     
-double treeReader::eventWeight() const{
+double treeReader::eventWeight(){
     if(reweighter.use_count() == 0 ){
         //reweighter = std::make_shared<Reweighter>();
         reweighter.reset(new Reweighter); 
@@ -76,7 +76,7 @@ double treeReader::eventWeight() const{
 }
 
 //fake rate
-double treeReader::fakeRateWeight(const unsigned unc) const{
+double treeReader::fakeRateWeight(const unsigned unc){
     if(reweighter.use_count() == 0 ){
         reweighter.reset(new Reweighter);
     }
