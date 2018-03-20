@@ -1,0 +1,12 @@
+CC=g++
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= src/eventSelection.cc leptonMvaTraining/leptonMvaTree.cc src/treeReader.cc src/analysisTools.cc src/TrainingTree.cc src/Sample.cc src/Category.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= leptonMvaTree
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)b
