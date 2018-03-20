@@ -135,6 +135,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //new flavor categorization if the leptons are SS
         if(!hasOS){
             flav += 3;
+            //temporary, remove later!!
+            if(_3dIPSig[ind[0]] > 2) continue;
+            if(_3dIPSig[ind[1]] > 2) continue;
         }
         //determine run perios
         unsigned run;
@@ -223,6 +226,7 @@ void treeReader::plot(const std::string& distName){
             //rebin same-sign category because of low statistics
             col.rebin("same-sign", 5);
             col.printPlots("plots/ewkino/dilepCR", is2016, "ewkinoDilep", true, true);
+            col.printPlots("plots/ewkino/dilepCR", is2016, "ewkinoDilep", false, true);
         }
     }
 }
