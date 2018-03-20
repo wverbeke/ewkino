@@ -111,7 +111,7 @@ bool treeReader::lepIsTight(const unsigned l) const{
     return _leptonMvaTTH16[l] > 0.9;
 }
 
-unsigned treeReader::selectLep(std::vector<unsigned>& ind) const{
+unsigned treeReader::selectLep(std::vector<unsigned>& ind){
     ind.clear();
     unsigned lCount = 0;
     for(unsigned l = 0; l < _nLight; ++l){

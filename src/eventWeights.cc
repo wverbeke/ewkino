@@ -76,7 +76,7 @@ double treeReader::sfWeight(){
 }
 
 //fake rate
-double treeReader::fakeRateWeight(const unsigned unc) const{
+double treeReader::fakeRateWeight(const unsigned unc){
     if(reweighter.use_count() == 0 ){
         reweighter.reset(new Reweighter);
     }
