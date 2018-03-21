@@ -111,7 +111,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     
     //training tree writer
     TrainingTree trainingTree("trainingTrees/" + std::to_string(begin) + "_" + std::to_string(end) + "_TOP16020_",samp, categorization, bdtVariableMap, samp.isSMSignal() ); 
-
+    
     //loop over all sample
     initSample(samp, 0);          //Use 2016 lumi
     for(long unsigned it = begin; it < end; ++it){
@@ -122,10 +122,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             TLorentzVector jet;
             jet.SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
             if(jet.M() < 0){
-                std::cout << "jet of negative mass = " << jet.M() << std::endl;
+                //std::cout << "jet of negative mass = " << jet.M() << std::endl;
             }
         }
-
         //vector containing good lepton indices
         std::vector<unsigned> ind;
 
@@ -149,7 +148,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //make lorentzvectors for leptons
         TLorentzVector lepV[lCount];
         for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
-
 
         //make ordered jet and bjet collections
         std::vector<unsigned> jetInd, bJetInd;
@@ -190,7 +188,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //MET and MT Cuts 
         if(_met <= 10) continue;
         if(kinematics::mt(lepV[lw], met) <= 10) continue;
-
 
         //only retain useful categories 
         unsigned tZqOldANCategory = 999;
@@ -256,7 +253,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned j = 0; j < jetCount; ++j){
             if(jetV[jetInd[j]].DeltaR(lepV[lw]) < deltaRWLepClosestJet) deltaRWLepClosestJet = jetV[jetInd[j]].DeltaR(lepV[lw]);
         }
- 
         bdtVariableMap["asymmetryWlep"] = _lEta[ind[lw]]*_lCharge[ind[lw]];
         bdtVariableMap["etaWLep"] = _lEta[ind[lw]];
         bdtVariableMap["highestCSVv2"] = _jetCsvV2[highestCSVv2I];
@@ -265,7 +261,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["deltaRWLepClosestJet"] = deltaRWLepClosestJet;
         bdtVariableMap["deltaRWlepRecoilingJet"] = lepV[lw].DeltaR(recoilingJet);
         bdtVariableMap["etaTaggedRecoilJet"] = fabs(recoilingJet.Eta());
-        bdtVariableMap["etaLeadingJet"] = fabs(_jetEta[jetInd[0]]);
+        bdtVariableMap["etaLeadingJet"] = fabs(leadingJet.Eta());
         bdtVariableMap["topMass"] =  std::max(topV.M(), 0.);
         bdtVariableMap["nJets"] = jetCount;
         bdtVariableMap["pTTaggedRecoilJet"] = recoilingJet.Pt();
@@ -276,7 +272,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         double bdt = 0;
         //bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
-
         double fill[nDist] = {
             bdt, 
             _lEta[ind[lw]]*_lCharge[ind[lw]],
@@ -287,7 +282,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             deltaRWLepClosestJet,
             lepV[lw].DeltaR(recoilingJet),
             fabs(recoilingJet.Eta()),
-            fabs(_jetEta[jetInd[0]]),
+            fabs(leadingJet.Eta()),
             std::max(topV.M(), 0.),
             (double) jetCount,
             recoilingJet.Pt(),
@@ -311,7 +306,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
     }
-
     //write histcollection to file
     histCollection.store("tempHists_tZq_TOP_16_020/", begin, end);
 }
