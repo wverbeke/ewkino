@@ -13,5 +13,6 @@ for leptonFlavor in muon electron; do
         else 
             qsub $script -l walltime=40:00:00
         fi
+        rm $script
     done
 done    
