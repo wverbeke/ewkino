@@ -70,8 +70,8 @@ void treeReader::Analyze(const Sample& samp){
             {"eventWeight", 0.}
         };
 
-    TrainingTree muonTree("leptonMvaTraining/", samp, {{""}}, trainingVariableMap, samp.isSMSignal() );
-    TrainingTree electronTree("leptonMvaTraining/", samp, {{""}}, trainingVariableMap, samp.isSMSignal() );
+    TrainingTree muonTree("leptonMvaTraining/muon_", samp, {{""}}, trainingVariableMap, samp.isSMSignal() );
+    TrainingTree electronTree("leptonMvaTraining/electron_", samp, {{""}}, trainingVariableMap, samp.isSMSignal() );
 
 
     initSample(samp, 1);  //use 2017 lumi

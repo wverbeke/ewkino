@@ -1,0 +1,12 @@
+CC=g++
+CFLAGS= -Wl,--no-as-needed,-lTMVA
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= trainLeptonMva.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= trainLeptonMva
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
