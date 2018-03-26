@@ -26,7 +26,7 @@ bool treeReader::lepPassBaseline(const unsigned ind) const{
     if(_lFlavor[ind] == 2) return false;
 
     if(fabs(_lEta[ind]) >= (2.5 - 0.1*_lFlavor[ind]) ) return false;
-    if(_lPt[ind] < 10) return false;
+    if(_lPt[ind] <= 10) return false;
     if(fabs(_dxy[ind]) >= 0.05) return false;
     if(fabs(_dz[ind]) >= 0.1) return false;
     if(fabs(_3dIPSig[ind]) >= 8) return false;
@@ -61,7 +61,10 @@ void treeReader::Analyze(const Sample& samp){
             {"miniIsoNeutral", 0.},
             {"pTRel", 0.},
             {"ptRatio", 0.},
+            {"relIso", 0.},
+            {"relIso0p4", 0.},
             {"csvV2ClosestJet", 0.},
+            {"deepCsvClosestJet", 0.},
             {"sip3d", 0.},
             {"dxy", 0.},
             {"dz", 0.},
@@ -94,7 +97,10 @@ void treeReader::Analyze(const Sample& samp){
     
         for(unsigned l = 0; l < _nLight; ++l){
             if( lepPassBaseline(l) ){
-                bool isPrompt = _lIsPrompt[l] && ( _lMatchPdgId[l] != 22) && (_lProvenance[l] != 1);
+                bool isPrompt = _lIsPrompt[l] 
+                    && ( _lMatchPdgId[l] != 22)
+                    && (_lProvenance[l] != 1)
+                    && ( abs(_lMomPdgId[l]) != 15);
                 bool nonPrompt = !_lIsPrompt[l];
                 
                 trainingVariableMap["pt"] = _lPt[l];
@@ -104,7 +110,10 @@ void treeReader::Analyze(const Sample& samp){
                 trainingVariableMap["miniIsoNeutral"] = _miniIso[l] - _miniIsoCharged[l];
                 trainingVariableMap["pTRel"] = _ptRel[l];
                 trainingVariableMap["ptRatio"] = std::min(_ptRatio[l], 1.5);
+                trainingVariableMap["relIso"] = _relIso[l];
+                trainingVariableMap["relIso0p4"] = _relIso0p4[l];
                 trainingVariableMap["csvV2ClosestJet"] = std::max(_closestJetCsvV2[l], 0.);
+                trainingVariableMap["deepCsvClosestJet"] = std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : std::max(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l], 0.); 
                 trainingVariableMap["sip3d"] = _3dIPSig[l];
                 trainingVariableMap["dxy"] = log( fabs( _dxy[l] ) );
                 trainingVariableMap["dz"] = log( fabs( _dz[l] ) );

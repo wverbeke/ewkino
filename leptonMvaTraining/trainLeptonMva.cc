@@ -110,19 +110,19 @@ void trainMvaMethods(const std::string leptonFlavor, const std::string algorithm
         
         //combine the option strings
         //default
-        TString optionsDefault = dnnOptions_default + ":" + layoutString_default + ":" + trainingStrategyString + ":Architecture=STANDARD";
+        TString optionsDefault = dnnOptions_default + ":" + layoutString_default + ":" + trainingStrategyString + ":Architecture=CPU";
         factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_default", optionsDefault);
 
         //extralayers
-        TString optionsExtraLayers = dnnOptions_default + ":" + layoutString_extraLayers + ":" + trainingStrategyString + ":Architecture=STANDARD";
+        TString optionsExtraLayers = dnnOptions_default + ":" + layoutString_extraLayers + ":" + trainingStrategyString + ":Architecture=CPU";
         factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_2extraLayers", optionsExtraLayers);
 
         //double 
-        TString optionsDouble = dnnOptions_default + ":" + layoutString_double + ":" + trainingStrategyString + ":Architecture=STANDARD";
+        TString optionsDouble = dnnOptions_default + ":" + layoutString_double + ":" + trainingStrategyString + ":Architecture=CPU";
         factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_doubleNodes", optionsDouble);
 
         //sigmoid
-        TString optionsSigmoid = dnnOptions_default + ":" + layoutString_sigmoid + ":" + trainingStrategyString + ":Architecture=STANDARD";
+        TString optionsSigmoid = dnnOptions_default + ":" + layoutString_sigmoid + ":" + trainingStrategyString + ":Architecture=CPU";
         factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_sigmoid", optionsSigmoid);
         
         // Multi-core CPU implementation.
