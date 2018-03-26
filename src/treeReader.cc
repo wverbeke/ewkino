@@ -234,6 +234,7 @@ void treeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_metPhiJECUp", &_metPhiJECUp, &b__metPhiJECUp);
     fChain->SetBranchAddress("_metPhiUnclDown", &_metPhiUnclDown, &b__metPhiUnclDown);
     fChain->SetBranchAddress("_metPhiUnclUp", &_metPhiUnclUp, &b__metPhiUnclUp);
+    fChain->SetBranchAddress("_metSignificance", &_metSignificance, &b__metSignificance);
 
     if(!isData){
         fChain->SetBranchAddress("_weight", &_weight, &b__weight);
@@ -278,6 +279,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_metPhiJECUp",                  &_metPhiJECUp,                  "_metPhiJECUp/D");
     outputTree->Branch("_metPhiUnclDown",               &_metPhiUnclDown,               "_metPhiUnclDown/D");
     outputTree->Branch("_metPhiUnclUp",                 &_metPhiUnclUp,                 "_metPhiUnclUp/D");
+    outputTree->Branch("_metSignificance",              &_metSignificance,              "_metSignificance/D");
     if(isData){                 //Temporarily only store 2017 triggers for data, to be updated when 2017 MC is available
         outputTree->Branch("_pass_e", &_pass_e, "_pass_e/O");
         outputTree->Branch("_HLT_Ele35_WPTight_Gsf", &_HLT_Ele35_WPTight_Gsf, "_HLT_Ele35_WPTight_Gsf/O");
