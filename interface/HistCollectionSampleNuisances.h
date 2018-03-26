@@ -22,13 +22,11 @@ class HistCollectionSampleNuisances : public HistCollectionSample {
     	HistCollectionSampleNuisances(const std::vector< HistInfo>&, const Sample&, const std::vector< std::vector < std::string > >& categoryVec, 
 			const std::vector < std::string>& nuisanceNames, const bool includeSB = false);
 
-		std::shared_ptr< TH1D > accessNuisance(const std::string&, const size_t, const std::vector<size_t>&, const bool sb = false);
+		std::shared_ptr< TH1D > accessNuisanceDown(const std::string&, const size_t, const std::vector<size_t>&, const bool sb = false);
+		std::shared_ptr< TH1D > accessNuisanceUp(const std::string&, const size_t, const std::vector<size_t>&, const bool sb = false);
     private: 
         std::vector < HistCollectionBaseNuisances > nuisanceCollection;
 		std::map< std::string, size_t> nuisanceIndexMap; 
-
-		std::shared_ptr< TH1D > accessNuisance(const std::string&, const size_t, const size_t, const bool sb = false);
-		std::shared_ptr< TH1D > accessNuisance(const size_t, const size_t, const size_t, const bool sb = false);
 };
 
 

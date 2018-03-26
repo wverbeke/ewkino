@@ -14,7 +14,12 @@ HistCollectionSampleNuisances::HistCollectionSampleNuisances(const std::vector< 
     }
 }
 
-std::shared_ptr<TH1D> HistCollectionSampleNuisances::accessNuisance(const std::string& nuisanceName, const size_t infoIndex, const std::vector<size_t>& categoryIndices, const bool sb){
+std::shared_ptr<TH1D> HistCollectionSampleNuisances::accessNuisanceDown(const std::string& nuisanceName, const size_t infoIndex, const std::vector<size_t>& categoryIndices, const bool sb){
     size_t nuisanceIndex = nuisanceIndexMap[nuisanceName];
-    return nuisanceCollection[infoIndex].accessNuisance(nuisanceIndex, categoryIndices, sb); 
+    return nuisanceCollection[infoIndex].accessNuisanceDown(nuisanceIndex, categoryIndices, sb); 
+}
+
+std::shared_ptr<TH1D> HistCollectionSampleNuisances::accessNuisanceUp(const std::string& nuisanceName, const size_t infoIndex, const std::vector<size_t>& categoryIndices, const bool sb){
+    size_t nuisanceIndex = nuisanceIndexMap[nuisanceName];
+    return nuisanceCollection[infoIndex].accessNuisanceUp(nuisanceIndex, categoryIndices, sb); 
 }

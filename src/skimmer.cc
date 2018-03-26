@@ -27,11 +27,13 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     TH1D* hCounter;
     TH1D* lheCounter;
     TH1D* nTrueInt;
+    TH1D* nVertices;
     if(!isData){
         hCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/hCounter");
         lheCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/lheCounter");
-        nTrueInt = (TH1D*) sampleFile->Get("blackJackAndHookers/nTrue");
+        nTrueInt = (TH1D*) sampleFile->Get("blackJackAndHookers/nTrueInteractions");
     }
+    nVertices = (TH1D*) sampleFile->Get("blackJackAndHookers/nVertices");
     //Get Tree
     TTree* sampleTree = (TTree*) (sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree"));
     initTree(sampleTree, isData);
@@ -65,10 +67,12 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             tools::printProgress(progress);
         }
         sampleTree->GetEntry(it);
+
         std::vector<unsigned> ind;
         //Select both TOP-16-020 and FO leptons. Remove the former later.
         unsigned lCount = std::max(selectLep(ind), selectLep_TOP16_020(ind) );
         if(lCount < 3) continue;
+
         outputTree->Fill();
     }   
     std::cout << std::endl;
@@ -77,6 +81,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         lheCounter->Write();
         nTrueInt->Write();
     }
+    nVertices->Write();
     outputTree->Write("",  BIT(2));
     outputFile->Close(); 
 }
