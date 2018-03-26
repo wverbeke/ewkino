@@ -17,9 +17,9 @@ void treeReader::computeBTagEff(const unsigned wp, const bool clean, const bool 
         }
     }
     //loop over all samples 
-    for(size_t sam = 0; sam < samples.size(); ++sam){
+    for(auto& sam : samples){
         initSample(); 
-        std::cout<<"Entries in "<< std::get<1>(samples[sam]) << " " << nEntries << std::endl;
+        std::cout<<"Entries in "<< sam.getFileName() << " " << nEntries << std::endl;
         double progress = 0;    //for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar        
@@ -30,7 +30,7 @@ void treeReader::computeBTagEff(const unsigned wp, const bool clean, const bool 
                 progress = 1.;
                 tools::printProgress(progress);
             }
-            GetEntry(it);
+            GetEntry(sam, it);
             //vector containing good lepton indices
             std::vector<unsigned> ind;
             //select leptons
