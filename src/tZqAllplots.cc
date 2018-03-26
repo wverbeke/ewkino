@@ -209,7 +209,15 @@ void treeReader::setup(){
         HistInfo("mSystem", "M_{(Jets + leptons + neutrino)} (GeV)", 30, 0, 1000), 
         HistInfo("mJets", "M_{(all Jets)} (GeV)", 30, 0, 1000), 
         HistInfo("mtLeadingJetMET", "M_{T}(leading jet + MET) (GeV)", 30, 0, 300),
-        HistInfo("mtTrailingJetMET", "M_{T}(trailing jet + MET) (GeV)", 30, 0, 300)
+        HistInfo("mtTrailingJetMET", "M_{T}(trailing jet + MET) (GeV)", 30, 0, 300),
+
+        HistInfo("mtScalarSumLeptons", "#Sigma_{l}M_{T}(l + MET) (GeV)", 30, 0, 800),
+        HistInfo("mtScalarSumJets", "#Sigma_{jet}M_{T}(jet + MET) (GeV)", 30, 0, 800),
+        HistInfo("mtScalarSumBJets", "#Sigma_{bjet}M_{T}(bjet + MET) (GeV)", 30, 0, 800),
+        HistInfo("mtScalarSumAll", "#Sigma_{l + jet}M_{T}( l/jet + MET) (GeV)", 30, 0, 1200),
+        HistInfo("metSignificance", "MET/#sigma(MET)", 30, 0, 100),
+        HistInfo("LT", "L_{T} (GeV)", 30, 0, 800),
+        HistInfo("HTLep", "#Sigma_{l}M_{T}(l + MET)", 30, 0, 800)
     };
 }
 
@@ -531,6 +539,30 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned j = 0; j < jetCount; ++j){
             if(jetV[jetInd[j]].DeltaR(lepV[lw]) < deltaRWLepClosestJet) deltaRWLepClosestJet = jetV[jetInd[j]].DeltaR(lepV[lw]);
         }
+
+        //compute scalar MT sums
+        double mtScalarSumLeptons = 0.;
+        for(unsigned l = 0; l < lCount; ++l){
+            mtScalarSumLeptons += kinematics::mt(lepV[l], met);
+        }
+
+        double mtScalarSumJets = 0.;
+        for(unsigned j = 0; j < jetCount; ++j){
+            mtScalarSumJets += kinematics::mt(jetV[jetInd[j]], met);
+        }
+
+        double mtScalarSumBJets = 0.;
+        for(unsigned j = 0; j < bJetCount; ++j){
+            mtScalarSumBJets += kinematics::mt(jetV[bJetInd[j]], met);
+        }
+        double mtScalarSumAll = mtScalarSumLeptons + mtScalarSumJets + mtScalarSumBJets;
+       
+        double LT = 0.;
+        for(unsigned l = 0; l < lCount; ++l){
+            LT += _lPt[ind[l]];
+        }
+       
+        double HTLep = HT + LT; 
         
         bdtVariableMap["asymmetryWlep"] = _lEta[ind[lw]]*_lCharge[ind[lw]];
         bdtVariableMap["topMass"] =  std::max(topV.M(), 0.);
@@ -652,7 +684,15 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         kinematics::mt(lepV[0], met), kinematics::mt(lepV[1], met), kinematics::mt(lepV[2], met),
         kinematics::mt(jetSystem, met), kinematics::mt(jetSystem + lepV[0] + lepV[1] + lepV[2], met), 
         (jetSystem + lepV[0] + lepV[1] + lepV[2] + neutrino).M(), jetSystem.M(),
-        kinematics::mt(leadingJet, met), kinematics::mt(trailingJet, met)
+        kinematics::mt(leadingJet, met), kinematics::mt(trailingJet, met),
+
+        mtScalarSumLeptons,
+        mtScalarSumJets,
+        mtScalarSumBJets,
+        mtScalarSumAll,
+        _metSignificance,
+        LT,
+        HTLep
         };
 
         for(unsigned m = 0; m < nMll; ++m){
