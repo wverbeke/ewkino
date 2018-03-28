@@ -230,6 +230,7 @@ class treeReader {
         void Analyze();
         void Analyze(const std::string&, long unsigned, long unsigned);
         void Analyze(const Sample&, long unsigned, long unsigned);
+        void Analyze(const std::string&);
         void Analyze(const Sample&);
         void setup();
         void splitJobs();
