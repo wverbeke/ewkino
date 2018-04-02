@@ -68,11 +68,7 @@ void trainMvaMethods(const std::string leptonFlavor, const std::string algorithm
     dataloader->PrepareTrainingAndTestTree( mycuts, mycutb, "nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0:NormMode=None:SplitMode=Random:!V" );
     //BDT 
     if(algorithm == "BDT"){
-        factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_m1Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.1:nCuts=-1:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
-        factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_m1Cuts_Depth4_baggedGrad_6000trees_shrinkage0p1", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.1:nCuts=-1:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
-        factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_m1Cuts_Depth4_baggedGrad_3000trees_shrinkage0p05", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.1:nCuts=-1:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
-        factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_m1Cuts_Depth4_1000trees_shrinkage0p1", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.1:nCuts=-1:MaxDepth=4:IgnoreNegWeightsInTraining:DoBoostMonitor=True");
-        
+        factory->BookMethod( dataloader, TMVA::Types::kBDT, (const TString&) "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1_" + leptonFlavor, "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedBoost=True:DoBoostMonitor=True");
     }
     else if(algorithm == "MLP"){
         //NN

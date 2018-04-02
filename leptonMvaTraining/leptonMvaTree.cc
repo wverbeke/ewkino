@@ -20,6 +20,9 @@
 #include "../interface/analysisTools.h"
 #include "../interface/TrainingTree.h"
 
+//TEMPORARY
+#include "TMVA/Reader.h"
+//#include "TMVA/PyMethodBase.h"
 
 bool treeReader::lepPassBaseline(const unsigned ind) const{
     //don't consider taus!
@@ -45,9 +48,24 @@ void treeReader::setup(){
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
     readSamples("sampleLists/samples_leptonMvaTraining.txt");
+}
 
+void treeReader::splitJobs(){
     for(auto& sam : samples){
-        Analyze(sam);
+        std::ofstream script("fillTrainingTree.sh");
+        tools::initScript(script);
+        script << "./leptonMvaTree " << sam.getFileName();
+        script.close();
+        //submit job
+        tools::submitScript("fillTrainingTree.sh", "40:00:00");
+    }
+}
+
+void treeReader::Analyze(const std::string& sampleName){
+    for(auto& sam : samples){
+        if(sam.getFileName() == sampleName){
+            Analyze(sam);
+        }
     }
 }
 
@@ -69,13 +87,17 @@ void treeReader::Analyze(const Sample& samp){
             {"dxy", 0.},
             {"dz", 0.},
             {"segmentCompatibility", 0.},
-            {"electronMva", 0.},
             {"eventWeight", 0.}
         };
+    if(samp.is2017()){
+        trainingVariableMap["electronMvaFall17NoIso"] = 0.;
+    } else{
+        trainingVariableMap["electronMvaSpring16GP"] = 0.;
+    }
 
+    //TMVA::PyMethodBase::PyInitialize();
     TrainingTree muonTree("leptonMvaTraining/muon_", samp, {{""}}, trainingVariableMap, samp.isSMSignal() );
     TrainingTree electronTree("leptonMvaTraining/electron_", samp, {{""}}, trainingVariableMap, samp.isSMSignal() );
-
 
     initSample(samp, 1);  //use 2017 lumi
 
@@ -118,9 +140,13 @@ void treeReader::Analyze(const Sample& samp){
                 trainingVariableMap["dxy"] = log( fabs( _dxy[l] ) );
                 trainingVariableMap["dz"] = log( fabs( _dz[l] ) );
                 trainingVariableMap["segmentCompatibility"] = ( (_lFlavor[l] == 1) ? _lMuonSegComp[l] : 0.);
-                trainingVariableMap["electronMva"] = ( (_lFlavor[l] == 0) ? _lElectronMva[l] : 0.); 
+                if(samp.is2017()){
+                    trainingVariableMap["electronMvaFall17NoIso"] = ( (_lFlavor[l] == 0) ? _lElectronMvaFall17NoIso[l] : 0.); 
+                } else{
+                    trainingVariableMap["electronMvaSpring16GP"] = ( (_lFlavor[l] == 0) ? _lElectronMva[l] : 0.);
+                }
                 trainingVariableMap["eventWeight"] = ( (_weight > 0) ? 1 : -1);
-                
+
                 if(isPrompt && samp.isSMSignal() ){ 
                     if(_lFlavor[l] == 0){
                         electronTree.fill( std::vector<size_t>({0}), trainingVariableMap);    
@@ -142,4 +168,16 @@ void treeReader::Analyze(const Sample& samp){
 int main(int argc, char* argv[]){
     treeReader reader;
     reader.setup();
+    //convert all input to std::string format for easier handling
+    std::vector<std::string> argvStr;
+    for(int i = 0; i < argc; ++i){
+        argvStr.push_back(std::string(argv[i]));
+    }
+    if(argc == 2){
+        reader.Analyze(argvStr[1]);
+    }
+    else{
+        reader.splitJobs();
+    }
+    return 0;  
 }

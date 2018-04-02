@@ -218,7 +218,7 @@ class treeReader {
 
         //skim tree
         void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
-        void combinePD(const std::vector<std::string>& datasets, std::string outputDirectory = "");
+        void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
 
         //set up tree for analysis
         void readSamples(const std::string& list = ""); //read sample list from file
@@ -231,6 +231,7 @@ class treeReader {
         void Analyze();
         void Analyze(const std::string&, long unsigned, long unsigned);
         void Analyze(const Sample&, long unsigned, long unsigned);
+        void Analyze(const std::string&);
         void Analyze(const Sample&);
         void setup();
         void splitJobs();
