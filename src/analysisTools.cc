@@ -239,7 +239,7 @@ void tools::makeFileList(const std::string& directory, const std::string& output
 }
 
 //add training / to directoryName if needed
-std::string formattedDirectoryName(const std::string& directory){
+std::string tools::formattedDirectoryName(const std::string& directory){
     std::string formated(directory);
     if(formated.back() != '/') formated.append("/");
     return formated;

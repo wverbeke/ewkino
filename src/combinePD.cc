@@ -22,10 +22,19 @@
 
 void treeReader::combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory){
 
-    //Set output file and tree
-    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_temp/" : outputDirectory;
-    const std::string outputFileName = "~/Work/ntuples_ewkino/data_combined_trilepton.root";
-    TFile* outputFile = new TFile((const TString&) outputFileName ,"RECREATE");
+    //directory to write merged file
+    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_ewkino/" : tools::formattedDirectoryName(outputDirectory);
+
+    //name of merged file
+    std::string outputFileName;
+    if( !is2017 ){
+       outputFileName  = "data_combined_trilepton_2016.root";
+    } else{
+        outputFileName = "data_combined_trilepton_2017.root";
+    }
+
+    //set up output tree and file
+    TFile* outputFile = new TFile((const TString&) outputDirectory + outputFileName ,"RECREATE");
     outputFile->mkdir("blackJackAndHookers");
     outputFile->cd("blackJackAndHookers"); 
     TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
@@ -49,7 +58,7 @@ void treeReader::combinePD(std::vector<std::string>& datasets, const bool is2017
         std::cout << dataset << std::endl;
 
         //Read tree	
-        TFile* sampleFile = new TFile( (const TString&)"~/Work/ntuples_ewkino/" + dataset,"read");	
+        TFile* sampleFile = new TFile( (const TString&) "~/Work/ntuples_ewkino/" + dataset,"read");	
 
         //Determine hcounter for cross section scaling
         sampleFile->cd("blackJackAndHookers");	
