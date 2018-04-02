@@ -211,13 +211,13 @@ void treeReader::setup(){
         HistInfo("mtLeadingJetMET", "M_{T}(leading jet + MET) (GeV)", 30, 0, 300),
         HistInfo("mtTrailingJetMET", "M_{T}(trailing jet + MET) (GeV)", 30, 0, 300),
 
-        HistInfo("mtScalarSumLeptons", "#Sigma_{l}M_{T}(l + MET) (GeV)", 30, 0, 800),
-        HistInfo("mtScalarSumJets", "#Sigma_{jet}M_{T}(jet + MET) (GeV)", 30, 0, 800),
-        HistInfo("mtScalarSumBJets", "#Sigma_{bjet}M_{T}(bjet + MET) (GeV)", 30, 0, 800),
-        HistInfo("mtScalarSumAll", "#Sigma_{l + jet}M_{T}( l/jet + MET) (GeV)", 30, 0, 1200),
-        HistInfo("metSignificance", "MET/#sigma(MET)", 30, 0, 100),
+        HistInfo("mtScalarSumLeptons", "#Sigma_{l}M_{T}(l + MET) (GeV)", 30, 0, 1200),
+        HistInfo("mtScalarSumJets", "#Sigma_{jet}M_{T}(jet + MET) (GeV)", 30, 0, 1200),
+        HistInfo("mtScalarSumBJets", "#Sigma_{bjet}M_{T}(bjet + MET) (GeV)", 30, 0, 1200),
+        HistInfo("mtScalarSumAll", "#Sigma_{l + jet}M_{T}( l/jet + MET) (GeV)", 30, 0, 1600),
+        HistInfo("metSignificance", "MET/#sigma(MET)", 30, 0, 120),
         HistInfo("LT", "L_{T} (GeV)", 30, 0, 800),
-        HistInfo("HTLep", "#Sigma_{l}M_{T}(l + MET)", 30, 0, 800)
+        HistInfo("HTLep", "#Sigma_{l}M_{T}(l + MET)", 30, 0, 1000)
     };
 }
 
