@@ -55,6 +55,6 @@ namespace tools{
     void makeFileList(const std::string&, const std::string&);
 
     //add training / to directoryName if needed
-    std::string formatedDirectoryName(const std::string&);     
+    std::string formattedDirectoryName(const std::string&);     
 }
 #endif

@@ -22,10 +22,19 @@
 
 void treeReader::combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory){
 
-    //Set output file and tree
-    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_temp/" : outputDirectory;
-    const std::string outputFileName = "~/Work/ntuples_tzq/data_combined_trilepton.root";
-    TFile* outputFile = new TFile((const TString&) outputFileName ,"RECREATE");
+    //directory to write merged file
+    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_tzq/" : tools::formattedDirectoryName(outputDirectory);
+
+    //name of merged file
+    std::string outputFileName;
+    if( !is2017 ){
+       outputFileName  = "data_combined_trilepton_2016.root";
+    } else{
+        outputFileName = "data_combined_trilepton_2017.root";
+    }
+
+    //set up output tree and file
+    TFile* outputFile = new TFile((const TString&) outputDirectory + outputFileName ,"RECREATE");
     outputFile->mkdir("blackJackAndHookers");
     outputFile->cd("blackJackAndHookers"); 
     TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
@@ -114,8 +123,8 @@ int main(int argc, char* argv[]){
         for(unsigned i = 0; i < 2; ++i){
 
             //make submission script
-            std::ostream& initScript(std::ostream&);
             std::ofstream script("combinePD.sh");
+            tools::initScript(script);
             script << "./combinePD " << ( (i == 0) ? "2016" : "2017" );
             script.close();
 
