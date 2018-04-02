@@ -79,7 +79,7 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
 
     //categorization
-    Category categorization({ {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+    Category categorization({ {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
 
     //set up histogram collection for particular sample
     HistCollectionSample histCollection(histInfo, samp, categorization);
