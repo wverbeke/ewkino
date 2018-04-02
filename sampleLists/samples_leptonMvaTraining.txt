@@ -2,3 +2,7 @@ TT		    TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.r
 TT		    TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root			                        182.17540224
 TTX		    TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root  			                                0.2728              SMSignal
 ST	        tZq_ll_4f_13TeV-amcatnlo-pythia8_Summer16.root                          								        0.0758              SMSignal
+TT          TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17.root                                           364.35
+ST          tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_Fall17.root                                          0.0758              SMSignal
+TTX         TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_Fall17.root                                                     0.2728              SMSignal
+TT          TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8_Fall17.root                                            182.17540224        
