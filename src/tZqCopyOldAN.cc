@@ -337,8 +337,8 @@ void treeReader::plot(const std::string& distName){
             HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
             //print plots for collection
             bool is2016 = true;
-            col.printPlots("plots/tZq/2016", is2016, "tzq", false);
-            col.printPlots("plots/tZq/2016", is2016, "tzq", true);
+            col.printPlots("plots/tZq/TOP-16-020", is2016, "tzq", false);
+            col.printPlots("plots/tZq/TOP-16-020", is2016, "tzq", true);
         }
     }
 }
