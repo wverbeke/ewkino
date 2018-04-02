@@ -114,8 +114,8 @@ int main(int argc, char* argv[]){
         for(unsigned i = 0; i < 2; ++i){
 
             //make submission script
-            std::ostream& initScript(std::ostream&);
             std::ofstream script("combinePD.sh");
+            tools::initScript(script);
             script << "./combinePD " << ( (i == 0) ? "2016" : "2017" );
             script.close();
 
