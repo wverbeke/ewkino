@@ -334,7 +334,7 @@ void treeReader::plot(const std::string& distName){
         if(histInfo[d].name() == distName){
             std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+            HistCollectionDist col("inputList_TOP_16_020.txt", histInfo[d], samples, { {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
             //print plots for collection
             bool is2016 = true;
             col.printPlots("plots/tZq/TOP-16-020", is2016, "tzq", false);
@@ -344,7 +344,7 @@ void treeReader::plot(const std::string& distName){
 }
 
 void treeReader::splitPlots(){
-    tools::makeFileList("tempHists_tZq_TOP_16_020", "inputList.txt");
+    tools::makeFileList("tempHists_tZq_TOP_16_020", "inputList_TOP_16_020.txt");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
         tools::initScript(script);
