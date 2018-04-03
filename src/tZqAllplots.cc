@@ -771,6 +771,9 @@ void treeReader::plot(const std::string& distName){
             col.blindData("mllInclusive_1bJet4Jets");
             col.blindData("mllInclusive_2bJets");
             col.blindData("mllInclusive_nJetsInclusive"); 
+            //rebin CR categories
+            col.rebin("offZ", 3);
+            col.rebin("noOSSF", 3);
             //print plots for collection
             bool is2016 = true;
             col.printPlots("plots/tZq/2016", is2016, "tzq", false);
