@@ -79,7 +79,7 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
 
     //categorization
-    Category categorization({ {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+    Category categorization({ {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"}, {"flavorInclusive", "eee", "eem", "emm", "mmm"} });
 
     //set up histogram collection for particular sample
     HistCollectionSample histCollection(histInfo, samp, categorization);
@@ -87,6 +87,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     //store relevant info from histCollection
     const unsigned nDist = histInfo.size();                              //number of distributions to plot
     const unsigned nCat = histCollection.categoryRange(1);                //Several categories enriched in different processes
+    const unsigned nFlavorComb = histCollection.categoryRange(2);
 
     //variables to write to tree for bdt training and used for bdt computation
     std::map < std::string, float > bdtVariableMap =
@@ -110,7 +111,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         };
     
     //training tree writer
-    TrainingTree trainingTree("trainingTrees/" + std::to_string(begin) + "_" + std::to_string(end) + "_TOP16020_",samp, categorization, bdtVariableMap, samp.isSMSignal() ); 
+    TrainingTree trainingTree("trainingTrees_TOP_16_020/" + std::to_string(begin) + "_" + std::to_string(end) + "_TOP_16_020_",samp, categorization, bdtVariableMap, samp.isSMSignal() ); 
     
     //loop over all sample
     initSample(samp, 0);          //Use 2016 lumi
@@ -204,6 +205,12 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         }
         //don't consider uncategorized events
         if(tZqOldANCategory == 999) continue;
+
+        //lepton flavor categorization
+        unsigned leptonFlavorComb = trilep::flavorComposition(ind, _lFlavor, lCount);
+        if(leptonFlavorComb > 3){
+            std::cerr << "Error : category with taus found" << std::endl;
+        }
 
         //apply event weight
         if(!samp.isData() ){
@@ -299,9 +306,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned cat = 0; cat < nCat; ++cat){
             if(cat == 0 || cat == (tZqOldANCategory + 1) ){
                 //Fill training tree
-                if(samp.getProcessName() != "DY" ) trainingTree.fill({0, cat}, bdtVariableMap); //fluctuations on DY sample too big for training
-                for(unsigned dist = 0; dist < nDist; ++dist){
-                    histCollection.access(dist, {0, cat})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
+                for(unsigned flavor = 0; flavor < nFlavorComb; ++flavor){
+                    if(flavor == 0 || (flavor == leptonFlavorComb + 1) ){
+                        if(samp.getProcessName() != "DY" ) trainingTree.fill({0, cat, flavor}, bdtVariableMap); //fluctuations on DY sample too big for training
+                        for(unsigned dist = 0; dist < nDist; ++dist){
+                            histCollection.access(dist, {0, cat, flavor})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
+                        }
+                    }
                 }
             }
         }
@@ -334,7 +345,7 @@ void treeReader::plot(const std::string& distName){
         if(histInfo[d].name() == distName){
             std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
             //read collection for this distribution from files
-            HistCollectionDist col("inputList_TOP_16_020.txt", histInfo[d], samples, { {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+            HistCollectionDist col("inputList_TOP_16_020.txt", histInfo[d], samples, { {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"}, {"flavorInclusive", "eee", "eem", "emm", "mmm"} });
             //print plots for collection
             bool is2016 = true;
             col.printPlots("plots/tZq/TOP-16-020", is2016, "tzq", false);
