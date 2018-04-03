@@ -150,7 +150,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         for(unsigned s = 0; s < nSig; ++s){
             signal[s]->SetLineColor( bkgColor("", "") );
             signal[s]->SetMarkerColor( bkgColor("", "") );
-            signal[s]->SetLineWidth(2);
+            signal[s]->SetLineWidth(3);
+            signal[s]->SetFillStyle(0);
         }
         bkgColorGeneral(true); //reset colors so plots are consistent
     }
