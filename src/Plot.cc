@@ -28,8 +28,11 @@ void Plot::draw(const std::string& outputDirectory, const std::string& analysis,
     std::vector< std::string > SMSignalNames;
     if(drawSMSignalShape){
         for(auto bkgIt = bkg.cbegin(); bkgIt != bkg.cend(); ++bkgIt){
-            SMSignalNames.push_back(newName(bkgIt->first) + " shape");
-            SMSignal.push_back( (TH1D*) bkgIt->second.first.get()->Clone() );  //clone to avoid coloring conflicts 
+            //check whether process is signal
+            if( bkgIt->second.second ){ 
+                SMSignalNames.push_back(newName(bkgIt->first) + " shape");
+                SMSignal.push_back( (TH1D*) bkgIt->second.first.get()->Clone() );  //clone to avoid coloring conflicts 
+            }
         }
     }
 
