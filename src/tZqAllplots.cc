@@ -128,8 +128,8 @@ void treeReader::setup(){
         HistInfo("maxMLeptonJet", "M_{l + jet}^{max} (GeV)", 30, 0, 800),
         HistInfo("minMLeptonBJet", "M_{l + bjet}^{min} (GeV)", 30, 0, 300),
         HistInfo("maxMLeptonBJet", "M_{l + bjet}^{max} (GeV)", 30, 0, 800),
-        HistInfo("minMJetJet", "M_{jet + jet}^{min} (GeV)", 30, 0, 500),
-        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 30, 0, 800),
+        HistInfo("minMJetJet", "M_{jet + jet}^{min} (GeV)", 30, 0, 600),
+        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 30, 0, 1200),
         HistInfo("minMLeptonLepton", "M_{2l}^{min} (GeV)", 30, 0, 200),
         HistInfo("maxMLeptonLepton", "M_{2l}^{max} (GeV)", 30, 0, 500),
 
