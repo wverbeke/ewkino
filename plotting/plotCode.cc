@@ -274,6 +274,15 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //determine the maximum range of data and the backgrounds
     double totalMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinError(data->GetMaximumBin());
     totalMax = std::max(totalMax, bkgTotE->GetBinContent(bkgTotE->GetMaximumBin()) + bkgTotE->GetBinError(bkgTotE->GetMaximumBin()) );
+    
+    //take signal into account when determining plotting range
+    if(signal != nullptr){
+        double signalMax = 0;
+        for(unsigned s = 0; s < nSig; ++s){
+            signalMax = std::max( signalMax, signal[s]->GetBinContent(signal[s]->GetMaximumBin()) + signal[s]->GetBinError(signal[s]->GetMaximumBin()) );
+        }
+        totalMax = std::max(totalMax, signalMax);
+    }
 
     //determine upper limit of plot
     if(!ylog){
