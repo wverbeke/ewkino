@@ -776,8 +776,10 @@ void treeReader::plot(const std::string& distName){
             col.rebin("noOSSF", 3);
             //print plots for collection
             bool is2016 = true;
-            col.printPlots("plots/tZq/2016", is2016, "tzq", false);
-            col.printPlots("plots/tZq/2016", is2016, "tzq", true);
+            col.printPlots("plots/tZq/2016", is2016, "tzq", false); //no signal shape, linear
+            col.printPlots("plots/tZq/2016", is2016, "tzq", true); //no signal shape, log
+            col.printPlots("plots/tZq/2016", is2016, "tzq", false, false, nullptr, true, true); //with signal shape, linear
+            col.printPlots("plots/tZq/2016", is2016, "tzq", true, false, nullptr, true, true); //with signal shape, log
         }
     }
 }
