@@ -63,6 +63,7 @@ void treeReader::setup(){
 
         HistInfo("mll", "M_{ll} (GeV)", 60, 12, 200),
         HistInfo("mt", "M_{T} (GeV)", 30, 0, 300),
+        HistInfo("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
         HistInfo("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
         HistInfo("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
         HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200),
@@ -187,8 +188,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         TLorentzVector met;
         met.SetPtEtaPhiE(_met, 0, _metPhi, _met);
         //MET and MT Cuts 
-        if(_met <= 10) continue;
-        if(kinematics::mt(lepV[lw], met) <= 10) continue;
+        //TEST: what happens when we remove these?
+        //if(_met <= 10) continue;
+        //if(kinematics::mt(lepV[lw], met) <= 10) continue;
 
         //only retain useful categories 
         unsigned tZqOldANCategory = 999;
@@ -298,6 +300,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
             mll,
             kinematics::mt(lepV[lw], met),
+            _met,
             _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]],
             (double) nBJets(),
             (double) nBJets(0, false)
@@ -322,6 +325,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 }
 
 void treeReader::splitJobs(){
+    //clear previous histograms
+    tools::system("rm tempHists_tZq_TOP_16_020/*");
+
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
         //split samples per 200k events

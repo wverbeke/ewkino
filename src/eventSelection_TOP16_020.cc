@@ -22,6 +22,7 @@
 
 //selection functions for TOP_16_020
 bool treeReader::lepIsVeto_TOP16_020(const unsigned l) const{
+    if(_lFlavor[l] == 2) return false;
     if(_lPt[l] <= 10) return false;
     if(fabs(_lEta[l]) >= (2.5 - 0.1*_lFlavor[l])) return false;
     if(_lFlavor[l] == 0){
@@ -36,6 +37,7 @@ bool treeReader::lepIsVeto_TOP16_020(const unsigned l) const{
 }
 
 bool treeReader::lepIsGood_TOP16_020(const unsigned l) const{
+    if(_lFlavor[l] == 2) return false;
     if(_lPt[l] <= 25) return false;
     if(fabs(_lEta[l]) >= (2.5 - 0.1*_lFlavor[l]) ) return false;
     if(!_lPOGTight[l]) return false;
