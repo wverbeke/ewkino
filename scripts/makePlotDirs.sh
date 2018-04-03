@@ -36,7 +36,9 @@ cd tZq
 for dir1 in 2016 2017; do
     for dir2 in mllInclusive onZ offZ noOSSF; do
         for dir3 in nJetsInclusive 0bJets01Jets 0bJets2Jets 1bJet01jets 1bJet23Jets 1bJet4Jets 2bJets; do
-            mkdir -p ${dir1}/${dir2}/${dir3}
+            for dir4 in flavorInclusive eee eem emm mmm; do
+                mkdir -p ${dir1}/${dir2}/${dir3}/${dir4}
+            done
         done
     done 
 done
@@ -44,7 +46,9 @@ done
 for dir1 in TOP-16-020; do
     for dir2 in onZ; do
         for dir3 in nJetsInclusive 0bJets 1bJet23Jets 1bJet4Jets 2bJets; do
-            mkdir -p ${dir1}/${dir2}/${dir3}
+            for dir4 in flavorInclusive eee eem emm mmm; do
+                mkdir -p ${dir1}/${dir2}/${dir3}/${dir4}
+            done
         done
     done 
 done

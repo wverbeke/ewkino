@@ -760,7 +760,8 @@ void treeReader::plot(const std::string& distName){
         if(histInfo[d].name() == distName){
             std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"},
+                {"flavorInclusive", "eee", "eem", "emm", "mmm"} });
             //blind onZ categories
             col.blindData("onZ_1bJet23Jets"); 
             col.blindData("onZ_1bJet4Jets"); 
