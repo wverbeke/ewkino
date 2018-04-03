@@ -201,11 +201,11 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const boo
 }
 
 
-void HistCollectionDist::printPlots(const std::string& outputDirectory, const bool is2016, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool sigNorm){
+void HistCollectionDist::printPlots(const std::string& outputDirectory, const bool is2016, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool sigNorm, const bool drawSMSignalShape){
     //loop over all categories and output a plot for each one
     for(size_t c = 0; c < categorySize(); ++c){
         //print plot
-        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c, is2016), bkgSyst, sigNorm);
+        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c, is2016), bkgSyst, sigNorm, drawSMSignalShape);
     }           
 }
 
