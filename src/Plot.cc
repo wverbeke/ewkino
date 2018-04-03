@@ -41,7 +41,7 @@ void Plot::draw(const std::string& outputDirectory, const std::string& analysis,
         &bkgHist[0],    //pointer to first element of bkgHist ( function expects array )
         &names[0],      //bkg names
         bkgHist.size(), //number of backgrounds
-        outputDir + fileName + (log ? "_log" : "_lin") + (drawSMSignalShape ? "_withSignalShape" : "" ),  //name of output file
+        outputDir + fileName + (drawSMSignalShape ? "_withSignalShape" : "" ) + (log ? "_log" : "_lin"),  //name of output file
         analysis, //the analysis determines the color scheme
         log,    //plot on a log scale
         normToData,     //normalize background to data or not 
@@ -50,7 +50,7 @@ void Plot::draw(const std::string& outputDirectory, const std::string& analysis,
         isSMSignalVec, //array of booleans whether given process is SM signal
         (drawSMSignalShape ? &SMSignal[0] : nullptr ),        //new physics signals CURRENTLY NOT IMPLEMENTED
         (drawSMSignalShape ? &SMSignalNames[0] : nullptr ),    
-        0, 
+        (drawSMSignalShape ? SMSignal.size() : 0),
         sigNorm);
 }
 
