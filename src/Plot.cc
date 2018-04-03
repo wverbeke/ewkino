@@ -41,7 +41,7 @@ void Plot::draw(const std::string& outputDirectory, const std::string& analysis,
         &bkgHist[0],    //pointer to first element of bkgHist ( function expects array )
         &names[0],      //bkg names
         bkgHist.size(), //number of backgrounds
-        outputDir + fileName + (log ? "_log" : "_lin"),  //name of output file
+        outputDir + fileName + (log ? "_log" : "_lin") + (drawSMSignalShape ? "_withSignalShape" : "" ),  //name of output file
         analysis, //the analysis determines the color scheme
         log,    //plot on a log scale
         normToData,     //normalize background to data or not 
