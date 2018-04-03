@@ -771,9 +771,14 @@ void treeReader::plot(const std::string& distName){
             col.blindData("mllInclusive_1bJet4Jets");
             col.blindData("mllInclusive_2bJets");
             col.blindData("mllInclusive_nJetsInclusive"); 
+
             //rebin CR categories
-            col.rebin("offZ", 3);
-            col.rebin("noOSSF", 3);
+            std::vector<std::string> notToRebin = {"nJets", "nBJets_DeepCSV", "nBJets_CSVv2", "bdtG", "bdtG_10bins", "bdtG_1000Trees", "bdtG_1000Trees_10bins"}; //distributions not  to rebin
+            if(std::find(notToRebin.cbegin(), notToRebin.cend(), distName) == notToRebin.cend()){
+                col.rebin("offZ", 3);
+                col.rebin("noOSSF", 3);
+            }
+
             //print plots for collection
             bool is2016 = true;
             col.printPlots("plots/tZq/2016", is2016, "tzq", false); //no signal shape, linear
