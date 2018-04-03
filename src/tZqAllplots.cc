@@ -737,6 +737,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 }
 
 void treeReader::splitJobs(){
+    //clear previous histograms
+    tools::system("rm tempHists_tZq/*");
+
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample(1);
         //split samples per 200k events
