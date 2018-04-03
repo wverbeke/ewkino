@@ -78,6 +78,7 @@ void treeReader::setup(){
         HistInfo("taggedBJetEta", "|#eta| (b-jet from top) (GeV)", 30, 0, 2.5),
         HistInfo("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 0, 300), 
         HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 5),
+        /*
         HistInfo("m_highestEta_leadingB_W", "M_{(most forward jet + leading b-jet + W)} (GeV)", 30, 0, 1000),
         HistInfo("m_highestEta_leadingB_Wlep", "M_{(most forward jet + leading b-jet + lepton)} (GeV)", 30, 0, 1000),
         HistInfo("m_highestEta_leadingB_WZ", "M_{(most forward jet + leading b-jet + WZ)} (GeV)", 30, 0, 1000),
@@ -113,7 +114,7 @@ void treeReader::setup(){
         HistInfo("eta_forwardJets", "|#eta|^{|#eta| > 2.4 jets}", 30, 0, 5),
         HistInfo("eta_notSoForwardJets", "|#eta|^{|#eta| > 0.8 jets}", 30, 0, 5),
         HistInfo("eta_superForwardJets", "|#eta|^{|#eta| > 3 jets}", 30, 0, 5),
-
+        */
         HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 30, 0, 1), 
         HistInfo("highestDeepCSVb", "highest deepCSV (b)", 30, 0, 1), 
         HistInfo("highestDeepCSVbb", "highest deepCSV( bb)", 30, 0, 1), 
@@ -231,7 +232,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     auto start = std::chrono::high_resolution_clock::now();
 
     //categorization
-    Category categorization({ {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"} });
+    Category categorization({ {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"}, 
+        {"flavorInclusive", "eee", "eem", "emm", "mmm"} });
 
     //set up histogram collection for particular sample
     HistCollectionSample histCollection(histInfo, samp, categorization);
@@ -606,12 +608,14 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             //bdt2 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method 1000 Trees");
         }
 
+
+
         double fill[nDist] = {
             bdt, bdt, bdt2, bdt2, 
             _met, mll, kinematics::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
         (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
          highestEtaJet.Pt(), std::max(topV.M(), 0.), (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
-
+        /*
         (highestEtaJet + leadingBJet + lepV[lw] + neutrino).M(),
         (highestEtaJet + leadingBJet + lepV[lw]).M(),
         (highestEtaJet + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
@@ -649,11 +653,11 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         forwardJets.Pt(),
         notSoForwardJets.Pt(),
         superForwardJets.Pt(),
-    
+
         fabs(forwardJets.Eta()),
         fabs(notSoForwardJets.Eta()),
         fabs(superForwardJets.Eta()),
-
+        */
         _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI],
         _jetDeepCsv_b[highestDeepCSVI],
         _jetDeepCsv_bb[highestDeepCSVI],
@@ -667,6 +671,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         minDeltaPhiLeptonJet, maxDeltaPhiLeptonJet, minDeltaPhiLeptonbJet, maxDeltaPhiLeptonbJet, minDeltaPhiJetJet, maxDeltaPhiJetJet, minDeltaPhiLeptonLepton, maxDeltaPhiLeptonLepton,
         minDeltaRLeptonJet, maxDeltaRLeptonJet, minDeltaRLeptonbJet, maxDeltaRLeptonbJet, minDeltaRJetJet, maxDeltaRJetJet, minDeltaRLeptonLepton, maxDeltaRLeptonLepton,
         minpTLeptonJet, maxpTLeptonJet, minpTLeptonbJet, maxpTLeptonbJet, minpTJetJet, maxpTJetJet, minpTLeptonLepton, maxpTLeptonLepton,
+
         HT,
         (lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
         fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta()),
