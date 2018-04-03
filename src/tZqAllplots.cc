@@ -242,6 +242,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     const unsigned nDist = histInfo.size();                              //number of distributions to plot
     const unsigned nCat = histCollection.categoryRange(1);                //Several categories enriched in different processes
     const unsigned nMll = histCollection.categoryRange(0);                //categories based on dilepton Mass
+    const unsigned nFlavorComb = histCollection.categoryRange(2);
 
     //variables to write to tree for bdt training and used for bdt computation
     std::map < std::string, float > bdtVariableMap =
@@ -366,6 +367,12 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //no OSSF pair present
         } else{
             mllCat = 2;
+        }
+
+        //determine lepton flavor category
+        unsigned leptonFlavorComb = trilep::flavorComposition(ind, _lFlavor, lCount); 
+        if(leptonFlavorComb > 3){
+            std::cerr << "Error: category with tau spotted!" << std::endl;
         }
 
         //apply event weight
@@ -705,10 +712,14 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             if( (m == 0 && mllCat != 2) || m == (mllCat + 1) ){
                 for(unsigned cat = 0; cat < nCat; ++cat){
                     if(cat == 0 || cat == (tzqCat + 1) ){
-                        //Fill training tree
-                        if(samp.getProcessName() != "DY" ) trainingTree.fill({m, cat}, bdtVariableMap); //fluctuations on DY sample too big for training
-                        for(unsigned dist = 0; dist < nDist; ++dist){
-                            histCollection.access(dist, {m, cat})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
+                        for(unsigned flavor = 0; flavor < nFlavorComb; ++flavor){
+                            if(flavor == 0 || (flavor == leptonFlavorComb + 1) ){
+                                //Fill training tree
+                                if(samp.getProcessName() != "DY" ) trainingTree.fill({m, cat, flavor}, bdtVariableMap); //fluctuations on DY sample too big for training
+                                for(unsigned dist = 0; dist < nDist; ++dist){
+                                    histCollection.access(dist, {m, cat, flavor})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
+                                }
+                            }
                         }
                     }
                 }
