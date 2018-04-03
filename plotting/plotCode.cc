@@ -98,7 +98,7 @@ Color_t bkgColorHNL(const std::string& bkgName){
 //FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
 Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
-    static const Color_t colors[8] = {kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kBlue -3, kOrange + 6, kCyan + 1, kMagenta +3};
+    static const Color_t colors[9] = {kBlue + 1, kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kOrange + 6, kCyan + 1, kMagenta +3, kBlue -3};
     if(!reset){
         Color_t output = colors[counter];
         ++counter;
@@ -150,6 +150,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         for(unsigned s = 0; s < nSig; ++s){
             signal[s]->SetLineColor( bkgColor("", "") );
             signal[s]->SetMarkerColor( bkgColor("", "") );
+            signal[s]->SetLineWidth(2);
         }
         bkgColorGeneral(true); //reset colors so plots are consistent
     }
