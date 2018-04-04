@@ -162,7 +162,7 @@ void treeReader::setup(){
 
         HistInfo("HT", "H_{T} (GeV)", 30, 0, 800),
         HistInfo("pTZboson", "P_{T}(Z) (GeV)", 30, 0, 300),
-        HistInfo("etaZboson", "|#eta|(Z)", 30, 0, 2.5),
+        HistInfo("etaZboson", "|#eta|(Z)", 30, 0, 5),
 
         HistInfo("etaMostForwardLepton", "|#eta| (most forward lepton)", 30, 0, 2.5),
         HistInfo("etaLeading", "|#eta| (leading lepton)", 30, 0, 2.5),
