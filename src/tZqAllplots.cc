@@ -207,7 +207,7 @@ void treeReader::setup(){
         HistInfo("mtTrainingLepMET", "M_{T}(trailing lepton, MET) (GeV)", 30, 0, 300),
         HistInfo("mtJetsMET", "M_{T}(Jets + MET) (GeV)", 30, 0, 700),
         HistInfo("mtJetsLeptonsMET", "M_{T}(Jets leptons + MET) (GeV)", 30, 0, 700), 
-        HistInfo("mSystem", "M_{(Jets + leptons + neutrino)} (GeV)", 30, 0, 1000), 
+        HistInfo("mSystem", "M_{(Jets + leptons + neutrino)} (GeV)", 30, 0, 1500), 
         HistInfo("mJets", "M_{(all Jets)} (GeV)", 30, 0, 1000), 
         HistInfo("mtLeadingJetMET", "M_{T}(leading jet + MET) (GeV)", 30, 0, 300),
         HistInfo("mtTrailingJetMET", "M_{T}(trailing jet + MET) (GeV)", 30, 0, 300),
