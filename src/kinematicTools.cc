@@ -5,6 +5,26 @@
 #include <cmath>
 
 /*
+ * compute angular separations in eta/phi units given the object directions
+ */
+
+double deltaPhi(const double phiLeft, const double phiRight){
+    static const double pi = 3.14159265358979323846;
+    double phiDifference = fabs(phiLeft - phiRight);
+    return std::min( phiDifference, 2*pi - phiDifference);
+}
+
+double deltaEta(const double etaLeft, const double etaRight){
+    return fabs(etaLeft - etaRight);
+}
+
+double deltaR(const double phiLeft, const double etaLeft, const double phiRight, const double etaRight){
+    double dPhi = deltaPhi(phiLeft, phiRight);
+    double dEta = deltaEta(etaLeft, etaRight);
+    return sqrt( dPhi*dPhi + dEta*dEta ); 
+}
+
+/*
  *find the minima and maxima for certain variables in two separate arrays of lorentz vectors
  */
 double kinematics::extremum(const TLorentzVector* vecLeft, const std::vector<unsigned>& indicesLeft, const TLorentzVector* vecRight, const std::vector<unsigned>& indicesRight, 
