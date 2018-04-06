@@ -29,9 +29,19 @@ class HistCollectionDist{
 
         //rebin histograms for categories with a certain name
         void rebin(const std::string&, const int) const;
+    
+    //these functions are also used by the derived HistCollectionDistNuisances class 
+    protected:
+        std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory
+        HistCollectionDist() {}                                         //dummy constructor used in derived class to avoid double construction of base part
+                                                                        //TO DO: find way to rewrite this
+
+        //access routines for individual histograms, used for computing total nuisance
+        std::shard_ptr<TH1D> access(const size_t sampleIndex, const size_t categoryIndex, const bool sb){
+            return collection[sampleIndex].access(categoryIndex, sb); 
+        }
     private:
         std::vector< HistCollectionBase > collection;
-        std::vector<std::string> getFileNames(const std::string&);      //get list of files in directory
         
         //merge histograms of same process
         bool merged = false;
