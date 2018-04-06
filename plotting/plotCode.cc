@@ -98,7 +98,7 @@ Color_t bkgColorHNL(const std::string& bkgName){
 //FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
 Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
-    static const Color_t colors[8] = {kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kBlue -3, kOrange + 6, kCyan + 1, kMagenta +3};
+    static const Color_t colors[9] = {kBlue + 1, kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kOrange + 6, kCyan + 1, kMagenta +3, kBlue -3};
     if(!reset){
         Color_t output = colors[counter];
         ++counter;
@@ -150,6 +150,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         for(unsigned s = 0; s < nSig; ++s){
             signal[s]->SetLineColor( bkgColor("", "") );
             signal[s]->SetMarkerColor( bkgColor("", "") );
+            signal[s]->SetLineWidth(3);
+            signal[s]->SetFillStyle(0);
         }
         bkgColorGeneral(true); //reset colors so plots are consistent
     }
@@ -273,6 +275,15 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //determine the maximum range of data and the backgrounds
     double totalMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinError(data->GetMaximumBin());
     totalMax = std::max(totalMax, bkgTotE->GetBinContent(bkgTotE->GetMaximumBin()) + bkgTotE->GetBinError(bkgTotE->GetMaximumBin()) );
+    
+    //take signal into account when determining plotting range
+    if(signal != nullptr){
+        double signalMax = 0;
+        for(unsigned s = 0; s < nSig; ++s){
+            signalMax = std::max( signalMax, signal[s]->GetBinContent(signal[s]->GetMaximumBin()) + signal[s]->GetBinError(signal[s]->GetMaximumBin()) );
+        }
+        totalMax = std::max(totalMax, signalMax);
+    }
 
     //determine upper limit of plot
     if(!ylog){

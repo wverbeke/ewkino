@@ -160,7 +160,7 @@ class treeReader {
         Double_t        _tauIsoMVAPWnewDMwLT[nL_max];
         Double_t        _tauIsoMVAPWoldDMwLT[nL_max];
         Double_t        _relIso[nL_max];   
-        Double_t        _relIso0p4Mu[nL_max];
+        Double_t        _relIso0p4[nL_max];
         Double_t        _miniIso[nL_max];   
         Double_t        _miniIsoCharged[nL_max];   
         Double_t        _ptRel[nL_max];   
@@ -174,6 +174,7 @@ class treeReader {
         Double_t        _lMuonTrackPtErr[nL_max];
         Bool_t          _lIsPrompt[nL_max];   
         Int_t           _lMatchPdgId[nL_max];   
+        Int_t           _lMomPdgId[nL_max];
         UInt_t          _lProvenance[nL_max];
         UInt_t          _lProvenanceCompressed[nL_max];
         UInt_t          _lProvenanceConversion[nL_max];
@@ -205,6 +206,7 @@ class treeReader {
         Double_t        _metPhiJECUp;
         Double_t        _metPhiUnclDown;
         Double_t        _metPhiUnclUp;       
+        Double_t        _metSignificance;
 
 
         //Constructor
@@ -216,7 +218,7 @@ class treeReader {
 
         //skim tree
         void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
-        void combinePD(const std::vector<std::string>& datasets, std::string outputDirectory = "");
+        void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
 
         //set up tree for analysis
         void readSamples(const std::string& list = ""); //read sample list from file
@@ -229,6 +231,7 @@ class treeReader {
         void Analyze();
         void Analyze(const std::string&, long unsigned, long unsigned);
         void Analyze(const Sample&, long unsigned, long unsigned);
+        void Analyze(const std::string&);
         void Analyze(const Sample&);
         void setup();
         void splitJobs();
@@ -448,7 +451,7 @@ class treeReader {
         TBranch        *b__tauIsoMVAPWnewDMwLT;
         TBranch        *b__tauIsoMVAPWoldDMwLT;
         TBranch        *b__relIso;   
-        TBranch        *b__relIso0p4Mu;
+        TBranch        *b__relIso0p4;
         TBranch        *b__miniIso;   
         TBranch        *b__miniIsoCharged;   
         TBranch        *b__ptRel;   
@@ -462,6 +465,7 @@ class treeReader {
         TBranch        *b__lMuonTrackPtErr;
         TBranch        *b__lIsPrompt;   
         TBranch        *b__lMatchPdgId;   
+        TBranch        *b__lMomPdgId;
         TBranch        *b__lProvenance;
         TBranch        *b__lProvenanceCompressed;
         TBranch        *b__lProvenanceConversion;
@@ -494,5 +498,6 @@ class treeReader {
         TBranch        *b__metPhiJECUp;   
         TBranch        *b__metPhiUnclDown;   
         TBranch        *b__metPhiUnclUp;   
+        TBranch        *b__metSignificance;
 };
 #endif
