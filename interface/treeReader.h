@@ -286,7 +286,6 @@ class treeReader {
         void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
 
         //event weights
-        std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class
         double puWeight(const unsigned period = 0, const unsigned unc = 0) const;
         double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0) const; //more efficient version if jets were already selected 
@@ -302,6 +301,7 @@ class treeReader {
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
         std::vector<Sample> samples;                                            //list of samples
+        Sample& currentSample;                                                  //reference to current sample, needed to check what era sample belongs to
         std::vector<HistInfo> histInfo;                                         //histogram info
         int currentSample = -1;                                                 //current index in list
         bool isData = false;
@@ -310,6 +310,35 @@ class treeReader {
         unsigned long nEntries = 0;
         const double lumi2017 = 41.37;                                          //in units of 1/fb
         const double lumi2016 = 35.867;                 
+        std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class used for reweighting functions
+
+        //check whether sample is 2017 or not
+        bool is2017() const { return currentSample.is2017(); }
+        bool is2016() const { return currentSample.is2016(); }                  //if sample is not 2017 it is automatically 2016
+
+        //era-specific event selection functions
+        bool lepIsLooseBase(const unsigned) const;
+        bool lepIsLoose2016(const unsigned) const;
+        bool lepIsLoose2016(const unsigned) const;
+        bool lepIsGoodBase(const unsigned) const;
+        bool lepIsGood2016(const unsigned) const;
+        bool lepIsGood2017(const unsigned) const;
+        bool lepIsTight2016(const unsigned) const;
+        bool lepIsTight2017(const unsigned) const;
+
+        bool eleIsCleanBase(const unsigned, bool (&goodLepton)(unsigned) ) const;
+        bool eleIsClean2016(const unsigned) const;
+        bool eleIsClean2017(const unsigned) const;
+        
+        bool bTaggedDeepCSVBase(const unsigned, const unsigned wp = 1, const double* cuts) const;
+        bool bTaggedDeepCSV2016(const unsigned, const unsigned wp = 1) const;
+        bool bTaggedDeepCSV2017(const unsigned, const unsigned wp = 1) const;
+        bool bTaggedCSVv2Base(const unsigned, const unsigned wp = 1, const double* cuts) const;
+        bool bTaggedCSVv22016(const unsigned, const unsigned wp = 1) const;
+        bool bTaggedCSVv22017(const unsigned, const unsigned wp = 1) const;
+
+        //era-specific event weights
+
         
         //list of branches
         TBranch        *b__runNb;   
