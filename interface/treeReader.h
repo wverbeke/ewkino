@@ -319,7 +319,7 @@ class treeReader {
         //era-specific event selection functions
         bool lepIsLooseBase(const unsigned) const;
         bool lepIsLoose2016(const unsigned) const;
-        bool lepIsLoose2016(const unsigned) const;
+        bool lepIsLoose2017(const unsigned) const;
         bool lepIsGoodBase(const unsigned) const;
         bool lepIsGood2016(const unsigned) const;
         bool lepIsGood2017(const unsigned) const;
@@ -330,10 +330,10 @@ class treeReader {
         bool eleIsClean2016(const unsigned) const;
         bool eleIsClean2017(const unsigned) const;
         
-        bool bTaggedDeepCSVBase(const unsigned, const unsigned wp = 1, const double* cuts) const;
+        bool bTaggedDeepCSVBase(const unsigned, const unsigned wp = 1, const double[3] cuts) const;
         bool bTaggedDeepCSV2016(const unsigned, const unsigned wp = 1) const;
         bool bTaggedDeepCSV2017(const unsigned, const unsigned wp = 1) const;
-        bool bTaggedCSVv2Base(const unsigned, const unsigned wp = 1, const double* cuts) const;
+        bool bTaggedCSVv2Base(const unsigned, const unsigned wp = 1, const double[3] cuts) const;
         bool bTaggedCSVv22016(const unsigned, const unsigned wp = 1) const;
         bool bTaggedCSVv22017(const unsigned, const unsigned wp = 1) const;
 
