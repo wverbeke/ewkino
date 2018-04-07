@@ -315,6 +315,8 @@ class treeReader {
         //check whether sample is 2017 or not
         bool is2017() const { return currentSample.is2017(); }
         bool is2016() const { return currentSample.is2016(); }                  //if sample is not 2017 it is automatically 2016
+        bool isData() const { return currentSample.isData(); }
+        bool isMC() const {return isMC(); } 
 
         //era-specific event selection functions
         bool lepIsLooseBase(const unsigned) const;
@@ -326,10 +328,10 @@ class treeReader {
         bool lepIsTight2016(const unsigned) const;
         bool lepIsTight2017(const unsigned) const;
 
-        bool eleIsCleanBase(const unsigned, bool (&goodLepton)(unsigned) ) const;
+        bool eleIsCleanBase(const unsigned, bool (&looseMuon)(unsigned) ) const;
         bool eleIsClean2016(const unsigned) const;
         bool eleIsClean2017(const unsigned) const;
-        
+
         bool bTaggedDeepCSVBase(const unsigned, const unsigned wp = 1, const double[3] cuts) const;
         bool bTaggedDeepCSV2016(const unsigned, const unsigned wp = 1) const;
         bool bTaggedDeepCSV2017(const unsigned, const unsigned wp = 1) const;
