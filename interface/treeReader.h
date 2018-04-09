@@ -314,7 +314,7 @@ class treeReader {
         bool is2017() const { return currentSample.is2017(); }
         bool is2016() const { return currentSample.is2016(); }                  //if sample is not 2017 it is automatically 2016
         bool isData() const { return currentSample.isData(); }
-        bool isMC() const {return isMC(); } 
+        bool isMC() const { return isMC(); } 
 
         //era-specific event selection functions
         bool lepIsLooseBase(const unsigned) const;
@@ -346,6 +346,12 @@ class treeReader {
         //era-specific event weights
 
         
+        //some safety-checks for errors 
+        bool checkEraCompatibility() const;     //make sure a sample is not is2016() AND 2017() 
+        bool sampleBelongsToEra() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
+        void printSampleErrors() const;         //print error messages if needed
+
+
         //list of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   
