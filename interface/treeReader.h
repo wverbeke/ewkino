@@ -258,8 +258,8 @@ class treeReader {
         bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true) const;
         unsigned nJets(const unsigned unc = 0, const bool clean = true) const;                                   //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;    //with jet pt ordering
-        bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1) const;
-        bool bTaggedCSVv2(const unsigned ind, const unsigned wp = 1) const;
+        //bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1) const;
+        //bool bTaggedCSVv2(const unsigned ind, const unsigned wp = 1) const;
         bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true) const;
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
@@ -301,10 +301,10 @@ class treeReader {
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
         std::vector<Sample> samples;                                            //list of samples
-        Sample& currentSample;                                                  //reference to current sample, needed to check what era sample belongs to
+        Sample currentSample;                                                   //reference to current sample, needed to check what era sample belongs to
         std::vector<HistInfo> histInfo;                                         //histogram info
-        int currentSample = -1;                                                 //current index in list
-        bool isData = false;
+        int currentSampleIndex = -1;                                                 //current index in list
+        //bool isData = false;
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;
@@ -322,22 +322,28 @@ class treeReader {
         bool lepIsLooseBase(const unsigned) const;
         bool lepIsLoose2016(const unsigned) const;
         bool lepIsLoose2017(const unsigned) const;
+
         bool lepIsGoodBase(const unsigned) const;
         bool lepIsGood2016(const unsigned) const;
         bool lepIsGood2017(const unsigned) const;
+
+        bool lepIsTightBase(const unsigned) const;
         bool lepIsTight2016(const unsigned) const;
         bool lepIsTight2017(const unsigned) const;
 
-        bool eleIsCleanBase(const unsigned, bool (&looseMuon)(unsigned) ) const;
+        bool eleIsCleanBase(const unsigned, bool (treeReader::*looseMuon)(unsigned) const) const;
         bool eleIsClean2016(const unsigned) const;
         bool eleIsClean2017(const unsigned) const;
 
-        bool bTaggedDeepCSVBase(const unsigned, const unsigned wp = 1, const double[3] cuts) const;
+        bool bTaggedDeepCSVBase(const unsigned, const unsigned wp, const double cuts[3]) const;
         bool bTaggedDeepCSV2016(const unsigned, const unsigned wp = 1) const;
         bool bTaggedDeepCSV2017(const unsigned, const unsigned wp = 1) const;
-        bool bTaggedCSVv2Base(const unsigned, const unsigned wp = 1, const double[3] cuts) const;
+        bool bTaggedDeepCSV(const unsigned, const unsigned wp = 1) const;
+
+        bool bTaggedCSVv2Base(const unsigned, const unsigned wp, const double cuts[3]) const;
         bool bTaggedCSVv22016(const unsigned, const unsigned wp = 1) const;
         bool bTaggedCSVv22017(const unsigned, const unsigned wp = 1) const;
+        bool bTaggedCSVv2(const unsigned, const unsigned wp = 1) const;
 
         //era-specific event weights
 
