@@ -91,7 +91,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     const unsigned nJetCat = histCollection.categoryRange(2);
     const unsigned nPuRew = histCollection.categoryRange(3);
 
-    initSample(samp, 1);  //use 2017 lumi
+    initSample(samp);  //use 2017 lumi
     for(long unsigned it = begin; it < end; ++it){
         GetEntry(samp, it);
         //vector containing good lepton indices
@@ -215,14 +215,14 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
 void treeReader::splitJobs(){
     for(unsigned sam = 0; sam < samples.size(); ++sam){
-        initSample(1);
+        initSample();
         for(long unsigned it = 0; it < nEntries; it+=500000){
             long unsigned begin = it;
             long unsigned end = std::min(nEntries, it + 500000);
             //make temporary job script 
             std::ofstream script("runTuples.sh");
             tools::initScript(script);
-            script << "./dilepCR " << samples[currentSample].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
+            script << "./dilepCR " << samples[currentSampleIndex].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
             //submit job
             tools::submitScript("runTuples.sh", "01:00:00");

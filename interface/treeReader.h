@@ -222,8 +222,8 @@ class treeReader {
 
         //set up tree for analysis
         void readSamples(const std::string& list = ""); //read sample list from file
-        void initSample(const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
-        void initSample(const Sample&, const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
+        void initSample();                              //event weights will be set according to is2016() ( or equally is2017() ) flag
+        void initSample(const Sample&);  
 
         //functions to analyze tree
         void GetEntry(long unsigned entry);
@@ -258,8 +258,6 @@ class treeReader {
         bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true) const;
         unsigned nJets(const unsigned unc = 0, const bool clean = true) const;                                   //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;    //with jet pt ordering
-        //bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1) const;
-        //bool bTaggedCSVv2(const unsigned ind, const unsigned wp = 1) const;
         bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true) const;
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
