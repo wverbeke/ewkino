@@ -8,6 +8,7 @@ TTSingleLep TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17.root           
 WJets	    WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root				                        61526.7
 VV		    WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root						                        4.42965
 VV	    	ZZTo4L_13TeV_powheg_pythia8_Fall17.root								                                1.256
+#some ZZ samples are missing, consider adding inclusive or 2l decay samples!
 VV          WWTo2L2Nu_NNPDF31_TuneCP5_13TeV-powheg-pythia8_Fall17.root                                          12.178 
 VV		    WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root					                        0.2086
 VV		    WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root						                        0.1651
