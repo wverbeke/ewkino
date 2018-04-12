@@ -50,11 +50,15 @@ Sample::Sample(std::istream& is){
     //read sample info from txt file
     std::string line;
     //jump to next line if current line is a comment
+    bool nextLineIsComment;
     do{
         if(std::getline(is, line)){
-            *this = Sample(line); 
+            nextLineIsComment =  (line[line.find_first_not_of(" \t")] == '#');
+            if(!nextLineIsComment){
+                *this = Sample(line); 
+            }
         }
-    } while( line[line.find_first_not_of(" \t")] == '#');
+    } while(nextLineIsComment);
 }
 
 std::shared_ptr<TFile> Sample::getFile(const std::string& directory) const{
