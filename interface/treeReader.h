@@ -255,7 +255,7 @@ class treeReader {
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned) const;
         bool passPtCuts(const std::vector<unsigned>&) const;
         bool jetIsClean(const unsigned) const;
-        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true) const;
+        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true, const bool allowForward = false) const;
         unsigned nJets(const unsigned unc = 0, const bool clean = true) const;                                   //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;    //with jet pt ordering
         bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true) const;

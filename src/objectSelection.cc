@@ -118,11 +118,11 @@ bool treeReader::jetIsClean(const unsigned jetIndex) const{
     return true;
 }
 
-bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const unsigned unc, const bool clean) const{
+bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const unsigned unc, const bool clean, const bool allowForward) const{
     //only select loose jets:
     if(!_jetIsLoose[jetIndex]) return false;
     //only select jets in tracker volume
-    if(fabs(_jetEta[jetIndex]) >= 2.4) return false;
+    if( (!allowForward) && ( fabs(_jetEta[jetIndex]) >= 2.4 ) ) return false;
     //apply jet pT cuts
     switch(unc){
         case 0: if(_jetPt[jetIndex] < ptCut) return false; break;
