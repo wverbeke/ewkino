@@ -52,6 +52,7 @@ Sample::Sample(std::istream& is){
     //jump to next line if current line is a comment
     bool nextLineIsComment;
     do{
+        nextLineIsComment = false;
         if(std::getline(is, line)){
             nextLineIsComment =  (line[line.find_first_not_of(" \t")] == '#');
             if(!nextLineIsComment){
