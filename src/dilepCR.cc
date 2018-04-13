@@ -66,7 +66,7 @@ void treeReader::setup(){
         HistInfo("nJets", "number of jets", 10, 0, 10),
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
-        HistInfo("jetPt_higheEtaJet", "p_{T} (most forward jet)", 100, 0, 300),
+        HistInfo("jetPt_higheEtaJet", "p_{T} (most forward jet)", 100, 0, 500),
         HistInfo("jetEta_highestEtaJet_pTCut20", "|#eta|(most forward jet) (P_{T} > 20 GeV)", 100, 0, 5),
         HistInfo("nForwardJets_pTCut20", "number of |eta| > 2.4, P_{T} > 20 GeV jets", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut25", "|#eta|(most forward jet) (P_{T} > 25 GeV)", 100, 0, 5),
@@ -80,7 +80,11 @@ void treeReader::setup(){
         HistInfo("jetEta_highestEtaJet_pTCut45", "|#eta|(most forward jet) (P_{T} > 45 GeV)", 100, 0, 5),
         HistInfo("nForwardJets_pTCut45", "number of |eta| > 2.4, P_{T} > 45 GeV", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut50", "|#eta|(most forward jet) (P_{T} > 50 GeV)", 100, 0, 5),
-        HistInfo("nForwardJets_pTCut50", "number of |eta| > 2.4, P_{T} > 50 GeV jets", 6, 0, 6)
+        HistInfo("nForwardJets_pTCut50", "number of |eta| > 2.4, P_{T} > 50 GeV jets", 6, 0, 6),
+        HistInfo("jetEta_highestEtaJet_pTCut55", "|#eta|(most forward jet) (P_{T} > 55 GeV)", 100, 0, 5),
+        HistInfo("nForwardJets_pTCut55", "number of |eta| > 2.4, P_{T} > 55 GeV jets", 6, 0, 6),
+        HistInfo("jetEta_highestEtaJet_pTCut60", "|#eta|(most forward jet) (P_{T} > 60 GeV)", 100, 0, 5),
+        HistInfo("nForwardJets_pTCut60", "number of |eta| > 2.4, P_{T} > 60 GeV jets", 6, 0, 6)
     };
 }
 
@@ -154,9 +158,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //new flavor categorization if the leptons are SS
         if(!hasOS){
             flav += 3;
-            //temporary, remove later!!
-            if(_3dIPSig[ind[0]] > 2) continue;
-            if(_3dIPSig[ind[1]] > 2) continue;
         }
         //determine run perios
         unsigned run;
@@ -206,10 +207,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
         //compute number of forward jets and find the highest eta jet
-        std::vector<double> forwardJetPtCuts = {20, 25, 30, 35, 40, 45, 50};
-        std::vector<unsigned> mostForwardJetIndices(7, 99); 
-        std::vector<unsigned> highPtJetCount(7, 0);
-        std::vector<unsigned> nForwardJets(7, 0);
+        std::vector<double> forwardJetPtCuts = {20, 25, 30, 35, 40, 45, 50, 55, 60};
+        std::vector<unsigned> mostForwardJetIndices(9, 99); 
+        std::vector<unsigned> highPtJetCount(9, 0);
+        std::vector<unsigned> nForwardJets(9, 0);
         for(unsigned p = 0; p < forwardJetPtCuts.size(); ++p){
             for(unsigned j = 0; j < _nJets; ++j){
                 if(jetIsGood(j, forwardJetPtCuts[p], 0, true, true) ){     //last "true" allows jets to have any eta value
@@ -232,18 +233,25 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             std::cout << "mostForwardJetIndices[0] = " << mostForwardJetIndices[0] << std::endl;
             std::cout << "highPtJetCount[0] = " << highPtJetCount[0] << std::endl;
             std::cout << "|eta| = " << fillVar << std::endl;
+            std::cout << "pT = " << _jetPt[mostForwardJetIndices[0]] << std::endl;
+        }
+
+        for(unsigned i = 0; i < 9; ++i){
+            if( ( highPtJetCount[i] > 0) && ( mostForwardJetIndices[i] == 99 ) ) std::cout << "bug" << std::endl;
         }
         */
         
         double fill[nDist - 20] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets(),
-            _jetPt[mostForwardJetIndices[1]], //pT of most forward jet after 25 GeV pT cut selection
+           (highPtJetCount[1] > 0) ? _jetPt[mostForwardJetIndices[1]] : -9999., //pT of most forward jet after 25 GeV pT cut selection
            (highPtJetCount[0] > 0) ? fabs(_jetEta[mostForwardJetIndices[0]]) : -9999., (double) nForwardJets[0],        //make sure to remove the peak at 0 if there are not high pt jets 
            (highPtJetCount[1] > 0) ? fabs(_jetEta[mostForwardJetIndices[1]]) : -9999., (double) nForwardJets[1],
            (highPtJetCount[2] > 0) ? fabs(_jetEta[mostForwardJetIndices[2]]) : -9999., (double) nForwardJets[2],
            (highPtJetCount[3] > 0) ? fabs(_jetEta[mostForwardJetIndices[3]]) : -9999., (double) nForwardJets[3],
            (highPtJetCount[4] > 0) ? fabs(_jetEta[mostForwardJetIndices[4]]) : -9999., (double) nForwardJets[4],
            (highPtJetCount[5] > 0) ? fabs(_jetEta[mostForwardJetIndices[5]]) : -9999., (double) nForwardJets[5],
-           (highPtJetCount[6] > 0) ? fabs(_jetEta[mostForwardJetIndices[6]]) : -9999., (double) nForwardJets[6]
+           (highPtJetCount[6] > 0) ? fabs(_jetEta[mostForwardJetIndices[6]]) : -9999., (double) nForwardJets[6],
+           (highPtJetCount[7] > 0) ? fabs(_jetEta[mostForwardJetIndices[7]]) : -9999., (double) nForwardJets[7],
+           (highPtJetCount[8] > 0) ? fabs(_jetEta[mostForwardJetIndices[8]]) : -9999., (double) nForwardJets[8]
         }; //replace 0 by _met for correct trees
 
         for(unsigned j = 0; j < nJetCat; ++j){
@@ -305,7 +313,7 @@ void treeReader::plot(const std::string& distName){
             std::vector<std::string> notToRebin = {"nJets", "nForwardJets", "nBJets"};//distributions not  to rebin
             bool doNotRebin = false;
             for(auto& name : notToRebin){
-                if(distName.find(name) != std:string::npos){
+                if(distName.find(name) != std::string::npos){
                     doNotRebin = true;
                     break;
                 }
