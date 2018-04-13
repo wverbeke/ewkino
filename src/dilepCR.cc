@@ -66,7 +66,7 @@ void treeReader::setup(){
         HistInfo("nJets", "number of jets", 10, 0, 10),
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
-        HistInfo("jetPt_higheEtaJet", "p_{T} (most forward jet)", 100, 0, 500),
+        HistInfo("jetPt_higheEtaJet", "p_{T} (most forward jet)", 100, 25, 500),
         HistInfo("jetEta_highestEtaJet_pTCut20", "|#eta|(most forward jet) (P_{T} > 20 GeV)", 100, 0, 5),
         HistInfo("jetSignedEta_highestEtaJet_pTCut20", "#eta (most forward jet) (P_{T} > 20 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut20", "number of |eta| > 2.4, P_{T} > 20 GeV jets", 6, 0, 6),
