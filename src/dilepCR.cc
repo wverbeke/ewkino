@@ -224,6 +224,16 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
 
+        //debugging prints
+        /*
+        double fillVar = (highPtJetCount[0] > 0) ? fabs(_jetEta[mostForwardJetIndices[0]]) : -9999.;
+        if( fillVar < 1.2 && fillVar > 0.9){
+            std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+            std::cout << "mostForwardJetIndices[0] = " << mostForwardJetIndices[0] << std::endl;
+            std::cout << "highPtJetCount[0] = " << highPtJetCount[0] << std::endl;
+            std::cout << "|eta| = " << fillVar << std::endl;
+        }
+        */
         
         double fill[nDist - 20] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets(),
             _jetPt[mostForwardJetIndices[1]], //pT of most forward jet after 25 GeV pT cut selection
@@ -240,7 +250,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
             for(unsigned pu = 0; pu < nPuRew; ++pu){
                 for(unsigned dist = 20; dist < nDist; ++dist){
-                    if(jetCount == 0 && dist > (nDist - 16) ) continue; //don't plot high eta-jet variables if there are no jets 
+                    //if(jetCount == 0 && dist > (nDist - 16) ) continue; //don't plot high eta-jet variables if there are no jets 
                     for(unsigned r = 0; r < nRuns; ++r){
                         if(!samp.isData() || r == run || r == 0){
                             double puw = 1.;
@@ -295,7 +305,7 @@ void treeReader::plot(const std::string& distName){
             std::vector<std::string> notToRebin = {"nJets", "nForwardJets", "nBJets"};//distributions not  to rebin
             bool doNotRebin = false;
             for(auto& name : notToRebin){
-                if(distName.find(name)){
+                if(distName.find(name) != std:string::npos){
                     doNotRebin = true;
                     break;
                 }
