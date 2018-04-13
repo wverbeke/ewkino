@@ -68,22 +68,31 @@ void treeReader::setup(){
         HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
         HistInfo("jetPt_higheEtaJet", "p_{T} (most forward jet)", 100, 0, 500),
         HistInfo("jetEta_highestEtaJet_pTCut20", "|#eta|(most forward jet) (P_{T} > 20 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut20", "#eta (most forward jet) (P_{T} > 20 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut20", "number of |eta| > 2.4, P_{T} > 20 GeV jets", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut25", "|#eta|(most forward jet) (P_{T} > 25 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut25", "#eta(most forward jet) (P_{T} > 25 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut25", "number of |eta| > 2.4, P_{T} > 25 GeV jets", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut30", "|#eta|(most forward jet) (P_{T} > 30 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut30", "#eta(most forward jet) (P_{T} > 30 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut30", "number of |eta| > 2.4, P_{T} > 30 GeV jets", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut35", "|#eta|(most forward jet) (P_{T} > 35 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut35", "#eta(most forward jet) (P_{T} > 35 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut35", "number of |eta| > 2.4, P_{T} > 35 GeV jets", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut40", "|#eta|(most forward jet) (P_{T} > 40 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut40", "#eta(most forward jet) (P_{T} > 40 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut40", "number of |eta| > 2.4, P_{T} > 40 GeV", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut45", "|#eta|(most forward jet) (P_{T} > 45 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut45", "#eta(most forward jet) (P_{T} > 45 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut45", "number of |eta| > 2.4, P_{T} > 45 GeV", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut50", "|#eta|(most forward jet) (P_{T} > 50 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut50", "#eta(most forward jet) (P_{T} > 50 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut50", "number of |eta| > 2.4, P_{T} > 50 GeV jets", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut55", "|#eta|(most forward jet) (P_{T} > 55 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut55", "#eta(most forward jet) (P_{T} > 55 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut55", "number of |eta| > 2.4, P_{T} > 55 GeV jets", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut60", "|#eta|(most forward jet) (P_{T} > 60 GeV)", 100, 0, 5),
+        HistInfo("jetSignedEta_highestEtaJet_pTCut60", "#eta (most forward jet) (P_{T} > 60 GeV)", 100, -5, 5),
         HistInfo("nForwardJets_pTCut60", "number of |eta| > 2.4, P_{T} > 60 GeV jets", 6, 0, 6)
     };
 }
@@ -161,7 +170,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         }
         //determine run perios
         unsigned run;
-        run = ewk::runPeriod(_runNb) + 1 - 1; //reserve 0 for inclusive // -1 because we start at run B 
+        run = ewk::runPeriod2017(_runNb) + 1 - 1; //reserve 0 for inclusive // -1 because we start at run B 
         //max pu to extract
         float max = (run == 0 || run > 3) ? 80 : 80;
         //float max = 100;
@@ -214,7 +223,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned p = 0; p < forwardJetPtCuts.size(); ++p){
             for(unsigned j = 0; j < _nJets; ++j){
                 if(jetIsGood(j, forwardJetPtCuts[p], 0, true, true) ){     //last "true" allows jets to have any eta value
-                    if( (j == 0) || ( fabs(_jetEta[j]) > fabs(_jetEta[mostForwardJetIndices[p]]) ) ){
+                    if( (highPtJetCount[p] == 0) || ( fabs(_jetEta[j]) > fabs(_jetEta[mostForwardJetIndices[p]]) ) ){
                         mostForwardJetIndices[p] = j;
                     }
                     if(fabs(_jetEta[j]) >= 2.4){
@@ -225,34 +234,18 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
 
-        //debugging prints
-        /*
-        double fillVar = (highPtJetCount[0] > 0) ? fabs(_jetEta[mostForwardJetIndices[0]]) : -9999.;
-        if( fillVar < 1.2 && fillVar > 0.9){
-            std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-            std::cout << "mostForwardJetIndices[0] = " << mostForwardJetIndices[0] << std::endl;
-            std::cout << "highPtJetCount[0] = " << highPtJetCount[0] << std::endl;
-            std::cout << "|eta| = " << fillVar << std::endl;
-            std::cout << "pT = " << _jetPt[mostForwardJetIndices[0]] << std::endl;
-        }
-
-        for(unsigned i = 0; i < 9; ++i){
-            if( ( highPtJetCount[i] > 0) && ( mostForwardJetIndices[i] == 99 ) ) std::cout << "bug" << std::endl;
-        }
-        */
-        
         double fill[nDist - 20] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets(),
-           (highPtJetCount[1] > 0) ? _jetPt[mostForwardJetIndices[1]] : -9999., //pT of most forward jet after 25 GeV pT cut selection
-           (highPtJetCount[0] > 0) ? fabs(_jetEta[mostForwardJetIndices[0]]) : -9999., (double) nForwardJets[0],        //make sure to remove the peak at 0 if there are not high pt jets 
-           (highPtJetCount[1] > 0) ? fabs(_jetEta[mostForwardJetIndices[1]]) : -9999., (double) nForwardJets[1],
-           (highPtJetCount[2] > 0) ? fabs(_jetEta[mostForwardJetIndices[2]]) : -9999., (double) nForwardJets[2],
-           (highPtJetCount[3] > 0) ? fabs(_jetEta[mostForwardJetIndices[3]]) : -9999., (double) nForwardJets[3],
-           (highPtJetCount[4] > 0) ? fabs(_jetEta[mostForwardJetIndices[4]]) : -9999., (double) nForwardJets[4],
-           (highPtJetCount[5] > 0) ? fabs(_jetEta[mostForwardJetIndices[5]]) : -9999., (double) nForwardJets[5],
-           (highPtJetCount[6] > 0) ? fabs(_jetEta[mostForwardJetIndices[6]]) : -9999., (double) nForwardJets[6],
-           (highPtJetCount[7] > 0) ? fabs(_jetEta[mostForwardJetIndices[7]]) : -9999., (double) nForwardJets[7],
-           (highPtJetCount[8] > 0) ? fabs(_jetEta[mostForwardJetIndices[8]]) : -9999., (double) nForwardJets[8]
-        }; //replace 0 by _met for correct trees
+           (highPtJetCount[1] > 0) ? _jetPt[mostForwardJetIndices[1]] : -9999., //pT of most forward jet after 25 GeV pT cut selection`
+           (highPtJetCount[0] > 0) ? fabs(_jetEta[mostForwardJetIndices[0]]) : -9999., (highPtJetCount[0] > 0) ? _jetEta[mostForwardJetIndices[0]] : -9999., (double) nForwardJets[0], 
+           (highPtJetCount[1] > 0) ? fabs(_jetEta[mostForwardJetIndices[1]]) : -9999., (highPtJetCount[1] > 0) ? _jetEta[mostForwardJetIndices[1]] : -9999., (double) nForwardJets[1], 
+           (highPtJetCount[2] > 0) ? fabs(_jetEta[mostForwardJetIndices[2]]) : -9999., (highPtJetCount[2] > 0) ? _jetEta[mostForwardJetIndices[2]] : -9999., (double) nForwardJets[2], 
+           (highPtJetCount[3] > 0) ? fabs(_jetEta[mostForwardJetIndices[3]]) : -9999., (highPtJetCount[3] > 0) ? _jetEta[mostForwardJetIndices[3]] : -9999., (double) nForwardJets[3], 
+           (highPtJetCount[4] > 0) ? fabs(_jetEta[mostForwardJetIndices[4]]) : -9999., (highPtJetCount[4] > 0) ? _jetEta[mostForwardJetIndices[4]] : -9999., (double) nForwardJets[4], 
+           (highPtJetCount[5] > 0) ? fabs(_jetEta[mostForwardJetIndices[5]]) : -9999., (highPtJetCount[5] > 0) ? _jetEta[mostForwardJetIndices[5]] : -9999., (double) nForwardJets[5], 
+           (highPtJetCount[6] > 0) ? fabs(_jetEta[mostForwardJetIndices[6]]) : -9999., (highPtJetCount[6] > 0) ? _jetEta[mostForwardJetIndices[6]] : -9999., (double) nForwardJets[6], 
+           (highPtJetCount[7] > 0) ? fabs(_jetEta[mostForwardJetIndices[7]]) : -9999., (highPtJetCount[7] > 0) ? _jetEta[mostForwardJetIndices[7]] : -9999., (double) nForwardJets[7], 
+           (highPtJetCount[8] > 0) ? fabs(_jetEta[mostForwardJetIndices[8]]) : -9999., (highPtJetCount[8] > 0) ? _jetEta[mostForwardJetIndices[8]] : -9999., (double) nForwardJets[8]
+        }; 
 
         for(unsigned j = 0; j < nJetCat; ++j){
             if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
