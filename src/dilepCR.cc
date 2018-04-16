@@ -108,15 +108,27 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
 
+    //run categorization is different for 2016 and 2017 data
+    std::vector<std::string> runCategorization;
+    if(is2016()){
+        runCategorization = {"all2016", "RunB", "RunC", "RunD", "RunE", "RunF", "RunG", "RunH"};
+    } else {
+        runCategorization = {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"};
+    }
+
     //set up histogram collection for particular sample
-    HistCollectionSample histCollection(histInfo, samp, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+    HistCollectionSample histCollection(histInfo, samp, { runCategorization, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 
     //read pu weights for every period
     TFile* puFile = TFile::Open("weights/puWeights2017.root");
     const std::string eras[6] = {"Inclusive", "B", "C", "D", "E", "F"};
     TH1D* puWeights[6];
-    for(unsigned e = 0; e < 6; ++e){
-        puWeights[e] = (TH1D*) puFile->Get( (const TString&) "puw_Run" + eras[e]);
+
+    //pu weights for 2016 data are currently not available, add them later
+    if(is2017()){
+        for(unsigned e = 0; e < 6; ++e){
+            puWeights[e] = (TH1D*) puFile->Get( (const TString&) "puw_Run" + eras[e]);
+        }
     }
 
     const unsigned nDist = histInfo.size();
@@ -124,7 +136,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     const unsigned nJetCat = histCollection.categoryRange(2);
     const unsigned nPuRew = histCollection.categoryRange(3);
 
-    initSample(samp);  //use 2017 lumi
+    initSample(samp);
     for(long unsigned it = begin; it < end; ++it){
         GetEntry(samp, it);
 
@@ -132,12 +144,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         std::vector<unsigned> ind;
 
         //require met filters and triggers
-        //bool fail2016Trigger = ( (!_2016_e) && (!_2016_m) && (!_2016_em) && (!_2016_ee) && (!_2016_mm) );
-        /*
-        bool fail2017Trigger = ( (!_2017_e) && (!_2017_m) && (!_2017_em) && (!_2017_ee) && (!_2017_mm) );
-        if( (samp.isData() || samp.is2017() ) && fail2017Trigger) continue;
-        */
-        //if( ! _passMETFilters ) continue;
+        if( !passMETFilters() ) continue;
+        if( !(passSingleLeptonTriggers() || passDileptonTriggers() ) ) continue;
 
         //select leptons
         const unsigned lCount = selectLep(ind);
@@ -180,7 +188,11 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         //determine run perios
         unsigned run;
-        run = ewk::runPeriod2017(_runNb) + 1 - 1; //reserve 0 for inclusive // -1 because we start at run B 
+        if( is2016() ){
+            run = ewk::runPeriod2016(_runNb) + 1 - 1; //reserve 0 for inclusive // -1 because we start at run B 
+        } else{
+            run = ewk::runPeriod2017(_runNb) + 1 - 1; //reserve 0 for inclusive // -1 because we start at run B 
+        }
 
         //max pu to extract
         float max = (run == 0 || run > 3) ? 80 : 80;
@@ -215,7 +227,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                         for(unsigned r = 0; r < nRuns; ++r){
                             if(!samp.isData() || r == run || r == 0){
                                 double puw = 1.;
-                                if(!samp.isData() && pu == 1){
+                                
+                                //TO DO: currently only reweighting for 2017 data, add 2016 reweighting
+                                if( !isData() && pu == 1 && is2017() ){
                                     puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
                                 }
                                 histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight*puw); 
@@ -267,7 +281,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                     for(unsigned r = 0; r < nRuns; ++r){
                         if(!samp.isData() || r == run || r == 0){
                             double puw = 1.;
-                            if(!samp.isData() && pu == 1){
+
+                            //TO DO: currently only reweighting for 2017 data, add 2016 reweighting
+                            if( !isData() && pu == 1 && is2017() ){
                                 puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
                             }
                             histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist - 20], histInfo[dist].maxBinCenter()), weight*puw);
@@ -311,12 +327,12 @@ void treeReader::plot(const std::string& distName){
     //loop over all distributions and find the one to plot
     for(size_t d = 0; d < histInfo.size(); ++d){
         if(histInfo[d].name() == distName){
-
+            std::vector<std::string> runCategorization2016 = {"all2016", "RunB", "RunC", "RunD", "RunE", "RunF", "RunG", "RunH"};
+            std::vector<std::string> runCategorization2017 = {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"};
+        
             //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
-
-            //print plots for collection
-            bool is2016 = false;
+            HistCollectionDist col2016("inputList.txt", histInfo[d], samples, { runCategorization2016, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            HistCollectionDist col2017("inputList.txt", histInfo[d], samples, { runCategorization2017, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 
             //rebin same-sign category because of low statistics
             std::vector<std::string> notToRebin = {"nJets", "nForwardJets", "nBJets"};//distributions not  to rebin
@@ -328,10 +344,19 @@ void treeReader::plot(const std::string& distName){
                 }
             }
             if(!doNotRebin){
-                col.rebin("same-sign", 5);
+                col2016.rebin("same-sign", 5);
+                col2017.rebin("same-sign", 5);
             }
-            col.printPlots("plots/ewkino/dilepCR", is2016, "ewkinoDilep", true, true);
-            col.printPlots("plots/ewkino/dilepCR", is2016, "ewkinoDilep", false, true);
+
+            bool is2016 = true;
+            bool is2017 = false;
+
+            //print plots for collection
+            col2016.printPlots("plots/ewkino/dilepCR/2016", is2016, "ewkinoDilep", true, true);     //log
+            col2016.printPlots("plots/ewkino/dilepCR/2016", is2016, "ewkinoDilep", false, true);    //linear
+
+            col2017.printPlots("plots/ewkino/dilepCR/2017", is2017, "ewkinoDilep", true, true);     //log
+            col2017.printPlots("plots/ewkino/dilepCR/2017", is2017, "ewkinoDilep", false, true);    //linear
         }
     }
 }
