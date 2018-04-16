@@ -28,11 +28,15 @@
 
 
 void treeReader::setup(){
+
     //Set CMS plotting style
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
+
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_dilepCR_2017.txt");
+    readSamples2016("sampleLists/samples_dilepCR_2016.txt");
+    readSamples2017("sampleLists/samples_dilepCR_2017.txt");
+
     //info on kinematic distributions to plot
     //name      xlabel    nBins,  min, max
     histInfo = {
@@ -103,6 +107,7 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 }
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
+
     //set up histogram collection for particular sample
     HistCollectionSample histCollection(histInfo, samp, { {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"}, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 
@@ -122,6 +127,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     initSample(samp);  //use 2017 lumi
     for(long unsigned it = begin; it < end; ++it){
         GetEntry(samp, it);
+
         //vector containing good lepton indices
         std::vector<unsigned> ind;
 
@@ -136,19 +142,23 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //select leptons
         const unsigned lCount = selectLep(ind);
         if(lCount != 2) continue;
+
         //require pt cuts (25, 20) to be passed
         if(!passPtCuts(ind)) continue;
+
         //make lorentzvectors for leptons
         TLorentzVector lepV[lCount];
         for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
+
         //Cut of Mll at 12 GeV
         if((lepV[0] + lepV[1]).M() < 12) continue;
-        //reject SS events
-        //if(_lCharge[ind[0]] == _lCharge[ind[1]]) continue;
+
         //determine flavor compositions
         unsigned flav = dilFlavorComb(ind) + 1; //reserve 0 for inclusive
+
         //determine whether there is an OS lepton pair 
         bool hasOS = ( _lCharge[ind[0]] != _lCharge[ind[1]] );
+
         //order jets and check the number of jets
         std::vector<unsigned> jetInd;
         unsigned jetCount = nJets(jetInd);
@@ -157,7 +167,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         if((flav == 1 || flav == 3) && hasOS){ //OSSF
             if( fabs((lepV[0] + lepV[1]).M() - 91) > 10 ) continue;
             if(nBJets(0,  true, true, 0) != 0) continue;    //veto cleaned jets, maybe this fixes csv distribution of close jets
-            //if(!hasOS) continue;
         } else if(flav == 2 || !hasOS){
             if(_met < 50) continue;
             if(jetCount < 2 || nBJets() < 1) continue;
@@ -168,12 +177,14 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         if(!hasOS){
             flav += 3;
         }
+
         //determine run perios
         unsigned run;
         run = ewk::runPeriod2017(_runNb) + 1 - 1; //reserve 0 for inclusive // -1 because we start at run B 
+
         //max pu to extract
         float max = (run == 0 || run > 3) ? 80 : 80;
-        //float max = 100;
+
         //loop over leading leptons
         for(unsigned l = 0; l < 2; ++l){
             double fill[20] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _relIso[ind[l]],
@@ -193,6 +204,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 (_lFlavor[ind[l]] == 0) ? _lElectronMvaFall17Iso[ind[l]] : 0,
                 (_lFlavor[ind[l]] == 1) ? _lMuonSegComp[ind[l]] : 0
             };
+
             //fill histograms
             for(unsigned j = 0; j < nJetCat; ++j){
                 if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
@@ -215,6 +227,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 }
             }
         }
+
         //compute number of forward jets and find the highest eta jet
         std::vector<double> forwardJetPtCuts = {20, 25, 30, 35, 40, 45, 50, 55, 60};
         std::vector<unsigned> mostForwardJetIndices(9, 99); 
@@ -251,7 +264,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
             for(unsigned pu = 0; pu < nPuRew; ++pu){
                 for(unsigned dist = 20; dist < nDist; ++dist){
-                    //if(jetCount == 0 && dist > (nDist - 16) ) continue; //don't plot high eta-jet variables if there are no jets 
                     for(unsigned r = 0; r < nRuns; ++r){
                         if(!samp.isData() || r == run || r == 0){
                             double puw = 1.;
@@ -266,11 +278,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             } 
         }
     }
+
     //store histograms for later merging
     histCollection.store("tempHists/", begin, end);
 }
 
 void treeReader::splitJobs(){
+
     //clear previous histograms
     tools::system("rm tempHists/*");
 
@@ -279,11 +293,13 @@ void treeReader::splitJobs(){
         for(long unsigned it = 0; it < nEntries; it+=500000){
             long unsigned begin = it;
             long unsigned end = std::min(nEntries, it + 500000);
+
             //make temporary job script 
             std::ofstream script("runTuples.sh");
             tools::initScript(script);
             script << "./dilepCR " << samples[currentSampleIndex].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
+
             //submit job
             tools::submitScript("runTuples.sh", "01:00:00");
          }
@@ -334,11 +350,13 @@ void treeReader::splitPlots(){
 int main(int argc, char* argv[]){
     treeReader reader;
     reader.setup();
+
     //convert all input to std::string format for easier handling
     std::vector<std::string> argvStr;
     for(int i = 0; i < argc; ++i){
         argvStr.push_back(std::string(argv[i]));
     }
+
     //no arguments given: full workflow of program
     if(argc == 1){
         std::cout << "Step 1: Distributing jobs on T2 grid" << std::endl;
@@ -352,18 +370,22 @@ int main(int argc, char* argv[]){
         reader.splitPlots();
         std::cout << "Program closing, plots will be dumped in specified directory soon" << std::endl;
     } 
+
     //single argument "run" given will do all computations and write output histograms to file
     else if(argc == 2 && argvStr[1] == "run"){
         reader.splitJobs();
     }
+
     //single argument "plot" given will submit all jobs for plotting from existing output files
     else if(argc == 2 && argvStr[1] == "plot"){
         reader.splitPlots();           
     }
+
     //arguments "plot" and distribution name given plots just this particular distribution
     else if(argc == 3 && argvStr[1] == "plot"){
         reader.plot(argvStr[2]);
     }
+
     //submit single histogram computation job
     else if(argc == 4){
         long unsigned begin = std::stoul(argvStr[2]);
@@ -371,6 +393,7 @@ int main(int argc, char* argv[]){
         //sample, first entry, last entry:
         reader.Analyze(argvStr[1], begin, end);
     }
+
     //invalid input given
     else{
         std::cerr << "Invalid input given to program: terminating!" << std::endl;
