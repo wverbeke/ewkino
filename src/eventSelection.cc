@@ -245,6 +245,10 @@ bool treeReader::passTriggerCocktail() const{
     return pass;
 }
 
+bool treeReader::passMETFilters() const{
+    return _passMETFilters;
+}
+
 /*
 bool treeReader::lepIsLoose(const unsigned ind) const{
     return _lEwkLoose[ind];

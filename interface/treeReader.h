@@ -273,6 +273,7 @@ class treeReader {
         bool passDileptonTriggers() const;
         bool passTrileptonTriggers() const;
         bool passTriggerCocktail() const;
+        bool passMETFilters() const;
 
         //overlap removal between samples
         bool photonOverlap() const;                                                                          //sample overlap due to photons
