@@ -221,7 +221,10 @@ class treeReader {
         void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
 
         //set up tree for analysis
-        void readSamples(const std::string& list = ""); //read sample list from file
+        void readSamples(const std::string& list); //read sample list from file
+        void readSamples2016(const std::string&);
+        void readSamples2017(const std::string&);
+
         void initSample();                              //event weights will be set according to is2016() ( or equally is2017() ) flag
         void initSample(const Sample&);  
 
@@ -298,7 +301,9 @@ class treeReader {
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
-        std::vector<Sample> samples;                                            //list of samples
+        std::vector<Sample> samples;                                            //combined list of samples
+        std::vector<Sample> samples2016;                                        //2016 data and MC samples
+        std::vector<Sample> samples2017;                                        //2017 data and MC samples
         Sample currentSample;                                                   //reference to current sample, needed to check what era sample belongs to
         std::vector<HistInfo> histInfo;                                         //histogram info
         int currentSampleIndex = -1;                                                 //current index in list
@@ -350,6 +355,9 @@ class treeReader {
         bool checkEraCompatibility() const;     //make sure a sample is not is2016() AND 2017() 
         bool sampleBelongsToEra() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
         void printSampleErrors() const;         //print error messages if needed
+
+        //general function to read a list of samples
+        void readSamples(const std::string&, std::vector<Sample>&);
 
 
         //list of branches

@@ -11,21 +11,36 @@ treeReader::treeReader(TTree *tree) : fChain(nullptr)
     }
 }
 
-void treeReader::readSamples(const std::string& list){
-    samples.clear();    //clear current sample list
+void treeReader::readSamples(const std::string& list, std::vector<Sample>& sampleVector){
+    sampleVector.clear();    //clear current sample list
     //read sample info (names and xSec) from txt file
     std::ifstream file(list);
     do {
-        samples.push_back(Sample(file));
+        sampleVector.push_back(Sample(file));
     } while(!file.eof());
-    samples.pop_back();
+    sampleVector.pop_back();
     file.close();       //close file after usage
     //display samples that have been read 
-    for( auto it = samples.cbegin(); it != samples.cend(); ++it){
-        std::cout << *it << std::endl;
+    for(auto& sample : sampleVector){
+        std::cout << sample << std::endl;
     }
 }
 
+void treeReader::readSamples(const std::string& list){
+    readSamples(list, this->samples);
+}
+
+void treeReader::readSamples2016(const std::string& list){
+    readSamples(list, this->samples2016);
+    //add the 2016 samples to the total sample list 
+    this->samples.insert(samples.end(), samples2016.begin(), samples2016.end() );
+}
+
+void treeReader::readSamples2017(const std::string& list){
+    readSamples(list, this->samples2017);
+    //add the 2017 samples to the total sample list
+    this->samples.insert(samples.end(), samples2017.begin(), samples2017.end() );
+}
 
 void treeReader::initSample(const Sample& samp){ 
     //update current sample
