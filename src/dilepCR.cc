@@ -32,7 +32,7 @@ void treeReader::setup(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_dilepCR.txt");
+    readSamples("sampleLists/samples_dilepCR_2017.txt");
     //info on kinematic distributions to plot
     //name      xlabel    nBins,  min, max
     histInfo = {
