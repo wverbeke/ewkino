@@ -121,6 +121,5 @@ std::string fileNameWithoutExtension(const std::string& fileName){
     if(pos != std::string::npos){
         nameWithoutExt.erase(pos, fileName.size());
     }
-    std::cout << "altered fileName = " << fileName << std::endl;
     return nameWithoutExt;
 }
