@@ -40,6 +40,9 @@ Sample::Sample(const std::string& line){
     setData();
     set2017();
 
+    //unique name is equal to fileName without file extension
+    uniqueName = fileNameWithoutExtension(fileName);
+
     //data has no xSection
     if(isData() && xSecString != ""){
         std::cerr << "xSection specified for data: are you sure this was intended?" << std::endl;
@@ -74,8 +77,10 @@ void Sample::setOptions(const std::string& optionString){
     }
     if(flag2017){
         is2017Sample = true;
+        uniqueName += "_forcedIs2017";
     } else if(flag2016){
         is2017Sample = false;
+        uniqueName += "_forcedIs2016";
     }
 }
 
@@ -105,4 +110,17 @@ std::shared_ptr<TFile> Sample::getFile(const std::string& directory) const{
 std::ostream& operator<<(std::ostream& os, const Sample& sam){
     os << sam.process << "\t" << sam.fileName << "\t" << sam.xSec << "\t" << ( sam.isData() ? "data" : "MC") << "\t" << ( sam.is2017() ? "Fall17" : "Summer16" ) << (sam.smSignal ? "\tSM signal" : "") << (sam.newPhysicsSignal ? "\tBSM signal" : "");
     return os;
+}
+
+//for generating Sample name
+std::string fileNameWithoutExtension(const std::string& fileName){
+    std::string nameWithoutExt(fileName);
+
+    //find last occurrence of . , marking the beginning of a file extension
+    auto pos = nameWithoutExt.find_last_of(".");
+    if(pos != std::string::npos){
+        nameWithoutExt.erase(pos, fileName.size());
+    }
+    std::cout << "altered fileName = " << fileName << std::endl;
+    return nameWithoutExt;
 }
