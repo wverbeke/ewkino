@@ -26,7 +26,7 @@ void HistCollectionSample::store(const std::string& directory, const long unsign
         extra = "_" + std::to_string(begin) + "_" + std::to_string(end);
     }
     //create new root file
-    TFile* outputFile = TFile::Open((const TString&) directory + "/tempHist_" + sampleFileName() + extra, "RECREATE");
+    TFile* outputFile = TFile::Open((const TString&) directory + "/tempHist_" + sampleUniqueName() + extra + ".root", "RECREATE");
     for(size_t dist = 0; dist < collection.size(); ++dist){
         for(size_t c = 0; c < collection[dist].size(); ++c){
             access(dist, c, false)->Write();

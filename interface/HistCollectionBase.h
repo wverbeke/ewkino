@@ -24,14 +24,15 @@ class HistCollectionBase{
         std::shared_ptr< TH1D > access(const std::vector<size_t>& categoryIndices, const bool sb = false) const;
         
         std::string infoName() const { return histInfo->name(); }
-        std::string sampleFileName() const { return sample->getFileName(); }
+        //std::string sampleFileName() const { return sample->getFileName(); }
+        std::string sampleUniqueName() const { return sample->getUniqueName(); }
         std::string sampleProcessName() const { return sample->getProcessName(); }
         std::string categoryName(size_t categoryIndex) const { return category->name(categoryIndex); }
         std::string categoryName(const std::vector<size_t>& categoryIndices) const { return category->name(categoryIndices); }
 
         //full name of every histogram
         std::string name(size_t categoryIndex, const bool sideband = false) const{
-            return histInfo->name() + category->name(categoryIndex) + (sideband ? "sideband" : "") + sample->getFileName();
+            return infoName() + categoryName(categoryIndex) + (sideband ? "sideband" : "") + sampleUniqueName(); 
         }
         size_t size() const{ return collection.size(); }
 

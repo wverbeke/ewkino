@@ -25,8 +25,8 @@ class HistCollectionSample{
         size_t categoryRange(const size_t c) const { return collection.front().categoryRange(c); }
     private:
         std::vector < HistCollectionBase > collection;
-        std::string sampleFileName() const{
-            return collection.front().sampleFileName();
+        std::string sampleUniqueName() const{
+            return collection.front().sampleUniqueName();
         }
         //access histograms with direct category index
         std::shared_ptr< TH1D > access(const size_t infoIndex, const size_t categoryIndex, const bool sb = false) const{

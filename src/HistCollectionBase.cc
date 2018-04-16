@@ -8,10 +8,10 @@ HistCollectionBase::HistCollectionBase(const std::shared_ptr< HistInfo >& info, 
     histInfo(info), sample(sam), category(cat){
     //make histogram for every category
     for(size_t c = 0; c < category->size(); ++c){
-        collection.push_back( info->makeHist( category->name(c) +sample->getFileName() ) );
+        collection.push_back( info->makeHist( categoryName(c) + sampleUniqueName() ) );
         collection[c]->Sumw2();
         if(includeSB){
-            sideBand.push_back(  info->makeHist( category->name(c) +sample->getFileName() + "_sideband") );
+            sideBand.push_back(  info->makeHist( categoryName(c) + sampleUniqueName() + "_sideband") );
             sideBand[c]->Sumw2();
         }
     }
