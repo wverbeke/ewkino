@@ -11,7 +11,7 @@ void Sample::setData(){
 }
 
 void Sample::set2017(){
-    is2017Sample = (fileName.find("Fall17") != std::string::npos);
+    is2017Sample = (fileName.find("Fall17") != std::string::npos) || (fileName.find("2017") != std::string::npos);
 }
 
 Sample::Sample(const std::string& line){
