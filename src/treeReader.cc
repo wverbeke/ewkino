@@ -32,14 +32,23 @@ void treeReader::readSamples(const std::string& list){
 
 void treeReader::readSamples2016(const std::string& list){
     readSamples(list, this->samples2016);
+
     //add the 2016 samples to the total sample list 
     this->samples.insert(samples.end(), samples2016.begin(), samples2016.end() );
+
+    //check for errors
+    checkSampleEraConsistency();
+
 }
 
 void treeReader::readSamples2017(const std::string& list){
     readSamples(list, this->samples2017);
+
     //add the 2017 samples to the total sample list
     this->samples.insert(samples.end(), samples2017.begin(), samples2017.end() );
+
+    //check for errors 
+    checkSampleEraConsistency();
 }
 
 void treeReader::initSample(const Sample& samp){ 
@@ -72,6 +81,7 @@ void treeReader::initSample(const Sample& samp){
 void treeReader::initSample(){ //initialize the next sample in the list 
     initSample(samples[++currentSampleIndex]);
 }
+
 
 void treeReader::GetEntry(const Sample& samp, long unsigned entry)
 {

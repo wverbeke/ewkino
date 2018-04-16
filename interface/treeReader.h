@@ -352,9 +352,8 @@ class treeReader {
 
         
         //some safety-checks for errors 
-        bool checkEraCompatibility() const;     //make sure a sample is not is2016() AND 2017() 
-        bool sampleBelongsToEra() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
-        void printSampleErrors() const;         //print error messages if needed
+        void checkSampleEraConsistency() const;  //make sure a sample is not is2016() AND 2017() 
+        void checkEraOrthogonality() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
 
         //general function to read a list of samples
         void readSamples(const std::string&, std::vector<Sample>&);
