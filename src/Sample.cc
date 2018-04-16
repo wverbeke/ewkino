@@ -21,21 +21,21 @@ Sample::Sample(const std::string& line){
     */
     std::string xSecString;   //temporary string to read xSection
     std::string signalString; //temporary string to fill signal boolean
-    //read all variables on the line
+
+    //first 3 words on the line are the process name, filename and cross section
     std::istringstream stream(line);
-    stream >> process >> fileName >> xSecString >> signalString;
+    stream >> process >> fileName >> xSecString;
+
+    //extract all optional strings at the end of the line
+    std::string optionString;
+    std::string tempString;
+    while(stream){
+        stream >> tempString;
+        optionString.append(tempString);
+    }
 
     //if not Xsection is specified it is zero
     xSec = (xSecString == "" ? 0 : std::stod(xSecString) );
-
-    //determine whether process is some kind of signal
-    smSignal = (signalString.find("SMSignal") != std::string::npos);
-    newPhysicsSignal = (signalString.find("newPhysicsSignal") != std::string::npos);
-
-    //signal can not be both SM and BSM sigal
-    if(smSignal && newPhysicsSignal){
-        std::cerr << "Error in sample construction: sample is both SM and BSM signal" << std::endl;
-    }
 
     setData();
     set2017();
@@ -43,6 +43,35 @@ Sample::Sample(const std::string& line){
     //data has no xSection
     if(isData() && xSecString != ""){
         std::cerr << "xSection specified for data: are you sure this was intended?" << std::endl;
+    }
+
+    //read options
+    setOptions(optionString);
+}
+
+void Sample::setOptions(const std::string& optionString){
+    if(optionString == "") return;
+
+    //signal flags
+    //determine whether process is some kind of signal
+    smSignal = ( optionString.find("SMSignal") != std::string::npos );
+    newPhysicsSignal = ( optionString.find("newPhysicsSignal") != std::string::npos );
+
+    //signal can not be both SM and BSM sigal
+    if(smSignal && newPhysicsSignal){
+        std::cerr << "Error in sample construction: sample is both SM and BSM signal" << std::endl;
+    }
+    
+    //check if sample needs to be used in different era it was intended for (i.e. 2016 sample when comparing to 2017 data)
+    bool flag2017 = ( optionString.find("forceIs2017") != std::string::npos );
+    bool flag2016 = ( optionString.find("forceIs2016") != std::string::npos );
+    if(flag2016 && flag2017){
+        std::cerr << "Error in sample construction: both forceIs2016 and forceIs2017 flags were set, can not set both!" << std::endl;
+    }
+    if(flag2017){
+        is2017Sample = true;
+    } else if(flag2016){
+        is2017Sample = false;
     }
 }
 

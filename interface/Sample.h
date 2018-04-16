@@ -35,6 +35,7 @@ class Sample{
     private:
         void setData(); 
         void set2017();
+        void setOptions(const std::string&);
         std::string fileName;
         std::string process;
         double xSec;
