@@ -31,6 +31,10 @@ void treeReader::readSamples(const std::string& list){
 }
 
 void treeReader::readSamples2016(const std::string& list){
+    std::cout << "########################################" << std::endl;
+    std::cout << "         2016 samples                   " << std::endl;
+    std::cout << "########################################" << std::endl;
+
     readSamples(list, this->samples2016);
 
     //add the 2016 samples to the total sample list 
@@ -42,6 +46,9 @@ void treeReader::readSamples2016(const std::string& list){
 }
 
 void treeReader::readSamples2017(const std::string& list){
+    std::cout << "########################################" << std::endl;
+    std::cout << "         2017 samples                   " << std::endl;
+    std::cout << "########################################" << std::endl;
     readSamples(list, this->samples2017);
 
     //add the 2017 samples to the total sample list
