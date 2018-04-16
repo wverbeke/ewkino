@@ -50,7 +50,11 @@ Sample::Sample(const std::string& line){
 }
 
 void Sample::setOptions(const std::string& optionString){
-    if(optionString == "") return;
+    if(optionString == ""){
+        smSignal = false;
+        newPhysicsSignal = false;
+        return;
+    } 
 
     //signal flags
     //determine whether process is some kind of signal
