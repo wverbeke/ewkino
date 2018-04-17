@@ -173,7 +173,7 @@ void tools::submitScript(const std::string& scriptName, const std::string& wallt
 
             bool errorFound = false;
             for(const std::string& message : errorMessages ){
-                if( line.find(message) ){
+                if( line.find(message) != std::string::npos ){
                     errorFound = true;
                     break;
                 }
