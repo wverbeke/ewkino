@@ -102,17 +102,26 @@ void treeReader::setup(){
 }
 
 void treeReader::Analyze(const std::string& sampName, const long unsigned begin, const long unsigned end){
-    auto samIt = std::find_if(samples.cbegin(), samples.cend(), [sampName](const Sample& s) { return s.getFileName() == sampName; } );
+    //auto samIt = std::find_if(samples.cbegin(), samples.cend(), [sampName](const Sample& s) { return s.getFileName() == sampName; } );
+    auto samIt = std::find_if(samples.cbegin(), samples.cend(), [sampName](const Sample& s) { return s.getUniqueName() == sampName; } );
+    if(samIt == samples.cend()){
+        std::cerr << "Error : Given sample name not found in list of samples!" << std::endl;
+        return;
+    }
     Analyze(*samIt, begin, end);
 }
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
+    //initialize sample 
+    initSample(samp);
 
     //run categorization is different for 2016 and 2017 data
     std::vector<std::string> runCategorization;
     if(is2016()){
+        std::cout << "is2016 flagged true!" << std::endl;
         runCategorization = {"all2016", "RunB", "RunC", "RunD", "RunE", "RunF", "RunG", "RunH"};
     } else {
+        std::cout << "is2016 flagged false!" << std::endl;
         runCategorization = {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"};
     }
 
@@ -136,7 +145,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     const unsigned nJetCat = histCollection.categoryRange(2);
     const unsigned nPuRew = histCollection.categoryRange(3);
 
-    initSample(samp);
     for(long unsigned it = begin; it < end; ++it){
         GetEntry(samp, it);
 
@@ -313,7 +321,8 @@ void treeReader::splitJobs(){
             //make temporary job script 
             std::ofstream script("runTuples.sh");
             tools::initScript(script);
-            script << "./dilepCR " << samples[currentSampleIndex].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
+            //script << "./dilepCR " << samples[currentSampleIndex].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
+            script << "./dilepCR " << samples[currentSampleIndex].getUniqueName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
 
             //submit job
@@ -331,8 +340,8 @@ void treeReader::plot(const std::string& distName){
             std::vector<std::string> runCategorization2017 = {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"};
         
             //read collection for this distribution from files
-            HistCollectionDist col2016("inputList.txt", histInfo[d], samples, { runCategorization2016, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
-            HistCollectionDist col2017("inputList.txt", histInfo[d], samples, { runCategorization2017, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            HistCollectionDist col2016("inputList.txt", histInfo[d], samples2016, { runCategorization2016, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            HistCollectionDist col2017("inputList.txt", histInfo[d], samples2017, { runCategorization2017, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 
             //rebin same-sign category because of low statistics
             std::vector<std::string> notToRebin = {"nJets", "nForwardJets", "nBJets"};//distributions not  to rebin
