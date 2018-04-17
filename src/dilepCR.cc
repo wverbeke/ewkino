@@ -304,7 +304,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     }
 
     //store histograms for later merging
-    histCollection.store("tempHists/", begin, end);
+    histCollection.store("tempHists", begin, end);
 }
 
 void treeReader::splitJobs(){
@@ -342,7 +342,6 @@ void treeReader::plot(const std::string& distName){
             //read collection for this distribution from files
             HistCollectionDist col2016("inputList.txt", histInfo[d], samples2016, { runCategorization2016, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
             HistCollectionDist col2017("inputList.txt", histInfo[d], samples2017, { runCategorization2017, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
-
             //rebin same-sign category because of low statistics
             std::vector<std::string> notToRebin = {"nJets", "nForwardJets", "nBJets"};//distributions not  to rebin
             bool doNotRebin = false;

@@ -20,8 +20,6 @@ HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::s
     for(size_t s = 0; s < samples.size(); ++s){
         bool firstFile = true; //check whether file is first for given sample
         for(const auto& file : fileNameList){
-            //find the correct sample corresponding to the current file
-            //if(file.find(samples[s]->getUniqueName()) != std::string::npos){
             if(file.find(samples[s]->getUniqueName() + ".root") != std::string::npos){
                 if(firstFile){
                     collection.push_back(HistCollectionBase(file, histInfo, samples[s], category, sideBand) );
