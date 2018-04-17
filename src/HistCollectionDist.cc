@@ -20,9 +20,9 @@ HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::s
     for(size_t s = 0; s < samples.size(); ++s){
         bool firstFile = true; //check whether file is first for given sample
         for(const auto& file : fileNameList){
-
             //find the correct sample corresponding to the current file
-            if(file.find(samples[s]->getUniqueName()) != std::string::npos){
+            //if(file.find(samples[s]->getUniqueName()) != std::string::npos){
+            if(file.find(samples[s]->getUniqueName() + ".root") != std::string::npos){
                 if(firstFile){
                     collection.push_back(HistCollectionBase(file, histInfo, samples[s], category, sideBand) );
                     firstFile = false;
@@ -207,11 +207,19 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const boo
     else if(category.find("_ee_") != std::string::npos) header += "ee : ";
 
     //check for particular Run era
-    if(category.find("RunB") != std::string::npos) header += "2017 Run B";
-    else if(category.find("RunC") != std::string::npos) header += "2017 Run C";
-    else if(category.find("RunD") != std::string::npos) header += "2017 Run D";
-    else if(category.find("RunE") != std::string::npos) header += "2017 Run E";
-    else if(category.find("RunF") != std::string::npos) header += "2017 Run F";
+    std::string year;
+    if(is2016){
+        year = "2016";
+    } else {
+        year = "2017";
+    }
+    if(category.find("RunB") != std::string::npos) header += year + " Run B";
+    else if(category.find("RunC") != std::string::npos) header += year + " Run C";
+    else if(category.find("RunD") != std::string::npos) header += year + " Run D";
+    else if(category.find("RunE") != std::string::npos) header += year + " Run E";
+    else if(category.find("RunF") != std::string::npos) header += year + " Run F";
+    else if(category.find("RunG") != std::string::npos) header += year + " Run G";
+    else if(category.find("RunH") != std::string::npos) header += year + " Run H";
 
     //default case just displays the luminosity
     else{
