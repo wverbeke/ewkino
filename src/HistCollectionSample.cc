@@ -26,12 +26,23 @@ void HistCollectionSample::store(const std::string& directory, const long unsign
         extra = "_" + std::to_string(begin) + "_" + std::to_string(end);
     }
     //create new root file
-    TFile* outputFile = TFile::Open((const TString&) directory + "/tempHist_" + sampleUniqueName() + extra + ".root", "RECREATE");
+    
+    //Warning: .root MUST come before "extra" in fileName in order to make sure the same sample is uniquely read when used
+    //for both 2016 and 2017 data.
+    TFile* outputFile = TFile::Open((const TString&) directory + "/tempHist_" + sampleUniqueName() + ".root" + extra, "RECREATE");
     for(size_t dist = 0; dist < collection.size(); ++dist){
+
+        //ROOT will automatically create random directories when too many histograms are filled, breaking the code
+        //to avoid this, create a separate directory for every variable here 
+        outputFile->mkdir( (const TString&) collection[dist].infoName() );
+        outputFile->cd(  (const TString&) collection[dist].infoName() );
         for(size_t c = 0; c < collection[dist].size(); ++c){
             access(dist, c, false)->Write();
             if(hasSideBand() )  access(dist, c, true)->Write();
         }
+
+        //move back to the top
+        outputFile->cd();
     }
     outputFile->Close();
 }
