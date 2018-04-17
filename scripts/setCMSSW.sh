@@ -28,7 +28,7 @@ makeSubmit(){
 submitJob(){
     output=~/outputCheck.txt
     qsub $1 -l walltime=04:00:00 > $output 2>> $output
-    while grep "Invalid credential" $output || grep "Error" $output; do
+    while grep "Invalid credential" $output || grep "Error" $output || grep "Expired credential" $output; do
         echo "Invalid credential or batch protocol error caught, resubmitting"
         sleep 2  #sleep 2 seconds before attemtping resubmission
         qsub $1 -l walltime=04:00:00 > $output 2>> $output
