@@ -7,12 +7,15 @@
 //remove electrons overlapping with muons
 bool treeReader::eleIsCleanBase(const unsigned electronIndex, bool (treeReader::*looseMuon)(const unsigned) const) const{
     //make sure this lepton is an electron
-    if(_lFlavor[electronIndex] != 0){
+    if( !isElectron(electronIndex) ){
         std::cerr << "Error: trying to clean non-electron object from muon overlap." << std::endl;
         return 999;
     }
     //check separation with every muon
     for(unsigned m = 0; m < _nMu; ++m){
+        if( !isMuon(m) ){
+            std::cerr << "Error trying to clean electron from non-muon object" << std::endl;
+        }
         if( ( this->*looseMuon )(m) ){
             if( kinematics::deltaR(_lPhi[m], _lEta[m], _lPhi[electronIndex], _lEta[electronIndex]) < 0.05 ){
                 return false;
@@ -39,8 +42,8 @@ bool treeReader::eleIsClean(const unsigned electronIndex) const{
 } 
 
 bool treeReader::lepIsLooseBase(const unsigned leptonIndex) const{
-    if(_lFlavor[leptonIndex] == 2) return false; 
-    if( ( _lFlavor[leptonIndex] == 0 ) && !eleIsClean(leptonIndex) ) return false;
+    if( isTau(leptonIndex) ) return false;
+    if( isElectron(leptonIndex) && !eleIsClean(leptonIndex) ) return false;
 	return _lEwkLoose[leptonIndex];
 }
 
@@ -62,8 +65,8 @@ bool treeReader::lepIsLoose(const unsigned leptonIndex) const{
 
 bool treeReader::lepIsGoodBase(const unsigned leptonIndex) const{
     if( !lepIsLoose(leptonIndex) ) return false;
-    if(_lFlavor[leptonIndex] == 0 && !_lElectronPassEmu[leptonIndex]) return false;
-    if(_lFlavor[leptonIndex] == 1 && !_lPOGMedium[leptonIndex]) return false;
+    if( isElectron(leptonIndex) && !_lElectronPassEmu[leptonIndex]) return false;
+    if( isMuon(leptonIndex) && !_lPOGMedium[leptonIndex]) return false;
     return true;
 } 
 

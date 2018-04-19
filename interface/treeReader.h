@@ -322,6 +322,11 @@ class treeReader {
         bool isData() const { return currentSample.isData(); }
         bool isMC() const { return isMC(); } 
 
+        //check lepton flavors 
+        bool isElectron(const unsigned leptonIndex) const { return (_lFlavor[leptonIndex] == 0); }
+        bool isMuon(const unsigned leptonIndex) const { return (_lFlavor[leptonIndex] == 1); }
+        bool isTau(const unsigned leptonIndex) const { return (_lFlavor[leptonIndex] == 2); }
+
         //era-specific event selection functions
         bool lepIsLooseBase(const unsigned) const;
         bool lepIsLoose2016(const unsigned) const;
