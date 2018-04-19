@@ -126,8 +126,8 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             ptRatio = std::min(_ptRatio[l], 1.5);
             deepCsvClosestJet = std::max( (std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : _closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) , 0.);
             sip3d = _3dIPSig[l];
-            dxy = _dxy[l];
-            dz = _dz[l];
+            dxy = log(fabs(_dxy[l]));
+            dz = log(fabs(_dz[l]));
             if( isElectron(l) ){
                 electronMva = _lElectronMva[l];
                 electronMvaFall17NoIso = _lElectronMvaFall17NoIso[l];
