@@ -26,12 +26,13 @@ makeSubmit(){
 
 #submit a job and catch invalid credentials in the process
 submitJob(){
-    qsub $1 -l walltime=04:00:00 > outputCheck.txt 2>> outputCheck.txt
-    while grep "Invalid credential" outputCheck.txt; do
-        echo "Invalid credential caught, resubmitting"
+    output=~/outputCheck.txt
+    qsub $1 -l walltime=04:00:00 > $output 2>> $output
+    while grep "Invalid credential" $output || grep "Error" $output || grep "Expired credential" $output; do
+        echo "Invalid credential or batch protocol error caught, resubmitting"
         sleep 2  #sleep 2 seconds before attemtping resubmission
-        qsub $1 -l walltime=04:00:00 > outputCheck.txt 2>> outputCheck.txt
+        qsub $1 -l walltime=04:00:00 > $output 2>> $output
     done
-    cat outputCheck.txt
-    rm outputCheck.txt
+    cat $output
+    rm $output
 }

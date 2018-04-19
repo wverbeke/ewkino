@@ -11,7 +11,7 @@ void Sample::setData(){
 }
 
 void Sample::set2017(){
-    is2017Sample = (fileName.find("Fall17") != std::string::npos);
+    is2017Sample = (fileName.find("Fall17") != std::string::npos) || (fileName.find("2017") != std::string::npos);
 }
 
 Sample::Sample(const std::string& line){
@@ -21,28 +21,66 @@ Sample::Sample(const std::string& line){
     */
     std::string xSecString;   //temporary string to read xSection
     std::string signalString; //temporary string to fill signal boolean
-    //read all variables on the line
+
+    //first 3 words on the line are the process name, filename and cross section
     std::istringstream stream(line);
-    stream >> process >> fileName >> xSecString >> signalString;
+    stream >> process >> fileName >> xSecString;
+
+    //extract all optional strings at the end of the line
+    std::string optionString;
+    std::string tempString;
+    while(stream){
+        stream >> tempString;
+        optionString.append(tempString);
+    }
 
     //if not Xsection is specified it is zero
     xSec = (xSecString == "" ? 0 : std::stod(xSecString) );
 
+    setData();
+    set2017();
+
+    //unique name is equal to fileName without file extension
+    uniqueName = fileNameWithoutExtension(fileName);
+
+    //data has no xSection
+    if(isData() && xSecString != ""){
+        std::cerr << "xSection specified for data: are you sure this was intended?" << std::endl;
+    }
+
+    //read options
+    setOptions(optionString);
+}
+
+void Sample::setOptions(const std::string& optionString){
+    if(optionString == ""){
+        smSignal = false;
+        newPhysicsSignal = false;
+        return;
+    } 
+
+    //signal flags
     //determine whether process is some kind of signal
-    smSignal = (signalString.find("SMSignal") != std::string::npos);
-    newPhysicsSignal = (signalString.find("newPhysicsSignal") != std::string::npos);
+    smSignal = ( optionString.find("SMSignal") != std::string::npos );
+    newPhysicsSignal = ( optionString.find("newPhysicsSignal") != std::string::npos );
 
     //signal can not be both SM and BSM sigal
     if(smSignal && newPhysicsSignal){
         std::cerr << "Error in sample construction: sample is both SM and BSM signal" << std::endl;
     }
-
-    setData();
-    set2017();
-
-    //data has no xSection
-    if(isData() && xSecString != ""){
-        std::cerr << "xSection specified for data: are you sure this was intended?" << std::endl;
+    
+    //check if sample needs to be used in different era it was intended for (i.e. 2016 sample when comparing to 2017 data)
+    bool flag2017 = ( optionString.find("forceIs2017") != std::string::npos );
+    bool flag2016 = ( optionString.find("forceIs2016") != std::string::npos );
+    if(flag2016 && flag2017){
+        std::cerr << "Error in sample construction: both forceIs2016 and forceIs2017 flags were set, can not set both!" << std::endl;
+    }
+    if(flag2017){
+        is2017Sample = true;
+        uniqueName += "_forcedIs2017";
+    } else if(flag2016){
+        is2017Sample = false;
+        uniqueName += "_forcedIs2016";
     }
 }
 
@@ -50,11 +88,16 @@ Sample::Sample(std::istream& is){
     //read sample info from txt file
     std::string line;
     //jump to next line if current line is a comment
+    bool nextLineIsComment;
     do{
+        nextLineIsComment = false;
         if(std::getline(is, line)){
-            *this = Sample(line); 
+            nextLineIsComment =  (line[line.find_first_not_of(" \t")] == '#');
+            if(!nextLineIsComment){
+                *this = Sample(line); 
+            }
         }
-    } while( line[line.find_first_not_of(" \t")] == '#');
+    } while(nextLineIsComment);
 }
 
 std::shared_ptr<TFile> Sample::getFile(const std::string& directory) const{
@@ -67,4 +110,16 @@ std::shared_ptr<TFile> Sample::getFile(const std::string& directory) const{
 std::ostream& operator<<(std::ostream& os, const Sample& sam){
     os << sam.process << "\t" << sam.fileName << "\t" << sam.xSec << "\t" << ( sam.isData() ? "data" : "MC") << "\t" << ( sam.is2017() ? "Fall17" : "Summer16" ) << (sam.smSignal ? "\tSM signal" : "") << (sam.newPhysicsSignal ? "\tBSM signal" : "");
     return os;
+}
+
+//for generating Sample name
+std::string fileNameWithoutExtension(const std::string& fileName){
+    std::string nameWithoutExt(fileName);
+
+    //find last occurrence of . , marking the beginning of a file extension
+    auto pos = nameWithoutExt.find_last_of(".");
+    if(pos != std::string::npos){
+        nameWithoutExt.erase(pos, fileName.size());
+    }
+    return nameWithoutExt;
 }

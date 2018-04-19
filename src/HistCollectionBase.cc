@@ -8,10 +8,10 @@ HistCollectionBase::HistCollectionBase(const std::shared_ptr< HistInfo >& info, 
     histInfo(info), sample(sam), category(cat){
     //make histogram for every category
     for(size_t c = 0; c < category->size(); ++c){
-        collection.push_back( info->makeHist( category->name(c) +sample->getFileName() ) );
+        collection.push_back( info->makeHist( categoryName(c) + sampleUniqueName() ) );
         collection[c]->Sumw2();
         if(includeSB){
-            sideBand.push_back(  info->makeHist( category->name(c) +sample->getFileName() + "_sideband") );
+            sideBand.push_back(  info->makeHist( categoryName(c) + sampleUniqueName() + "_sideband") );
             sideBand[c]->Sumw2();
         }
     }
@@ -22,13 +22,15 @@ HistCollectionBase::HistCollectionBase(const std::string& inputFileName, const s
     histInfo(info), sample(sam), category(cat){
     //Open root file to read
     TFile* inputFile = TFile::Open( (const TString&) inputFileName, "READ");
+    //change to the correct directory (named after the distribution)
+    inputFile->cd( (const TString&) infoName() );
     //read correct histogram for every category
     for(size_t c = 0; c < category->size(); ++c){
-        collection.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (const TString&) name(c) ) ) );
+        collection.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (const TString&) infoName() + "/" + name(c) ) ) );
         //take away ownership from inputFile so root does not delete histogram
         collection[c]->SetDirectory(gROOT);
         if(includeSB){
-            sideBand.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (const TString&) name(c, true) ) ) );
+            sideBand.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (const TString&) infoName() + "/" + name(c, true) ) ) );
             sideBand[c]->SetDirectory(gROOT);
         }
     }

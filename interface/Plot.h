@@ -20,8 +20,8 @@ class Plot{
             const std::string& file,    //plot file name
             const std::pair< std::string, std::shared_ptr<TH1D> >& obs,  //observed yield and name
             const std::map< std::string, std::pair< std::shared_ptr < TH1D >, bool >  >& back,  //map of backgrounds, their names and whether they are a SM signal
-            std::map< std::string, std::shared_ptr< TH1D > > unc = std::map< std::string, std::shared_ptr< TH1D > >(), //map of systematic uncertainties corresponding background names
-            std::map< std::string, std::shared_ptr< TH1D > > sig = std::map< std::string, std::shared_ptr< TH1D > >()  //map of new physics signals and their names 
+            const std::map< std::string, std::shared_ptr< TH1D > >& unc = std::map< std::string, std::shared_ptr< TH1D > >(), //map of systematic uncertainties corresponding background names
+            const std::map< std::string, std::shared_ptr< TH1D > >& sig = std::map< std::string, std::shared_ptr< TH1D > >()  //map of new physics signals and their names 
             ): 
             fileName(file), data(obs), bkg(back), syst(unc), signal(sig) {}
 
@@ -38,7 +38,7 @@ class Plot{
         //map to extract plot legend name given process name
         static std::map < std::string, std::string> processNameMap;
 
-	//extract name of background from map
-	std::string newName(const std::string&) const;
+	    //extract name of background from map
+	    std::string newName(const std::string&) const;
 };
 #endif

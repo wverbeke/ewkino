@@ -167,9 +167,19 @@ void tools::submitScript(const std::string& scriptName, const std::string& wallt
         system( "qsub " + scriptName + " -l walltime=" + walltimeString + " > submissionOutput.txt 2>> submissionOutput.txt" );
         std::ifstream submissionOutput("submissionOutput.txt");
         //check for errors in output file
+        static std::vector< std::string > errorMessages = {"Invalid credential", "Expired credential", "Error"};
         std::string line; 
         while(std::getline(submissionOutput, line)){
-            if(line.find("Invalid credential") == std::string::npos){
+
+            bool errorFound = false;
+            for(const std::string& message : errorMessages ){
+                if( line.find(message) != std::string::npos ){
+                    errorFound = true;
+                    break;
+                }
+            }
+
+            if( !errorFound ){
                 submitted = true;
                 std::cout << line << std::endl;
             }

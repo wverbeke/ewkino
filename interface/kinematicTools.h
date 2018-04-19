@@ -9,6 +9,13 @@
 
 namespace kinematics{
     /*
+     * functions to compute angular separations in eta/phi units given the object directions
+     */
+    double deltaPhi(const double, const double);
+    double deltaEta(const double, const double); 
+    double deltaR(const double, const double, const double, const double);
+
+    /*
      * functions computing several quantities given 2 TLorentzVectors
      */
 
@@ -64,4 +71,5 @@ namespace kinematics{
                     double (&computeVar)(const TLorentzVector&, const TLorentzVector&), const double& (& getExtremum) (const double&, const double&), double initVar);
     double minVar(const TLorentzVector*, const std::vector<unsigned>&, double (&computeVar)(const TLorentzVector&, const TLorentzVector&) );
     double maxVar(const TLorentzVector*, const std::vector<unsigned>&, double (&computeVar)(const TLorentzVector&, const TLorentzVector&) );
+
 }   

@@ -221,9 +221,12 @@ class treeReader {
         void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
 
         //set up tree for analysis
-        void readSamples(const std::string& list = ""); //read sample list from file
-        void initSample(const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
-        void initSample(const Sample&, const unsigned period = 0);     // 0 = 2016, 1 = 2017, > 1 = combined
+        void readSamples(const std::string& list); //read sample list from file
+        void readSamples2016(const std::string&);
+        void readSamples2017(const std::string&);
+
+        void initSample();                              //event weights will be set according to is2016() ( or equally is2017() ) flag
+        void initSample(const Sample&);  
 
         //functions to analyze tree
         void GetEntry(long unsigned entry);
@@ -257,11 +260,9 @@ class treeReader {
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned) const;
         bool passPtCuts(const std::vector<unsigned>&) const;
         bool jetIsClean(const unsigned) const;
-        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true) const;
+        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true, const bool allowForward = true) const;
         unsigned nJets(const unsigned unc = 0, const bool clean = true) const;                                   //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;    //with jet pt ordering
-        bool bTaggedDeepCSV(const unsigned ind, const unsigned wp = 1) const;
-        bool bTaggedCSVv2(const unsigned ind, const unsigned wp = 1) const;
         bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true) const;
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
@@ -274,6 +275,7 @@ class treeReader {
         bool passDileptonTriggers() const;
         bool passTrileptonTriggers() const;
         bool passTriggerCocktail() const;
+        bool passMETFilters() const;
 
         //functions to reproduce results of TOP-16-020
         bool lepIsVeto_TOP16_020(const unsigned) const;
@@ -298,7 +300,6 @@ class treeReader {
         void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
 
         //event weights
-        std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class
         double puWeight(const unsigned period = 0, const unsigned unc = 0) const;
         double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0) const; //more efficient version if jets were already selected 
@@ -313,17 +314,64 @@ class treeReader {
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
-        std::vector<Sample> samples;                                            //list of samples
+        std::vector<Sample> samples;                                            //combined list of samples
+        std::vector<Sample> samples2016;                                        //2016 data and MC samples
+        std::vector<Sample> samples2017;                                        //2017 data and MC samples
+        Sample currentSample;                                                   //reference to current sample, needed to check what era sample belongs to
         std::vector<HistInfo> histInfo;                                         //histogram info
-        int currentSample = -1;                                                 //current index in list
-        bool isData = false;
+        int currentSampleIndex = -1;                                                 //current index in list
+        //bool isData = false;
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;
         const double lumi2017 = 41.37;                                          //in units of 1/fb
         const double lumi2016 = 35.867;                 
-        
-        // List of branches
+        std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class used for reweighting functions
+
+        //check whether sample is 2017 or not
+        bool is2017() const { return currentSample.is2017(); }
+        bool is2016() const { return currentSample.is2016(); }                  //if sample is not 2017 it is automatically 2016
+        bool isData() const { return currentSample.isData(); }
+        bool isMC() const { return isMC(); } 
+
+        //era-specific event selection functions
+        bool lepIsLooseBase(const unsigned) const;
+        bool lepIsLoose2016(const unsigned) const;
+        bool lepIsLoose2017(const unsigned) const;
+
+        bool lepIsGoodBase(const unsigned) const;
+        bool lepIsGood2016(const unsigned) const;
+        bool lepIsGood2017(const unsigned) const;
+
+        bool lepIsTightBase(const unsigned) const;
+        bool lepIsTight2016(const unsigned) const;
+        bool lepIsTight2017(const unsigned) const;
+
+        bool eleIsCleanBase(const unsigned, bool (treeReader::*looseMuon)(unsigned) const) const;
+        bool eleIsClean2016(const unsigned) const;
+        bool eleIsClean2017(const unsigned) const;
+
+        bool bTaggedDeepCSVBase(const unsigned, const unsigned wp, const double cuts[3]) const;
+        bool bTaggedDeepCSV2016(const unsigned, const unsigned wp = 1) const;
+        bool bTaggedDeepCSV2017(const unsigned, const unsigned wp = 1) const;
+        bool bTaggedDeepCSV(const unsigned, const unsigned wp = 1) const;
+
+        bool bTaggedCSVv2Base(const unsigned, const unsigned wp, const double cuts[3]) const;
+        bool bTaggedCSVv22016(const unsigned, const unsigned wp = 1) const;
+        bool bTaggedCSVv22017(const unsigned, const unsigned wp = 1) const;
+        bool bTaggedCSVv2(const unsigned, const unsigned wp = 1) const;
+
+        //era-specific event weights
+
+        //some safety-checks for errors 
+        void checkSampleEraConsistency() const;  //make sure a sample is not is2016() AND 2017() 
+        void checkEraOrthogonality() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
+
+        //general function to read a list of samples
+        void readSamples(const std::string&, std::vector<Sample>&);
+
+
+        //list of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   
         TBranch        *b__eventNb;   

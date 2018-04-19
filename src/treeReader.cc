@@ -11,42 +11,85 @@ treeReader::treeReader(TTree *tree) : fChain(nullptr)
     }
 }
 
-void treeReader::readSamples(const std::string& list){
-    samples.clear();    //clear current sample list
+void treeReader::readSamples(const std::string& list, std::vector<Sample>& sampleVector){
+    sampleVector.clear();    //clear current sample list
     //read sample info (names and xSec) from txt file
     std::ifstream file(list);
     do {
-        samples.push_back(Sample(file));
+        sampleVector.push_back(Sample(file));
     } while(!file.eof());
-    samples.pop_back();
+    sampleVector.pop_back();
     file.close();       //close file after usage
     //display samples that have been read 
-    for( auto it = samples.cbegin(); it != samples.cend(); ++it){
-        std::cout << *it << std::endl;
+    for(auto& sample : sampleVector){
+        std::cout << sample << std::endl;
     }
 }
 
-void treeReader::initSample(const Sample& samp, const unsigned period){  //0 = 2016, 1 = 2017, > 1 = combined
-    sampleFile = samp.getFile("../../ntuples_tzq");
+void treeReader::readSamples(const std::string& list){
+    readSamples(list, this->samples);
+}
+
+void treeReader::readSamples2016(const std::string& list){
+    std::cout << "########################################" << std::endl;
+    std::cout << "         2016 samples                   " << std::endl;
+    std::cout << "########################################" << std::endl;
+
+    readSamples(list, this->samples2016);
+
+    //add the 2016 samples to the total sample list 
+    this->samples.insert(samples.end(), samples2016.begin(), samples2016.end() );
+
+    //check for errors
+    checkSampleEraConsistency();
+
+}
+
+void treeReader::readSamples2017(const std::string& list){
+    std::cout << "########################################" << std::endl;
+    std::cout << "         2017 samples                   " << std::endl;
+    std::cout << "########################################" << std::endl;
+    readSamples(list, this->samples2017);
+
+    //add the 2017 samples to the total sample list
+    this->samples.insert(samples.end(), samples2017.begin(), samples2017.end() );
+
+    //check for errors 
+    checkSampleEraConsistency();
+}
+
+void treeReader::initSample(const Sample& samp){ 
+
+    //update current sample
+    currentSample = samp;
+    sampleFile = samp.getFile("../../ntuples_tzq/");
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
     initTree(fChain, samp.isData());
     nEntries = fChain->GetEntries();
     if(!samp.isData()){
+
+        //read sum of simulated event weights
         TH1D* hCounter = new TH1D("hCounter", "Events counter", 1, 0, 1);
         hCounter->Read("hCounter"); 
-        double dataLumi;
-        if(period == 0) dataLumi = lumi2016;
-        else if(period == 1) dataLumi = lumi2017;
-        else dataLumi = lumi2016 + lumi2017;
-        scale = samp.getXSec()*dataLumi*1000/hCounter->GetBinContent(1);       //xSec*lumi divided by number of events
+        double sumSimulatedEventWeights = hCounter->GetBinContent(1);
         delete hCounter;
+
+        //event weights set with lumi depending on sample's era 
+        double dataLumi;
+        if( is2016() ){
+            dataLumi = lumi2016;
+        } else {
+            dataLumi = lumi2017;
+        } 
+        scale = samp.getXSec()*dataLumi*1000/sumSimulatedEventWeights;       //xSec*lumi divided by total sum of simulated event weights
     }
 }
 
-void treeReader::initSample(const unsigned period){ //initialize the next sample in the list 
-    initSample(samples[++currentSample], period);
+void treeReader::initSample(){ //initialize the next sample in the list 
+    initSample(samples[++currentSampleIndex]);
 }
+
 
 void treeReader::GetEntry(const Sample& samp, long unsigned entry)
 {
@@ -54,11 +97,11 @@ void treeReader::GetEntry(const Sample& samp, long unsigned entry)
     fChain->GetEntry(entry);
     //Set up correct weights
     if(!samp.isData() ) weight = _weight*scale; //MC
-    else weight = 1;                               //data
+    else weight = 1;                            //data
 }
 
 void treeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
-    GetEntry(samples[currentSample], entry);
+    GetEntry(samples[currentSampleIndex], entry);
 }
 
 void treeReader::initTree(TTree *tree, const bool isData)
