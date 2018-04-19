@@ -18,6 +18,9 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 
+//temporary inlcude of TMVA
+#include "TMVA/Reader.h"
+
 
 void treeReader::skimTree(const std::string& fileName, std::string outputDirectory, const bool isData){//std::string outputFileName){
     //Read tree	
@@ -57,7 +60,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     setOutputTree(outputTree, isData);
 
     //TEMPORARY MVA READER: REMOVE THIS LATER
-    float pt, eta, trackMultClosestJet, miniIsoCharged, miniIsoNeutral, ptRel, ptRatio, relIso, deepCsvClosestJet, sip3d, dxy, dz;
+    float pt, eta, trackMultClosestJet, miniIsoCharged, miniIsoNeutral, ptRel, ptRatio, relIso, deepCsvClosestJet, sip3d, dxy, dz, electronMva, electronMvaFall17NoIso, segmentCompatibility;
     std::shared_ptr<TMVA::Reader> leptonMvaReader[2][2];
     for(unsigned era = 0; era < 2; ++era){
         for(unsigned flavor = 0; flavor < 2; ++flavor){
@@ -81,9 +84,9 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
                     leptonMvaReader[era][flavor]->AddVariable("electronMvaFall17NoIso", &electronMvaFall17NoIso);
                 }    
             } else {
-                leptonMvaReader[era][flavor]->AddVariable("segmentCompatibility", &LepGood_segmentCompatibility);
+                leptonMvaReader[era][flavor]->AddVariable("segmentCompatibility", &segmentCompatibility);
             }
-            if(flavor = 0 && era == 0){
+            if(flavor == 0 && era == 0){
                 leptonMvaReader[era][flavor]->BookMVA("BDTG method", "weights/leptonMva/el_tZqTTV16_BDTG.weights.xml");
             } else if (flavor == 0 && era == 1){
                 leptonMvaReader[era][flavor]->BookMVA("BDTG method", "weights/leptonMva/el_tZqTTV17_BDTG.weights.xml");
@@ -112,6 +115,31 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         //Select both TOP-16-020 and FO leptons. Remove the former later.
         unsigned lCount = std::max(selectLep(ind), selectLep_TOP16_020(ind) );
         if(lCount < 3) continue;
+
+        for(unsigned l = 0; l < _nLight; ++l){
+            pt = _lPt[l];
+            eta = fabs(_lEta[l]);
+            trackMultClosestJet = _selectedTrackMult[l];
+            miniIsoCharged = _miniIsoCharged[l];
+            miniIsoNeutral = _miniIso[l] - _miniIsoCharged[l];
+            ptRel = _ptRel[l];
+            ptRatio = std::min(_ptRatio[l], 1.5);
+            deepCsvClosestJet = std::max( (std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : _closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) , 0.);
+            sip3d = _3dIPSig[l];
+            dxy = _dxy[l];
+            dz = _dz[l];
+            if( isElectron(l) ){
+                electronMva = _lElectronMva[l];
+                electronMvaFall17NoIso = _lElectronMvaFall17NoIso[l];
+                _leptonMvatZqTTV16[l] = leptonMvaReader[0][0]->EvaluateMVA("BDTG method");
+                _leptonMvatZqTTV17[l] = leptonMvaReader[1][0]->EvaluateMVA("BDTG method");
+            } else {
+                segmentCompatibility = _lMuonSegComp[l];
+                _leptonMvatZqTTV16[l] = leptonMvaReader[0][1]->EvaluateMVA("BDTG method");
+                _leptonMvatZqTTV17[l] = leptonMvaReader[1][1]->EvaluateMVA("BDTG method");
+            }
+
+        }
 
         outputTree->Fill();
     }   
