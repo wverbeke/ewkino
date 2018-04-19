@@ -65,7 +65,8 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
     if(lCount < 2) return 0;
 
     //set cone pt's after baseline object selection
-    setConePt();
+    //WARNING CONEPT CAN NOT BE SIMPLY PUT IN HERE, OTHERWISE THE SKIMMER WILL WRITE IT TO THE SKIMMED TREES!!!!!!!!!!!!
+    //setConePt();
 
     //order particles by pT
     orderByPt(ind, _lPt, lCount);
