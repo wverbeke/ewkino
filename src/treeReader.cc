@@ -207,6 +207,7 @@ void treeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_leptonMvatZqTTV16", _leptonMvatZqTTV16, &b__leptonMvatZqTTV16);
     fChain->SetBranchAddress("_leptonMvaSUSY17", _leptonMvaSUSY17, &b__leptonMvaSUSY17);
     fChain->SetBranchAddress("_leptonMvaTTH17", _leptonMvaTTH17, &b__leptonMvaTTH17);
+    fChain->SetBranchAddress("_leptonMvatZqTTV17", _leptonMvatZqTTV17, &b__leptonMvatZqTTV17);
     fChain->SetBranchAddress("_lHNLoose", _lHNLoose, &b__lHNLoose);
     fChain->SetBranchAddress("_lHNFO", _lHNFO, &b__lHNFO);
     fChain->SetBranchAddress("_lHNTight", _lHNTight, &b__lHNTight);
@@ -250,10 +251,6 @@ void treeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_jetPt", _jetPt, &b__jetPt);
     fChain->SetBranchAddress("_jetPt_JECUp", _jetPt_JECUp, &b__jetPt_JECUp);
     fChain->SetBranchAddress("_jetPt_JECDown", _jetPt_JECDown, &b__jetPt_JECDown);
-    /*
-    fChain->SetBranchAddress("_jetPt_JERUp", _jetPt_JERUp, &b__jetPt_JERUp);
-    fChain->SetBranchAddress("_jetPt_JERDown", _jetPt_JERDown, &b__jetPt_JERDown);
-    */
     fChain->SetBranchAddress("_jetEta", _jetEta, &b__jetEta);
     fChain->SetBranchAddress("_jetPhi", _jetPhi, &b__jetPhi);
     fChain->SetBranchAddress("_jetE", _jetE, &b__jetE);
@@ -414,6 +411,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_leptonMvatZqTTV16",            &_leptonMvatZqTTV16,            "_leptonMvatZqTTV16[_nLight]/D");
     outputTree->Branch("_leptonMvaSUSY17",              &_leptonMvaSUSY17,              "_leptonMvaSUSY17[_nLight]/D");
     outputTree->Branch("_leptonMvaTTH17",               &_leptonMvaTTH17,               "_leptonMvaTTH17[_nLight]/D");
+    outputTree->Branch("_leptonMvatZqTTV17",            &_leptonMvatZqTTV17,            "_leptonMvatZqTTV17[_nLight]/D");
     outputTree->Branch("_lHNLoose",                     &_lHNLoose,                     "_lHNLoose[_nLight]/O");
     outputTree->Branch("_lHNFO",                        &_lHNFO,                        "_lHNFO[_nLight]/O");
     outputTree->Branch("_lHNTight",                     &_lHNTight,                     "_lHNTight[_nLight]/O");
@@ -457,10 +455,6 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_jetPt",                     &_jetPt,                    "_jetPt[_nJets]/D");
     outputTree->Branch("_jetPt_JECUp",               &_jetPt_JECUp,              "_jetPt_JECUp[_nJets]/D");
     outputTree->Branch("_jetPt_JECDown",             &_jetPt_JECDown,            "_jetPt_JECDown[_nJets]/D");
-    /*
-    outputTree->Branch("_jetPt_JERUp",               &_jetPt_JERUp,              "_jetPt_JERUp[_nJets]/D");
-    outputTree->Branch("_jetPt_JERDown",             &_jetPt_JERDown,            "_jetPt_JERDown[_nJets]/D");
-    */
     outputTree->Branch("_jetEta",                    &_jetEta,                   "_jetEta[_nJets]/D");
     outputTree->Branch("_jetPhi",                    &_jetPhi,                   "_jetPhi[_nJets]/D");
     outputTree->Branch("_jetE",                      &_jetE,                     "_jetE[_nJets]/D");
