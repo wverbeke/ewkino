@@ -87,13 +87,13 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
                 leptonMvaReader[era][flavor]->AddVariable("segmentCompatibility", &segmentCompatibility);
             }
             if(flavor == 0 && era == 0){
-                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "weights/leptonMva/el_tZqTTV16_BDTG.weights.xml");
+                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "/user/wverbeke/Work/AnalysisCode/ewkino/weights/leptonMva/el_tZqTTV16_BDTG.weights.xml");
             } else if (flavor == 0 && era == 1){
-                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "weights/leptonMva/el_tZqTTV17_BDTG.weights.xml");
+                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "/user/wverbeke/Work/AnalysisCode/ewkino/weights/leptonMva/el_tZqTTV17_BDTG.weights.xml");
             } else if (flavor == 1 && era == 0){
-                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "weights/leptonMva/mu_tZqTTV16_BDTG.weights.xml");
+                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "/user/wverbeke/Work/AnalysisCode/ewkino/weights/leptonMva/mu_tZqTTV16_BDTG.weights.xml");
             } else {
-                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "weights/leptonMva/mu_tZqTTV17_BDTG.weights.xml");
+                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "/user/wverbeke/Work/AnalysisCode/ewkino/weights/leptonMva/mu_tZqTTV17_BDTG.weights.xml");
             }
         }
     }
