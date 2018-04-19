@@ -133,6 +133,7 @@ class treeReader {
         Double_t        _leptonMvatZqTTV16[nL_max];
         Double_t        _leptonMvaSUSY17[nL_max];
         Double_t        _leptonMvaTTH17[nL_max];
+        Double_t        _leptonMvatZqTTV17[nL_max];
         Bool_t          _lHNLoose[nL_max];   
         Bool_t          _lHNFO[nL_max];   
         Bool_t          _lHNTight[nL_max];   
@@ -478,6 +479,7 @@ class treeReader {
         TBranch        *b__leptonMvatZqTTV16;
         TBranch        *b__leptonMvaSUSY17;
         TBranch        *b__leptonMvaTTH17;
+        TBranch        *b__leptonMvatZqTTV17;
         TBranch        *b__lHNLoose;   
         TBranch        *b__lHNFO;   
         TBranch        *b__lHNTight;   
