@@ -219,7 +219,7 @@ void treeReader::setup(){
         HistInfo("mtScalarSumAll", "#Sigma_{l + jet}M_{T}( l/jet + MET) (GeV)", 30, 0, 1600),
         HistInfo("metSignificance", "MET/#sigma(MET)", 30, 0, 120),
         HistInfo("LT", "L_{T} (GeV)", 30, 0, 800),
-        HistInfo("HTLep", "H_{T} + L_{T}", 30, 0, 1000)
+        HistInfo("HTLep", "H_{T} + L_{T} (GeV)", 30, 0, 1000)
     };
 }
 
