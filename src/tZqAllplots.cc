@@ -41,7 +41,8 @@ void treeReader::setup(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples.txt");
+    readSamples2016("sampleLists/samples2016.txt");
+    readSamples2017("sampleLists/samples2017.txt");
     //info on kinematic distributions to plot
     //name      xlabel    nBins,  min, max
     histInfo = {
@@ -749,20 +750,24 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 }
 
 void treeReader::splitJobs(){
+
     //clear previous histograms
     tools::system("rm tempHists_tZq/*");
 
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample();
+
         //split samples per 200k events
         for(long unsigned it = 0; it < nEntries; it+=200000){
             long unsigned begin = it;
             long unsigned end = std::min(nEntries, it + 200000);
+
             //make temporary job script 
             std::ofstream script("runTuples.sh");
             tools::initScript(script);
             script << "./tZqAllPlots " << currentSample.getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
+
             //submit job
             tools::submitScript("runTuples.sh", "00:20:00");
          }
@@ -770,22 +775,33 @@ void treeReader::splitJobs(){
 }
 
 void treeReader::plot(const std::string& distName){
+
     //loop over all distributions and find the one to plot
     for(size_t d = 0; d < histInfo.size(); ++d){
         if(histInfo[d].name() == distName){
-            std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
-            //read collection for this distribution from files
-            HistCollectionDist col("inputList.txt", histInfo[d], samples, { {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"},
+
+            //categorization :
+            Category categorization({ {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"},
                 {"flavorInclusive", "eee", "eem", "emm", "mmm"} });
+
+            //read collections for this distribution from files
+            HistCollectionDist col2016("inputList.txt", histInfo[d], samples2016, categorization);
+            HistCollectionDist col2017("inputList.txt", histInfo[d], samples2017, categorization);
+            HistCollectionDist colCombined("inputList.txt", histInfo[d], samples, categorization);
+
+            std::vector<HistCollectionDist*> colPointers = {&col2016, &col2017, &colCombined};
+            
             //blind onZ categories
-            col.blindData("onZ_1bJet23Jets"); 
-            col.blindData("onZ_1bJet4Jets"); 
-            col.blindData("onZ_2bJets"); 
-            col.blindData("onZ_nJetsInclusive"); 
-            col.blindData("mllInclusive_1bJet23Jets");
-            col.blindData("mllInclusive_1bJet4Jets");
-            col.blindData("mllInclusive_2bJets");
-            col.blindData("mllInclusive_nJetsInclusive"); 
+            for(auto colPtr : colPointers){
+                colPtr->blindData("onZ_1bJet23Jets"); 
+                colPtr->blindData("onZ_1bJet4Jets"); 
+                colPtr->blindData("onZ_2bJets"); 
+                colPtr->blindData("onZ_nJetsInclusive"); 
+                colPtr->blindData("mllInclusive_1bJet23Jets");
+                colPtr->blindData("mllInclusive_1bJet4Jets");
+                colPtr->blindData("mllInclusive_2bJets");
+                colPtr->blindData("mllInclusive_nJetsInclusive"); 
+            }
 
             //rebin CR categories
             std::vector<std::string> notToRebin = {"nJets", "nBJets_DeepCSV", "nBJets_CSVv2", "bdtG", "bdtG_10bins", "bdtG_1000Trees", "bdtG_1000Trees_10bins"}; //distributions not  to rebin
@@ -818,11 +834,13 @@ void treeReader::splitPlots(){
 int main(int argc, char* argv[]){
     treeReader reader;
     reader.setup();
+
     //convert all input to std::string format for easier handling
     std::vector<std::string> argvStr;
     for(int i = 0; i < argc; ++i){
         argvStr.push_back(std::string(argv[i]));
     }
+
     //no arguments given: full workflow of program
     if(argc == 1){
         std::cout << "Step 1: Distributing jobs on T2 grid" << std::endl;
@@ -836,28 +854,34 @@ int main(int argc, char* argv[]){
         reader.splitPlots();
         std::cout << "Program closing, plots will be dumped in specified directory soon" << std::endl;
     }
+
     //single argument "run" given will do all computations and write output histograms to file
     else if(argc == 2 && argvStr[1] == "run"){
         reader.splitJobs();
     }
+
     //single argument "plot" given will submit all jobs for plotting from existing output files
     else if(argc == 2 && argvStr[1] == "plot"){
         reader.splitPlots();
     }
+
     //arguments "plot" and distribution name given plots just this particular distribution
     else if(argc == 3 && argvStr[1] == "plot"){
         reader.plot(argvStr[2]);
     }
+
     //submit single histogram computation job
     else if(argc == 4){
         long unsigned begin = std::stoul(argvStr[2]);
         long unsigned end = std::stoul(argvStr[3]);
+
         //sample, first entry, last entry:
         reader.Analyze(argvStr[1], begin, end);
     }
+
     //invalid input given
     else{
         std::cerr << "Invalid input given to program: terminating!" << std::endl;
     }
     return 0;
-}
+}   
