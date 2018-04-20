@@ -164,8 +164,8 @@ std::shared_ptr<TH1D> HistCollectionDist::getObsHist(const size_t categoryIndex)
     for(const auto& baseCollection : collection){
         if( baseCollection.isData() ){
 
-            //check whether there was not already a data histogram (keep looping for safety-check)
-            if( obs.use_count() != 0) std::cerr << "Error: multiple data histograms present in collection, not clear how to make plot" << std::endl;
+            //check whether there aren't more than 2 data histograms: 2016 and 2017 data, or either (keep looping for safety-check)
+            if( obs.use_count() > 1) std::cerr << "Error: multiple data histograms present in collection, not clear how to make plot" << std::endl;
             obs = baseCollection.access(categoryIndex);
         }
     }
@@ -191,7 +191,7 @@ Plot HistCollectionDist::getPlot(const size_t categoryIndex){
 }
 
 //extract the correct plot header for each category
-std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const bool is2016) const{
+std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const unsigned era) const{
 
     //final return value
     std::string header;
@@ -204,27 +204,40 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const boo
     else if(category.find("_em_") != std::string::npos) header += "e#mu : ";
     else if(category.find("_ee_") != std::string::npos) header += "ee : ";
 
-    //check for particular Run era
-    std::string year;
-    if(is2016){
-        year = "2016";
-    } else {
-        year = "2017";
+    //check what era the plot corresponds to (2016, 2017 or combination)
+    bool is2016 = (era == 0);
+    bool is2017 = (era == 1);
+    bool isCombined = (era ==2);
+    if(era > 2){
+        std::cerr << "Error : era > 2 given in plot request, this can not be interpreted, assuming combined plot (era 2)." << std::endl;
+        isCombined = true;
     }
-    if(category.find("RunB") != std::string::npos) header += year + " Run B";
-    else if(category.find("RunC") != std::string::npos) header += year + " Run C";
-    else if(category.find("RunD") != std::string::npos) header += year + " Run D";
-    else if(category.find("RunE") != std::string::npos) header += year + " Run E";
-    else if(category.find("RunF") != std::string::npos) header += year + " Run F";
-    else if(category.find("RunG") != std::string::npos) header += year + " Run G";
-    else if(category.find("RunH") != std::string::npos) header += year + " Run H";
+
+    //check for particular Run era
+    if(!isCombined){
+        std::string year;
+        if(is2016){
+            year = "2016";
+        } else {
+            year = "2017";
+        }
+        if(category.find("RunB") != std::string::npos) header += year + " Run B";
+        else if(category.find("RunC") != std::string::npos) header += year + " Run C";
+        else if(category.find("RunD") != std::string::npos) header += year + " Run D";
+        else if(category.find("RunE") != std::string::npos) header += year + " Run E";
+        else if(category.find("RunF") != std::string::npos) header += year + " Run F";
+        else if(category.find("RunG") != std::string::npos) header += year + " Run G";
+        else if(category.find("RunH") != std::string::npos) header += year + " Run H";
+    }
 
     //default case just displays the luminosity
     else{
         if(is2016){
             header += "35.9 fb^{-1}";
-        } else{
+        } else if(is2017){
             header += "41.4 fb^{-1}";
+        } else {
+            header += "77.3 fb^{-1}";
         }
     }
     header += " (13 TeV)";
@@ -232,13 +245,13 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const boo
 }
 
 
-void HistCollectionDist::printPlots(const std::string& outputDirectory, const bool is2016, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool sigNorm, const bool drawSMSignalShape){
+void HistCollectionDist::printPlots(const std::string& outputDirectory, const unsigned era, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool sigNorm, const bool drawSMSignalShape){
 
     //loop over all categories and output a plot for each one
     for(size_t c = 0; c < categorySize(); ++c){
 
         //print plot
-        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c, is2016), bkgSyst, sigNorm, drawSMSignalShape);
+        getPlot(c).draw(outputDirectory, analysis, log, normToData, plotHeader(c, era), bkgSyst, sigNorm, drawSMSignalShape);
     }           
 }
 

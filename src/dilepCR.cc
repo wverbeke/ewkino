@@ -356,8 +356,8 @@ void treeReader::plot(const std::string& distName){
                 col2017.rebin("same-sign", 5);
             }
 
-            bool is2016 = true;
-            bool is2017 = false;
+            unsigned is2016 = 0;
+            unsigned is2017 = 1;
 
             //print plots for collection
             col2016.printPlots("plots/ewkino/dilepCR/2016", is2016, "ewkinoDilep", true, true);     //log
