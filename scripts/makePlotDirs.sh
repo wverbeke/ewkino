@@ -38,7 +38,7 @@ cd ..
 
 #set up tZq plots 
 cd tZq 
-for dir1 in 2016 2017; do
+for dir1 in 2016 2017 combined; do
     for dir2 in mllInclusive onZ offZ noOSSF; do
         for dir3 in nJetsInclusive 0bJets01Jets 0bJets2Jets 1bJet01jets 1bJet23Jets 1bJet4Jets 2bJets; do
             for dir4 in flavorInclusive eee eem emm mmm; do

@@ -304,8 +304,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         }
 
         //apply triggers and MET filters
-        if( !passTriggerCocktail() ) return false;
-        if( !passMETFilters() ) return false;
+        if( !passTriggerCocktail() ) continue;
+        if( !passMETFilters() ) continue;
 
         //vector containing good lepton indices
         std::vector<unsigned> ind;
@@ -806,16 +806,20 @@ void treeReader::plot(const std::string& distName){
             //rebin CR categories
             std::vector<std::string> notToRebin = {"nJets", "nBJets_DeepCSV", "nBJets_CSVv2", "bdtG", "bdtG_10bins", "bdtG_1000Trees", "bdtG_1000Trees_10bins"}; //distributions not  to rebin
             if(std::find(notToRebin.cbegin(), notToRebin.cend(), distName) == notToRebin.cend()){
-                col.rebin("offZ", 3);
-                col.rebin("noOSSF", 3);
+                for(auto colPtr : colPointers){
+                    colPtr->rebin("offZ", 3);
+                    colPtr->rebin("noOSSF", 3);
+                }
             }
 
             //print plots for collection
-            bool is2016 = true;
-            col.printPlots("plots/tZq/2016", is2016, "tzq", false); //no signal shape, linear
-            col.printPlots("plots/tZq/2016", is2016, "tzq", true); //no signal shape, log
-            col.printPlots("plots/tZq/2016", is2016, "tzq", false, false, nullptr, true, true); //with signal shape, linear
-            col.printPlots("plots/tZq/2016", is2016, "tzq", true, false, nullptr, true, true); //with signal shape, log
+            std::vector< std::pair < std::string, unsigned > > era = { {"2016", 0}, {"2017", 1}, {"combined", 2} };
+            for(unsigned c = 0; c < 3; ++c){
+                colPointers[c]->printPlots("plots/tZq/" + era[c].first, era[c].second, "tzq", false); //no signal shape, linear
+                colPointers[c]->printPlots("plots/tZq/" + era[c].first, era[c].second, "tzq", true); //no signal shape, log
+                colPointers[c]->printPlots("plots/tZq/" + era[c].first, era[c].second, "tzq", false, false, nullptr, true, true); //with signal shape, linear
+                colPointers[c]->printPlots("plots/tZq/" + era[c].first, era[c].second, "tzq", true, false, nullptr, true, true); //with signal shape, log
+            }
         }
     }
 }
