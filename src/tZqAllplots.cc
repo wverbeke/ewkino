@@ -831,7 +831,7 @@ void treeReader::splitPlots(){
         tools::initScript(script);
         script << "./tZqAllPlots plot " << h.name();
         script.close();
-        tools::submitScript("printPlots.sh", "00:15:00");
+        tools::submitScript("printPlots.sh", "00:25:00");
     }
 }
 
