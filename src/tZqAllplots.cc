@@ -387,7 +387,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         //apply event weight
         if(!samp.isData() ){
-            weight*=sfWeight();
+            //weight*=sfWeight();
             //std::cout << "sfWeight() = " << sfWeight() << std::endl;
         }
 
