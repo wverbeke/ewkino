@@ -164,9 +164,16 @@ std::shared_ptr<TH1D> HistCollectionDist::getObsHist(const size_t categoryIndex)
     for(const auto& baseCollection : collection){
         if( baseCollection.isData() ){
 
+            if( obs.use_count() == 0){
+                obs = baseCollection.access(categoryIndex);
+            } else if(obs.use_count() == 1){
+                obs->Add(baseCollection.access(categoryIndex).get());
+
             //check whether there aren't more than 2 data histograms: 2016 and 2017 data, or either (keep looping for safety-check)
-            if( obs.use_count() > 1) std::cerr << "Error: multiple data histograms present in collection, not clear how to make plot" << std::endl;
-            obs = baseCollection.access(categoryIndex);
+            } else {
+                std::cerr << "Error: multiple data histograms present in collection, not clear how to make plot" << std::endl;
+            }
+
         }
     }
     return obs;
@@ -255,8 +262,29 @@ void HistCollectionDist::printPlots(const std::string& outputDirectory, const un
     }           
 }
 
+unsigned HistCollectionDist::numberOfDataCollections() const{
+    unsigned numDataCol = 0;
+    for(auto& collection : collection){
+        if(collection.isData()){
+            ++numDataCol;
+        }
+    }
+    
+    //check whether the number of data collections is reasonable
+    if( numDataCol == 0){
+        std::cerr << "Error: no collection corresponding to data found in HistCollectionDist object." << std::endl;
+    } else if(numDataCol > 2){
+        std::cerr << "Error: more than 2 collections corresponding to data found in HistCollectionDist object." << std::endl;
+    }
+    
+    return numDataCol;
+}
+
 //routine that sets data equal to the total background, thus blinding the data
 void HistCollectionDist::blindData(const size_t categoryIndex){
+
+    //find the number of data histograms, this determines whether they have to be scaled down before the summation over backgrounds 
+    double scale = 1./( numberOfDataCollections() ); 
 
     //find the HistCollectionBase objects corresponding to data
     for(auto& dataCollection: collection){
@@ -289,6 +317,9 @@ void HistCollectionDist::blindData(const size_t categoryIndex){
             }
             dataCollection.access(categoryIndex)->Add(bkgCollection.access(categoryIndex, false).get());
         }
+
+        //apply scaling to make sure the case of 2 data collections is handled correctly
+        dataCollection.access(categoryIndex)->Scale(scale);
     }
 
     //add this category to the list of categories that were blinded
