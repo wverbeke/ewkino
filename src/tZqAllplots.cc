@@ -224,7 +224,7 @@ void treeReader::setup(){
 }
 
 void treeReader::Analyze(const std::string& sampName, const long unsigned begin, const long unsigned end){
-    auto samIt = std::find_if(samples.cbegin(), samples.cend(), [sampName](const Sample& s) { return s.getFileName() == sampName; } );
+    auto samIt = std::find_if(samples.cbegin(), samples.cend(), [sampName](const Sample& s) { return s.getUniqueName() == sampName; } );
     Analyze(*samIt, begin, end);
 }
 
@@ -765,7 +765,7 @@ void treeReader::splitJobs(){
             //make temporary job script 
             std::ofstream script("runTuples.sh");
             tools::initScript(script);
-            script << "./tZqAllPlots " << currentSample.getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
+            script << "./tZqAllPlots " << currentSample.getUniqueName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
 
             //submit job
