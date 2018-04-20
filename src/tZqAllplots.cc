@@ -290,6 +290,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     //loop over all sample
     initSample(samp);          //Use 2016 lumi
     for(long unsigned it = begin; it < end; ++it){
+
         //print progress bar	
         GetEntry(samp, it);
 
@@ -301,8 +302,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
 
+        //apply triggers and MET filters
+        if( !passTriggerCocktail() ) return false;
+        if( !passMETFilters() ) return false;
+
         //vector containing good lepton indices
         std::vector<unsigned> ind;
+
         //select leptons
         const unsigned lCount = selectLep(ind);
         if(lCount != 3) continue;
@@ -354,16 +360,19 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //veto events with mll below 30 GeV in agreement with the tZq sample
         if(isOSSF && ( mll < 30) ) continue;
 
-        unsigned mllCat = 99;
         //determine mll/flavor category 
+        unsigned mllCat = 99;
         if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) == 0){
             if( fabs(mll - 91.1876) < 15){
+
                 //onZ
                 mllCat = 0;
             } else{
+
                 //offZ
                 mllCat = 1;
             }
+
         //no OSSF pair present
         } else{
             mllCat = 2;
@@ -401,8 +410,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //make met vector 
         TLorentzVector met;
         met.SetPtEtaPhiE(_met, 0, _metPhi, _met);
-        //reconstruct top mass and tag jets
 
+        //reconstruct top mass and tag jets
         std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
         TLorentzVector neutrino = tzq::findBestNeutrinoAndTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
 
@@ -456,6 +465,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         } else if(jetCount > 1){
             leadingBJet = jetV[jetInd[1]];
         }
+
         //compute top vector
         TLorentzVector topV = (neutrino + lepV[lw] + taggedBJet);
 
@@ -708,12 +718,14 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         };
 
         for(unsigned m = 0; m < nMll; ++m){
+
             //m = 0 is onZ + offZ
             if( (m == 0 && mllCat != 2) || m == (mllCat + 1) ){
                 for(unsigned cat = 0; cat < nCat; ++cat){
                     if(cat == 0 || cat == (tzqCat + 1) ){
                         for(unsigned flavor = 0; flavor < nFlavorComb; ++flavor){
                             if(flavor == 0 || (flavor == leptonFlavorComb + 1) ){
+
                                 //Fill training tree
                                 if(samp.getProcessName() != "DY" ) trainingTree.fill({m, cat, flavor}, bdtVariableMap); //fluctuations on DY sample too big for training
                                 for(unsigned dist = 0; dist < nDist; ++dist){
