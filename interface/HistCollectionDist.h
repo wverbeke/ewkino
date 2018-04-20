@@ -93,5 +93,8 @@ class HistCollectionDist{
         //keep track of blinded categories for legend names in plots    
         std::set<size_t> blindedCategories;
         bool categoryIsBlinded(const size_t categoryIndex) const;
+
+        //find the number of separate data collections
+        unsigned numberOfDataCollections() const; //should return either 1 or 2! (2016 or 2017 data separately, or a combination) 
 };
 #endif
