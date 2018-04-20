@@ -68,7 +68,10 @@ void HistCollectionDist::negBinsToZero() const{
 }
 
 void HistCollectionDist::mergeProcesses(){
-
+    //make sure to only megre once for efficiency
+    if( merged ){
+        return;
+    }
     //set negative bins to 0 before merging
     negBinsToZero();
 
@@ -99,6 +102,9 @@ void HistCollectionDist::mergeProcesses(){
 
     //set old collection equal to new collection
     collection = mergedCollection; 
+
+    //flag collection as merged
+    merged = true;
 }
 
 std::string HistCollectionDist::name(const size_t categoryIndex) const{
@@ -183,10 +189,7 @@ std::shared_ptr<TH1D> HistCollectionDist::getObsHist(const size_t categoryIndex)
 Plot HistCollectionDist::getPlot(const size_t categoryIndex){
 
     //merge processes if this did not already happen
-    if(!merged){
-        mergeProcesses();
-        merged = true;
-    }
+    mergeProcesses();
 
     //return plot object
     return Plot(
@@ -282,6 +285,9 @@ unsigned HistCollectionDist::numberOfDataCollections() const{
 
 //routine that sets data equal to the total background, thus blinding the data
 void HistCollectionDist::blindData(const size_t categoryIndex){
+
+    //merge processes if this did not already happen
+    mergeProcesses();
 
     //find the number of data histograms, this determines whether they have to be scaled down before the summation over backgrounds 
     double scale = 1./( numberOfDataCollections() ); 
