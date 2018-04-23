@@ -767,6 +767,9 @@ void treeReader::splitJobs(){
     //clear previous histograms
     tools::system("rm tempHists_tZq/*");
 
+    //clear previous training trees 
+    tools::system("rm trainingTrees*/*");
+
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample();
 
@@ -846,6 +849,21 @@ void treeReader::splitPlots(){
         script.close();
         tools::submitScript("printPlots.sh", "00:25:00");
     }
+
+    //merge training files and clean up
+    //
+    //2016
+    tools::system("cd trainingTrees_tZq2016");
+    tools::system("hadd trainingTree.root *root*");
+    tools::system("rm *Summer16*root*");
+
+    //2017
+    tools::system("cd ../trainingTrees_tZq2017");
+    tools::system("hadd trainingTree.root *root*");
+    tools::system("rm *Summer17*root*");
+
+    //switch back to original directory
+    tools::system("cd ..");
 }
 
 int main(int argc, char* argv[]){
