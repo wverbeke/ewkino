@@ -3,7 +3,7 @@
 TrainingTree::TrainingTree(const std::string& fileName, const std::shared_ptr< Sample >& sam, const std::shared_ptr< Category >& cat, const std::map < std::string, float >& varMap, const bool isSignal):
     sample(sam), category(cat), variableMap(varMap)
 {
-    treeFile = TFile::Open( (const TString&) fileName + sam->getFileName() + ".root","RECREATE");
+    treeFile = TFile::Open( (const TString&) fileName + sam->getUniqueName() + ".root","RECREATE");
     setBranches(isSignal); 
 }
 
