@@ -1,12 +1,12 @@
 #!/bin/bash
 
-CMSSW="CMSSW_9_4_4"
+CMSSW="CMSSW_9_4_6_patch1"
 
 #set up a CMSSW environment if there is none
 if [ ! -d /user/${USER}/${CMSSW} ]; then
     cd ~
-    cmsrel CMSSW_9_4_4
-    cd CMSSW_9_4_4/src
+    cmsrel $CMSSW
+    cd ${CMSSW}/src
     cmsenv
 fi
 
