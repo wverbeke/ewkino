@@ -25,8 +25,8 @@ bool treeReader::eleIsCleanBase(const unsigned electronIndex, bool (treeReader::
     return true;
 }
 
-double closestJetDeepCsv(const unsigned leptonIndex){
-    double closesetJetDeepCsvVal = _closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex];
+double treeReader::closestJetDeepCsv(const unsigned leptonIndex) const{
+    double closestJetDeepCsvVal = _closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex];
     bool isNan = std::isnan(closestJetDeepCsvVal);
     return isNan ? 0. : closestJetDeepCsvVal;
 }
