@@ -860,7 +860,7 @@ void treeReader::splitPlots(){
     //2017
     tools::system("cd ../trainingTrees_tZq2017");
     tools::system("hadd trainingTree.root *root*");
-    tools::system("rm *Summer17*root*");
+    tools::system("rm *Fall17*root* *2017*root*");
 
     //switch back to original directory
     tools::system("cd ..");
