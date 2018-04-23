@@ -288,6 +288,11 @@ class treeReader {
         unsigned nJets_TOP16_020(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;
         unsigned nBJets_TOP16_020(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = false, const bool clean = true, const unsigned wp = 0) const;
 
+        //functions for TTH lepton selection 
+        bool lepIsLooseTTH(const unsigned) const;
+        bool lepIsGoodTTH(const unsigned) const;
+        bool lepIsTightTTH(const unsigned) const;
+
         //overlap removal between samples
         bool photonOverlap() const;                                                                          //sample overlap due to photons
         bool photonOverlap(const Sample&) const;
