@@ -353,6 +353,10 @@ class treeReader {
         bool lepIsLoose2016(const unsigned) const;
         bool lepIsLoose2017(const unsigned) const;
 
+        bool passLeptonMva2016(const unsigned, const double) const;
+        bool passLeptonMva2017(const unsigned, const double) const;
+        bool passLeptonMva(const unsigned, const double mvaCut = 0.8) const;
+
         bool lepIsGoodBase(const unsigned) const;
         bool lepIsGood2016(const unsigned) const;
         bool lepIsGood2017(const unsigned) const;

@@ -25,8 +25,8 @@ bool treeReader::eleIsCleanBase(const unsigned electronIndex, bool (treeReader::
     return true;
 }
 
-double closestJetDeepCsv(const unsigned leptonIndex){
-    double closesetJetDeepCsvVal = _closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex];
+double treeReader::closestJetDeepCsv(const unsigned leptonIndex) const{
+    double closestJetDeepCsvVal = _closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex];
     bool isNan = std::isnan(closestJetDeepCsvVal);
     return isNan ? 0. : closestJetDeepCsvVal;
 }
@@ -81,37 +81,45 @@ bool treeReader::lepIsLoose(const unsigned leptonIndex) const{
     }
 }
 
+bool treeReader::passLeptonMva2016(const unsigned leptonIndex, const double mvaCut) const{
+    return (_leptonMvatZqTTV16[leptonIndex] > mvaCut);
+}
+
+bool treeReader::passLeptonMva2017(const unsigned leptonIndex, const double mvaCut) const{
+    return (_leptonMvatZqTTV17[leptonIndex] > mvaCut);
+}
+
+bool treeReader::passLeptonMva(const unsigned leptonIndex, const double mvaCut) const{
+    if( is2016() ){
+        return passLeptonMva2016(leptonIndex, mvaCut);
+    } else {
+        return passLeptonMva2017(leptonIndex, mvaCut);
+    }
+}
+
 bool treeReader::lepIsGoodBase(const unsigned leptonIndex) const{
-    //TO-DO make this selection era-specifid
     if(!lepIsLoose(leptonIndex)) return false;
     //keep this threshold at 15 GeV or lower?
     if(_lPt[leptonIndex] <= 10) return false;
     //put any general cut on the closest jet csv?
     //if(_closestJetCsvV2[leptonIndex] >= 0.8484) return false;
-    if(_lFlavor[leptonIndex] == 0){
+    if( passLeptonMva(leptonIndex, 0.8) ){
+        if(_ptRatio[leptonIndex] <= 0.5) return false;
+        if( closestJetDeepCsv(leptonIndex) >= 0.25) return false;
+        if(_lFlavor[leptonIndex] == 1 && _lMuonSegComp[leptonIndex] <= 0.3) return false;
+        //TO-DO FO cuts on electron MVA to be added after they are tuned
+    }
+    if( isElectron(leptonIndex) ){
         if(!_lElectronPassEmu[leptonIndex]) return false;
     }
     return true;
 }
 
 bool treeReader::lepIsGood2016(const unsigned leptonIndex) const{
-    if(! lepIsGoodBase(leptonIndex) ) return false;
-    if(_leptonMvatZqTTV16[leptonIndex] <= 0.8){
-        if(_ptRatio[leptonIndex] <= 0.5) return false;
-        if(_closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex] >= 0.3) return false;
-        if(_lFlavor[leptonIndex] == 1 && _lMuonSegComp[leptonIndex] <= 0.3) return false;
-        if(_lFlavor[leptonIndex] == 0 && _lElectronMvaHZZ[leptonIndex] <= 0.0 + (fabs(_lEta[leptonIndex]) >= 1.479)*0.7) return false;
-    }
-    return true;
+    return lepIsGoodBase(leptonIndex);
 } 
 
 bool treeReader::lepIsGood2017(const unsigned leptonIndex) const{
-    if(_leptonMvaTTH16[leptonIndex] <= 0.9){
-        if(_ptRatio[leptonIndex] <= 0.5) return false;
-        if(_closestJetCsvV2[leptonIndex] >= 0.3) return false;
-        if(_lFlavor[leptonIndex] == 1 && _lMuonSegComp[leptonIndex] <= 0.3) return false;
-        if(_lFlavor[leptonIndex] == 0 && _lElectronMvaHZZ[leptonIndex] <= 0.0 + (fabs(_lEta[leptonIndex]) >= 1.479)*0.7) return false;
-    }
     return lepIsGoodBase(leptonIndex);
 }
 
@@ -124,13 +132,11 @@ bool treeReader::lepIsGood(const unsigned leptonIndex) const{
 }
 
 bool treeReader::lepIsTightBase(const unsigned leptonIndex) const{
-    //TO DO: make this era dependent
-    if(_lFlavor[leptonIndex] == 2) return false;
     if(!lepIsGood(leptonIndex) ) return false;
-    else if(_lFlavor[leptonIndex] == 1){
+    if( isMuon(leptonIndex) ){
         if(!_lPOGMedium[leptonIndex]) return false;
     }
-    return _leptonMvaTTH16[leptonIndex] > 0.9;
+    return passLeptonMva(leptonIndex, 0.8); 
 }
 
 bool treeReader::lepIsTight2016(const unsigned leptonIndex) const{
