@@ -225,6 +225,10 @@ void treeReader::setup(){
 
 void treeReader::Analyze(const std::string& sampName, const long unsigned begin, const long unsigned end){
     auto samIt = std::find_if(samples.cbegin(), samples.cend(), [sampName](const Sample& s) { return s.getUniqueName() == sampName; } );
+    if(samIt == samples.cend()){
+        std::cerr << "Error : Given sample name not found in list of samples!" << std::endl;
+        return; 
+    }
     Analyze(*samIt, begin, end);
 }
 
