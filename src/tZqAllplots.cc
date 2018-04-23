@@ -233,15 +233,18 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 }
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
+    //start by initializing sample
+    initSample(samp);
 
     auto start = std::chrono::high_resolution_clock::now();
 
     //categorization
-    Category categorization({ {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"}, 
+    Category fullCategorization({ {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"}, 
         {"flavorInclusive", "eee", "eem", "emm", "mmm"} });
+    Category categorizationNoFlavors({ {"mllInclusive", "onZ", "offZ", "noOSSF"}, {"nJetsInclusive", "0bJets01Jets", "0bJets2Jets", "1bJet01jets", "1bJet23Jets", "1bJet4Jets", "2bJets"}}); 
 
     //set up histogram collection for particular sample
-    HistCollectionSample histCollection(histInfo, samp, categorization);
+    HistCollectionSample histCollection(histInfo, samp, fullCategorization);
 
     //store relevant info from histCollection
     const unsigned nDist = histInfo.size();                              //number of distributions to plot
@@ -296,10 +299,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     } else {
         treeOutputDirectory = "trainingTrees_tZq2017";
     }
-    TrainingTree trainingTree(treeOutputDirectory + "/" + std::to_string(begin) + "_" + std::to_string(end) ,samp, categorization, bdtVariableMap, samp.isSMSignal() ); 
+    TrainingTree trainingTree(treeOutputDirectory + "/" + std::to_string(begin) + "_" + std::to_string(end) ,samp, categorizationNoFlavors, bdtVariableMap, samp.isSMSignal() ); 
 
     //loop over all sample
-    initSample(samp);          //Use 2016 lumi
     for(long unsigned it = begin; it < end; ++it){
 
         //print progress bar	
@@ -734,11 +736,12 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             if( (m == 0 && mllCat != 2) || m == (mllCat + 1) ){
                 for(unsigned cat = 0; cat < nCat; ++cat){
                     if(cat == 0 || cat == (tzqCat + 1) ){
+                        //fill training tree
+                        //note that training tree is not categorized by lepton flavor
+                        if(samp.getProcessName() != "DY" ) trainingTree.fill({m, cat}, bdtVariableMap); //fluctuations on DY sample too big for training
                         for(unsigned flavor = 0; flavor < nFlavorComb; ++flavor){
                             if(flavor == 0 || (flavor == leptonFlavorComb + 1) ){
 
-                                //Fill training tree
-                                if(samp.getProcessName() != "DY" ) trainingTree.fill({m, cat, flavor}, bdtVariableMap); //fluctuations on DY sample too big for training
                                 for(unsigned dist = 0; dist < nDist; ++dist){
                                     histCollection.access(dist, {m, cat, flavor})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
                                 }
