@@ -18,12 +18,12 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     bool is2016 = (year == "2016");
 
     //output file
-    TFile* outputFile = TFile::Open( (const TString&) "trainingOutput" + jetsCat + mllCat + "_" + year + ".root", "RECREATE" );
-    TMVA::Factory *factory = new TMVA::Factory("TMVAClassification" + jetsCat + mllCat + "_" + year, outputFile, "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
+    TFile* outputFile = TFile::Open( (const TString&) "trainingOutput" + jetsCat + "_" + mllCat + "_" + year + ".root", "RECREATE" );
+    //TMVA::Factory *factory = new TMVA::Factory("TMVAClassification" + jetsCat + "_" + mllCat + "_" + year, outputFile, "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
+    TMVA::Factory *factory = new TMVA::Factory("TMVAClassification" + jetsCat + "_" + mllCat + "_" + year, outputFile, "!V:!Silent:Color:DrawProgressBar:AnalysisType=Classification" );
 
     //names of categories for which to do the training
-    TMVA::DataLoader *dataloader = new TMVA::DataLoader("dataset" + jetsCat + mllCat);
-
+    TMVA::DataLoader *dataloader = new TMVA::DataLoader("dataset" + jetsCat + "_" + mllCat + "_" + year);
     dataloader->AddVariable("asymmetryWlep", 'F');
     if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("deltaRWLeptonTaggedbJet", 'F');
     dataloader->AddVariable("etaZ", 'F');
@@ -49,7 +49,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     //dataloader->AddVariable("pT3l", 'F');
     dataloader->AddVariable("mTW", 'F');
     dataloader->AddVariable("topMass", 'F');
-    
+
     //set correct weights for every event (depending on the process it comes from)
     dataloader->SetSignalWeightExpression("eventWeight");
     dataloader->SetBackgroundWeightExpression("eventWeight");
@@ -61,9 +61,10 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     } else {
         directory = "trainingTrees_tZq2017";
     } 
+    std::cout << "directory = " << directory << std::endl;
     TFile* inputFile =  TFile::Open( (const TString&) "../" + directory + "/trainingTree.root");
-    TTree* signalTree = (TTree*) (inputFile->Get( (const TString&) "signalTree" + jetsCat + mllCat));
-    TTree* backgroundTree = (TTree*) (inputFile->Get( (const TString&) "backgroundTree" + jetsCat + mllCat));
+    TTree* signalTree = (TTree*) (inputFile->Get( (const TString&) "signalTree" + mllCat + "_" + jetsCat));
+    TTree* backgroundTree = (TTree*) (inputFile->Get( (const TString&) "backgroundTree" + mllCat + "_" + jetsCat));
 
     dataloader->AddSignalTree(signalTree, 1.);
     dataloader->AddBackgroundTree(backgroundTree, 1.);
@@ -74,7 +75,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     dataloader->PrepareTrainingAndTestTree( mycuts, mycutb, "nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0:NormMode=None:SplitMode=Random:!V" );
 
     //specify BDT to train
-    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_m1Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1", "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.1:nCuts=-1:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1", "!H:!V:NTrees=1000:MinNodeSize=5%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
 
     //train MVAs using the set of training events
     factory->TrainAllMethods();
