@@ -9,7 +9,7 @@ for year in 2016 2017; do
             makeSubmit $script $PWD
             echo "./trainBDT $jetCat $mllCat $year" >> $script
             echo "for method in BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1; do" >> $script
-            echo "  mv dataset${jetCat}_${mllCat}_${year}/weights/TMVAClassification${jetCat}_${mllCat}_${year}_\${method}.weights.xml submitWeights/${jetCat}_${mllCat}_${year}_\${method}.weights.xml" >> $script
+            echo "  mv dataset${jetCat}_${mllCat}_${year}/weights/TMVAClassification${jetCat}_${mllCat}_${year}_\${method}.weights.xml bdtWeights/${jetCat}_${mllCat}_${year}_\${method}.weights.xml" >> $script
             echo "done">> $script
             #qsub $script -q highmem -lnodes=1:ppn=16 -l walltime=40:00:00
             #qsub $script -l walltime=40:00:00

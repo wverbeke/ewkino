@@ -289,6 +289,19 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"minmTlmet", 0.},
             {"missingEt", 0.},
             {"maxmTjmet", 0.},
+            {"lt", 0.},
+            {"deltaRWlepRecoilingJet",0.},
+            {"deltaRTaggedbJetRecoilingJet", 0.},
+            {"deltaRHighestDeepCsvJetMostForwardJet", 0.},
+            {"deltaRLeadingbJetRecoilingJet", 0.},
+            {"highestDeepCsv_b", 0.},
+            {"highestDeepCsv_bb", 0.},
+            {"etaLeadingJet", 0.},
+            {"pTLeadingJet", 0.},
+            {"maxMlj", 0.},
+            {"maxpTlj", 0.},
+            {"pTZ", 0.},
+            {"etaRecoilingJet", 0.},
             {"eventWeight", 0.}
         };
     
@@ -630,6 +643,20 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["minmTlmet"] = minmTLeptonMET;
         bdtVariableMap["missingEt"] = _met;
         bdtVariableMap["maxmTjmet"] = maxmTJetMET;
+        bdtVariableMap["lt"] = LT;
+        bdtVariableMap["deltaRWlepRecoilingJet"] = lepV[lw].DeltaR(recoilingJet);
+        bdtVariableMap["deltaRTaggedbJetRecoilingJet"] = taggedBJet.DeltaR(recoilingJet);
+        bdtVariableMap["deltaRHighestDeepCsvJetMostForwardJet"] = highestDeepCSVJet.DeltaR(highestEtaJet);
+        bdtVariableMap["deltaRLeadingbJetRecoilingJet"] = leadingBJet.DeltaR(recoilingJet);
+        bdtVariableMap["highestDeepCsv_b"] = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI];
+        bdtVariableMap["highestDeepCsv_bb"] = (jetCount == 0) ? 0. : _jetDeepCsv_bb[highestDeepCSVI];
+        bdtVariableMap["etaLeadingJet"] = fabs(leadingJet.Eta());
+        bdtVariableMap["pTLeadingJet"] = leadingJet.Pt();
+        bdtVariableMap["maxMlj"] = maxMLeptonJet;
+        bdtVariableMap["maxpTlj"] = maxpTLeptonJet;
+        bdtVariableMap["pTZ"] = (lepV[bestZ.first] + lepV[bestZ.second]).Pt(); 
+        bdtVariableMap["etaRecoilingJet"] = fabs(recoilingJet.Eta());
+
         bdtVariableMap["eventWeight"] = weight;
 
         double bdt = 0, bdt2 = 0;
@@ -825,6 +852,8 @@ void treeReader::plot(const std::string& distName){
                 for(auto colPtr : colPointers){
                     colPtr->rebin("offZ", 3);
                     colPtr->rebin("noOSSF", 3);
+                    colPtr->rebin("onZ_1bJet01jets", 3);
+                    colPtr->rebin("mllInclusive_1bJet01jets", 3);
                 }
             }
 
