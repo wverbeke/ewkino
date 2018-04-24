@@ -20,6 +20,10 @@ class BDTReader{
     public:
         BDTReader(const std::string&, const std::string&, const std::shared_ptr < std::map < std::string, float> >&); 
         BDTReader(const std::string&, const std::string&, const std::map < std::string, float>&); 
+
+        //give an additional vector specifying which variables from the map to use
+        BDTReader(const std::string&, const std::string&, const std::map < std::string, float>&, const std::vector<std::string>&);
+
         //get the BDT output for this category's BDT 
         float computeBDT(const std::map < std::string, float>& );
 
