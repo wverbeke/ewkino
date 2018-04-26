@@ -296,6 +296,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"missingEt", 0.},
             {"maxmTjmet", 0.},
             {"lt", 0.},
+            {"ltmet", 0.},
             {"deltaRWlepRecoilingJet",0.},
             {"deltaRTaggedbJetRecoilingJet", 0.},
             {"deltaRHighestDeepCsvJetMostForwardJet", 0.},
@@ -308,12 +309,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"maxpTlj", 0.},
             {"pTZ", 0.},
             {"etaRecoilingJet", 0.},
-
             {"maxDeltaPhill", 0.},
             {"maxMlj", 0.},
             {"pTMaxjj", 0.},
             {"pTMaxlj", 0.},
-            
             {"eventWeight", 0.}
         };
     /*
@@ -695,6 +694,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["missingEt"] = _met;
         bdtVariableMap["maxmTjmet"] = maxmTJetMET;
         bdtVariableMap["lt"] = LT;
+        bdtVariableMap["ltmet"] = LT + _met;
         bdtVariableMap["deltaRWlepRecoilingJet"] = lepV[lw].DeltaR(recoilingJet);
         bdtVariableMap["deltaRTaggedbJetRecoilingJet"] = taggedBJet.DeltaR(recoilingJet);
         bdtVariableMap["deltaRHighestDeepCsvJetMostForwardJet"] = highestDeepCSVJet.DeltaR(highestEtaJet);
