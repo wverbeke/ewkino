@@ -241,14 +241,12 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const uns
     }
 
     //default case just displays the luminosity
-    else{
-        if(is2016){
-            header += "35.9 fb^{-1}";
-        } else if(is2017){
-            header += "41.4 fb^{-1}";
-        } else {
-            header += "77.3 fb^{-1}";
-        }
+    if(is2016){
+        header += "35.9 fb^{-1}";
+    } else if(is2017){
+        header += "41.4 fb^{-1}";
+    } else {
+        header += "77.3 fb^{-1}";
     }
     header += " (13 TeV)";
     return header;
