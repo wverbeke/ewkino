@@ -173,6 +173,7 @@ void treeReader::setup(){
         HistInfo("etaTrailing", "|#eta| (trailing lepton)", 30, 0, 2.5),
         HistInfo("etaWLep",  "|#eta| (lepton from W)", 30, 0, 2.5),
         HistInfo("pT3l", "P_{T}^{3l} (GeV)", 30, 0, 300),
+        HistInfo("pT3lmet", "P_{T}^{3l + E_{T}^{miss}} (GeV)", 30, 0, 300),
         HistInfo("assymmetryLeading", "asymmetry (leading lepton)", 30, -2.5, 2.5),
         HistInfo("asymmetrySubleading", "asymmetry (subleading lepton)",30, -2.5, 2.5),
         HistInfo("asymmetryTrailing", "asymmetry (trailing lepton)",30, -2.5, 2.5),
@@ -307,6 +308,12 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"maxpTlj", 0.},
             {"pTZ", 0.},
             {"etaRecoilingJet", 0.},
+
+            {"maxDeltaPhill", 0.},
+            {"maxMlj", 0.},
+            {"pTMaxjj", 0.},
+            {"pTMaxlj", 0.},
+            
             {"eventWeight", 0.}
         };
     /*
@@ -700,6 +707,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["maxpTlj"] = maxpTLeptonJet;
         bdtVariableMap["pTZ"] = (lepV[bestZ.first] + lepV[bestZ.second]).Pt(); 
         bdtVariableMap["etaRecoilingJet"] = fabs(recoilingJet.Eta());
+        bdtVariableMap["maxDeltaPhill"] = maxDeltaPhiLeptonLepton;
+        bdtVariableMap["maxMlj"] = maxMLeptonJet;
+        bdtVariableMap["pTMaxjj"] =  maxpTJetJet;
+        bdtVariableMap["pTMaxlj"] = maxpTLeptonJet;
 
         bdtVariableMap["eventWeight"] = weight;
 
@@ -800,7 +811,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         fabs((lepV[bestZ.first] + lepV[bestZ.second]).Eta()),
 
         fabs(_lEta[mostForwardLepInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
-        (lepV[0] + lepV[1] + lepV[2]).Pt(), fabs(_lEta[ind[0]])*_lCharge[ind[0]], fabs(_lEta[ind[1]])*_lCharge[ind[1]], fabs(_lEta[ind[2]])*_lCharge[ind[2]], fabs(_lEta[ind[lw]])*_lCharge[ind[lw]],
+        (lepV[0] + lepV[1] + lepV[2]).Pt(), (lepV[0] + lepV[1] + lepV[2] + met).Pt(), 
+        fabs(_lEta[ind[0]])*_lCharge[ind[0]], fabs(_lEta[ind[1]])*_lCharge[ind[1]], fabs(_lEta[ind[2]])*_lCharge[ind[2]], fabs(_lEta[ind[lw]])*_lCharge[ind[lw]],
 
         deltaRWLepClosestJet, fabs(lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ) ), fabs(lepV[lw].DeltaPhi(taggedBJet)), lepV[lw].DeltaR(recoilingJet), lepV[lw].DeltaR(taggedBJet),
         topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ), topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
