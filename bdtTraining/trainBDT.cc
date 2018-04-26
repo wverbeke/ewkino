@@ -30,7 +30,10 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     if(jetsCat != "1bJet01jets" && jetsCat != "0bJets01Jets" && jetsCat != "1bJet4Jets" && jetsCat != "2bJets") dataloader->AddVariable("pTLeadingBJet", 'F');
     dataloader->AddVariable("pTMostForwardJet", 'F');
     dataloader->AddVariable("highestDeepCSV", 'F');
-    dataloader->AddVariable("etaMostForward", 'F');
+    //TEST PUT THIS BACK IN
+    //dataloader->AddVariable("etaMostForward", 'F');
+    ////////////////////////////
+    dataloader->AddVariable("etaRecoilingJet", 'F');
     dataloader->AddVariable("pTLeadingLepton", 'F');
     dataloader->AddVariable("m3l", 'F');
     //if(jetsCat != "0bJets_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("maxDeltaPhibmet", 'F');
@@ -77,7 +80,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     //specify BDT to train
     //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_3000trees_shrinkage0p1", "!H:!V:NTrees=3000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1", "!H:!V:NTrees=1000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
-    //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1_node0p05", "!H:!V:NTrees=1000:MinNodeSize=5%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
+    factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1_node0p05", "!H:!V:NTrees=1000:MinNodeSize=5%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
     //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1_node0p2", "!H:!V:NTrees=1000:MinNodeSize=20%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
     //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p5", "!H:!V:NTrees=1000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.5:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
     //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p5_node0p2", "!H:!V:NTrees=1000:MinNodeSize=20%:BoostType=Grad:Shrinkage=0.5:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
