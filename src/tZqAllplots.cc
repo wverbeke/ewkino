@@ -46,6 +46,8 @@ void treeReader::setup(){
     //info on kinematic distributions to plot
     //name      xlabel    nBins,  min, max
     histInfo = {
+
+
         //new BDT distribution
         HistInfo("bdtG", "BDT output", 30, -1, 1),
         HistInfo("bdtG_10bins", "BDT output", 10, -1, 1),
@@ -68,16 +70,16 @@ void treeReader::setup(){
         HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 30, 0, 5),
 
         HistInfo("jetEta_leading", "|#eta| (leading jet)", 30, 0, 5),
-        HistInfo("jetLeadPt", "P_{T} (leading jet) (GeV)", 30, 0, 300),
-        HistInfo("trailingJetPt", "P_{T} (trailing jet) (GeV)", 30, 0, 200), 
-        HistInfo("leadinBJetPt", "P_{T} (leading b-jet) (GeV)", 30, 0, 200),
-        HistInfo("trailingBJetPt", "P_{T} (trailing b-jet) (GeV)", 30, 0, 200),
-        HistInfo("jetHighestEtaPt", "P_{T} (most forward jet) (GeV)", 30, 0, 300),
+        HistInfo("jetLeadPt", "P_{T} (leading jet) (GeV)", 30, 25, 300),
+        HistInfo("trailingJetPt", "P_{T} (trailing jet) (GeV)", 30, 25, 200), 
+        HistInfo("leadinBJetPt", "P_{T} (leading b-jet) (GeV)", 30, 25, 300),
+        HistInfo("trailingBJetPt", "P_{T} (trailing b-jet) (GeV)", 30, 25, 200),
+        HistInfo("jetHighestEtaPt", "P_{T} (most forward jet) (GeV)", 30, 25, 300),
         HistInfo("mtop", "M_{(W + b)} (GeV)", 30, 0, 400),
         HistInfo("m3l", "M_{3l} (GeV)", 30, 0, 600),
-        HistInfo("taggedBJetPt", "P_{T} (b-jet from top) (GeV)", 30, 0, 300),
+        HistInfo("taggedBJetPt", "P_{T} (b-jet from top) (GeV)", 30, 25, 300),
         HistInfo("taggedBJetEta", "|#eta| (b-jet from top) (GeV)", 30, 0, 2.5),
-        HistInfo("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 0, 300), 
+        HistInfo("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 25, 300), 
         HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 5),
         /*
         HistInfo("m_highestEta_leadingB_W", "M_{(most forward jet + leading b-jet + W)} (GeV)", 30, 0, 1000),
@@ -120,7 +122,7 @@ void treeReader::setup(){
         HistInfo("highestDeepCSVb", "highest deepCSV (b)", 30, 0, 1), 
         HistInfo("highestDeepCSVbb", "highest deepCSV( bb)", 30, 0, 1), 
         HistInfo("highestCSVv2", "highest CSVv2", 30, 0, 1),
-        HistInfo("highestDeepCSVJetPt", "P_{T}(highest DeepCSV jet) (GeV)", 30, 0, 300),
+        HistInfo("highestDeepCSVJetPt", "P_{T}(highest DeepCSV jet) (GeV)", 30, 25, 300),
         HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 30, 0, 10),
         HistInfo("deltaRleadingBJet_highestEtaJet", "#DeltaR(leading b-jet, most forward jet)", 30, 0, 10),
         HistInfo("deltaRhighestDeepCSVJet_highestEtaJet", "#DeltaR(highest DeepCSV jet, most forward jet)", 30, 0, 10),
@@ -176,6 +178,7 @@ void treeReader::setup(){
         HistInfo("asymmetryTrailing", "asymmetry (trailing lepton)",30, -2.5, 2.5),
         HistInfo("asymmetryWLep", "asymmetry (lepton from W)",30, -2.5, 2.5),
         HistInfo("deltaRWLepClosestJet", "#DeltaR(lepton from W, closest jet)",30, 0, 7), 
+        HistInfo("deltaRWLeptonTaggedBJet", "#DeltaR(lepton from W, tagged b-jet", 30, 0, 7),
         HistInfo("deltaPhiWlepZ", "#DeltaR(lepton from W, Z)", 30, 0, 3.15),
         HistInfo("deltaPhiWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 30, 0, 3.15),
         HistInfo("deltaRWlepRecoilingJet", "#DeltaR(lepton from W, recoiling jet)", 30, 0, 7),
@@ -219,6 +222,7 @@ void treeReader::setup(){
         HistInfo("mtScalarSumAll", "#Sigma_{l + jet}M_{T}( l/jet + MET) (GeV)", 30, 0, 1600),
         HistInfo("metSignificance", "MET/#sigma(MET)", 30, 0, 120),
         HistInfo("LT", "L_{T} (GeV)", 30, 0, 800),
+        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 30, 0, 800),
         HistInfo("HTLep", "H_{T} + L_{T} (GeV)", 30, 0, 1300)
     };
 }
@@ -304,6 +308,39 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"etaRecoilingJet", 0.},
             {"eventWeight", 0.}
         };
+    /*
+ //names of categories for which to do the training
+    TMVA::DataLoader *dataloader = new TMVA::DataLoader("dataset" + jetsCat + "_" + mllCat + "_" + year);
+    dataloader->AddVariable("asymmetryWlep", 'F');
+    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("deltaRWLeptonTaggedbJet", 'F');
+    dataloader->AddVariable("etaZ", 'F');
+    if(jetsCat != "1bJet01jets" && jetsCat != "0bJets01Jets" && jetsCat != "1bJet4Jets" && jetsCat != "2bJets") dataloader->AddVariable("pTLeadingBJet", 'F');
+    dataloader->AddVariable("pTMostForwardJet", 'F');
+    dataloader->AddVariable("highestDeepCSV", 'F');
+    dataloader->AddVariable("etaMostForward", 'F');
+    dataloader->AddVariable("pTLeadingLepton", 'F');
+    dataloader->AddVariable("m3l", 'F');
+    //if(jetsCat != "0bJets_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("maxDeltaPhibmet", 'F');
+    if(jetsCat != "0bJets01Jets" && jetsCat != "1bJet01jets" && jetsCat != "1bJet4Jets" && jetsCat != "2bJets") dataloader->AddVariable("maxDeltaPhijj", 'F');
+    if(jetsCat != "1bJet01jets" && jetsCat != "0bJets01Jets") dataloader->AddVariable("maxMjj", 'F');
+    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("minDeltaPhibmet", 'F');
+    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("minDeltaPhilb", 'F');
+    if(jetsCat == "1bJet4Jets" || jetsCat == "2bJets") dataloader->AddVariable("minMlb", 'F');
+    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("maxMlb", 'F');
+    if(jetsCat == "1bJet4Jets" || jetsCat == "2bJets") dataloader->AddVariable("ht", 'F');
+    if(jetsCat == "1bJet4Jets" || jetsCat == "2bJets") dataloader->AddVariable("numberOfJets", 'F');
+    if(jetsCat == "2bJets") dataloader->AddVariable("numberOfBJets", 'F');
+    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("maxmTbmet", 'F');
+    //if(jetsCat != "0bJets_01Jets" && jetsCat != "1bJet_01jets") dataloader->AddVariable("maxDeltaRjj", 'F');
+    dataloader->AddVariable("pTmin2l", 'F');
+    //dataloader->AddVariable("pT3l", 'F');
+    dataloader->AddVariable("mTW", 'F');
+    dataloader->AddVariable("topMass", 'F');
+    */
+
+    //vectors specifying what variables to use to read the BDT of a specific category
+    //std::vector < std::string > 1bJet23JetsVars = {"asymmetryWlep", "deltaRWLeptonTaggedbJet", "etaZ", "pTLeadingBJet", "pTMostForwardJet", "highestDeepCSV", "etaMostForward", "pTLeadingLepton", "m3l", "maxDeltaPhijj", 
+                                                    
     
     //training tree writer
     std::string treeOutputDirectory;
@@ -460,10 +497,16 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         } 
 
         //find jets with highest DeepCSV and CSVv2 values
-        unsigned highestDeepCSVI = (jetCount == 0) ? 0 : jetInd[0], highestCSVv2I = (jetCount == 0) ? 0 : jetInd[0];
-        for(unsigned j = 1; j < jetCount; ++j){
-            if( (_jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]]) > (_jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI]) ) highestDeepCSVI = jetInd[j];
-            if( _jetCsvV2[jetInd[j]] > _jetCsvV2[highestCSVv2I] ) highestCSVv2I = jetInd[j];
+        //unsigned highestDeepCSVI = (jetCount == 0) ? 0 : jetInd[0], highestCSVv2I = (jetCount == 0) ? 0 : jetInd[0];
+        unsigned highestDeepCSVI = 99; //= (jetCount == 0) ? 0 : jetInd[0], highestCSVv2I = (jetCount == 0) ? 0 : jetInd[0];
+        unsigned highestCSVv2I = 99;
+        unsigned counter = 0;
+        for(unsigned j = 0; j < jetCount; ++j){
+            if(fabs(_jetEta[jetInd[j]]) < 2.4) {
+                if( (counter == 0) || ( (_jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]]) > (_jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI]) ) ) highestDeepCSVI = jetInd[j];
+                if( (counter == 0) || ( _jetCsvV2[jetInd[j]] > _jetCsvV2[highestCSVv2I] ) ) highestCSVv2I = jetInd[j];
+                ++counter;
+            }
         }
     
         //initialize new vectors to make sure everything is defined for 0 jet events!
@@ -609,7 +652,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
        
         double HTLep = HT + LT; 
         
-        bdtVariableMap["asymmetryWlep"] = _lEta[ind[lw]]*_lCharge[ind[lw]];
+        bdtVariableMap["asymmetryWlep"] = fabs(_lEta[ind[lw]])*_lCharge[ind[lw]];
         bdtVariableMap["topMass"] =  std::max(topV.M(), 0.);
         bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
         bdtVariableMap["mTW"] = kinematics::mt(lepV[lw], met);
@@ -665,6 +708,28 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             //bdt2 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method 1000 Trees");
         }
 
+        if(tzqCat == 3){
+            if(leadingBJet.Pt() != taggedBJet.Pt() ){
+                std::cout << "################################################" << std::endl;
+                std::cout << "bug: leading b-jet and tagged b-jet have different pT for 1 b-jet events" << std::endl;
+                std::cout << "leadingBJet.Pt() = " << leadingBJet.Pt() << std::endl;
+                std::cout << "taggedBJet.Pt() = " << taggedBJet.Pt() << std::endl;
+                std::cout << "jetCount = " << jetCount << std::endl;
+                std::cout << "bJetCount = " << bJetCount << std::endl;
+            } 
+            if(leadingBJet.Pt() != highestDeepCSVJet.Pt() ){
+                std::cout << "################################################" << std::endl;
+                std::cout << "bug : leading b-jet and highestDeepCSV jet have different pT for 1 b-jet events" << std::endl;
+                std::cout << "leadingBJet.Pt() = " << leadingBJet.Pt() << std::endl;
+                std::cout << "highestDeepCSVJet.Pt() = " << highestDeepCSVJet.Pt() << std::endl;
+                std::cout << "jetCount = " << jetCount << std::endl;
+                std::cout << "bJetCount = " << bJetCount << std::endl;
+                for(unsigned j = 0; j < jetCount; ++j){
+                    std::cout << "jet " << jetInd[j] << " : pT = " << _jetPt[jetInd[j]] << "\t csv = " << _jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]];
+                    std::cout << "\t eta = " << _jetEta[jetInd[j]] << std::endl;
+                }
+            }
+        }
 
 
         double fill[nDist] = {
@@ -736,8 +801,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         fabs(_lEta[mostForwardLepInd]), fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), fabs(_lEta[ind[2]]), fabs(lepV[lw].Eta()),
         (lepV[0] + lepV[1] + lepV[2]).Pt(), fabs(_lEta[ind[0]])*_lCharge[ind[0]], fabs(_lEta[ind[1]])*_lCharge[ind[1]], fabs(_lEta[ind[2]])*_lCharge[ind[2]], fabs(_lEta[ind[lw]])*_lCharge[ind[lw]],
 
-        deltaRWLepClosestJet, fabs(lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ) ), fabs(lepV[lw].DeltaPhi(taggedBJet)), lepV[lw].DeltaR(recoilingJet), topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ),
-        topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
+        deltaRWLepClosestJet, fabs(lepV[lw].DeltaPhi( (lepV[bestZ.first] + lepV[bestZ.second]) ) ), fabs(lepV[lw].DeltaPhi(taggedBJet)), lepV[lw].DeltaR(recoilingJet), lepV[lw].DeltaR(taggedBJet),
+        topV.DeltaR( (lepV[bestZ.first] + lepV[bestZ.second]) ), topV.Pt(), (topV + recoilingJet + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
 
         kinematics::mt(lepV[0] + lepV[1] + lepV[2], met), kinematics::mt(lepV[bestZ.first] + lepV[bestZ.second], met),
         minDeltaPhiLeptonMET, maxDeltaPhiLeptonMET, minDeltaPhiJetMET, maxDeltaPhiJetMET, minDeltaPhiBJetMET, maxDeltaPhiBJetMET,
@@ -754,6 +819,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         mtScalarSumAll,
         _metSignificance,
         LT,
+        LT + _met, 
         HTLep
         };
 
@@ -883,13 +949,13 @@ void treeReader::splitPlots(){
     //
     //2016
     tools::system("cd trainingTrees_tZq2016");
-    tools::system("hadd trainingTree.root *root*");
-    tools::system("rm *Summer16*root*");
+    tools::system("hadd trainingTrees_tZq2016/trainingTree.root trainingTrees_tZq2016/*root*");
+    tools::system("rm trainingTrees_tZq2016/*Summer16*root*");
 
     //2017
     tools::system("cd ../trainingTrees_tZq2017");
-    tools::system("hadd trainingTree.root *root*");
-    tools::system("rm *Fall17*root* *2017*root*");
+    tools::system("hadd trainingTrees_tZq2017/trainingTree.root trainingTrees_tZq2017/*root*");
+    tools::system("rm trainingTrees_tZq2017/*Fall17*root* trainingTrees_tZq2017/*2017*root*");
 
     //switch back to original directory
     tools::system("cd ..");
