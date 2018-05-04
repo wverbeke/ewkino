@@ -235,6 +235,7 @@ void treeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_tauIsoMVAPWoldDMwLT", _tauIsoMVAPWoldDMwLT, &b__tauIsoMVAPWoldDMwLT);
     fChain->SetBranchAddress("_relIso", _relIso, &b__relIso);
     fChain->SetBranchAddress("_relIso0p4", _relIso0p4, &b__relIso0p4);
+    fChain->SetBranchAddress("_relIso0p4MuDeltaBeta", _relIso0p4MuDeltaBeta, &b__relIso0p4MuDeltaBeta);
     fChain->SetBranchAddress("_miniIso", _miniIso, &b__miniIso);
     fChain->SetBranchAddress("_miniIsoCharged", _miniIsoCharged, &b__miniIsoCharged);
     fChain->SetBranchAddress("_ptRel", _ptRel, &b__ptRel);
@@ -439,6 +440,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_tauIsoMVAPWoldDMwLT",          &_tauIsoMVAPWoldDMwLT,          "_tauIsoMVAPWoldDMwLT[_nL]/D"); 
     outputTree->Branch("_relIso",                       &_relIso,                       "_relIso[_nLight]/D");
     outputTree->Branch("_relIso0p4",                    &_relIso0p4,                    "_relIso0p4[_nLight]/D");
+    outputTree->Branch("_relIso0p4MuDeltaBeta",         &_relIso0p4MuDeltaBeta,         "_relIso0p4MuDeltaBeta[_nMu]/D");
     outputTree->Branch("_miniIso",                      &_miniIso,                      "_miniIso[_nLight]/D");
     outputTree->Branch("_miniIsoCharged",               &_miniIsoCharged,               "_miniIsoCharged[_nLight]/D");
     outputTree->Branch("_ptRel",                        &_ptRel,                        "_ptRel[_nLight]/D");
