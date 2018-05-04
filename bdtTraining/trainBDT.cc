@@ -82,19 +82,37 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
 
 
     TMVA::DataLoader *dataloaderNewVars = new TMVA::DataLoader("dataset" + jetsCat + "_" + mllCat + "_" + year + "newVars");
-    dataloaderNewVars->AddVariable("etaRecoilingJet", 'F');
-    dataloaderNewVars->AddVariable("maxMjj", 'F');
-    dataloaderNewVars->AddVariable("asymmetryWlep", 'F');
-    dataloaderNewVars->AddVariable("highestDeepCSV", 'F');
-    dataloaderNewVars->AddVariable("ltmet", 'F');
-    dataloaderNewVars->AddVariable("maxDeltaPhijj", 'F');
-    dataloaderNewVars->AddVariable("mTW", 'F');
-    dataloaderNewVars->AddVariable("topMass", 'F');
-    dataloaderNewVars->AddVariable("pTMaxjj", 'F');
-    dataloaderNewVars->AddVariable("minDeltaPhilb", 'F');
-    dataloaderNewVars->AddVariable("maxDeltaPhill", 'F');
-    /*
+    //if(jetsCat == "1bJet23Jets"){
+        dataloaderNewVars->AddVariable("etaRecoilingJet", 'F');
+        dataloaderNewVars->AddVariable("maxMjj", 'F');
+        dataloaderNewVars->AddVariable("asymmetryWlep", 'F');
+        dataloaderNewVars->AddVariable("highestDeepCSV", 'F');
+        dataloaderNewVars->AddVariable("ltmet", 'F');
+        dataloaderNewVars->AddVariable("maxDeltaPhijj", 'F');
+        dataloaderNewVars->AddVariable("mTW", 'F');
+        dataloaderNewVars->AddVariable("topMass", 'F');
+        dataloaderNewVars->AddVariable("pTMaxjj", 'F');
+        dataloaderNewVars->AddVariable("minDeltaPhilb", 'F');
+        dataloaderNewVars->AddVariable("maxDeltaPhill", 'F');
+        /*
+    } else if(jetsCat == "1bJet4Jets"){
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+        dataloaderNewVars->AddVariable(
+    }
+    */
     ////////////////////////////////
+    /*
     dataloaderNewVars->AddVariable("pTLeadingBJet", 'F');
     dataloaderNewVars->AddVariable("maxMlb", 'F');
     dataloaderNewVars->AddVariable("pTMaxlb", 'F');
@@ -130,9 +148,11 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
     //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1_node0p2", "!H:!V:NTrees=1000:MinNodeSize=20%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
     //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p5", "!H:!V:NTrees=1000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.5:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
     //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p5_node0p2", "!H:!V:NTrees=1000:MinNodeSize=20%:BoostType=Grad:Shrinkage=0.5:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
-    factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth4", "!H:!V:NTrees=1000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
-    factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth3", "!H:!V:NTrees=1000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=3:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
-    factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth2", "!H:!V:NTrees=1000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
+    factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth4_1000trees", "!H:!V:NTrees=1000:MinNodeSize=5%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
+    /*
+    factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth3_600trees", "!H:!V:NTrees=600:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=3:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
+    factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth2_1000trees", "!H:!V:NTrees=1000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
+    */
     //factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth4", "!H:!V:NTrees=1000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.2:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
     //factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth3", "!H:!V:NTrees=2000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.2:nCuts=200:MaxDepth=3:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
     //factory->BookMethod( dataloaderNewVars, TMVA::Types::kBDT, "BDTG_newVars_Depth2", "!H:!V:NTrees=3000:MinNodeSize=10%:BoostType=Grad:Shrinkage=0.2:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
