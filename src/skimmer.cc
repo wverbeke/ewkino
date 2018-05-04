@@ -19,7 +19,7 @@
 #include "../interface/analysisTools.h"
 
 //temporary inlcude of TMVA
-#include "TMVA/Reader.h"
+//#include "TMVA/Reader.h"
 
 
 void treeReader::skimTree(const std::string& fileName, std::string outputDirectory, const bool isData){//std::string outputFileName){
@@ -52,13 +52,14 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     outputFileName.erase(it, outputFileName.size());
     outputFileName.append("_trilepSkim.root");
     std::cout << "output file : " << outputFileName << std::endl;
-    
+   
     std::shared_ptr<TFile> outputFile = std::make_shared<TFile>((const TString&) outputFileName ,"RECREATE");
     outputFile->mkdir("blackJackAndHookers");
     outputFile->cd("blackJackAndHookers"); 
     TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
     setOutputTree(outputTree, isData);
 
+    /*
     //TEMPORARY MVA READER: REMOVE THIS LATER
     float pt, eta, trackMultClosestJet, miniIsoCharged, miniIsoNeutral, ptRel, ptRatio, relIso, deepCsvClosestJet, sip3d, dxy, dz, electronMva, electronMvaFall17NoIso, segmentCompatibility;
     std::shared_ptr<TMVA::Reader> leptonMvaReader[2][2];
@@ -97,6 +98,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             }
         }
     }
+    */
     /////////////////////////////////////////
 
     double progress = 0; 	//For printing progress bar
@@ -115,7 +117,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         //Select both TOP-16-020 and FO leptons. Remove the former later.
         unsigned lCount = std::max(selectLep(ind), selectLep_TOP16_020(ind) );
         if(lCount < 3) continue;
-
+        /*
         for(unsigned l = 0; l < _nLight; ++l){
             pt = _lPt[l];
             eta = fabs(_lEta[l]);
@@ -140,6 +142,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             }
 
         }
+        */
 
         outputTree->Fill();
     }   
