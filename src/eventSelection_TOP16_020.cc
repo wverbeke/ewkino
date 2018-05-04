@@ -29,9 +29,7 @@ bool treeReader::lepIsVeto_TOP16_020(const unsigned l) const{
         return _lPOGVeto[l];
     } else if(_lFlavor[l] == 1){
         if(!_lPOGLoose[l]) return false;
-        //return _relIso0p4Mu[l] < 0.25;
-        //THIS IS WRONG: replace with deltaBeta corrected iso
-        return _relIso0p4[l] < 0.25;
+        return _relIso0p4MuDeltaBeta[l] < 0.25;
     }
     return false;
 }
@@ -41,9 +39,7 @@ bool treeReader::lepIsGood_TOP16_020(const unsigned l) const{
     if(_lPt[l] <= 25) return false;
     if(fabs(_lEta[l]) >= (2.5 - 0.1*_lFlavor[l]) ) return false;
     if(!_lPOGTight[l]) return false;
-    //if(_lFlavor[l] == 1 && _relIso0p4Mu[l] >= 0.15) return false;
-    //THIS IS WRONG: replace with deltaBeta corrected iso
-    if(_lFlavor[l] == 1 && _relIso0p4[l] >= 0.15) return false;
+    if(_lFlavor[l] == 1 && _relIso0p4MuDeltaBeta[l] >= 0.15) return false;
     return true;
 }
 
