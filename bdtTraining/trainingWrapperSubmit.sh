@@ -4,7 +4,8 @@ source ../scripts/setCMSSW.sh
 for year in 2016 2017; do
     #for jetCat in  0bJets01Jets 0bJets2Jets 1bJet01jets 1bJet23Jets 1bJet4Jets 2bJets; do
     for jetCat in  1bJet23Jets 1bJet4Jets 2bJets; do
-        for mllCat in onZ offZ; do
+        #for mllCat in onZ offZ; do
+        for mllCat in onZ; do
             script=mvaTraining_${jetCat}_${mllCat}_${year}.sh
             > $script
             makeSubmit $script $PWD
