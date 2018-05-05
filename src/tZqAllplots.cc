@@ -37,27 +37,21 @@
 #include "TMVA/Reader.h"
 
 void treeReader::setup(){
+
     //Set CMS plotting style
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
+
     //read samples and cross sections from txt file
     readSamples2016("sampleLists/samples2016.txt");
     readSamples2017("sampleLists/samples2017.txt");
+
     //info on kinematic distributions to plot
     //name      xlabel    nBins,  min, max
     histInfo = {
+        HistInfo("bdt", "BDT output", 30, -1, 1),
+        HistInfo("bdt", "BDT output", 10, -1, 1),
 
-
-        //new BDT distribution
-        HistInfo("bdtG", "BDT output", 30, -1, 1),
-        HistInfo("bdtG_10bins", "BDT output", 10, -1, 1),
-        HistInfo("bdtG_1000Trees", "BDT output", 30, -1, 1),
-        HistInfo("bdtG_1000Trees_10bins", "BDT output", 10, -1, 1),
-        /*
-        HistInfo("bdt", "BDT output", 30, -0.35, 0.35),
-        HistInfo("bdtG", "BDTG output", 30, -1, 1),
-        */
-        ////
         HistInfo("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
         HistInfo("mll", "M_{ll} (GeV)", 60, 12, 200),
         HistInfo("mt", "M_{T} (GeV)", 30, 0, 300),
@@ -81,43 +75,7 @@ void treeReader::setup(){
         HistInfo("taggedBJetEta", "|#eta| (b-jet from top) (GeV)", 30, 0, 2.5),
         HistInfo("taggedRecoilJetPt", "P_{T} (recoiling jet) (GeV)", 30, 25, 300), 
         HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 5),
-        /*
-        HistInfo("m_highestEta_leadingB_W", "M_{(most forward jet + leading b-jet + W)} (GeV)", 30, 0, 1000),
-        HistInfo("m_highestEta_leadingB_Wlep", "M_{(most forward jet + leading b-jet + lepton)} (GeV)", 30, 0, 1000),
-        HistInfo("m_highestEta_leadingB_WZ", "M_{(most forward jet + leading b-jet + WZ)} (GeV)", 30, 0, 1000),
-        HistInfo("m_highestEta_leadingB_WlepZ", "M_{(most forward jet + leading b-jet + lepton + Z)} (GeV)", 30, 0, 1000),
-        HistInfo("m_taggedRecoil_taggedB_W", "M_{(recoiling jet + tagged b-jet + W)} (GeV)", 30, 0, 1000),
-        HistInfo("m_taggedRecoil_taggedB_Wlep", "M_{(recoiling jet + tagged b-jet + lepton)} (GeV)", 30, 0, 1000),
-        HistInfo("m_taggedRecoil_taggedB_WZ", "M_{(recoiling jet + tagged b-jet + WZ)} (GeV)", 30, 0, 1000),
-        HistInfo("m_taggedRecoil_taggedB_WlepZ", "M_{(recoiling jet + tagged b-jet + lepton + Z)} (GeV)", 30, 0, 1000),
-        HistInfo("m_forwardJets_leadingB_W", "M_{(forward jets + leading b-jet + W)} (GeV)", 30, 0, 1000),
-        HistInfo("m_forwardJets_leadingB_Wlep", "M_{(forward jets + leading b-jet + lepton)} (GeV)", 30, 0, 1000),
-        HistInfo("m_forwardJets_leadingB_WZ", "M_{(forward jets + leading b-jet + WZ)} (GeV)", 30, 0, 1000),
-        HistInfo("m_forwardJets_leadingB_WlepZ", "M_{(forward jets + leading b-jet + lepton + Z)} (GeV)", 30, 0, 1000),
-        HistInfo("m_forwardJets", "M_{(|#eta| > 2.4 jets)} (GeV)", 30, 0, 600),
-        HistInfo("m_notSoForwardJets", "M_{(|#eta| > 0.8 jets)} (GeV)", 30, 0, 1000),
-        HistInfo("m_superForwardJets", "M_{(|#eta| > 3 jets)} (GeV)", 30, 0, 600),
 
-        HistInfo("pT_highestEta_leadingB_W", "P_{T}^{most forward jet + leading b-jet + W} (GeV)", 30, 0, 600),
-        HistInfo("pT_highestEta_leadingB_Wlep", "P_{T}^{most forward jet + leading b-jet + lepton} (GeV)", 30, 0, 600),
-        HistInfo("pT_highestEta_leadingB_WZ", "P_{T}^{most forward jet + leading b-jet + WZ} (GeV)", 30, 0, 600),
-        HistInfo("pT_highestEta_leadingB_WlepZ", "P_{T}^{most forward jet + leading b-jet + lepton + Z} (GeV)", 30, 0, 600),
-        HistInfo("pT_taggedRecoil_taggedB_W", "P_{T}^{recoiling jet + tagged b-jet + W} (GeV)", 30, 0, 600),
-        HistInfo("pT_taggedRecoil_taggedB_Wlep", "P_{T}^{recoiling jet + tagged b-jet + lepton} (GeV)", 30, 0, 600),
-        HistInfo("pT_taggedRecoil_taggedB_WZ", "P_{T}^{recoiling jet + tagged b-jet + WZ} (GeV)", 30, 0, 600),
-        HistInfo("pT_taggedRecoil_taggedB_WlepZ", "P_{T}^{recoiling jet + tagged b-jet + lepton + Z} (GeV)", 30, 0, 600),
-        HistInfo("pT_forwardJets_leadingB_W", "P_{T}^{forward jets + leading b-jet + W} (GeV)", 30, 0, 600),
-        HistInfo("pT_forwardJets_leadingB_Wlep", "P_{T}^{forward jets + leading b-jet + lepton} (GeV)", 30, 0, 600),
-        HistInfo("pT_forwardJets_leadingB_WZ", "P_{T}^{forward jets + leading b-jet + WZ} (GeV)", 30, 0, 600),
-        HistInfo("pT_forwardJets_leadingB_WlepZ", "P_{T}^{forward jets + leading b-jet + lepton + Z} (GeV)", 30, 0, 600),
-        HistInfo("pT_forwardJets", "P_{T}^{|#eta| > 2.4 jets} (GeV)", 30, 0, 600),
-        HistInfo("pT_notSoForwardJets", "P_{T}^{|#eta| > 0.8 jets} (GeV)", 30, 0, 600),
-        HistInfo("pT_superForwardJets", "P_{T}^{|#eta| > 3 jets} (GeV)", 30, 0, 600),
-
-        HistInfo("eta_forwardJets", "|#eta|^{|#eta| > 2.4 jets}", 30, 0, 5),
-        HistInfo("eta_notSoForwardJets", "|#eta|^{|#eta| > 0.8 jets}", 30, 0, 5),
-        HistInfo("eta_superForwardJets", "|#eta|^{|#eta| > 3 jets}", 30, 0, 5),
-        */
         HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 30, 0, 1), 
         HistInfo("highestDeepCSVb", "highest deepCSV (b)", 30, 0, 1), 
         HistInfo("highestDeepCSVbb", "highest deepCSV( bb)", 30, 0, 1), 
@@ -239,6 +197,7 @@ void treeReader::Analyze(const std::string& sampName, const long unsigned begin,
 }
 
 void treeReader::Analyze(const Sample& samp, const long unsigned begin, const long unsigned end){
+
     //start by initializing sample
     initSample(samp);
 
@@ -271,7 +230,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"pTLeadingLepton", 0.},
             {"pTLeadingBJet", 0.},
             {"pTMostForwardJet", 0.},
-            {"mAllJets", 0.},
             {"maxDeltaPhijj", 0.},
             {"maxDeltaRjj", 0.},
             {"maxMjj", 0.},
@@ -315,40 +273,20 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"pTMaxlj", 0.},
             {"eventWeight", 0.}
         };
-    /*
- //names of categories for which to do the training
-    TMVA::DataLoader *dataloader = new TMVA::DataLoader("dataset" + jetsCat + "_" + mllCat + "_" + year);
-    dataloader->AddVariable("asymmetryWlep", 'F');
-    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("deltaRWLeptonTaggedbJet", 'F');
-    dataloader->AddVariable("etaZ", 'F');
-    if(jetsCat != "1bJet01jets" && jetsCat != "0bJets01Jets" && jetsCat != "1bJet4Jets" && jetsCat != "2bJets") dataloader->AddVariable("pTLeadingBJet", 'F');
-    dataloader->AddVariable("pTMostForwardJet", 'F');
-    dataloader->AddVariable("highestDeepCSV", 'F');
-    dataloader->AddVariable("etaMostForward", 'F');
-    dataloader->AddVariable("pTLeadingLepton", 'F');
-    dataloader->AddVariable("m3l", 'F');
-    //if(jetsCat != "0bJets_01Jets" && jetsCat != "0bJets_2Jets") dataloader->AddVariable("maxDeltaPhibmet", 'F');
-    if(jetsCat != "0bJets01Jets" && jetsCat != "1bJet01jets" && jetsCat != "1bJet4Jets" && jetsCat != "2bJets") dataloader->AddVariable("maxDeltaPhijj", 'F');
-    if(jetsCat != "1bJet01jets" && jetsCat != "0bJets01Jets") dataloader->AddVariable("maxMjj", 'F');
-    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("minDeltaPhibmet", 'F');
-    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("minDeltaPhilb", 'F');
-    if(jetsCat == "1bJet4Jets" || jetsCat == "2bJets") dataloader->AddVariable("minMlb", 'F');
-    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("maxMlb", 'F');
-    if(jetsCat == "1bJet4Jets" || jetsCat == "2bJets") dataloader->AddVariable("ht", 'F');
-    if(jetsCat == "1bJet4Jets" || jetsCat == "2bJets") dataloader->AddVariable("numberOfJets", 'F');
-    if(jetsCat == "2bJets") dataloader->AddVariable("numberOfBJets", 'F');
-    if(jetsCat != "0bJets01Jets" && jetsCat != "0bJets2Jets") dataloader->AddVariable("maxmTbmet", 'F');
-    //if(jetsCat != "0bJets_01Jets" && jetsCat != "1bJet_01jets") dataloader->AddVariable("maxDeltaRjj", 'F');
-    dataloader->AddVariable("pTmin2l", 'F');
-    //dataloader->AddVariable("pT3l", 'F');
-    dataloader->AddVariable("mTW", 'F');
-    dataloader->AddVariable("topMass", 'F');
-    */
 
-    //vectors specifying what variables to use to read the BDT of a specific category
-    //std::vector < std::string > 1bJet23JetsVars = {"asymmetryWlep", "deltaRWLeptonTaggedbJet", "etaZ", "pTLeadingBJet", "pTMostForwardJet", "highestDeepCSV", "etaMostForward", "pTLeadingLepton", "m3l", "maxDeltaPhijj", 
-                                                    
+    //BDT reader for 1bJet23Jets category
+    std::vector < std::string > bdtVars1bJet23Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "maxDeltaPhijj", "mTW", "topMass", "pTMaxjj", "minDeltaPhilb", "maxDeltaPhill"}; 
+    BDTReader bdtReader1bJet23Jets("BDTG", "TMVAClassification1bJet23Jets_onZ_2016_BDTG_newVars_Depth4_1000trees.weights.xml", bdtVariableMap, bdtVars1bJet23Jets);
     
+    //BDT reader for 1bJet4Jets category
+    std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "minDeltaPhilb", 
+        "deltaRTaggedbJetRecoilingJet", "deltaRWLeptonTaggedbJet", "m3l", "etaMostForward"};
+    BDTReader bdtReader1bJet4Jets("BDTG", "TMVAClassification1bJet4Jets_onZ_2016_BDTG_newVars_Depth4_1000trees.weights.xml", bdtVariableMap, bdtVars1bJet4Jets);
+
+    //BDT reader for 2bJets category
+    std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "etaMostForward", "m3l"};
+    BDTReader bdtReader2bJets("BDTG", "TMVAClassification1bJet4Jets_onZ_2016_BDTG_newVars_Depth4_1000trees.weights.xml", bdtVariableMap, bdtVars2bJets);
+
     //training tree writer
     std::string treeOutputDirectory;
     if( is2016() ){
@@ -386,9 +324,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         //require pt cuts (25, 15, 10) to be passed
         if(!passPtCuts(ind)) continue;
-
-        //require presence of OSSF pair
-        //if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
 
         //remove overlap between samples
         if(photonOverlap(samp)) continue;
@@ -464,12 +399,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         TLorentzVector jetV[(const unsigned) _nJets];
         for(unsigned j = 0; j < _nJets; ++j){
             jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
-            /*
-            if(jetV[j].M() < 0){
-                std::cout << "jet has negative mass = " << jetV[j].M() << std::endl;
-            }
-            */
         }
+
+        //jet sum 
+        TLorentzVector jetSystem(0,0,0,0);
+        for(unsigned j = 0; j < jetCount; ++j){
+            jetSystem += jetV[jetInd[j]];
+        } 
 
         //find W lepton 
         unsigned lw = 999;
@@ -485,27 +421,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         std::vector<unsigned> taggedJetI; //0 -> b jet from tZq, 1 -> forward recoiling jet
         TLorentzVector neutrino = tzq::findBestNeutrinoAndTop(lepV[lw], met, taggedJetI, jetInd, bJetInd, jetV);
 
-        //forward jet sum
-        TLorentzVector forwardJets(0,0,0,0);
-
-        //not so forward jet sum
-        TLorentzVector notSoForwardJets(0,0,0,0);
-
-        //super forward jet sum
-        TLorentzVector superForwardJets(0,0,0,0);
-
-        //jet sum 
-        TLorentzVector jetSystem(0,0,0,0);
-        for(unsigned j = 0; j < jetCount; ++j){
-            jetSystem += jetV[jetInd[j]];
-            if(fabs(_jetEta[jetInd[j]]) >= 2.4) forwardJets += jetV[jetInd[j]];
-            if(fabs(_jetEta[jetInd[j]]) >= 0.8) notSoForwardJets += jetV[jetInd[j]];
-            if(fabs(_jetEta[jetInd[j]]) >= 3.0) superForwardJets += jetV[jetInd[j]];
-        } 
-
         //find jets with highest DeepCSV and CSVv2 values
-        //unsigned highestDeepCSVI = (jetCount == 0) ? 0 : jetInd[0], highestCSVv2I = (jetCount == 0) ? 0 : jetInd[0];
-        unsigned highestDeepCSVI = 99; //= (jetCount == 0) ? 0 : jetInd[0], highestCSVv2I = (jetCount == 0) ? 0 : jetInd[0];
+        unsigned highestDeepCSVI = 99;
         unsigned highestCSVv2I = 99;
         unsigned counter = 0;
         for(unsigned j = 0; j < jetCount; ++j){
@@ -669,7 +586,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["pTLeadingLepton"] = _lPt[ind[0]];
         bdtVariableMap["pTLeadingBJet"] = leadingBJet.Pt();
         bdtVariableMap["pTMostForwardJet"] = highestEtaJet.Pt();
-        bdtVariableMap["mAllJets"] = std::max(jetSystem.M(), 0.);
         bdtVariableMap["maxDeltaPhijj"] = maxDeltaPhiJetJet;
         bdtVariableMap["maxDeltaRjj"] = maxDeltaRJetJet;
         bdtVariableMap["maxMjj"] = std::max(maxMJetJet, 0.);
@@ -714,84 +630,21 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         bdtVariableMap["eventWeight"] = weight;
 
-        double bdt = 0, bdt2 = 0;
-        if(tzqCat != 0){
-            //bdt = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method");
-            //bdt2 = mvaReader[mllCat][tzqCat]->EvaluateMVA("BDTG method 1000 Trees");
-        }
-
+        double bdt = 0;
         if(tzqCat == 3){
-            if(leadingBJet.Pt() != taggedBJet.Pt() ){
-                std::cout << "################################################" << std::endl;
-                std::cout << "bug: leading b-jet and tagged b-jet have different pT for 1 b-jet events" << std::endl;
-                std::cout << "leadingBJet.Pt() = " << leadingBJet.Pt() << std::endl;
-                std::cout << "taggedBJet.Pt() = " << taggedBJet.Pt() << std::endl;
-                std::cout << "jetCount = " << jetCount << std::endl;
-                std::cout << "bJetCount = " << bJetCount << std::endl;
-            } 
-            if(leadingBJet.Pt() != highestDeepCSVJet.Pt() ){
-                std::cout << "################################################" << std::endl;
-                std::cout << "bug : leading b-jet and highestDeepCSV jet have different pT for 1 b-jet events" << std::endl;
-                std::cout << "leadingBJet.Pt() = " << leadingBJet.Pt() << std::endl;
-                std::cout << "highestDeepCSVJet.Pt() = " << highestDeepCSVJet.Pt() << std::endl;
-                std::cout << "jetCount = " << jetCount << std::endl;
-                std::cout << "bJetCount = " << bJetCount << std::endl;
-                for(unsigned j = 0; j < jetCount; ++j){
-                    std::cout << "jet " << jetInd[j] << " : pT = " << _jetPt[jetInd[j]] << "\t csv = " << _jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]];
-                    std::cout << "\t eta = " << _jetEta[jetInd[j]] << std::endl;
-                }
-            }
+            bdt = bdtReader1bJet23Jets.computeBDT(bdtVariableMap);
+        } else if(tzqCat == 4){
+            bdt = bdtReader1bJet4Jets.computeBDT(bdtVariableMap);
+        } else if(tzqCat == 5){
+            bdt = bdtReader2bJets.computeBDT(bdtVariableMap);
         }
-
 
         double fill[nDist] = {
-            bdt, bdt, bdt2, bdt2, 
+            bdt, bdt,
             _met, mll, kinematics::mt(lepV[lw], met),  _lPt[ind[0]], _lPt[ind[1]], _lPt[ind[2]], (double) nJets(), (double) nBJets(), 
         (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
          highestEtaJet.Pt(), std::max(topV.M(), 0.), (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
-        /*
-        (highestEtaJet + leadingBJet + lepV[lw] + neutrino).M(),
-        (highestEtaJet + leadingBJet + lepV[lw]).M(),
-        (highestEtaJet + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second] ).M(),
-        (highestEtaJet + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
 
-        (recoilingJet + taggedBJet + lepV[lw] + neutrino).M(),
-        (recoilingJet + taggedBJet + lepV[lw]).M(),
-        (recoilingJet + taggedBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-        (recoilingJet + taggedBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-
-        (forwardJets + leadingBJet + lepV[lw] + neutrino).M(),
-        (forwardJets + leadingBJet + lepV[lw]).M(),
-        (forwardJets + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-        (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).M(),
-
-        std::max(0., forwardJets.M()),
-        std::max(0., notSoForwardJets.M()),
-        std::max(0., superForwardJets.M()),
-
-        (highestEtaJet + leadingBJet + lepV[lw] + neutrino).Pt(),
-        (highestEtaJet + leadingBJet + lepV[lw]).Pt(),
-        (highestEtaJet + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second] ).Pt(),
-        (highestEtaJet + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-
-        (recoilingJet + taggedBJet + lepV[lw] + neutrino).Pt(),
-        (recoilingJet + taggedBJet + lepV[lw]).Pt(),
-        (recoilingJet + taggedBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-        (recoilingJet + taggedBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-
-        (forwardJets + leadingBJet + lepV[lw] + neutrino).Pt(),
-        (forwardJets + leadingBJet + lepV[lw]).Pt(),
-        (forwardJets + leadingBJet + lepV[lw] + neutrino + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-        (forwardJets + leadingBJet + lepV[lw] + lepV[bestZ.first] + lepV[bestZ.second]).Pt(),
-
-        forwardJets.Pt(),
-        notSoForwardJets.Pt(),
-        superForwardJets.Pt(),
-
-        fabs(forwardJets.Eta()),
-        fabs(notSoForwardJets.Eta()),
-        fabs(superForwardJets.Eta()),
-        */
         _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI],
         _jetDeepCsv_b[highestDeepCSVI],
         _jetDeepCsv_bb[highestDeepCSVI],
@@ -842,6 +695,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             if( (m == 0 && mllCat != 2) || m == (mllCat + 1) ){
                 for(unsigned cat = 0; cat < nCat; ++cat){
                     if(cat == 0 || cat == (tzqCat + 1) ){
+
                         //fill training tree
                         //note that training tree is not categorized by lepton flavor
                         if(samp.getProcessName() != "DY" ) trainingTree.fill({m, cat}, bdtVariableMap); //fluctuations on DY sample too big for training
@@ -959,14 +813,15 @@ void treeReader::splitPlots(){
     }
 
     //merge training files and clean up
-    //
     //2016
     tools::system("cd trainingTrees_tZq2016");
+    tools::system("rm *data*");
     tools::system("hadd trainingTrees_tZq2016/trainingTree.root trainingTrees_tZq2016/*root*");
     tools::system("rm trainingTrees_tZq2016/*Summer16*root*");
 
     //2017
     tools::system("cd ../trainingTrees_tZq2017");
+    tools::system("rm *data*");
     tools::system("hadd trainingTrees_tZq2017/trainingTree.root trainingTrees_tZq2017/*root*");
     tools::system("rm trainingTrees_tZq2017/*Fall17*root* trainingTrees_tZq2017/*2017*root*");
 
