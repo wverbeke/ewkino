@@ -70,6 +70,55 @@ void treeReader::Analyze(){
         }
     }
 
+    std::map < std::string, float > bdtVariableMap =
+        {
+            {"etaRecoilingJet", 0.},
+            {"maxMjj", 0.},
+            {"asymmetryWlep", 0.},
+            {"highestDeepCSV", 0.},
+            {"ltmet", 0.},
+            {"maxDeltaPhijj", 0.},
+            {"mTW", 0.},
+            {"topMass", 0.}, 
+            {"pTMaxjj", 0.}, 
+            {"minDeltaPhilb", 0.},
+            {"maxDeltaPhill", 0.},
+            {"ht", 0.},
+            {"deltaRTaggedbJetRecoilingJet", 0.},
+            {"deltaRWLeptonTaggedbJet", 0.},
+            {"m3l", 0.},
+            {"etaMostForward", 0.},
+            {"numberOfJets", 0.}
+        };
+
+    //BDT reader for 1bJet23Jets category
+    std::vector < std::string > bdtVars1bJet23Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "maxDeltaPhijj", "mTW", "topMass", "pTMaxjj", "minDeltaPhilb", "maxDeltaPhill"};
+    std::string weights;
+    if( is2016() ){
+        weights = "1bJet23Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    } else if( is2017() ){
+        weights = "1bJet23Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    }
+    BDTReader bdtReader1bJet23Jets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVariableMap, bdtVars1bJet23Jets);
+
+    //BDT reader for 1bJet4Jets category
+    if( is2016() ){
+        weights = "1bJet4Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    } else if( is2017() ){
+        weights = "1bJet4Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    }
+    std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "minDeltaPhilb",
+        "deltaRTaggedbJetRecoilingJet", "deltaRWLeptonTaggedbJet", "m3l", "etaMostForward"};
+    BDTReader bdtReader1bJet4Jets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVariableMap, bdtVars1bJet4Jets);
+
+    //BDT reader for 2bJets category
+    if( is2016() ){
+        weights = "2bJets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    } else if( is2017() ){
+        weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    }
+    std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "etaMostForward", "m3l"}; 
+
     /*
     //store maxima of histograms for overflow bins
     double maxBin[nDist];
