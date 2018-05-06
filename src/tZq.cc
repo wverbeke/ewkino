@@ -203,7 +203,7 @@ void treeReader::Analyze(){
             }
 
             //find W lepton 
-            unsigned lw;
+            unsigned lw = 99;
             for(unsigned l = 0; l < lCount; ++l){
                 if( l != bestZ.first && l != bestZ.second ) lw = l;
             }
@@ -284,8 +284,6 @@ void treeReader::Analyze(){
             for(unsigned l = 0; l < lCount; ++l){
                 LT += _lPt[ind[l]];
             }
-
-            double HTLep = HT + LT;
             
             bdtVariableMap["etaRecoilingJet"] = fabs(recoilingJet.Eta());
             bdtVariableMap["maxMjj"] = std::max(maxMJetJet, 0.);
@@ -452,7 +450,7 @@ void treeReader::Analyze(){
                         bdtShapeStatUp[m][cat][p][k] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
                         bdtShapeStatDown[m][cat][p][k] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
                         if(k == p){
-                            for(unsigned bin = 1; bin < mergedHists[m][cat][0][p]->GetNbinsX() + 1; ++bin){
+                            for(int bin = 1; bin < mergedHists[m][cat][0][p]->GetNbinsX() + 1; ++bin){
                                 bdtShapeStatUp[m][cat][p][k]->SetBinContent(bin, std::max( bdtShapeStatUp[m][cat][p][k]->GetBinContent(bin) + bdtShapeStatUp[m][cat][p][k]->GetBinError(bin),  std::numeric_limits< double >::min() ));
                                 bdtShapeStatDown[m][cat][p][k]->SetBinContent(bin, std::max( bdtShapeStatDown[m][cat][p][k]->GetBinContent(bin) - bdtShapeStatDown[m][cat][p][k]->GetBinError(bin), std::numeric_limits< double >::min() ));
                             }
