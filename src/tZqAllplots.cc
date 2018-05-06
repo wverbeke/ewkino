@@ -830,14 +830,12 @@ void treeReader::splitPlots(){
 
     //merge training files and clean up
     //2016
-    tools::system("cd trainingTrees_tZq2016");
-    tools::system("rm *data*");
+    tools::system("rm trainingTrees_tZq2016/*data*");
     tools::system("hadd trainingTrees_tZq2016/trainingTree.root trainingTrees_tZq2016/*root*");
     tools::system("rm trainingTrees_tZq2016/*Summer16*root*");
 
     //2017
-    tools::system("cd ../trainingTrees_tZq2017");
-    tools::system("rm *data*");
+    tools::system("rm trainingTrees_tZq2017/*data*");
     tools::system("hadd trainingTrees_tZq2017/trainingTree.root trainingTrees_tZq2017/*root*");
     tools::system("rm trainingTrees_tZq2017/*Fall17*root* trainingTrees_tZq2017/*2017*root*");
 
