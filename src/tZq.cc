@@ -118,14 +118,8 @@ void treeReader::Analyze(){
         weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     }
     std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "etaMostForward", "m3l"}; 
+    BDTReader bdtReader2bJets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVariableMap, bdtVars2bJets);
 
-    /*
-    //store maxima of histograms for overflow bins
-    double maxBin[nDist];
-    for(unsigned dist = 0; dist < nDist; ++dist){
-        maxBin[dist] = std::get<4>(histInfo[dist]) - 0.5*(std::get<4>(histInfo[dist]) - std::get<3>(histInfo[dist]) )/std::get<2>(histInfo[dist]);
-    }
-    */
 
     //tweakable options
     const TString extra = ""; //for plot names
@@ -379,14 +373,14 @@ void treeReader::Analyze(){
             double fill[nDist] = {bdt, bdt};
 
             for(unsigned dist = 0; dist < nDist; ++dist){
-                hists[mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], maxBin[dist]), weight);
+                hists[mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
             }
         }
         //set histograms to 0 if negative
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned cat = 0; cat < nCat; ++cat){
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    tools::setNegativeZero(hists[m][cat][dist][sam]);
+                    tools::setNegativeZero( hists[m][cat][dist][sam].get() );
                 }	
             }
         }
@@ -401,8 +395,8 @@ void treeReader::Analyze(){
                 mergedHists[mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
                 for(size_t m = 0, sam = 0; m < proc.size(); ++m){
                     mergedHists[mll][cat][dist][m] = (TH1D*) hists[mll][cat][dist][sam]->Clone();
-                    while(sam < samples.size() - 1 && std::get<0>(samples[sam]) == std::get<0>(samples[sam + 1]) ){
-                        mergedHists[mll][cat][dist][m]->Add(hists[mll][cat][dist][sam + 1]);
+                    while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
+                        mergedHists[mll][cat][dist][m]->Add(hists[mll][cat][dist][sam + 1].get());
                         ++sam;
                     }
                     ++sam;
@@ -439,9 +433,9 @@ void treeReader::Analyze(){
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/final/36fb/" + std::get<0>(histInfo[dist]) + "_" + catNames[cat] + "_" + mllNames[m], "tzq", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/final/36fb/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m], "tzq", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/final/36fb/" + std::get<0>(histInfo[dist]) + "_"  + catNames[cat] + "_" + mllNames[m] + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "tZq/final/36fb/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, isSMSignal);    //log plots
             }
         }
     }
