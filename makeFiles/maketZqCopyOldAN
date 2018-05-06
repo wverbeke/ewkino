@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wno-reorder -Wextra -O3
 CFLAGS= -Wl,--no-as-needed,-lTMVA
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= plotting/drawLumi.cc src/Plot.cc src/kinematicTools.cc src/Sample.cc src/Category.cc src/HistCollectionBase.cc src/HistCollectionDist.cc src/HistCollectionSample.cc  src/treeReader.cc src/TrainingTree.cc src/BDTReader.cc src/tZqCopyOldAN.cc src/analysisTools.cc src/eventSelection.cc src/trilepTools.cc src/tZqTools.cc bTagSFCode/BTagCalibrationStandalone.cc src/Reweighter.cc src/eventWeights.cc plotting/plotCode.cc plotting/tdrStyle.cc src/eventSelection_TOP16_020.cc
+SOURCES= plotting/drawLumi.cc src/Plot.cc src/kinematicTools.cc src/Sample.cc src/Category.cc src/HistCollectionBase.cc src/HistCollectionDist.cc src/HistCollectionSample.cc  src/treeReader.cc src/TrainingTree.cc src/BDTReader.cc src/tZqCopyOldAN.cc src/analysisTools.cc src/eventSelection.cc src/trilepTools.cc src/tZqTools.cc bTagSFCode/BTagCalibrationStandalone.cc src/Reweighter.cc src/eventWeights.cc plotting/plotCode.cc plotting/tdrStyle.cc src/eventSelection_TOP16_020.cc src/objectSelection.cc src/treeReaderErrors.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= tZqCopyOldAN
 

@@ -114,8 +114,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     //training tree writer
     TrainingTree trainingTree("trainingTrees_TOP_16_020/" + std::to_string(begin) + "_" + std::to_string(end) + "_TOP_16_020_",samp, categorization, bdtVariableMap, samp.isSMSignal() ); 
     
-    //loop over all sample
-    initSample(samp, 0);          //Use 2016 lumi
+    //loop over all samples
+    initSample(samp); 
     for(long unsigned it = begin; it < end; ++it){
         GetEntry(samp, it);
 
@@ -329,7 +329,7 @@ void treeReader::splitJobs(){
     tools::system("rm tempHists_tZq_TOP_16_020/*");
 
     for(unsigned sam = 0; sam < samples.size(); ++sam){
-        initSample(1);
+        initSample();
         //split samples per 200k events
         for(long unsigned it = 0; it < nEntries; it+=200000){
             long unsigned begin = it;
@@ -337,7 +337,7 @@ void treeReader::splitJobs(){
             //make temporary job script 
             std::ofstream script("runTuples.sh");
             tools::initScript(script);
-            script << "./tZqCopyOldAN " << samples[currentSample].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
+            script << "./tZqCopyOldAN " << currentSample.getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
             //submit job
             tools::submitScript("runTuples.sh", "00:20:00");
