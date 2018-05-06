@@ -39,7 +39,7 @@ void treeReader::setup(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples.txt");
+    readSamples("sampleLists/samples2016.txt");
     //info on kinematic distributions to plot
     //name      xlabel    nBins,  min, max
     histInfo = {
