@@ -262,73 +262,17 @@ void treeReader::Analyze(){
             std::vector<unsigned> lepVecInd;
             for(unsigned l = 0; l < lCount; ++l) lepVecInd.push_back(l);
 
-            //lepton Jet 
-            double minMLeptonJet = kinematics::minMass(lepV, lepVecInd, jetV, jetInd);
-            double maxMLeptonJet = kinematics::maxMass(lepV, lepVecInd, jetV, jetInd);
-            double minDeltaRLeptonJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, jetInd);
-            double maxDeltaRLeptonJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, jetInd);
-            double minDeltaPhiLeptonJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, jetInd);
-            double maxDeltaPhiLeptonJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, jetInd);
-            double minpTLeptonJet = kinematics::minPT(lepV, lepVecInd, jetV, jetInd);
-            double maxpTLeptonJet = kinematics::maxPT(lepV, lepVecInd, jetV, jetInd);
 
             //lepton bjet
-            double minMLeptonbJet = kinematics::minMass(lepV, lepVecInd, jetV, bJetInd);
-            double maxMLeptonbJet = kinematics::maxMass(lepV, lepVecInd, jetV, bJetInd);
-            double minDeltaRLeptonbJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, bJetInd);
-            double maxDeltaRLeptonbJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, bJetInd);
             double minDeltaPhiLeptonbJet = kinematics::minDeltaR(lepV, lepVecInd, jetV, bJetInd);
-            double maxDeltaPhiLeptonbJet = kinematics::maxDeltaR(lepV, lepVecInd, jetV, bJetInd);
-            double minpTLeptonbJet = kinematics::minPT(lepV, lepVecInd, jetV, bJetInd);
-            double maxpTLeptonbJet = kinematics::maxPT(lepV, lepVecInd, jetV, bJetInd);
 
             //jet jet
-            double minMJetJet = kinematics::minMass(jetV, jetInd);
             double maxMJetJet = kinematics::maxMass(jetV, jetInd);
-            double minDeltaRJetJet = kinematics::minDeltaR(jetV, jetInd);
-            double maxDeltaRJetJet = kinematics::maxDeltaR(jetV, jetInd);
-            double minDeltaPhiJetJet = kinematics::minDeltaPhi(jetV, jetInd);
             double maxDeltaPhiJetJet = kinematics::maxDeltaPhi(jetV, jetInd);
-            double minpTJetJet = kinematics::minPT(jetV, jetInd);
             double maxpTJetJet = kinematics::maxPT(jetV, jetInd);
 
             //lepton lepton 
-            double minMLeptonLepton = kinematics::minMass(lepV, lepVecInd);
-            double maxMLeptonLepton = kinematics::maxMass(lepV, lepVecInd);
-            double minDeltaRLeptonLepton = kinematics::minDeltaR(lepV, lepVecInd);
-            double maxDeltaRLeptonLepton = kinematics::maxDeltaR(lepV, lepVecInd);
-            double minDeltaPhiLeptonLepton = kinematics::minDeltaPhi(lepV, lepVecInd);
             double maxDeltaPhiLeptonLepton = kinematics::maxDeltaPhi(lepV, lepVecInd);
-            double minpTLeptonLepton = kinematics::minPT(lepV, lepVecInd);
-            double maxpTLeptonLepton = kinematics::maxPT(lepV, lepVecInd);
-
-            //set met index
-            std::vector<unsigned> metIndex = {0};
-
-            //lepton + MET 
-            double minDeltaPhiLeptonMET = kinematics::minDeltaPhi(lepV, lepVecInd, &met, metIndex);
-            double maxDeltaPhiLeptonMET = kinematics::maxDeltaPhi(lepV, lepVecInd, &met, metIndex);
-            double minmTLeptonMET = kinematics::minMT(lepV, lepVecInd, &met, metIndex);
-            double maxmTLeptonMET = kinematics::maxMT(lepV, lepVecInd, &met, metIndex);
-            double minpTLeptonMET = kinematics::minPT(lepV, lepVecInd, &met, metIndex);
-            double maxpTLeptonMET = kinematics::maxPT(lepV, lepVecInd, &met, metIndex);
-
-            //jet + MET
-            double minDeltaPhiJetMET = kinematics::minDeltaPhi(jetV, jetInd, &met, metIndex);
-            double maxDeltaPhiJetMET = kinematics::maxDeltaPhi(jetV, jetInd, &met, metIndex);
-            double minmTJetMET = kinematics::minMT(jetV, jetInd, &met, metIndex);
-            double maxmTJetMET = kinematics::maxMT(jetV, jetInd, &met, metIndex);
-            double minpTJetMET = kinematics::minPT(jetV, jetInd, &met, metIndex);
-            double maxpTJetMET = kinematics::maxPT(jetV, jetInd, &met, metIndex);
-
-            //bjet + MET 
-            double minDeltaPhiBJetMET = kinematics::minDeltaPhi(jetV, bJetInd, &met, metIndex);
-            double maxDeltaPhiBJetMET = kinematics::maxDeltaPhi(jetV, bJetInd, &met, metIndex);
-            double minmTBJetMET = kinematics::minMT(jetV, bJetInd, &met, metIndex);
-            double maxmTBJetMET = kinematics::maxMT(jetV, bJetInd, &met, metIndex);
-            double minpTBJetMET = kinematics::minPT(jetV, bJetInd, &met, metIndex);
-            double maxpTBJetMET = kinematics::maxPT(jetV, bJetInd, &met, metIndex);
- 
 
             //compute HT
             double HT = 0;
