@@ -47,9 +47,10 @@ void treeReader::setup(){
         HistInfo("relIso", "relIso_{#DeltaR 0.3}", 100, 0, 1),
         HistInfo("leptonMvaSUSY16", "SUSY lepton MVA 2016", 100, -1, 1),
         HistInfo("leptonMvaTTH16", "TTH lepton MVA 2016", 100, -1, 1),
-        HistInfo("leptonMvatZqTTV", "tZq/TTV lepton MVA 2016", 100, -1, 1),
+        HistInfo("leptonMvatZqTTV16", "tZq/TTV lepton MVA 2016", 100, -1, 1),
         HistInfo("leptonMvaSUSY17", "SUSY lepton MVA 2017", 100, -1, 1),
         HistInfo("leptonMvaTTH17", "TTH lepton MVA 2017", 100, -1, 1),
+        HistInfo("leptonMvatZqTTV17", "tZq/TTV lepton MVA 2017", 100, -1, 1),
         HistInfo("ptRel", "P_{T}^{rel} (GeV)", 100, 0, 200),
         HistInfo("ptRatio", "P_{T}^{ratio}", 100, 0, 2),
         HistInfo("closestJetCsvV2", "closest jet CSVv2", 100, 0, 1),
@@ -207,12 +208,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         //loop over leading leptons
         for(unsigned l = 0; l < 2; ++l){
-            double fill[20] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _relIso[ind[l]],
+            double fill[21] = {_3dIPSig[ind[l]], fabs(_dxy[ind[l]]), fabs(_dz[ind[l]]), _miniIso[ind[l]], _relIso[ind[l]],
                 _leptonMvaSUSY16[ind[l]], 
                 _leptonMvaTTH16[ind[l]], 
                 _leptonMvatZqTTV16[ind[l]],
                 _leptonMvaSUSY17[ind[l]], 
                 _leptonMvaTTH17[ind[l]], 
+                _leptonMvatZqTTV17[ind[l]],
                 _ptRel[ind[l]], 
                 _ptRatio[ind[l]], 
                 _closestJetCsvV2[ind[l]], 
@@ -229,9 +231,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             for(unsigned j = 0; j < nJetCat; ++j){
                 if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
                 for(unsigned pu = 0; pu < nPuRew; ++pu){
-                    for(unsigned dist = 0; dist < 20; ++dist){
-                        if(_lFlavor[ind[l]] == 0 && dist == 19) continue;  //do not plot muonSegComp for electrons
-                        if(_lFlavor[ind[l]] == 1 && (dist == 15 || dist == 16 || dist == 17 || dist == 18) ) continue;  //do not plot electronMva for muons
+                    for(unsigned dist = 0; dist < 21; ++dist){
+                        if(_lFlavor[ind[l]] == 0 && dist == 20) continue;  //do not plot muonSegComp for electrons
+                        if(_lFlavor[ind[l]] == 1 && (dist == 16 || dist == 17 || dist == 18 || dist == 19) ) continue;  //do not plot electronMva for muons
                         for(unsigned r = 0; r < nRuns; ++r){
                             if(!samp.isData() || r == run || r == 0){
                                 double puw = 1.;
@@ -269,7 +271,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
 
-        double fill[nDist - 20] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets(),
+        double fill[nDist - 21] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets(),
            (highPtJetCount[1] > 0) ? _jetPt[mostForwardJetIndices[1]] : -9999., //pT of most forward jet after 25 GeV pT cut selection`
            (highPtJetCount[0] > 0) ? fabs(_jetEta[mostForwardJetIndices[0]]) : -9999., (highPtJetCount[0] > 0) ? _jetEta[mostForwardJetIndices[0]] : -9999., (double) nForwardJets[0], 
            (highPtJetCount[1] > 0) ? fabs(_jetEta[mostForwardJetIndices[1]]) : -9999., (highPtJetCount[1] > 0) ? _jetEta[mostForwardJetIndices[1]] : -9999., (double) nForwardJets[1], 
@@ -285,7 +287,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned j = 0; j < nJetCat; ++j){
             if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
             for(unsigned pu = 0; pu < nPuRew; ++pu){
-                for(unsigned dist = 20; dist < nDist; ++dist){
+                for(unsigned dist = 21; dist < nDist; ++dist){
                     for(unsigned r = 0; r < nRuns; ++r){
                         if(!samp.isData() || r == run || r == 0){
                             double puw = 1.;
@@ -294,8 +296,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                             if( !isData() && pu == 1 && is2017() ){
                                 puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
                             }
-                            histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist - 20], histInfo[dist].maxBinCenter()), weight*puw);
-                            histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist - 20], histInfo[dist].maxBinCenter()), weight*puw);
+                            histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist - 21], histInfo[dist].maxBinCenter()), weight*puw);
+                            histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist - 21], histInfo[dist].maxBinCenter()), weight*puw);
                         }
                     }
                 }
