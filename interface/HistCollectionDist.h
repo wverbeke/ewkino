@@ -29,6 +29,9 @@ class HistCollectionDist{
 
         //rebin histograms for categories with a certain name
         void rebin(const std::string&, const int) const;
+
+        //access histogram 
+        std::shared_ptr<TH1D> access(const size_t sampleIndex, const std::vector<size_t>& categoryIndices , const bool sb = false) const;
     
     //these functions are also used by the derived HistCollectionDistNuisances class 
     protected:
@@ -37,7 +40,7 @@ class HistCollectionDist{
                                                                         //TO DO: find way to rewrite this
 
         //access routines for individual histograms, used for computing total nuisance
-        std::shared_ptr<TH1D> access(const size_t sampleIndex, const size_t categoryIndex, const bool sb){
+        std::shared_ptr<TH1D> access(const size_t sampleIndex, const size_t categoryIndex, const bool sb) const{
             return collection[sampleIndex].access(categoryIndex, sb); 
         }
     private:
@@ -61,6 +64,11 @@ class HistCollectionDist{
         //get category name
         std::string categoryName(const size_t categoryIndex) const{ 
             return collection.front().categoryName(categoryIndex);
+        }
+
+        //get category index
+        unsigned getCategoryIndex(const std::vector<size_t>& categoryIndices) const{
+            return collection.front().getCategoryIndex(categoryIndices); 
         }
 
         //get name = distribution's name + category's name
