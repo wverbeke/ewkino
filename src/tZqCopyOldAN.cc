@@ -352,10 +352,37 @@ void treeReader::plot(const std::string& distName){
             std::cout << "making hist collection for: " << histInfo[d].name() << std::endl;
             //read collection for this distribution from files
             HistCollectionDist col("inputList_TOP_16_020.txt", histInfo[d], samples, { {"onZ"}, {"nJetsInclusive", "0bJets", "1bJet23Jets", "1bJet4Jets", "2bJets"}, {"flavorInclusive", "eee", "eem", "emm", "mmm"} });
+          
+            std::cout << " 1bJet 2-3 Jets " << std::endl;
+            std::cout << " & eee & ee$\\mu$ & e$\\mu\\mu$ & $\\mu\\mu\\mu$  & combination \\hline \\\\" << std::endl;
+
+            std::cout << "tZq & " << col.access(1, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+    
+            double sf_ttZ = 0.9;
+            std::cout << "ttZ & " << col.access(16, {0, 2, 1})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 2})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 3})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 4})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 0})->GetSumOfWeights()*sf_ttZ << "\\hline \\\\" << std::endl;
+
+            double sf_ttW = 1.0;
+            std::cout << "ttW & " << col.access(18, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+
+            double sf_ZZ = 1.3;
+            std::cout << "ZZ & " << col.access(36, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(36, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(36, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(36, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(36, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+
+            double sf_WZ = 0.85;
+            std::cout << "WZ & " << col.access(7, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(7, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(7, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(7, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(7, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+
+            double sf_ttH = 1.0;
+            std::cout << "ttH & " << col.access(26, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+
+            double sf_tWZ = 1.0;
+            std::cout << "tWZ & " << col.access(31, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+
+            std::cout << "data & " << col.access(0, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+
+            
             //print plots for collection
-            bool is2016 = true;
-            col.printPlots("plots/tZq/TOP-16-020", is2016, "tzq", false);
-            col.printPlots("plots/tZq/TOP-16-020", is2016, "tzq", true);
+            //bool is2016 = true;
+            //col.printPlots("plots/tZq/TOP-16-020", is2016, "tzq", false);
+            //col.printPlots("plots/tZq/TOP-16-020", is2016, "tzq", true);
         }
     }
 }
