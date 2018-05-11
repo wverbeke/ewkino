@@ -31,7 +31,7 @@ bool treeReader::lepIsVeto_TOP16_020(const unsigned l) const{
         if(!_lPOGLoose[l]) return false;
         return _relIso0p4MuDeltaBeta[l] < 0.25;
     }
-    return false;
+    return true;
 }
 
 bool treeReader::lepIsGood_TOP16_020(const unsigned l) const{
