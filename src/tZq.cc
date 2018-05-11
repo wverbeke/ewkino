@@ -98,7 +98,7 @@ void treeReader::Analyze(){
     } else if( is2017() ){
         weights = "1bJet23Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     }
-    BDTReader bdtReader1bJet23Jets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVariableMap, bdtVars1bJet23Jets);
+    BDTReader bdtReader1bJet23Jets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet23Jets);
 
     //BDT reader for 1bJet4Jets category
     if( is2016() ){
@@ -108,7 +108,7 @@ void treeReader::Analyze(){
     }
     std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "minDeltaPhilb",
         "deltaRTaggedbJetRecoilingJet", "deltaRWLeptonTaggedbJet", "m3l", "etaMostForward"};
-    BDTReader bdtReader1bJet4Jets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVariableMap, bdtVars1bJet4Jets);
+    BDTReader bdtReader1bJet4Jets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet4Jets);
 
     //BDT reader for 2bJets category
     if( is2016() ){
@@ -117,7 +117,7 @@ void treeReader::Analyze(){
         weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     }
     std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "etaMostForward", "m3l"}; 
-    BDTReader bdtReader2bJets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVariableMap, bdtVars2bJets);
+    BDTReader bdtReader2bJets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets);
 
 
     //tweakable options
@@ -152,9 +152,14 @@ void treeReader::Analyze(){
             std::vector<unsigned> ind;
 
             //select leptons
-            const unsigned lCount = selectLep(ind);
+            //const unsigned lCount = selectLep(ind);
+            //if(lCount != 3) continue;
+            //if(tightLepCount(ind, lCount) != 3) continue; //require 3 tight leptons
+
+            //WARNING, REMOVE THIS AND TAKE PREVIOUS LINES BACK IN
+            //Testing with TOP-16-0-200 selection
+            const unsigned lCount = selectLep_TOP16_020(ind);
             if(lCount != 3) continue;
-            if(tightLepCount(ind, lCount) != 3) continue; //require 3 tight leptons
 
             //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;

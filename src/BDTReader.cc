@@ -15,27 +15,13 @@ BDTReader::BDTReader(const std::string& bdtName, const std::string& xmlFileName,
 BDTReader::BDTReader(const std::string& bdtName, const std::string& xmlFileName, const std::map < std::string, float >& varMap):
     BDTReader(bdtName, xmlFileName, std::make_shared< std::map < std::string, float> >(varMap) ) {} 
 
-BDTReader::BDTReader(const std::string& bdtName, const std::string& xmlFileName, const std::map < std::string, float >& varMap, const std::vector<std::string>& varsToUse):
-    variableMap(std::make_shared< std::map < std::string, float > >(varMap) ), methodName(bdtName)
-{
-    //set up BDT reader 
-    reader.reset( new TMVA::Reader("!Color:!Silent") );    
-
+BDTReader::BDTReader(const std::string& bdtName, const std::string& xmlFileName, const std::vector<std::string>& varsToUse){
+    std::map < std::string, float> varMap;
     //safety check that every element in the variables to use is in variableMap
     for(auto& varName : varsToUse){
-        if(variableMap->find(varName) == variableMap->end()){
-            std::cerr << "Error: Requesting to use variable that is not in the map of variables in BDTReader constructor. Reader will remain uninitialized." << std::endl;
-            return;
-        }
+        varMap[varName] = 0.;
     }
-
-    //for every variable to use, add it to the list for the MVA method
-    for(auto& varName : varsToUse){
-        reader->AddVariable( (const TString&) varName, &( (*variableMap)[varName] ) );
-    }
-
-    //book method
-    reader->BookMVA(methodName, xmlFileName);
+    *this = BDTReader(bdtName, xmlFileName, varMap);
 }
 
 void BDTReader::addVariables() const{

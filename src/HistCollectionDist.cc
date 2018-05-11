@@ -351,3 +351,13 @@ void HistCollectionDist::rebin(const std::string& categoryName, const int number
         baseCollection.rebin(categoryName, numberOfBinsToMerge);
     }    
 }
+
+//access histogram
+std::shared_ptr<TH1D> HistCollectionDist::access(const size_t sampleIndex, const std::vector<size_t>& categoryIndices , const bool sb) const{
+    //merge processes if this did not already happen
+    // mergeProcesses();
+
+    size_t categoryIndex = getCategoryIndex(categoryIndices);
+    return access(sampleIndex, categoryIndex, sb);
+}
+

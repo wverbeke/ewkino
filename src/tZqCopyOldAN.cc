@@ -130,6 +130,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //vector containing good lepton indices
         std::vector<unsigned> ind;
 
+        //apply triggers and MET filters
+        if( !passTriggerCocktail() ) continue;
+        if( !passMETFilters() ) continue;
+
         //select leptons
         const unsigned lCount = selectLep_TOP16_020(ind);
         if(lCount != 3) continue;
@@ -184,13 +188,14 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             if( l != bestZ.first && l != bestZ.second ) lw = l;
         }
 
+
         //make met vector 
         TLorentzVector met;
         met.SetPtEtaPhiE(_met, 0, _metPhi, _met);
         //MET and MT Cuts 
-        //TEST: what happens when we remove these?
-        //if(_met <= 10) continue;
-        //if(kinematics::mt(lepV[lw], met) <= 10) continue;
+        //try met and mt cuts for sync
+        //if(_met < 10) continue;
+        //if(kinematics::mt(met, lepV[lw]) < 10) continue;
 
         //only retain useful categories 
         unsigned tZqOldANCategory = 999;
@@ -356,27 +361,27 @@ void treeReader::plot(const std::string& distName){
             std::cout << " 1bJet 2-3 Jets " << std::endl;
             std::cout << " & eee & ee$\\mu$ & e$\\mu\\mu$ & $\\mu\\mu\\mu$  & combination \\hline \\\\" << std::endl;
 
-            std::cout << "tZq & " << col.access(1, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+            std::cout << "tZq & " << col.access(1, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(1, {0, 2, 0})->GetSumOfWeights() << "\\\\" << std::endl;
     
             double sf_ttZ = 0.9;
-            std::cout << "ttZ & " << col.access(16, {0, 2, 1})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 2})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 3})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 4})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 0})->GetSumOfWeights()*sf_ttZ << "\\hline \\\\" << std::endl;
+            std::cout << "ttZ & " << col.access(16, {0, 2, 1})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 2})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 3})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 4})->GetSumOfWeights()*sf_ttZ << " & " << col.access(16, {0, 2, 0})->GetSumOfWeights()*sf_ttZ << "\\\\" << std::endl;
 
             double sf_ttW = 1.0;
-            std::cout << "ttW & " << col.access(18, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+            std::cout << "ttW & " << col.access(18, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(18, {0, 2, 0})->GetSumOfWeights() << "\\\\" << std::endl;
 
             double sf_ZZ = 1.3;
-            std::cout << "ZZ & " << col.access(36, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(36, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(36, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(36, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(36, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+            std::cout << "ZZ & " << col.access(36, {0, 2, 1})->GetSumOfWeights()*sf_ZZ << " & " << col.access(36, {0, 2, 2})->GetSumOfWeights()*sf_ZZ << " & " << col.access(36, {0, 2, 3})->GetSumOfWeights()*sf_ZZ << " & " << col.access(36, {0, 2, 4})->GetSumOfWeights()*sf_ZZ << " & " << col.access(36, {0, 2, 0})->GetSumOfWeights()*sf_ZZ << "\\\\" << std::endl;
 
             double sf_WZ = 0.85;
-            std::cout << "WZ & " << col.access(7, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(7, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(7, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(7, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(7, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+            std::cout << "WZ & " << col.access(7, {0, 2, 1})->GetSumOfWeights()*sf_WZ << " & " << col.access(7, {0, 2, 2})->GetSumOfWeights()*sf_WZ << " & " << col.access(7, {0, 2, 3})->GetSumOfWeights()*sf_WZ << " & " << col.access(7, {0, 2, 4})->GetSumOfWeights()*sf_WZ << " & " << col.access(7, {0, 2, 0})->GetSumOfWeights()*sf_WZ << "\\\\" << std::endl;
 
             double sf_ttH = 1.0;
-            std::cout << "ttH & " << col.access(26, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+            std::cout << "ttH & " << col.access(26, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(26, {0, 2, 0})->GetSumOfWeights() << "\\\\" << std::endl;
 
             double sf_tWZ = 1.0;
-            std::cout << "tWZ & " << col.access(31, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+            std::cout << "tWZ & " << col.access(31, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(31, {0, 2, 0})->GetSumOfWeights() << "\\\\" << std::endl;
 
-            std::cout << "data & " << col.access(0, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 0})->GetSumOfWeights() << "\\hline \\\\" << std::endl;
+            std::cout << "data & " << col.access(0, {0, 2, 1})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 2})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 3})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 4})->GetSumOfWeights() << " & " << col.access(0, {0, 2, 0})->GetSumOfWeights() << "\\\\" << std::endl;
 
             
             //print plots for collection
