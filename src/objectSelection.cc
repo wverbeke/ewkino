@@ -137,9 +137,10 @@ bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const 
         case 0: if(_jetPt[jetIndex] < ptCut) return false; break;
         case 1: if(_jetPt_JECDown[jetIndex] < ptCut) return false; break;
         case 2: if(_jetPt_JECUp[jetIndex] < ptCut) return false; break;
-        case 3: if(_jetPt_JERDown[jetIndex] < ptCut) return false; break;
-        case 4: if(_jetPt_JERUp[jetIndex] < ptCut) return false; break;
-        default: ;
+        default: {
+            std::cerr << "Error: uncertainty case larger than 2 given to jetIsGood, option not recognized" << std::endl;
+            return false; 
+        }
     }
     return !clean || jetIsClean(jetIndex);
 }

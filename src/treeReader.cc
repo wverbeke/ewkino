@@ -254,6 +254,10 @@ void treeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_jetEta", _jetEta, &b__jetEta);
     fChain->SetBranchAddress("_jetPhi", _jetPhi, &b__jetPhi);
     fChain->SetBranchAddress("_jetE", _jetE, &b__jetE);
+    fChain->SetBranchAddress("_jetPt_Uncorrected",_jetPt_Uncorrected, &b__jetPt_Uncorrected);
+    fChain->SetBranchAddress("_jetPt_L1", _jetPt_L1, &b__jetPt_L1);
+    fChain->SetBranchAddress("_jetPt_L2", _jetPt_L2, &b__jetPt_L2);
+    fChain->SetBranchAddress("_jetPt_L3", _jetPt_L3, &b__jetPt_L3);
     fChain->SetBranchAddress("_jetCsvV2", _jetCsvV2, &b__jetCsvV2);
     fChain->SetBranchAddress("_jetDeepCsv_udsg", _jetDeepCsv_udsg, &b__jetDeepCsv_udsg);
     fChain->SetBranchAddress("_jetDeepCsv_b", _jetDeepCsv_b, &b__jetDeepCsv_b);
@@ -263,6 +267,12 @@ void treeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_jetIsLoose", _jetIsLoose, &b__jetIsLoose);
     fChain->SetBranchAddress("_jetIsTight", _jetIsTight, &b__jetIsTight);
     fChain->SetBranchAddress("_jetIsTightLepVeto", _jetIsTightLepVeto, &b__jetIsTightLepVeto);
+    fChain->SetBranchAddress("_jetNeutralHadronFraction", _jetNeutralHadronFraction, &b__jetNeutralHadronFraction);
+    fChain->SetBranchAddress("_jetChargedHadronFraction", _jetChargedHadronFraction, &b__jetChargedHadronFraction);
+    fChain->SetBranchAddress("_jetNeutralEmFraction", _jetNeutralEmFraction, &b__jetNeutralEmFraction);
+    fChain->SetBranchAddress("_jetChargedEmFraction", _jetChargedEmFraction, &b__jetChargedEmFraction);
+    fChain->SetBranchAddress("_jetHFHadronFraction", _jetHFHadronFraction, &b__jetHFHadronFraction);
+    fChain->SetBranchAddress("_jetHFEmFraction", _jetHFEmFraction, &b__jetHFEmFraction);
     fChain->SetBranchAddress("_met", &_met, &b__met);
     fChain->SetBranchAddress("_metJECDown", &_metJECDown, &b__metJECDown);
     fChain->SetBranchAddress("_metJECUp", &_metJECUp, &b__metJECUp);
@@ -300,6 +310,8 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
         fChain->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
         fChain->SetBranchAddress("_gen_HT", &_gen_HT, &b__gen_HT);
+    } else {
+        fChain->SetBranchAddress("_jetPt_L2L3", _jetPt_L2L3, &b__jetPt_L2L3);
     }
 }
 
@@ -459,6 +471,10 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_jetEta",                    &_jetEta,                   "_jetEta[_nJets]/D");
     outputTree->Branch("_jetPhi",                    &_jetPhi,                   "_jetPhi[_nJets]/D");
     outputTree->Branch("_jetE",                      &_jetE,                     "_jetE[_nJets]/D");
+    outputTree->Branch("_jetPt_Uncorrected",         &_jetPt_Uncorrected,        "_jetPt_Uncorrected[_nJets]/D");
+    outputTree->Branch("_jetPt_L1",                  &_jetPt_L1,                 "_jetPt_L1[_nJets]/D");
+    outputTree->Branch("_jetPt_L2",                  &_jetPt_L2,                 "_jetPt_L2[_nJets]/D");
+    outputTree->Branch("_jetPt_L3",                  &_jetPt_L3,                 "_jetPt_L3[_nJets]/D");
     outputTree->Branch("_jetCsvV2",                  &_jetCsvV2,                 "_jetCsvV2[_nJets]/D");
     outputTree->Branch("_jetDeepCsv_udsg",           &_jetDeepCsv_udsg,          "_jetDeepCsv_udsg[_nJets]/D");
     outputTree->Branch("_jetDeepCsv_b",              &_jetDeepCsv_b,             "_jetDeepCsv_b[_nJets]/D");
@@ -468,6 +484,13 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_jetIsLoose",                &_jetIsLoose,               "_jetIsLoose[_nJets]/i");
     outputTree->Branch("_jetIsTight",                &_jetIsTight,               "_jetIsTight[_nJets]/i");
     outputTree->Branch("_jetIsTightLepVeto",         &_jetIsTightLepVeto,        "_jetIsTightLepVeto[_nJets]/i");
+    outputTree->Branch("_jetNeutralHadronFraction",  &_jetNeutralHadronFraction, "_jetNeutralHadronFraction[_nJets]/D");
+    outputTree->Branch("_jetChargedHadronFraction",  &_jetChargedHadronFraction, "_jetChargedHadronFraction[_nJets]/D");
+    outputTree->Branch("_jetNeutralEmFraction",      &_jetNeutralEmFraction,     "_jetNeutralEmFraction[_nJets]/D");
+    outputTree->Branch("_jetChargedEmFraction",      &_jetChargedEmFraction,     "_jetChargedEmFraction[_nJets]/D");
+    outputTree->Branch("_jetHFHadronFraction",       &_jetHFHadronFraction,      "_jetHFHadronFraction[_nJets]/D");
+    outputTree->Branch("_jetHFEmFraction",           &_jetHFEmFraction,          "_jetHFEmFraction[_nJets]/D");
+
 
     if(!isData){
         outputTree->Branch("_nLheWeights",               &_nLheWeights,               "_nLheWeights/b");
@@ -494,6 +517,7 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/b");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
         outputTree->Branch("_gen_HT",                    &_gen_HT,                    "_gen_HT/D");
+    } else {
+        outputTree->Branch("_jetPt_L2L3",                &_jetPt_L2L3,               "_jetPt_L2L3[_nJets]/D");
     }
 }
-
