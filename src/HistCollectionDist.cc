@@ -230,7 +230,7 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const uns
             year = "2016";
         } else {
             year = "2017";
-        }
+        }   
         if(category.find("RunB") != std::string::npos) header += year + " Run B";
         else if(category.find("RunC") != std::string::npos) header += year + " Run C";
         else if(category.find("RunD") != std::string::npos) header += year + " Run D";
@@ -241,11 +241,11 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const uns
     }
 
     //default case just displays the luminosity
-    if(is2016){
+    if(is2016 && (category.find("Run") == std::string::npos) ){
         header += "35.9 fb^{-1}";
-    } else if(is2017){
+    } else if(is2017 && ( category.find("Run") == std::string::npos) ){
         header += "41.4 fb^{-1}";
-    } else {
+    } else if(category.find("Run") == std::string::npos){
         header += "77.3 fb^{-1}";
     }
     header += " (13 TeV)";
