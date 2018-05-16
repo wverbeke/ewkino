@@ -244,7 +244,7 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const uns
     if(is2016 && (category.find("Run") == std::string::npos) ){
         header += "35.9 fb^{-1}";
     } else if(is2017 && ( category.find("Run") == std::string::npos) ){
-        header += "41.4 fb^{-1}";
+        header += "41.5 fb^{-1}";
     } else if(category.find("Run") == std::string::npos){
         header += "77.3 fb^{-1}";
     }
