@@ -1,43 +1,163 @@
 
 //include c++ library classes
 #include <string>
+#include <iostream>
+#include <fstream>
 
 //include ROOT classes
 #include "TFile.h"
 #include "TH1D.h"
+#include "TROOT.h"
 
-void extractPuWeight(const std::string& mcFile){
-    //read MC pu distribution from given MC sample
-    TFile* inputFile = TFile::Open((const TString&) mcFile);
-    TH1D* mcPuDist = (TH1D*) inputFile->Get("blackJackAndHookers/nTrue");
-    //rebin MC distribution to have same binning as data 
-    //mcPuDist->Rebin(2);
-    //normalize histogram to unity
-    mcPuDist->Scale(1/mcPuDist->GetSumOfWeights());
-    //pu weights
-    TH1D* puWeights[6]; 
-    TFile* dataFile[6];
-    //read data pu distributions 
-    const std::string eras[6] = {"Inclusive", "B", "C", "D", "E", "F"};
-    for(unsigned e = 0; e < 6; ++e){
-        dataFile[e] = TFile::Open( (const TString&) "weights/pileUpData/dataPuHist_era" + eras[e] + ".root");
-        TH1D* dataHist = (TH1D*) dataFile[e]->Get("pileup");
-        //normalize histogram to unity
-        puWeights[e] = (TH1D*) dataHist->Clone();
-        puWeights[e]->Scale(1/dataHist->GetSumOfWeights());
-        puWeights[e]->Divide(mcPuDist);
+//include other parts of code
+#include "../interface/Sample.h"
+
+
+std::shared_ptr<TH1D> rebinHistogram(const std::shared_ptr<TH1D>& oldHist, const unsigned newNBins){
+    const unsigned oldNBins = oldHist->GetNbinsX();  
+
+    bool error = false;
+    if(newNBins > oldNBins){
+        std::cerr << "Error: trying to rebin histogram to a larger amount of bins that it originally had!" << std::endl;
+        error = true;
     }
+
+    if(oldNBins%newNBins != 0){
+        std::cerr << "Error: the new number of bins is not a divisor of the old number of bins when rebinning the histogram!" << std::endl;
+        error = true;
+    }
+
+    if(error){
+        return std::shared_ptr<TH1D>( (TH1D*) nullptr );
+    }
+
+    //range of new histogram
+    double min = oldHist->GetBinLowEdge(1);
+    double max = ( oldHist->GetBinLowEdge(oldNBins) + oldHist->GetBinWidth(oldNBins) )/(oldNBins/newNBins);
+
+    std::shared_ptr<TH1D> newHist = std::make_shared<TH1D>( std::string(std::string(oldHist->GetName()) + "_new").c_str(), oldHist->GetTitle(), newNBins, min, max); 
+    for(unsigned b = 1; b < newNBins + 1; ++b){
+        newHist->SetBinContent(b, oldHist->GetBinContent(b));   
+        newHist->SetBinError(b, oldHist->GetBinError(b));   
+    }
+    
+    return newHist;
+}
+
+
+void extractPuWeights(const Sample& sample){
+
+    //no weights to be determined for data
+    if( sample.isData() ){
+        std::cerr << "Error: trying to extract pu weights for data sample, returning control." << std::endl;
+        return;
+    }
+
+    //skip 2016 samples in the 2017 sample list
+    if( sample.is2017() && sample.getFileName().find("Summer16") != std::string::npos){
+        std::cout << "Skipping 2016 sample : " << sample.getFileName() << " from 2017 list, it should also be included in the 2016 list" << std::endl;
+        return;
+    }
+
+    //directory where ntuples are stored 
+    const std::string directory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/";
+
+    //read MC pu distribution from given MC sample
+    TFile* inputFile = TFile::Open((const TString&) directory + sample.getFileName() );
+    std::shared_ptr<TH1D> mcPuDist = std::shared_ptr<TH1D>( (TH1D*) inputFile->Get("blackJackAndHookers/nTrueInteractions") );
+
+    //normalize histogram to unity
+    mcPuDist->Scale(1./mcPuDist->GetSumOfWeights());
+
+    //pu weights
+    std::shared_ptr<TH1D> puWeights[14][3];
+   
+    //categorization by year, run era and ucertainty
+    const std::vector< std::string > eras2016 = {"2016Inclusive", "2016B", "2016C", "2016D", "2016E", "2016F", "2016G", "2016H"};
+    const std::vector< std::string > eras2017  = {"2017Inclusive", "2017B", "2017C", "2017D", "2017E", "2017F"};
+    std::vector< std::string > allEras = eras2016;
+    allEras.insert(allEras.begin(), eras2017.begin(), eras2017.end() );
+    const std::string uncertainty[3] = {"central", "down", "up"};
+
+    for(unsigned e = 0; e < allEras.size(); ++e){
+        for(unsigned unc = 0; unc < 3; ++unc){
+
+            //different location for 2016 and 2017 pu weights
+            std::string year;
+            if( allEras[e].find("2016") != std::string::npos){
+                year = "2016";
+            } else {
+                year = "2017";
+            }
+
+            //read data pu distributions 
+            TFile* dataFile = TFile::Open( (const TString&) "weights/pileUpData/" + year + "/dataPuHist_" + allEras[e] + "_" + uncertainty[unc] + ".root");
+            std::shared_ptr<TH1D> dataHist = std::shared_ptr<TH1D>( (TH1D*) dataFile->Get("pileup") );
+            dataHist->SetDirectory(gROOT);
+
+            //extract copy of data histogram as numerator 
+            std::shared_ptr<TH1D> numerator = std::shared_ptr<TH1D> ( (TH1D*) dataHist->Clone() );
+            numerator->SetDirectory(gROOT);
+
+            //normalize histogram to unity
+            numerator->Scale(1./numerator->GetSumOfWeights());
+
+            //denominator is MC PU distribution
+            std::shared_ptr<TH1D> denominator = std::shared_ptr<TH1D>(mcPuDist);
+            denominator->SetDirectory(gROOT);
+
+            //rebin denominator or numerator histogram if needed
+            if( sample.is2016() && (year == "2017") ){
+                numerator = rebinHistogram(numerator, 50);
+            } else if( sample.is2017() && (year == "2016") ){
+                denominator = rebinHistogram(mcPuDist, 50);
+            }
+
+            //divide data and MC shapes
+            numerator->Divide(denominator.get());
+
+            puWeights[e][unc] = std::shared_ptr< TH1D >( (TH1D*) numerator->Clone() );
+            puWeights[e][unc]->SetDirectory(gROOT);
+
+            //needed to set ownership to memory?
+            dataFile->Close();
+        }
+    }
+
     //write pu Weights to file
-    TFile* outputFile = TFile::Open("weights/puWeights2017.root", "RECREATE");
-    for(unsigned e = 0; e < 6; ++e){
-        puWeights[e]->Write((const TString&) "puw_Run" + eras[e]);
+    TFile* outputFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName(), "RECREATE");
+    for(unsigned e = 0; e < allEras.size(); ++e){
+        for(unsigned unc = 0; unc < 3; ++unc){
+            puWeights[e][unc]->Write((const TString&) "puw_Run" + allEras[e] + "_" + uncertainty[unc] );
+        }
     }
     outputFile->Close();
     inputFile->Close();
-    for(unsigned e = 0; e < 6; ++e) dataFile[e]->Close();
 }
 
 int main(int argc, char* argv[]){
-    extractPuWeight("../../ntuples_ewkino/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root");
+
+    //list of samples
+    std::vector< Sample > sampleVector;
+    
+    //read sample lists from txt 
+    std::ifstream file2016("sampleLists/samples_dilepCR_2016.txt");
+    do {
+        sampleVector.push_back(Sample(file2016));
+    } while(!file2016.eof());
+    sampleVector.pop_back();
+    file2016.close();       //close file after usage
+
+    std::ifstream file2017("sampleLists/samples_dilepCR_2017.txt");
+    do {
+        sampleVector.push_back(Sample(file2017));
+    } while(!file2017.eof());
+    sampleVector.pop_back();
+    file2017.close();       //close file after usage
+
+    for(const auto& sample : sampleVector){
+        if(sample.isData()) continue;
+        extractPuWeights(sample);
+    }
     return 0;
 }
