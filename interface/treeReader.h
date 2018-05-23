@@ -299,7 +299,7 @@ class treeReader {
         bool promptLeptons() const;
 
         //compute b-tagging efficiency
-        void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
+        void computeBTagEff(const std::string& analysis, const bool clean, const bool deepCSV, const bool is2016);
 
         //event weights
         double puWeight(const unsigned period = 0, const unsigned unc = 0) const;
@@ -354,9 +354,11 @@ class treeReader {
         bool lepIsTight2016(const unsigned) const;
         bool lepIsTight2017(const unsigned) const;
 
-        bool eleIsCleanBase(const unsigned, bool (treeReader::*looseMuon)(unsigned) const) const;
+        bool eleIsCleanBase(const unsigned, bool (treeReader::*looseMuon)(const unsigned) const) const;
         bool eleIsClean2016(const unsigned) const;
         bool eleIsClean2017(const unsigned) const;
+
+        bool jetIsCleanBase(const unsigned, bool (treeReader::*leptonIsFO)(const unsigned) const) const;
 
         bool bTaggedDeepCSVBase(const unsigned, const unsigned wp, const double cuts[3]) const;
         bool bTaggedDeepCSV2016(const unsigned, const unsigned wp = 1) const;
@@ -367,6 +369,24 @@ class treeReader {
         bool bTaggedCSVv22016(const unsigned, const unsigned wp = 1) const;
         bool bTaggedCSVv22017(const unsigned, const unsigned wp = 1) const;
         bool bTaggedCSVv2(const unsigned, const unsigned wp = 1) const;
+
+
+        //lepton selection for different parts of tZq and ttV analysis (to compute bTag efficiencies for everyone)
+        bool lepIsGoodtZq(const unsigned) const;
+
+        bool lepIsGoodttZ3l2016(const unsigned) const;
+        bool lepIsGoodttZ3l2017(const unsigned) const;
+        bool lepIsGoodttZ3l(const unsigned) const;
+
+        bool lepIsGoodttZ4l2016(const unsigned) const;
+        bool lepIsGoodttZ4l2017(const unsigned) const;
+        bool lepIsGoodttZ4l(const unsigned) const;
+
+        bool lepIsGoodttW2016(const unsigned) const;
+        bool lepIsGoodttW2017(const unsigned) const;
+        bool lepIsGoodttW(const unsigned) const;
+
+        bool lepIsGoodMultiAnalysis(const std::string&, const unsigned) const;
 
         //era-specific event weights
 
