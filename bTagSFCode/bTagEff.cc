@@ -102,7 +102,7 @@ void treeReader::computeBTagEff(const std::string& analysis, const bool clean, c
     //determine name of outputfile
     const std::string taggerNames[2] = {"CSVv2", "deepCSV"};
     const std::string cleanNames[2] = {"uncleanded", "cleaned"};
-    const std::string outputName = "bTagEff_" + taggerNames[deepCSV] + "_" + cleanNames[clean] + "_" + analysis;
+    const std::string outputName = "bTagEff_" + taggerNames[deepCSV] + "_" + cleanNames[clean] + "_" + analysis + "_" + (is2016 ? "2016" : "2017"); 
 
     //save histograms to file
     TFile* bTagEffFile = TFile::Open( (const TString&) "../weights/" + outputName + ".root", "recreate");
