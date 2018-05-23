@@ -10,21 +10,19 @@
 
 //include other parts of code 
 #include "../bTagSFCode/BTagCalibrationStandalone.h"
+#include "../interface/Sample.h"
 
 //Class storing scale-factor weights to be used in events
 class Reweighter{
     public:
-        Reweighter();
+        Reweighter(const std::vector<Sample>&, const bool is2016);
         ~Reweighter();
 
         //pileup weight
-        double puWeight(const double nTrueInt, const unsigned period = 0, const unsigned unc = 0) const; //period: 0 = 2016, 1 = 2017  unc: 0 = central, 1 = up, 2 = down
+        double puWeight(const double nTrueInt, const Sample&, const unsigned unc = 0) const;
 
         //b-tag weight
         double bTagWeight(const unsigned jetFlavor, const double jetPt, const double jetEta, const double jetCSV, const unsigned unc = 0) const;
-
-        //b-tagging efficiency
-        double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
 
         //lepton id + reconstruction weight
         double muonWeight(const double pt, const double eta) const{ 
@@ -40,8 +38,8 @@ class Reweighter{
         double electronFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
 
     private:
-        //pu scale factors
-        TH1D* puWeights[3];
+        //pu weights (one for every sample)
+        std::map< std::string, std::vector< std::shared_ptr<TH1D> > > puWeights;
 
         //btag scale factors and efficiencies
         BTagCalibration* bTagCalib;
@@ -49,23 +47,23 @@ class Reweighter{
         TH1D* bTagEffHist[3];
 
         //reconstruction scale factors
-        TGraph* muonRecoSF;
-        TH2D* electronRecoSF;
+        std::shared_ptr<TGraph> muonRecoSF;
+        std::shared_ptr<TH2D> electronRecoSF;
 
         //muon id scale factors
-        TH2D* muonMediumSF;
-        TH2D* muonMiniIsoSF;
-        TH2D* muonIPSF;
-        TH2D* muonSIP3DSF;
-        TH2D* muonLeptonMvaSF;
+        std::shared_ptr<TH2D> muonLooseToRecoSF;
+        std::shared_ptr<TH2D> muonTightToLooseSF;
 
         //electron id scale factors
-        //TH2D* electronIdSF;
-        TH2D* electronEmuIPMvaLooseSF;
-        TH2D* electronMiniIsoSF;
-        TH2D* electronConvVetoMissingHitsSF;
+        std::shared_ptr<TH2D> electronLooseToRecoSF;
+        std::shared_ptr<TH2D> electronTightToLooseSF;
+        
 
-        //return jet flavor index 1-> 0, 4 -> 1, 5->2
+        //initialize all weight histograms
+        void initialize2016Weights();
+        void initialize2017Weights();
+
+        //return jet flavor index 1 -> 0, 4 -> 1, 5 -> 2
         unsigned flavorInd(const unsigned jetFlavor) const{ 
             return 0 + (jetFlavor == 4) + 2*(jetFlavor == 5);
         }
@@ -81,5 +79,26 @@ class Reweighter{
         //id weights
         double muonIdWeight(const double pt, const double eta) const;
         double electronIdWeight(const double pt, const double eta) const;
+
+        //b-tagging efficiency
+        double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
+
+        //read pu weights for a given list of samples
+        void initializePuWeights(const std::vector< Sample >&); 
+
+        //read b-tagging weights
+        void initializeBTagWeights(const bool);
+
+        //read electron id and reco weights
+        void initializeElectronWeights(const bool);
+
+        //read muon id and reco weights 
+        void initializeMuonWeights(const bool);
+
+        //initialize fake-rate
+        void initializeFakeRate(const bool);
+
+        //initialize all weights 
+        void initializeAllWeights(const std::vector< Sample>&, const bool);
 };
 #endif

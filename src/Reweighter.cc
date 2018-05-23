@@ -1,97 +1,153 @@
 #include "../interface/Reweighter.h"
-
+ 
 //include c++ library classes
 
 //include ROOT classes
 #include "TFile.h"
 #include "TROOT.h"
 
-Reweighter::Reweighter(){
+//include other parts of code 
+#include "../interface/analysisTools.h"
+
+Reweighter::Reweighter(const std::vector<Sample>& samples, const bool is2016){
+	initializeAllWeights(samples, is2016);
+}
+
+void Reweighter::initializeAllWeights(const std::vector<Sample>& samples, const bool is2016){
 
     //initialize pu weights
-    const std::string vars[3] = {"central", "down", "up"};
-    for(unsigned v = 0; v < 3; ++v){
-        TFile* puFile = TFile::Open( (const TString&) "weights/puw_nTrueInt_Moriond2017_36p5fb_Summer16_" + vars[v] + ".root");
-        puWeights[v] = (TH1D*) puFile->Get("puw");
-        //make sure histogram does not get deleted when closing file
-        puWeights[v]->SetDirectory(gROOT);
-        puFile->Close();
-    }
+    initializePuWeights(samples);
 
     //initialize b-tag weights
-    //currently assuming medium WP of deepCSV tagger 
-    bTagCalib = new BTagCalibration("deepCsv", "weights/DeepCSV_Moriond17_B_H.csv");
+    initializeBTagWeights(is2016);
+
+	//initialize electron weights 
+	initializeElectronWeights(is2016);
+
+	//initialize muon weights 
+	initializeMuonWeights(is2016);
+
+	//initialize fake-rate 
+
+    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
+    const std::string frUnc[3] = {"", "_down", "_up"};
+    for(unsigned unc = 0; unc < 3; ++unc){
+        frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]);
+        frMapEle[unc]->SetDirectory(gROOT);
+        frMapMu[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_mu_data_comb" + frUnc[unc]);
+        frMapMu[unc]->SetDirectory(gROOT);
+    }
+    frFile->Close();
+}
+
+void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
+    
+    static const std::string minBiasVariation[3] = {"central", "down", "up"};
+    for(auto& sample : sampleList){
+
+        //open root file corresponding to sample
+        TFile* puFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName() + ".root");
+        
+        //extract pu weights 
+        for(unsigned var = 0; var < 3; ++var){
+            std::string histName = "puw_Run";
+            histName += (sample.is2016() ? "2016" : "2017");
+            histName += "Inclusive_" + minBiasVariation[var];
+            puWeights[sample.getUniqueName()].push_back( std::shared_ptr<TH1D> ( (TH1D*)puFile->Get( (const TString&) histName ) ) );
+
+            //make sure histogram does not get deleted when closing file
+            puWeights[sample.getUniqueName()].back()->SetDirectory(gROOT);
+        }
+        puFile->Close();
+    }
+}
+
+void Reweighter::initializeBTagWeights(const bool is2016){
+
+    //assuming medium WP of deepCSV tagger 
+    std::string sfFileName;
+    if(is2016){
+        sfFileName = "DeepCSV_Moriond17_B_H.csv";
+    } else {
+        sfFileName = "DeepCSV_94XSF_V2_B_F.csv";
+    }
+    bTagCalib = new BTagCalibration("deepCsv", "weights/" + sfFileName);
     bTagCalibReader =  new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up", "down"});
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_B, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_C, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_UDSG, "incl");    
 
     //initialize b-tag efficiencies
-    TFile* bTagFile = TFile::Open("weights/bTagEff_deepCSV_medium_cleaned_ewkino.root");
+    std::string effFileName;
+    if(is2016){
+        sfFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2016.root";
+    } else {
+        sfFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2017.root";
+    }
+
+    TFile* bTagFile = TFile::Open( (const TString&) "weights/" + effFileName);
     const std::string quarkFlavors[3] = {"udsg", "charm", "beauty"};
     for(unsigned flav = 0; flav < 3; ++flav){
         bTagEffHist[flav] = (TH1D*) bTagFile->Get( (const TString&) "bTagEff_" + quarkFlavors[flav]);
         bTagEffHist[flav]->SetDirectory(gROOT);
     }
     bTagFile->Close();
+}
 
-    //Read Muon reco SF Weights
-    TFile* muonRecoFile = TFile::Open("weights/muonTrackingSF_2016.root");
-    muonRecoSF = (TGraph*) muonRecoFile->Get("ratio_eff_eta3_dr030e030_corr");
-    //WARNING: not clear how ownership works for TGraph, can not set directory
-    //make sure the TGraph is not DELETED when file is closed!
-    //muonRecoSF->SetDirectory(gROOT);
-    muonRecoFile->Close();
+void Reweighter::initializeElectronWeights(const bool is2016){	
 
-    //Read Electron reco SF Weights
-    TFile* electronRecoFile = TFile::Open("weights/electronRecoSF_2016.root");
-    electronRecoSF = (TH2D*) electronRecoFile->Get("EGamma_SF2D");
-    electronRecoSF->SetDirectory(gROOT);
-    electronRecoFile->Close();
+	//read electron reco SF weights
 
-    //Read muon id SF weights
-    TFile* muonMediumFile = TFile::Open("weights/muonScaleFactors_MediumIDtoReco.root");
-    muonMediumSF = (TH2D*) muonMediumFile->Get("SF");
-    muonMediumSF->SetDirectory(gROOT);
-    muonMediumFile->Close();
 
-    TFile* muonMiniIsoFile = TFile::Open("weights/muonScaleFactors_miniIso0p4toMediumID.root");
-    muonMiniIsoSF = (TH2D*) muonMiniIsoFile->Get("SF");
-    muonMiniIsoSF->SetDirectory(gROOT);
-    muonMiniIsoFile->Close();
+    //read electron ID SF weights
+    TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_2016.root");
+	std::string sfFileName;
+	if(is2016){
+		sfFileName = "electronIDScaleFactors_2016.root";
+	} else {
+		sfFileName = "electronIDScaleFactors_2017.root";
+	} 
+	electronLooseToRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose") );
+	electronLooseToRecoSF->SetDirectory(gROOT);
+	electronTightToLooseSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("TTVLooseToTTVLeptonMvatZq") );
+	electronTightToLooseSF->SetDirectory(gROOT);
+	electronIdFile->Close();
+}
 
-    TFile* muonIPFile = TFile::Open("weights/muonScaleFactors_dxy0p05dz0p1toMediumID.root");
-    muonIPSF = (TH2D*) muonIPFile->Get("SF");
-    muonIPSF->SetDirectory(gROOT);
-    muonIPFile->Close();
 
-    TFile* muonSIP3DFile = TFile::Open("weights/muonScaleFactors_sip3d4toMediumID.root");
-    muonSIP3DSF = (TH2D*) muonSIP3DFile->Get("SF");
-    muonSIP3DSF->SetDirectory(gROOT);
-    muonSIP3DFile->Close();
+void Reweighter::initializeMuonWeights(const bool is2016){
 
-    TFile* muonLeptonMvaFile = TFile::Open("weights/muonScaleFactors_ttHMvaTight_old.root");
-    muonLeptonMvaSF = (TH2D*) muonLeptonMvaFile->Get("sf");
-    muonLeptonMvaSF->SetDirectory(gROOT);
-    muonLeptonMvaFile->Close();
+	//read muon reco SF weights
+	if(is2016){
 
-    //read electron id SF weights       
-    /*
-    TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_ttHMvaTight.root");
-    electronIdSF = (TH2D*) electronIdFile->Get("GsfElectronToTTZ2017");
-    electronIdSF->SetDirectory(gROOT);
-    electronIdFile->Close();
-    */
-    TFile* electronGeneralIdFile = TFile::Open("weights/electronIDScaleFactors.root");
-    electronEmuIPMvaLooseSF = (TH2D*) electronGeneralIdFile->Get("GsfElectronToMVAVLooseFOIDEmuTightIP2D");
-    electronEmuIPMvaLooseSF->SetDirectory(gROOT);
-    electronMiniIsoSF = (TH2D*) electronGeneralIdFile->Get("MVAVLooseElectronToMini4");
-    electronMiniIsoSF->SetDirectory(gROOT);
-    //WARNING: should this be applied considering we have no conersion veto??
-    electronConvVetoMissingHitsSF = (TH2D*) electronGeneralIdFile->Get("MVAVLooseElectronToConvVetoIHit1");
-    electronConvVetoMissingHitsSF->SetDirectory(gROOT);
+    	//WARNING: not clear how ownership works for TGraph, can not set directory
+    	//make sure the TGraph is not DELETED when file is closed!
+		TFile* muonRecoFile = TFile::Open("weights/muonTrackingSF_2016.root");
+    	muonRecoSF = std::shared_ptr<TGraph>( (TGraph*) muonRecoFile->Get("ratio_eff_eta3_dr030e030_corr") );
+		muonRecoFile->Close();
+	} else {
+		
+	}	
 
-    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
+    //read muon ID SF weights
+    TFile* muonIdFile = TFile::Open("weights/muonIDScaleFactors_2016.root");
+    std::string sfFileName;
+    if(is2016){
+        sfFileName = "muonIDScaleFactors_2016.root";
+    } else {
+        sfFileName = "muonIDScaleFactors_2017.root";
+    }
+    muonLooseToRecoSF = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLoose") );
+    muonLooseToRecoSF->SetDirectory(gROOT);
+    muonTightToLooseSF = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("TTVLooseToTTVLeptonMvatZq") );
+    muonTightToLooseSF->SetDirectory(gROOT);
+    muonIdFile->Close();	
+}
+
+void Reweighter::initializeFakeRate(const bool is2016){
+
+	//WARNING : To be updated with new fake-rate in 2016/2017 splitting
+	TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
     const std::string frUnc[3] = {"", "_down", "_up"};
     for(unsigned unc = 0; unc < 3; ++unc){
         frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]);
@@ -106,25 +162,9 @@ Reweighter::~Reweighter(){
     delete bTagCalib;
     delete bTagCalibReader;
 
-    for(unsigned v = 0; v < 3; ++v){
-        delete puWeights[v];
-    }
-
     for(unsigned flav = 0; flav < 3; ++flav){
         delete bTagEffHist[flav];
     }
-
-    delete muonRecoSF;
-    delete electronRecoSF;
-    delete muonMediumSF;
-    delete muonMiniIsoSF;
-    delete muonIPSF;
-    delete muonSIP3DSF;
-    delete muonLeptonMvaSF;
-
-    delete electronEmuIPMvaLooseSF;
-    delete electronMiniIsoSF;
-    delete electronConvVetoMissingHitsSF;
 
     for(unsigned unc = 0; unc < 3; ++unc){
         delete frMapEle[unc];
@@ -133,18 +173,25 @@ Reweighter::~Reweighter(){
 }
 
 
-double Reweighter::puWeight(const double nTrueInt, const unsigned period, const unsigned unc) const{
+double Reweighter::puWeight(const double nTrueInt, const Sample& sample, const unsigned unc) const{
     if(unc < 3){
-        if(period == 0){
-            return puWeights[unc]->GetBinContent(puWeights[unc]->FindBin(std::min(nTrueInt, 49.) ) );
-        //!!!! 2017 pileup weights to be added !!!!
-        } else {
-            return 1.;
+
+        //find weights for given sample
+        const auto& weightVectorIter = puWeights.find(sample.getUniqueName() );
+
+        //check if pu weights are available for this sample
+        if( weightVectorIter == puWeights.cend() ){
+            std::cerr << "Error: no pu weights found for sample : " << sample.getUniqueName() << " returning weight 0  " << std::endl;
+            return 0.;
         }
+
+        double maxBin = (sample.is2016() ?  49.5 : 99.5 );
+        TH1D* weights = ( (*weightVectorIter).second)[unc].get();
+        return weights->GetBinContent(weights->FindBin(std::min(nTrueInt, maxBin) ) );
     }
-    else{
-        std::cerr << "Error: invalid pu uncertainty requested: returning weight 1" << std::endl;
-        return 1.;
+    else {
+        std::cerr << "Error: invalid pu uncertainty requested: returning weight 0" << std::endl;
+        return 0.;
     }
 }
 
@@ -153,7 +200,7 @@ double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, cons
     static const std::string uncName[3] = {"central", "down", "up"};
     if(unc < 3){
         return bTagCalibReader->eval_auto_bounds(uncName[unc], flavorEntries[flavorInd(jetFlavor)], jetEta, jetPt, jetCSV);
-    } else{
+    } else {
         std::cerr << "Error: invalid b-tag SF uncertainty requested: returning weight 1" << std::endl;
         return 1.;
     }
@@ -175,32 +222,37 @@ double Reweighter::electronRecoWeight(const double superClusterEta, const double
 }
 
 double Reweighter::muonIdWeight(const double pt, const double eta) const{
-    //!!!! To be split for 2016 and 2017 data !!!!
-    double sf = muonMediumSF->GetBinContent(muonMediumSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
-    sf *= muonMiniIsoSF->GetBinContent(muonMiniIsoSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
-    sf *= muonIPSF->GetBinContent(muonIPSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
-    sf *= muonSIP3DSF->GetBinContent(muonSIP3DSF->FindBin(std::min(pt, 110.), std::min(fabs(eta), 2.4) ) );
-    sf *= muonLeptonMvaSF->GetBinContent(muonLeptonMvaSF->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.4) ) );
+	double croppedPt = std::min(pt, 199.);
+	double croppedEta = std::min( fabs(eta), 2.39 ); 
+	double sf = muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+	sf*= muonTightToLooseSF->GetBinContent( muonTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
 }
 
 double Reweighter::electronIdWeight(const double pt, const double eta) const{
-    //!!!! To be split for 2016 and 2017 data !!!!
-    //return electronIdSF->GetBinContent(electronIdSF->FindBin(std::min(pt, 199.), std::min(fabs(eta), 2.5) ) );
-
-    //Use TTH analysis weights for now:
-    double sf = electronEmuIPMvaLooseSF->GetBinContent( electronEmuIPMvaLooseSF->FindBin(std::min(pt, 199.), std::min( fabs(eta), 2.5 ) ) );
-    sf *= electronMiniIsoSF->GetBinContent( electronMiniIsoSF->FindBin(std::min(pt, 199.), std::min( fabs(eta), 2.5 ) ) );
-    sf *= electronConvVetoMissingHitsSF->GetBinContent( electronConvVetoMissingHitsSF->FindBin(std::min(pt, 199.), std::min( fabs(eta), 2.5 ) ) );
+	double croppedPt = std::min(pt, 199.);
+	double croppedEta = std::min( fabs(eta), 2.49 ); 
+	double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+	sf*= electronTightToLooseSF->GetBinContent( electronTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
 }
 
 double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
-    //!!!! To be split for 2016 and 2017 data !!!!
-    return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.4) ) );
+    //!!!! To be split for 2016 and 2017 data !!!! 
+    if(unc < 3){
+        return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.4) ) );
+    } else {
+        std::cerr << "Error: invalid muon fake-rate uncertainty requested: returning fake-rate 99" << std::endl;
+        return 99;
+    }
 }
 
 double Reweighter::electronFakeRate(const double pt, const double eta, const unsigned unc) const{
     //!!!! To be split for 2016 and 2017 data !!!!
-    return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.5) ) );
+    if(unc < 3){ 
+        return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.5) ) );
+    } else {
+        std::cerr << "Error: invalid electron fake-rate uncertainty requested: returning fake-rate 99" << std::endl;
+        return 99;
+    }
 }

@@ -184,8 +184,11 @@ class treeReader {
         Double_t        _jetPt[nJets_max];   
         Double_t        _jetPt_JECUp[nJets_max];   
         Double_t        _jetPt_JECDown[nJets_max];   
-        Double_t        _jetPt_JERUp[nJets_max];   
-        Double_t        _jetPt_JERDown[nJets_max];   
+        Double_t        _jetPt_Uncorrected[nJets_max];
+        Double_t        _jetPt_L1[nJets_max];
+        Double_t        _jetPt_L2[nJets_max];
+        Double_t        _jetPt_L3[nJets_max];
+        Double_t        _jetPt_L2L3[nJets_max];
         Double_t        _jetEta[nJets_max];   
         Double_t        _jetPhi[nJets_max];   
         Double_t        _jetE[nJets_max];   
@@ -198,6 +201,12 @@ class treeReader {
         Bool_t          _jetIsLoose[nJets_max];
         Bool_t          _jetIsTight[nJets_max];
         Bool_t          _jetIsTightLepVeto[nJets_max];
+        Double_t        _jetNeutralHadronFraction[nJets_max];
+        Double_t        _jetChargedHadronFraction[nJets_max];
+        Double_t        _jetNeutralEmFraction[nJets_max];
+        Double_t        _jetChargedEmFraction[nJets_max];
+        Double_t        _jetHFHadronFraction[nJets_max];
+        Double_t        _jetHFEmFraction[nJets_max];
         Double_t        _met;
         Double_t        _metJECDown;
         Double_t        _metJECUp;
@@ -307,7 +316,7 @@ class treeReader {
         bool promptLeptons() const;
 
         //compute b-tagging efficiency
-        void computeBTagEff(const unsigned wp = 1, const bool clean = true, const bool deepCSV = true);
+        void computeBTagEff(const std::string& analysis, const bool clean, const bool deepCSV, const bool is2016);
 
         //event weights
         double puWeight(const unsigned period = 0, const unsigned unc = 0) const;
@@ -334,7 +343,7 @@ class treeReader {
         double scale = 0;
         double weight = 1;                                                      //weight of given event
         unsigned long nEntries = 0;
-        const double lumi2017 = 41.37;                                          //in units of 1/fb
+        const double lumi2017 = 41.53;                                          //in units of 1/fb
         const double lumi2016 = 35.867;                 
         std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class used for reweighting functions
 
@@ -366,9 +375,11 @@ class treeReader {
         bool lepIsTight2016(const unsigned) const;
         bool lepIsTight2017(const unsigned) const;
 
-        bool eleIsCleanBase(const unsigned, bool (treeReader::*looseMuon)(unsigned) const) const;
+        bool eleIsCleanBase(const unsigned, bool (treeReader::*looseMuon)(const unsigned) const) const;
         bool eleIsClean2016(const unsigned) const;
         bool eleIsClean2017(const unsigned) const;
+
+        bool jetIsCleanBase(const unsigned, bool (treeReader::*leptonIsFO)(const unsigned) const) const;
 
         bool bTaggedDeepCSVBase(const unsigned, const unsigned wp, const double cuts[3]) const;
         bool bTaggedDeepCSV2016(const unsigned, const unsigned wp = 1) const;
@@ -379,6 +390,24 @@ class treeReader {
         bool bTaggedCSVv22016(const unsigned, const unsigned wp = 1) const;
         bool bTaggedCSVv22017(const unsigned, const unsigned wp = 1) const;
         bool bTaggedCSVv2(const unsigned, const unsigned wp = 1) const;
+
+
+        //lepton selection for different parts of tZq and ttV analysis (to compute bTag efficiencies for everyone)
+        bool lepIsGoodtZq(const unsigned) const;
+
+        bool lepIsGoodttZ3l2016(const unsigned) const;
+        bool lepIsGoodttZ3l2017(const unsigned) const;
+        bool lepIsGoodttZ3l(const unsigned) const;
+
+        bool lepIsGoodttZ4l2016(const unsigned) const;
+        bool lepIsGoodttZ4l2017(const unsigned) const;
+        bool lepIsGoodttZ4l(const unsigned) const;
+
+        bool lepIsGoodttW2016(const unsigned) const;
+        bool lepIsGoodttW2017(const unsigned) const;
+        bool lepIsGoodttW(const unsigned) const;
+
+        bool lepIsGoodMultiAnalysis(const std::string&, const unsigned) const;
 
         //era-specific event weights
 
@@ -554,8 +583,11 @@ class treeReader {
         TBranch        *b__jetPt;   
         TBranch        *b__jetPt_JECUp;   
         TBranch        *b__jetPt_JECDown;   
-        TBranch        *b__jetPt_JERUp;   
-        TBranch        *b__jetPt_JERDown;   
+        TBranch        *b__jetPt_Uncorrected;
+        TBranch        *b__jetPt_L1;
+        TBranch        *b__jetPt_L2;
+        TBranch        *b__jetPt_L3;
+        TBranch        *b__jetPt_L2L3;
         TBranch        *b__jetEta;   
         TBranch        *b__jetPhi;   
         TBranch        *b__jetE;   
@@ -569,6 +601,12 @@ class treeReader {
         TBranch        *b__jetIsLoose;
         TBranch        *b__jetIsTight;
         TBranch        *b__jetIsTightLepVeto;
+        TBranch        *b__jetNeutralHadronFraction;
+        TBranch        *b__jetChargedHadronFraction;
+        TBranch        *b__jetNeutralEmFraction;
+        TBranch        *b__jetChargedEmFraction;
+        TBranch        *b__jetHFHadronFraction;
+        TBranch        *b__jetHFEmFraction;
         TBranch        *b__met;   
         TBranch        *b__metJECDown;   
         TBranch        *b__metJECUp;   

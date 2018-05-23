@@ -1,7 +1,7 @@
-CC=g++
+CC=g++ -O3
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= src/eventSelection.cc bTagSFCode/bTagEff.cc src/treeReader.cc src/analysisTools.cc src/Sample.cc 
+SOURCES= src/objectSelection.cc src/ttVLeptonSelection.cc bTagSFCode/bTagEff.cc src/treeReader.cc src/analysisTools.cc src/Sample.cc src/kinematicTools.cc src/treeReaderErrors.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= bTagEff
 
