@@ -61,6 +61,7 @@ void treeReader::setup(){
         HistInfo("electronMvaFall17NoIso", "electron Fall 17 no iso MVA value", 100, -1, 1),
         HistInfo("electronMvaFall17Iso", "electron HZZ Fall 17 iso MVA value", 100, -1, 1),
         HistInfo("muonSegComp", "muon segment compatibility", 100, 0, 1),
+
         HistInfo("met", "E_{T}^{miss} (GeV)", 100, 0, 300),
         HistInfo("mll", "M_{ll} (GeV)", 200, 12, 200),
         HistInfo("leadPt", "P_{T}^{leading} (GeV)", 100, 25, 200),
@@ -98,7 +99,60 @@ void treeReader::setup(){
         HistInfo("nForwardJets_pTCut55", "number of |eta| > 2.4, P_{T} > 55 GeV jets", 6, 0, 6),
         HistInfo("jetEta_highestEtaJet_pTCut60", "|#eta|(most forward jet) (P_{T} > 60 GeV)", 100, 0, 5),
         HistInfo("jetSignedEta_highestEtaJet_pTCut60", "#eta (most forward jet) (P_{T} > 60 GeV)", 100, -5, 5),
-        HistInfo("nForwardJets_pTCut60", "number of |eta| > 2.4, P_{T} > 60 GeV jets", 6, 0, 6)
+        HistInfo("nForwardJets_pTCut60", "number of |eta| > 2.4, P_{T} > 60 GeV jets", 6, 0, 6),
+
+        HistInfo("jetEta", "|#eta|(jet), P_{T} > 25 GeV", 100, 0, 5),
+        //HisInfo("jetsEta", "|#eta|(jet), P_{T} > 40 GeV", 100, 0, 5),
+
+        HistInfo("jetPhi", "#phi(jet), P_{T} > 25 GeV", 100, 0, 3.15),
+        //HisInfo("jetsPhi", "#phi(jet), P_{T} > 40 GeV", 100, 0, 3.15),
+
+        HistInfo("jetPt", "P_{T}(jet)", 100, 0, 600),
+
+        HistInfo("jetPt_eta0to2p4", "P_{T}(jet), |#eta| < 2.4", 100, 0, 600),
+        HistInfo("jetPhi_eta0to2p4", "#phi(jet), |#eta| < 2.4", 100, 0, 3.15),
+        HistInfo("jetNeutralHadronFraction_eta0to2p4", "Neutral hadron fraction, |#eta| < 2.4", 100, 0, 1),
+        HistInfo("jetChargedHadronFraction_eta0to2p4", "charged hadron fraction, |#eta| < 2.4", 100, 0, 1),
+        HistInfo("jetNeutralEmFractionFraction_eta0to2p4", "neutral em fraction, |#eta| < 2.4", 100, 0, 1),
+        HistInfo("jetChargedEmFractionFraction_eta0to2p4", "charged em fraction, |#eta| < 2.4", 100, 0, 1),
+        HistInfo("jetPtUncorrected_eta0to2p4", "P_{T}^{uncorrected}(jet), |#eta| < 2.4", 100, 0, 600),
+        HistInfo("jetPtL1_eta0to2p4", "P_{T}^{L1}(jet), |#eta| < 2.4", 100, 0, 600),
+        HistInfo("jetPtL2_eta0to2p4", "P_{T}^{L2}(jet), |#eta| < 2.4", 100, 0, 600),
+        HistInfo("jetPtL3_eta0to2p4", "P_{T}^{L3}(jet), |#eta| < 2.4", 100, 0, 600),
+
+        HistInfo("jetPt_eta2p4to2p7", "P_{T}(jet), 2.4 < |#eta| < 2.7", 100, 0, 600),
+        HistInfo("jetPhi_eta2p4to2p7", "#phi(jet), 2.4 < |#eta| < 2.7", 100, 0, 3.15),
+        HistInfo("jetNeutralHadronFraction_eta2p4to2p7", "Neutral hadron fraction, 2.4 < |#eta| < 2.7", 100, 0, 1),
+        HistInfo("jetChargedHadronFraction_eta2p4to2p7", "charged hadron fraction, 2.4 < |#eta| < 2.7", 100, 0, 1),
+        HistInfo("jetNeutralEmFractionFraction_eta2p4to2p7", "neutral em fraction, 2.4 < |#eta| < 2.7", 100, 0, 1),
+        HistInfo("jetChargedEmFractionFraction_eta2p4to2p7", "charged em fraction, 2.4 < |#eta| < 2.7", 100, 0, 1),
+        HistInfo("jetPtUncorrected_eta2p4to2p7", "P_{T}^{uncorrected}(jet), 2.4 < |#eta| < 2.7", 100, 0, 600),
+        HistInfo("jetPtL1_eta2p4to2p7", "P_{T}^{L1}(jet), 2.4 < |#eta| < 2.7", 100, 0, 600),
+        HistInfo("jetPtL2_eta2p4to2p7", "P_{T}^{L2}(jet), 2.4 < |#eta| < 2.7", 100, 0, 600),
+        HistInfo("jetPtL3_eta2p4to2p7", "P_{T}^{L3}(jet), 2.4 < |#eta| < 2.7", 100, 0, 600),
+
+        HistInfo("jetPt_eta2p7to3", "P_{T}(jet), 2.7 < |#eta| < 3", 100, 0, 600),
+        HistInfo("jetPhi_eta2p5to3", "#phi(jet), 2.7 < |#eta| < 3", 100, 0, 3.15),
+        HistInfo("jetNeutralHadronFraction_eta2p7to3", "Neutral hadron fraction, 2.7 < |#eta| < 3", 100, 0, 1),
+        HistInfo("jetChargedHadronFraction_eta2p7to3", "charged hadron fraction, 2.7 < |#eta| < 3", 100, 0, 1),
+        HistInfo("jetNeutralEmFractionFraction_eta2p7to3", "neutral em fraction, 2.7 < |#eta| < 3", 100, 0, 1),
+        HistInfo("jetChargedEmFractionFraction_eta2p7to3", "charged em fraction, 2.7 < |#eta| < 3", 100, 0, 1),
+        HistInfo("jetPtUncorrected_eta2p7to3", "P_{T}^{uncorrected}(jet), 2.7 < |#eta| < 3", 100, 0, 600),
+        HistInfo("jetPtL1_eta2p7to3", "P_{T}^{L1}(jet), 2.7 < |#eta| < 3", 100, 0, 600),
+        HistInfo("jetPtL2_eta2p7to3", "P_{T}^{L2}(jet), 2.7 < |#eta| < 3", 100, 0, 600),
+        HistInfo("jetPtL3_eta2p7to3", "P_{T}^{L3}(jet), 2.7 < |#eta| < 3", 100, 0, 600),
+
+        HistInfo("jetPt_eta3to5", "P_{T}(jet), 3 < |#eta| < 5", 100, 0, 600),
+        HistInfo("jetPhi_eta3to5", "#phi(jet), 3 < |#eta| < 5", 100, 0, 3.15),
+        HistInfo("jetNeutralHadronFraction_eta3to5", "Neutral hadron fraction, 3 < |#eta| < 5", 100, 0, 1),
+        HistInfo("jetChargedHadronFraction_eta3to5", "charged hadron fraction, 3 < |#eta| < 5", 100, 0, 1),
+        HistInfo("jetNeutralEmFractionFraction_eta3to5", "neutral em fraction, 3 < |#eta| < 5", 100, 0, 1),
+        HistInfo("jetChargedEmFractionFraction_eta3to5", "charged em fraction, 3 < |#eta| < 5", 100, 0, 1),
+        HistInfo("jetPtUncorrected_eta3to5", "P_{T}^{uncorrected}(jet), 3 < |#eta| < 5", 100, 0, 600),
+        HistInfo("jetPtL1_eta3to5", "P_{T}^{L1}(jet), 3 < |#eta| < 5", 100, 0, 600),
+        HistInfo("jetPtL2_eta3to5", "P_{T}^{L2}(jet), 3 < |#eta| < 5", 100, 0, 600),
+        HistInfo("jetPtL3_eta3to5", "P_{T}^{L3}(jet), 3 < |#eta| < 5", 100, 0, 600)
+
     };
 }
 
@@ -271,7 +325,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             }
         }
 
-        double fill[nDist - 21] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets(),
+        double fill[nDist - 21- 45] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets(),
            (highPtJetCount[1] > 0) ? _jetPt[mostForwardJetIndices[1]] : -9999., //pT of most forward jet after 25 GeV pT cut selection`
            (highPtJetCount[0] > 0) ? fabs(_jetEta[mostForwardJetIndices[0]]) : -9999., (highPtJetCount[0] > 0) ? _jetEta[mostForwardJetIndices[0]] : -9999., (double) nForwardJets[0], 
            (highPtJetCount[1] > 0) ? fabs(_jetEta[mostForwardJetIndices[1]]) : -9999., (highPtJetCount[1] > 0) ? _jetEta[mostForwardJetIndices[1]] : -9999., (double) nForwardJets[1], 
@@ -287,7 +341,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned j = 0; j < nJetCat; ++j){
             if(j == 1 && ( (jetCount == 0) ? false :_jetPt[jetInd[0]] <= 40 ) ) continue;
             for(unsigned pu = 0; pu < nPuRew; ++pu){
-                for(unsigned dist = 21; dist < nDist; ++dist){
+                for(unsigned dist = 21; dist < nDist - 45; ++dist){     //-45 since there are 45 jet variables
                     for(unsigned r = 0; r < nRuns; ++r){
                         if(!samp.isData() || r == run || r == 0){
                             double puw = 1.;
@@ -302,6 +356,54 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                     }
                 }
             } 
+        }
+
+
+        //loop over all jets to fill jet distributions
+        for(unsigned j = 0; j < _nJets; ++j){
+            if( !( jetIsGood(j, 25, 0, true, true) ) ) continue;
+
+            double fillJets[13] = {fabs(_jetEta[j]), _jetPhi[j], _jetPt[j], _jetPt[j], _jetPhi[j], _jetNeutralHadronFraction[j], _jetChargedHadronFraction[j],
+                _jetNeutralEmFraction[j], _jetChargedEmFraction[j], _jetPt_Uncorrected[j], _jetPt_L1[j], _jetPt_L2[j], _jetPt_L3[j] };
+
+            for(unsigned jetCat = 0; jetCat < nJetCat; ++jetCat){
+                if(jetCat == 1 && ( (jetCount == 0) ? false : _jetPt[jetInd[0]] <= 40 ) ) continue;
+                for(unsigned pu = 0; pu < nPuRew; ++pu){
+                    for(unsigned dist = 0; dist < 13; ++dist){
+                        for(unsigned r = 0; r < nRuns; ++r){
+                            if(!samp.isData() || r == run || r == 0){
+                                double puw = 1.;
+
+                                //TO DO: currently only reweighting for 2017 data, add 2016 reweighting
+                                if( !isData() && pu == 1 && is2017() ){
+                                    puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, max) ) );
+                                }
+                                
+                                if(dist < 3){
+                                    //std::cout <<  histInfo[dist + 21 + 38].name() << std::endl;
+                                    histCollection.access(dist + 21 + 38, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw);
+                                    histCollection.access(dist + 21 + 38, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw);
+                                } else {
+                                    if( fabs(_jetEta[j]) <= 2.4){
+                                        histCollection.access(dist + 21 + 38, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw);
+                                        histCollection.access(dist + 21 + 38, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw);
+                                    } else if( fabs(_jetEta[j]) <= 2.7){
+                                        histCollection.access(dist + 21 + 38 + 10, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 10].maxBinCenter()), weight*puw);
+                                        histCollection.access(dist + 21 + 38 + 10, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 10].maxBinCenter()), weight*puw);
+                                    } else if( fabs(_jetEta[j]) <= 3.0){
+                                        histCollection.access(dist + 21 + 38 + 20, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 20].maxBinCenter()), weight*puw);
+                                        histCollection.access(dist + 21 + 38 + 20, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 20].maxBinCenter()), weight*puw);
+                                    } else{
+                                        histCollection.access(dist + 21 + 38 + 30, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 30].maxBinCenter()), weight*puw);
+                                        histCollection.access(dist + 21 + 38 + 30, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 30].maxBinCenter()), weight*puw);
+                                    }
+                                }
+                             
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -328,7 +430,7 @@ void treeReader::splitJobs(){
             script.close();
 
             //submit job
-            tools::submitScript("runTuples.sh", "01:00:00");
+            tools::submitScript("runTuples.sh", "02:00:00");
          }
     }
 }

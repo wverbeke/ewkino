@@ -115,9 +115,13 @@ bool treeReader::lepIsTight(const unsigned leptonIndex) const{
 
 //jet selection
 //note that jet cleaning depends on era-specific lepton selection, but this is automatically propagated through the "lepIsGood" function
-bool treeReader::jetIsClean(const unsigned jetIndex) const{
+/*
+ * The general version of this function was specifically declared to facilitate an easier b-tagging efficiency determination for a number of different lepton ID's (ttW, ttZ)
+ */
+
+bool treeReader::jetIsCleanBase(const unsigned jetIndex, bool (treeReader::*leptonIsFO)(const unsigned) const) const{
     for(unsigned l = 0; l < _nLight; ++l){
-        if(lepIsGood(l)){
+        if( (this->*leptonIsFO)(l)){
             double deltaR = kinematics::deltaR(_lPhi[l], _lEta[l], _jetPhi[jetIndex], _jetEta[jetIndex]);
             if(deltaR < 0.4){
                 return false;
@@ -125,6 +129,10 @@ bool treeReader::jetIsClean(const unsigned jetIndex) const{
         }
     }
     return true;
+}
+
+bool treeReader::jetIsClean(const unsigned jetIndex) const{
+    return jetIsCleanBase(jetIndex, &treeReader::lepIsGood);
 }
 
 bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const unsigned unc, const bool clean, const bool allowForward) const{
