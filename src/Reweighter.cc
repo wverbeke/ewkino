@@ -9,35 +9,26 @@
 //include other parts of code 
 #include "../interface/analysisTools.h"
 
-Reweighter::Reweighter(const std::vector<Sample>& samples, const bool is2016){
-    initializeAllWeights(samples, is2016);
+Reweighter::Reweighter(const std::vector<Sample>& samples, const bool sampleIs2016) : is2016(sampleIs2016) {
+    initializeAllWeights(samples);
 }
 
-void Reweighter::initializeAllWeights(const std::vector<Sample>& samples, const bool is2016){
+void Reweighter::initializeAllWeights(const std::vector<Sample>& samples){
 
     //initialize pu weights
     initializePuWeights(samples);
 
     //initialize b-tag weights
-    initializeBTagWeights(is2016);
+    initializeBTagWeights();
 
     //initialize electron weights 
-    initializeElectronWeights(is2016);
+    initializeElectronWeights();
 
     //initialize muon weights 
-    initializeMuonWeights(is2016);
+    initializeMuonWeights();
 
-    //initialize fake-rate 
-
-    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
-    const std::string frUnc[3] = {"", "_down", "_up"};
-    for(unsigned unc = 0; unc < 3; ++unc){
-        frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]);
-        frMapEle[unc]->SetDirectory(gROOT);
-        frMapMu[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_mu_data_comb" + frUnc[unc]);
-        frMapMu[unc]->SetDirectory(gROOT);
-    }
-    frFile->Close();
+    //initialize fake-rate
+    initializeFakeRate();
 }
 
 void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
@@ -62,7 +53,7 @@ void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
     }
 }
 
-void Reweighter::initializeBTagWeights(const bool is2016){
+void Reweighter::initializeBTagWeights(){
 
     //assuming medium WP of deepCSV tagger 
     std::string sfFileName;
@@ -94,10 +85,27 @@ void Reweighter::initializeBTagWeights(const bool is2016){
     bTagFile->Close();
 }
 
-void Reweighter::initializeElectronWeights(const bool is2016){	
+void Reweighter::initializeElectronWeights(){	
 
     //read electron reco SF weights
+    if( is2016 ){
+        TFile* electronRecoFile = TFile::Open("weights/electronRecoSF_2016.root");
+        electronRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile->Get("EGamma_SF2D") );
+        electronRecoSF->SetDirectory(gROOT);
+        electronRecoFile->Close();
+    } else {
+        //low pT SF
+        TFile* electronRecoFile_pT0to20 = TFile::Open("weights/electronRecoSF_2017_pT0to20.root");
+        electronRecoSF_pT0to20 = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT0to20->Get("EGamma_SF2D") );
+        electronRecoSF_pT0to20->SetDirectory(gROOT);
+        electronRecoFile_pT0to20->Close();
 
+        //high pT SF
+        TFile* electronRecoFile_pT20toInf = TFile::Open("weights/electronRecoSF_2017_pT20toInf.root");
+        electronRecoSF_pT20toInf = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT20toInf->Get("EGamma_SF2D") );
+        electronRecoSF_pT20toInf->SetDirectory(gROOT);
+        electronRecoFile_pT20toInf->Close();
+    }
 
     //read electron ID SF weights
     TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_2016.root");
@@ -115,7 +123,7 @@ void Reweighter::initializeElectronWeights(const bool is2016){
 }
 
 
-void Reweighter::initializeMuonWeights(const bool is2016){
+void Reweighter::initializeMuonWeights(){
 
     //read muon reco SF weights
     if(is2016){
@@ -144,7 +152,7 @@ void Reweighter::initializeMuonWeights(const bool is2016){
     muonIdFile->Close();	
 }
 
-void Reweighter::initializeFakeRate(const bool is2016){
+void Reweighter::initializeFakeRate(){
 
     //WARNING : To be updated with new fake-rate in 2016/2017 splitting
     TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
@@ -217,8 +225,19 @@ double Reweighter::muonRecoWeight(const double eta) const{
 }
 
 double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
-    //!!!! To be split for 2016 and 2017 data !!!!
-    return electronRecoSF->GetBinContent( electronRecoSF->FindBin( std::max(-2.49, std::min(superClusterEta, 2.49)) , std::max(40., std::min(pt, 499.) )  ) );
+    double croppedSuperClusterEta = std::max(-2.49, std::min(superClusterEta, 2.49) );
+    if( is2016 ){
+        double croppedPt = std::max(40., std::min(pt, 499.) );
+        return electronRecoSF->GetBinContent( electronRecoSF->FindBin( croppedSuperClusterEta , croppedPt ) );
+    } else {
+        if( pt <= 20 ){
+            double croppedPt = std::max(10.01, pt);
+            return electronRecoSF_pT0to20->GetBinContent( electronRecoSF_pT0to20->FindBin( croppedSuperClusterEta, croppedPt ) );
+        } else {
+            double croppedPt = std::min(pt, 499.); 
+            return electronRecoSF_pT20toInf->GetBinContent( electronRecoSF_pT20toInf->FindBin( croppedSuperClusterEta, croppedPt ) );
+        }
+    }
 }
 
 double Reweighter::muonIdWeight(const double pt, const double eta) const{

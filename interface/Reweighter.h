@@ -38,6 +38,9 @@ class Reweighter{
         double electronFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
 
     private:
+        //boolean flagging weights as 2016 or 2017
+        bool is2016;
+
         //pu weights (one for every sample)
         std::map< std::string, std::vector< std::shared_ptr<TH1D> > > puWeights;
 
@@ -49,6 +52,8 @@ class Reweighter{
         //reconstruction scale factors
         std::shared_ptr<TGraph> muonRecoSF;
         std::shared_ptr<TH2D> electronRecoSF;
+        std::shared_ptr<TH2D> electronRecoSF_pT0to20;
+        std::shared_ptr<TH2D> electronRecoSF_pT20toInf;
 
         //muon id scale factors
         std::shared_ptr<TH2D> muonLooseToRecoSF;
@@ -87,18 +92,18 @@ class Reweighter{
         void initializePuWeights(const std::vector< Sample >&); 
 
         //read b-tagging weights
-        void initializeBTagWeights(const bool);
+        void initializeBTagWeights();
 
         //read electron id and reco weights
-        void initializeElectronWeights(const bool);
+        void initializeElectronWeights();
 
         //read muon id and reco weights 
-        void initializeMuonWeights(const bool);
+        void initializeMuonWeights();
 
         //initialize fake-rate
-        void initializeFakeRate(const bool);
+        void initializeFakeRate();
 
         //initialize all weights 
-        void initializeAllWeights(const std::vector< Sample>&, const bool);
+        void initializeAllWeights(const std::vector< Sample>&);
 };
 #endif
