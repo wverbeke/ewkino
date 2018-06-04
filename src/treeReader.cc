@@ -61,7 +61,7 @@ void treeReader::readSamples2017(const std::string& list){
 void treeReader::initSample(const Sample& samp){ 
     //update current sample
     currentSample = samp;
-    sampleFile = samp.getFile("../../ntuples_ewkino/");
+    sampleFile = samp.getFile("/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/");
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
     initTree(fChain, samp.isData());
