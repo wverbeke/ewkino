@@ -19,7 +19,7 @@
 #include "../interface/analysisTools.h"
 
 //temporary inlcude of TMVA
-//#include "TMVA/Reader.h"
+#include "TMVA/Reader.h"
 
 
 void treeReader::skimTree(const std::string& fileName, std::string outputDirectory, const bool isData){//std::string outputFileName){
@@ -59,7 +59,6 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
     setOutputTree(outputTree, isData);
 
-    /*
     //TEMPORARY MVA READER: REMOVE THIS LATER
     float pt, eta, trackMultClosestJet, miniIsoCharged, miniIsoNeutral, ptRel, ptRatio, relIso, deepCsvClosestJet, sip3d, dxy, dz, electronMva, electronMvaFall17NoIso, segmentCompatibility;
     std::shared_ptr<TMVA::Reader> leptonMvaReader[2][2];
@@ -80,7 +79,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             leptonMvaReader[era][flavor]->AddVariable( "dz", &dz);
             if(flavor == 0){
                 if(era == 0){
-                    leptonMvaReader[era][flavor]->AddVariable("electronMva", &electronMva);
+                    leptonMvaReader[era][flavor]->AddVariable("electronMvaSpring16GP", &electronMva);
                 } else {
                     leptonMvaReader[era][flavor]->AddVariable("electronMvaFall17NoIso", &electronMvaFall17NoIso);
                 }    
@@ -98,7 +97,6 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             }
         }
     }
-    */
     /////////////////////////////////////////
 
     double progress = 0; 	//For printing progress bar
@@ -117,7 +115,6 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         //Select both TOP-16-020 and FO leptons. Remove the former later.
         unsigned lCount = std::max(selectLep(ind), selectLep_TOP16_020(ind) );
         if(lCount < 3) continue;
-        /*
         for(unsigned l = 0; l < _nLight; ++l){
             pt = _lPt[l];
             eta = fabs(_lEta[l]);
@@ -142,7 +139,6 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             }
 
         }
-        */
 
         outputTree->Fill();
     }   
