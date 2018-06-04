@@ -1,5 +1,5 @@
 #include "../interface/Reweighter.h"
- 
+
 //include c++ library classes
 
 //include ROOT classes
@@ -10,7 +10,7 @@
 #include "../interface/analysisTools.h"
 
 Reweighter::Reweighter(const std::vector<Sample>& samples, const bool is2016){
-	initializeAllWeights(samples, is2016);
+    initializeAllWeights(samples, is2016);
 }
 
 void Reweighter::initializeAllWeights(const std::vector<Sample>& samples, const bool is2016){
@@ -21,13 +21,13 @@ void Reweighter::initializeAllWeights(const std::vector<Sample>& samples, const 
     //initialize b-tag weights
     initializeBTagWeights(is2016);
 
-	//initialize electron weights 
-	initializeElectronWeights(is2016);
+    //initialize electron weights 
+    initializeElectronWeights(is2016);
 
-	//initialize muon weights 
-	initializeMuonWeights(is2016);
+    //initialize muon weights 
+    initializeMuonWeights(is2016);
 
-	//initialize fake-rate 
+    //initialize fake-rate 
 
     TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
     const std::string frUnc[3] = {"", "_down", "_up"};
@@ -41,13 +41,13 @@ void Reweighter::initializeAllWeights(const std::vector<Sample>& samples, const 
 }
 
 void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
-    
+
     static const std::string minBiasVariation[3] = {"central", "down", "up"};
     for(auto& sample : sampleList){
 
         //open root file corresponding to sample
         TFile* puFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName() + ".root");
-        
+
         //extract pu weights 
         for(unsigned var = 0; var < 3; ++var){
             std::string histName = "puw_Run";
@@ -96,38 +96,38 @@ void Reweighter::initializeBTagWeights(const bool is2016){
 
 void Reweighter::initializeElectronWeights(const bool is2016){	
 
-	//read electron reco SF weights
+    //read electron reco SF weights
 
 
     //read electron ID SF weights
     TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_2016.root");
-	std::string sfFileName;
-	if(is2016){
-		sfFileName = "electronIDScaleFactors_2016.root";
-	} else {
-		sfFileName = "electronIDScaleFactors_2017.root";
-	} 
-	electronLooseToRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose") );
-	electronLooseToRecoSF->SetDirectory(gROOT);
-	electronTightToLooseSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("TTVLooseToTTVLeptonMvatZq") );
-	electronTightToLooseSF->SetDirectory(gROOT);
-	electronIdFile->Close();
+    std::string sfFileName;
+    if(is2016){
+        sfFileName = "electronIDScaleFactors_2016.root";
+    } else {
+        sfFileName = "electronIDScaleFactors_2017.root";
+    } 
+    electronLooseToRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose") );
+    electronLooseToRecoSF->SetDirectory(gROOT);
+    electronTightToLooseSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("TTVLooseToTTVLeptonMvatZq") );
+    electronTightToLooseSF->SetDirectory(gROOT);
+    electronIdFile->Close();
 }
 
 
 void Reweighter::initializeMuonWeights(const bool is2016){
 
-	//read muon reco SF weights
-	if(is2016){
+    //read muon reco SF weights
+    if(is2016){
 
-    	//WARNING: not clear how ownership works for TGraph, can not set directory
-    	//make sure the TGraph is not DELETED when file is closed!
-		TFile* muonRecoFile = TFile::Open("weights/muonTrackingSF_2016.root");
-    	muonRecoSF = std::shared_ptr<TGraph>( (TGraph*) muonRecoFile->Get("ratio_eff_eta3_dr030e030_corr") );
-		muonRecoFile->Close();
-	} else {
-		
-	}	
+        //WARNING: not clear how ownership works for TGraph, can not set directory
+        //make sure the TGraph is not DELETED when file is closed!
+        TFile* muonRecoFile = TFile::Open("weights/muonTrackingSF_2016.root");
+        muonRecoSF = std::shared_ptr<TGraph>( (TGraph*) muonRecoFile->Get("ratio_eff_eta3_dr030e030_corr") );
+        muonRecoFile->Close();
+    } else {
+
+    }	
 
     //read muon ID SF weights
     TFile* muonIdFile = TFile::Open("weights/muonIDScaleFactors_2016.root");
@@ -146,8 +146,8 @@ void Reweighter::initializeMuonWeights(const bool is2016){
 
 void Reweighter::initializeFakeRate(const bool is2016){
 
-	//WARNING : To be updated with new fake-rate in 2016/2017 splitting
-	TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
+    //WARNING : To be updated with new fake-rate in 2016/2017 splitting
+    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
     const std::string frUnc[3] = {"", "_down", "_up"};
     for(unsigned unc = 0; unc < 3; ++unc){
         frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]);
@@ -222,18 +222,18 @@ double Reweighter::electronRecoWeight(const double superClusterEta, const double
 }
 
 double Reweighter::muonIdWeight(const double pt, const double eta) const{
-	double croppedPt = std::min(pt, 199.);
-	double croppedEta = std::min( fabs(eta), 2.39 ); 
-	double sf = muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
-	sf*= muonTightToLooseSF->GetBinContent( muonTightToLooseSF->FindBin( croppedPt, croppedEta) );
+    double croppedPt = std::min(pt, 199.);
+    double croppedEta = std::min( fabs(eta), 2.39 ); 
+    double sf = muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+    sf*= muonTightToLooseSF->GetBinContent( muonTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
 }
 
 double Reweighter::electronIdWeight(const double pt, const double eta) const{
-	double croppedPt = std::min(pt, 199.);
-	double croppedEta = std::min( fabs(eta), 2.49 ); 
-	double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
-	sf*= electronTightToLooseSF->GetBinContent( electronTightToLooseSF->FindBin( croppedPt, croppedEta) );
+    double croppedPt = std::min(pt, 199.);
+    double croppedEta = std::min( fabs(eta), 2.49 ); 
+    double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+    sf*= electronTightToLooseSF->GetBinContent( electronTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
 }
 

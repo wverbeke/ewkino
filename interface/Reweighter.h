@@ -32,7 +32,7 @@ class Reweighter{
         double electronWeight(const double pt, const double eta, const double superClusterEta) const{ 
             return electronRecoWeight(superClusterEta, pt)*electronIdWeight(pt,eta);
         }
-    
+
         //fakerates 
         double muonFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
         double electronFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
@@ -57,7 +57,7 @@ class Reweighter{
         //electron id scale factors
         std::shared_ptr<TH2D> electronLooseToRecoSF;
         std::shared_ptr<TH2D> electronTightToLooseSF;
-        
+
 
         //initialize all weight histograms
         void initialize2016Weights();
@@ -71,7 +71,7 @@ class Reweighter{
         //fake rate maps
         TH2D* frMapEle[3];
         TH2D* frMapMu[3];
-        
+
         //tracking + reconstruction weights
         double muonRecoWeight(const double eta) const;
         double electronRecoWeight(const double superClusterEta, const double pt) const;
