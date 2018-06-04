@@ -319,7 +319,7 @@ class treeReader {
         void computeBTagEff(const std::string& analysis, const bool clean, const bool deepCSV, const bool is2016);
 
         //event weights
-        double puWeight(const unsigned period = 0, const unsigned unc = 0) const;
+        double puWeight(const unsigned unc = 0) const;
         double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0) const; //more efficient version if jets were already selected 
         double bTagWeight_udsg(const unsigned unc = 0) const;
@@ -411,6 +411,9 @@ class treeReader {
 
         //era-specific event weights
 
+        //initialize SF weights
+        void initializeWeights();
+        
         //some safety-checks for errors 
         void checkSampleEraConsistency() const;  //make sure a sample is not is2016() AND 2017() 
         void checkEraOrthogonality() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
