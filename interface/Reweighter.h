@@ -24,6 +24,9 @@ class Reweighter{
         //b-tag weight
         double bTagWeight(const unsigned jetFlavor, const double jetPt, const double jetEta, const double jetCSV, const unsigned unc = 0) const;
 
+        //b-tagging efficiency
+        double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
+
         //lepton id + reconstruction weight
         double muonWeight(const double pt, const double eta) const{ 
             return muonRecoWeight(eta)*muonIdWeight(pt,eta);
@@ -84,9 +87,6 @@ class Reweighter{
         //id weights
         double muonIdWeight(const double pt, const double eta) const;
         double electronIdWeight(const double pt, const double eta) const;
-
-        //b-tagging efficiency
-        double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
 
         //read pu weights for a given list of samples
         void initializePuWeights(const std::vector< Sample >&); 

@@ -221,7 +221,12 @@ double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const d
 
 double Reweighter::muonRecoWeight(const double eta) const{
     //!!!! To be split for 2016 and 2017 data !!!!
-    return muonRecoSF->Eval(std::max(-2.4,std::min(eta, 2.4) ) );
+    if( is2016 ){
+        return muonRecoSF->Eval(std::max(-2.4,std::min(eta, 2.4) ) );
+    } else {
+        //WARNING temporary, implement this later
+        return 1.;
+    }
 }
 
 double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
