@@ -236,15 +236,15 @@ bool treeReader::htOverlap() const{
 */
 
 bool treeReader::passSingleLeptonTriggers() const{
-    return (_pass_e || _pass_m);
+    return (_passTrigger_e || _passTrigger_m);
 }
 
 bool treeReader::passDileptonTriggers() const{
-    return (_pass_ee || _pass_em || _pass_mm);
+    return (_passTrigger_ee || _passTrigger_em || _passTrigger_mm);
 }
 
 bool treeReader::passTrileptonTriggers() const{
-    return (_pass_eee || _pass_eem || _pass_emm || _pass_mmm); 
+    return (_passTrigger_eee || _passTrigger_eem || _passTrigger_emm || _passTrigger_mmm); 
 }
 
 bool treeReader::passTriggerCocktail() const{
