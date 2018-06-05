@@ -227,15 +227,15 @@ bool treeReader::htOverlap() const{
 */
 
 bool treeReader::passSingleLeptonTriggers() const{
-    return (_pass_e || _pass_m);
+    return (_passTrigger_e || _passTrigger_m);
 }
 
 bool treeReader::passDileptonTriggers() const{
-    return (_pass_ee || _pass_em || _pass_mm);
+    return (_passTrigger_ee || _passTrigger_em || _passTrigger_mm);
 }
 
 bool treeReader::passTrileptonTriggers() const{
-    return (_pass_eee || _pass_eem || _pass_emm || _pass_mmm); 
+    return (_passTrigger_eee || _passTrigger_eem || _passTrigger_emm || _passTrigger_mmm); 
 }
 
 bool treeReader::passTriggerCocktail() const{
@@ -248,80 +248,3 @@ bool treeReader::passTriggerCocktail() const{
 bool treeReader::passMETFilters() const{
     return _passMETFilters;
 }
-
-/*
-bool treeReader::lepIsLoose(const unsigned ind) const{
-    return _lEwkLoose[ind];
-}
-
-bool treeReader::lepIsGood(const unsigned l) const{
-    //temporary selection for dileptonCR, update later
-    if(!_lEwkLoose[l]) return false;
-    if(_lFlavor[l] == 0 && !_lElectronPassEmu[l]) return false;
-    if(_lFlavor[l] == 1 && !_lPOGMedium[l]) return false;
-    return true;
-}
-
-bool treeReader::lepIsTight(const unsigned l) const{
-    return _lEwkTight[l];
-}
-
-//remove electrons in a cone of DeltaR = 0.05 around a loose muon
-bool treeReader::eleIsClean(const unsigned ind) const{
-    TLorentzVector ele;
-    ele.SetPtEtaPhiE(_lPt[ind], _lEta[ind], _lPhi[ind], _lE[ind]);
-    for(unsigned m = 0; m < _nMu; ++m){
-        if(lepIsLoose(m)){
-            TLorentzVector mu;
-            mu.SetPtEtaPhiE(_lPt[m], _lEta[m], _lPhi[m], _lE[m]);
-            if(ele.DeltaR(mu) < 0.05) return false;
-        }
-    }
-    return true;
-}
-
-bool treeReader::jetIsClean(const unsigned ind) const{
-    TLorentzVector jet;	
-    jet.SetPtEtaPhiE(_jetPt[ind], _jetEta[ind], _jetPhi[ind], _jetE[ind]);
-    for(unsigned l = 0; l < _nLight; ++l){
-        if(lepIsGood(l)){
-            TLorentzVector lep;
-            lep.SetPtEtaPhiE(_lPt[l], _lEta[l], _lPhi[l], _lE[l]);
-            if(lep.DeltaR(jet) <= 0.4) return false;
-        }
-    }
-    return true;
-}
-
-bool treeReader::jetIsGood(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean) const{
-    //only select loose jets:
-    if(!_jetIsLoose[ind]) return false;
-
-    if(fabs(_jetEta[ind]) >= 2.4) return false;
-
-    switch(unc){
-        case 0: if(_jetPt[ind] < ptCut) return false; break;
-        case 1: if(_jetPt_JECDown[ind] < ptCut) return false; break;
-        case 2: if(_jetPt_JECUp[ind] < ptCut) return false; break;
-        case 3: if(_jetPt_JERDown[ind] < ptCut) return false; break;
-        case 4: if(_jetPt_JERUp[ind] < ptCut) return false; break;
-        default: ;
-    }
-    return !clean || jetIsClean(ind);
-}
-
-bool treeReader::bTaggedDeepCSV(const unsigned ind, const unsigned wp) const{
-    static const double bTagWP[3] = {0.2219, 0.6324,  0.8958};
-    return (_jetDeepCsv_b[ind] + _jetDeepCsv_bb[ind]) > bTagWP[wp];
-}
-
-bool treeReader::bTaggedCSVv2(const unsigned ind, const unsigned wp) const{
-    static const double bTagWP[3] = {0.5426, 0.8484, 0.9535};
-    return _jetCsvV2[ind] > bTagWP[wp];
-}
-
-bool treeReader::bTagged(const unsigned ind, const unsigned wp, const bool deepCSV) const{
-    if(deepCSV) return bTaggedDeepCSV(ind, wp);
-    else return bTaggedCSVv2(ind, wp);
-}
-*/
