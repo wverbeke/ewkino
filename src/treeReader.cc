@@ -124,7 +124,6 @@ void treeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_passTrigger_mm", &_passTrigger_mm, &b__passTrigger_mm);
     fChain->SetBranchAddress("_passTrigger_emm", &_passTrigger_emm, &b__passTrigger_emm);
     fChain->SetBranchAddress("_passTrigger_mmm", &_passTrigger_mmm, &b__passTrigger_mmm);
-    fChain->SetBranchAddress("_passTrigger_t", &_passTrigger_t, &b__passTrigger_t);
     fChain->SetBranchAddress("_passTrigger_et", &_passTrigger_et, &b__passTrigger_et);
     fChain->SetBranchAddress("_passTrigger_mt", &_passTrigger_mt, &b__passTrigger_mt);
     fChain->SetBranchAddress("_passMETFilters", &_passMETFilters, &b__passMETFilters);
@@ -265,8 +264,6 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
         fChain->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
         fChain->SetBranchAddress("_gen_HT", &_gen_HT, &b__gen_HT);
-    } else {
-        fChain->SetBranchAddress("_jetPt_L2L3", _jetPt_L2L3, &b__jetPt_L2L3);
     }
 }
 
@@ -295,7 +292,6 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_passTrigger_mm", &_passTrigger_mm, "_passTrigger_mm/O");
     outputTree->Branch("_passTrigger_emm", &_passTrigger_emm, "_passTrigger_emm/O");
     outputTree->Branch("_passTrigger_mmm", &_passTrigger_mmm, "_passTrigger_mmm/O");
-    outputTree->Branch("_passTrigger_t", &_passTrigger_t, "_passTrigger_t/O");
     outputTree->Branch("_passTrigger_et", &_passTrigger_et, "_passTrigger_et/O");
     outputTree->Branch("_passTrigger_mt", &_passTrigger_mt, "_passTrigger_mt/O");
     outputTree->Branch("_passMETFilters", &_passMETFilters, "_passMETFilters/O");
@@ -426,7 +422,5 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/b");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
         outputTree->Branch("_gen_HT",                    &_gen_HT,                    "_gen_HT/D");
-    } else {
-        outputTree->Branch("_jetPt_L2L3",                &_jetPt_L2L3,               "_jetPt_L2L3[_nJets]/D");
     }
 }
