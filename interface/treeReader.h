@@ -53,7 +53,6 @@ class treeReader {
         Bool_t          _passTrigger_mm;
         Bool_t          _passTrigger_emm;
         Bool_t          _passTrigger_mmm;
-        Bool_t          _passTrigger_t;
         Bool_t          _passTrigger_et;
         Bool_t          _passTrigger_mt;
         Bool_t          _passMETFilters;
@@ -144,7 +143,6 @@ class treeReader {
         Double_t        _jetPt_L1[nJets_max];
         Double_t        _jetPt_L2[nJets_max];
         Double_t        _jetPt_L3[nJets_max];
-        Double_t        _jetPt_L2L3[nJets_max];
         Double_t        _jetEta[nJets_max];   
         Double_t        _jetPhi[nJets_max];   
         Double_t        _jetE[nJets_max];   
@@ -387,7 +385,6 @@ class treeReader {
         TBranch        *b__passTrigger_mm;   
         TBranch        *b__passTrigger_emm;   
         TBranch        *b__passTrigger_mmm;   
-        TBranch        *b__passTrigger_t;
         TBranch        *b__passTrigger_et;
         TBranch        *b__passTrigger_mt;
         TBranch        *b__passMETFilters;   
@@ -479,7 +476,6 @@ class treeReader {
         TBranch        *b__jetPt_L1;
         TBranch        *b__jetPt_L2;
         TBranch        *b__jetPt_L3;
-        TBranch        *b__jetPt_L2L3;
         TBranch        *b__jetEta;   
         TBranch        *b__jetPhi;   
         TBranch        *b__jetE;   
