@@ -61,3 +61,19 @@ TLorentzVector tzq::findBestNeutrinoAndTop(const TLorentzVector& wLep, const TLo
     if(plus) return neutrinoPlus;//( neutrinoPlus + wLep + jetV[taggedJetI[0]] ).M();
     else     return neutrinoMin;//( neutrinoMin  + wLep + jetV[taggedJetI[0]] ).M();
 }
+
+unsigned tzq::controlRegion(const unsigned lCount, const double mll, const double m3l){
+    static const double mZ = 91.1876;
+    bool hasZ = ( fabs(mll - mZ) < 15. );
+    if(lCount == 3){
+        bool hasConversion = ( fabs(m3l - mZ) < 15. );
+        if( hasZ && !hasConversion){
+            return 0; //WZ control region
+        } else if( !hasZ && hasConversion){
+            return 1; //Xgamma control region
+        }
+    } else if(lCount == 4){
+        if(hasZ) return 2; //ZZ control region
+    }
+    return 999; //event falls out of control regions
+}

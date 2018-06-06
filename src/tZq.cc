@@ -152,14 +152,9 @@ void treeReader::Analyze(){
             std::vector<unsigned> ind;
 
             //select leptons
-            //const unsigned lCount = selectLep(ind);
-            //if(lCount != 3) continue;
-            //if(tightLepCount(ind, lCount) != 3) continue; //require 3 tight leptons
-
-            //WARNING, REMOVE THIS AND TAKE PREVIOUS LINES BACK IN
-            //Testing with TOP-16-0-200 selection
-            const unsigned lCount = selectLep_TOP16_020(ind);
+            const unsigned lCount = selectLep(ind);
             if(lCount != 3) continue;
+            if(tightLepCount(ind, lCount) != 3) continue; //require 3 tight leptons
 
             //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;
