@@ -245,17 +245,29 @@ double Reweighter::electronRecoWeight(const double superClusterEta, const double
     }
 }
 
-double Reweighter::muonIdWeight(const double pt, const double eta) const{
+double Reweighter::muonLooseIdWeight(const double pt, const double eta) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( fabs(eta), 2.39 ); 
+    return muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+}
+
+double Reweighter::electronLooseIdWeight(const double pt, const double eta) const{
+    double croppedPt = std::min(pt, 199.);
+    double croppedEta = std::min( fabs(eta), 2.49 ); 
+    return electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+}
+
+double Reweighter::muonTightIdWeight(const double pt, const double eta) const{
+    double croppedPt = std::min(pt, 199.);
+    double croppedEta = std::min( (fabs(eta), 2.39) );
     double sf = muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
     sf*= muonTightToLooseSF->GetBinContent( muonTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
 }
 
-double Reweighter::electronIdWeight(const double pt, const double eta) const{
+double Reweighter::electronTightIdWeight(const double pt, const double eta) const{
     double croppedPt = std::min(pt, 199.);
-    double croppedEta = std::min( fabs(eta), 2.49 ); 
+    double croppedEta = std::min( fabs(eta), 2.49 );
     double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
     sf*= electronTightToLooseSF->GetBinContent( electronTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
