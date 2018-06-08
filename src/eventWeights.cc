@@ -60,10 +60,19 @@ double treeReader::bTagWeight(const unsigned unc) const{
 double treeReader::leptonWeight() const{
     double sf = 1.;
     for(unsigned l = 0; l < _nLight; ++l){
-        if(lepIsTight(l)){
-            if(_lFlavor[l] == 1) sf*= reweighter->muonWeight(_lPt[l], _lEta[l]);
-            else if(_lFlavor[l] == 0) sf *= reweighter->electronWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
-        }        
+        if( lepIsTight(l) ){
+            if( isMuon(l) ){
+                sf *= reweighter->muonTightWeight(_lPt[l], _lEta[l]);
+            } else if( isElectron(l) ){
+                sf *= reweighter->electronTightWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
+            }
+        } else if( lepIsLoose(l) ){
+            if( isMuon(l) ){
+                sf *= reweighter->muonLooseWeight(_lPt[l], _lEta[l]);
+            } else if( isElectron(l) ){
+                sf *= reweighter->electronLooseWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
+            }
+        }
     }
     return sf;
 }
@@ -95,8 +104,11 @@ double treeReader::fakeRateWeight(const unsigned unc){
     for(unsigned l = 0; l < _nLight; ++l){
         if(lepIsGood(l) && !lepIsTight(l) ){
             double fr = 1.;
-            if(_lFlavor[l] == 1) fr = reweighter->muonFakeRate(_lPt[l], _lEta[l], unc);
-            else if(_lFlavor[l] == 0) fr = reweighter->electronFakeRate(_lPt[l], _lEta[l], unc);
+            if( isMuon(l) ){
+                fr = reweighter->muonFakeRate(_lPt[l], _lEta[l], unc);
+            } else if( isElectron(l) ){
+                fr = reweighter->electronFakeRate(_lPt[l], _lEta[l], unc);
+            }
             sf *= -fr/(1 - fr);
         }
     }
