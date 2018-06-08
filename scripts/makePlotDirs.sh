@@ -9,11 +9,11 @@ cd ewkino
 mkdir -p dilepCR
 cd dilepCR
 #make directories for every run
-mkdir 2017
+mkdir -p 2017
 for dir in all2017 RunB RunC RunD RunE RunF
     do mkdir -p 2017/$dir
 done
-mkdir 2016
+mkdir -p 2016
 for dir in all2016 RunB RunC RunD RunE RunF RunG RunH
     do mkdir -p 2016/$dir
 done
@@ -47,6 +47,11 @@ for dir1 in 2016 2017 combined; do
             done
         done
     done 
+    for dir2 in controlR; do
+        for dir3 in WZ ZZ Xgamma; do
+            mkdir -p ${dir1}/${dir2}/${dir3}
+        done
+    done
 done
 
 for dir1 in TOP-16-020; do
