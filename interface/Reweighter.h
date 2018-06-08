@@ -56,9 +56,9 @@ class Reweighter{
         std::map< std::string, std::vector< std::shared_ptr<TH1D> > > puWeights;
 
         //btag scale factors and efficiencies
-        BTagCalibration* bTagCalib;
-        BTagCalibrationReader* bTagCalibReader;
-        TH1D* bTagEffHist[3];
+        std::shared_ptr<BTagCalibration> bTagCalib;
+        std::shared_ptr<BTagCalibrationReader> bTagCalibReader;
+        std::shared_ptr<TH1D> bTagEffHist[3];
 
         //reconstruction scale factors
         std::shared_ptr<TGraph> muonRecoSF;
@@ -85,8 +85,8 @@ class Reweighter{
         }
 
         //fake rate maps
-        TH2D* frMapEle[3];
-        TH2D* frMapMu[3];
+        std::shared_ptr<TH2D> frMapEle[3];
+        std::shared_ptr<TH2D> frMapMu[3];
 
         //tracking + reconstruction weights
         double muonRecoWeight(const double eta) const;

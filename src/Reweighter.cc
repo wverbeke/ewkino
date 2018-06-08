@@ -17,23 +17,18 @@ void Reweighter::initializeAllWeights(const std::vector<Sample>& samples){
 
     //initialize pu weights
     initializePuWeights(samples);
-    std::cout << "pu weights initialized" << std::endl;
 
     //initialize b-tag weights
     initializeBTagWeights();
-    std::cout << "b-tag weights initialized" << std::endl;
 
     //initialize electron weights 
     initializeElectronWeights();
-    std::cout << "electron weights initialized" << std::endl;
 
     //initialize muon weights 
     initializeMuonWeights();
-    std::cout << "muon weights initialized" << std::endl;
 
     //initialize fake-rate
     initializeFakeRate();
-    std::cout << "fake-rate weights initialized" << std::endl;
 }
 
 void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
@@ -69,12 +64,14 @@ void Reweighter::initializeBTagWeights(){
     } else {
         sfFileName = "DeepCSV_94XSF_V2_B_F.csv";
     }
-    bTagCalib = new BTagCalibration("deepCsv", "weights/" + sfFileName);
-    bTagCalibReader =  new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up", "down"});
+    bTagCalib = std::shared_ptr<BTagCalibration>( new BTagCalibration("deepCsv", "weights/" + sfFileName) );
+    bTagCalibReader = std::shared_ptr<BTagCalibrationReader>( new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up", "down"}) );
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_B, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_C, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_UDSG, "incl");    
 
+    //WARNING: b-tagging efficiencies are yet to be computed and are currently not available 
+    /*
     //initialize b-tag efficiencies
     std::string effFileName;
     if(is2016){
@@ -90,6 +87,7 @@ void Reweighter::initializeBTagWeights(){
         bTagEffHist[flav]->SetDirectory(gROOT);
     }
     bTagFile->Close();
+    */
 }
 
 void Reweighter::initializeElectronWeights(){	
@@ -165,28 +163,15 @@ void Reweighter::initializeFakeRate(){
     TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
     const std::string frUnc[3] = {"", "_down", "_up"};
     for(unsigned unc = 0; unc < 3; ++unc){
-        frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]);
+        frMapEle[unc] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]) );
         frMapEle[unc]->SetDirectory(gROOT);
-        frMapMu[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_mu_data_comb" + frUnc[unc]);
+        frMapMu[unc] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get((const TString&) "FR_mva090_mu_data_comb" + frUnc[unc]) );
         frMapMu[unc]->SetDirectory(gROOT);
     }
     frFile->Close();
 }
 
-Reweighter::~Reweighter(){
-    delete bTagCalib;
-    delete bTagCalibReader;
-
-    for(unsigned flav = 0; flav < 3; ++flav){
-        delete bTagEffHist[flav];
-    }
-
-    for(unsigned unc = 0; unc < 3; ++unc){
-        delete frMapEle[unc];
-        delete frMapMu[unc];
-    }
-}
-
+Reweighter::~Reweighter(){}
 
 double Reweighter::puWeight(const double nTrueInt, const Sample& sample, const unsigned unc) const{
     if(unc < 3){

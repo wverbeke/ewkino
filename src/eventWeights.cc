@@ -11,6 +11,8 @@ inline double treeReader::puWeight(const unsigned unc) const{
 
 //b-tagging SF for given flavor
 double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) const{
+    //WARNING: reactivate this code once the b-tag efficiencies have been computed 
+    /*
     double pMC = 1.;
     double pData = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
@@ -30,6 +32,8 @@ double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) cons
         }
     }
     return pData/pMC;
+    */
+    return 1.;
 }
 
 //light flavor b-tagging SF
