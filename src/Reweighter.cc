@@ -17,27 +17,34 @@ void Reweighter::initializeAllWeights(const std::vector<Sample>& samples){
 
     //initialize pu weights
     initializePuWeights(samples);
+    std::cout << "pu weights initialized" << std::endl;
 
     //initialize b-tag weights
     initializeBTagWeights();
+    std::cout << "b-tag weights initialized" << std::endl;
 
     //initialize electron weights 
     initializeElectronWeights();
+    std::cout << "electron weights initialized" << std::endl;
 
     //initialize muon weights 
     initializeMuonWeights();
+    std::cout << "muon weights initialized" << std::endl;
 
     //initialize fake-rate
     initializeFakeRate();
+    std::cout << "fake-rate weights initialized" << std::endl;
 }
 
 void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
 
     static const std::string minBiasVariation[3] = {"central", "down", "up"};
     for(auto& sample : sampleList){
+        //no pu weights for data 
+        if( sample.isData() ) continue;
 
         //open root file corresponding to sample
-        TFile* puFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName() + ".root");
+        TFile* puFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName());
 
         //extract pu weights 
         for(unsigned var = 0; var < 3; ++var){
@@ -71,9 +78,9 @@ void Reweighter::initializeBTagWeights(){
     //initialize b-tag efficiencies
     std::string effFileName;
     if(is2016){
-        sfFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2016.root";
+        effFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2016.root";
     } else {
-        sfFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2017.root";
+        effFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2017.root";
     }
 
     TFile* bTagFile = TFile::Open( (const TString&) "weights/" + effFileName);
@@ -259,7 +266,7 @@ double Reweighter::electronLooseIdWeight(const double pt, const double eta) cons
 
 double Reweighter::muonTightIdWeight(const double pt, const double eta) const{
     double croppedPt = std::min(pt, 199.);
-    double croppedEta = std::min( (fabs(eta), 2.39) );
+    double croppedEta = std::min( fabs(eta), 2.39);
     double sf = muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
     sf*= muonTightToLooseSF->GetBinContent( muonTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
