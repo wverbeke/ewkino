@@ -50,15 +50,15 @@ bool treeReader::eleIsClean(const unsigned electronIndex) const{
 bool treeReader::lepIsLooseBase(const unsigned leptonIndex) const{
     if( isTau(leptonIndex) ) return false;
     if( isElectron(leptonIndex) && !eleIsClean(leptonIndex) ) return false;
-	return _lEwkLoose[leptonIndex];
+    return _lEwkLoose[leptonIndex];
 }
 
 bool treeReader::lepIsLoose2016(const unsigned leptonIndex) const{
-	return lepIsLooseBase(leptonIndex);
+    return lepIsLooseBase(leptonIndex);
 }
 
 bool treeReader::lepIsLoose2017(const unsigned leptonIndex) const{
-	return lepIsLooseBase(leptonIndex);
+    return lepIsLooseBase(leptonIndex);
 }
 
 bool treeReader::lepIsLoose(const unsigned leptonIndex) const{
@@ -86,9 +86,9 @@ bool treeReader::lepIsGood2017(const unsigned leptonIndex) const{
 
 bool treeReader::lepIsGood(const unsigned leptonIndex) const{
     if( is2016() ){
-        return lepIsLoose2016(leptonIndex);
+        return lepIsGood2016(leptonIndex);
     } else {
-        return lepIsLoose2017(leptonIndex);
+        return lepIsGood2017(leptonIndex);
     }
 }
 
@@ -146,9 +146,9 @@ bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const 
         case 1: if(_jetPt_JECDown[jetIndex] < ptCut) return false; break;
         case 2: if(_jetPt_JECUp[jetIndex] < ptCut) return false; break;
         default: {
-            std::cerr << "Error: uncertainty case larger than 2 given to jetIsGood, option not recognized" << std::endl;
-            return false; 
-        }
+                     std::cerr << "Error: uncertainty case larger than 2 given to jetIsGood, option not recognized" << std::endl;
+                     return false; 
+                 }
     }
     return !clean || jetIsClean(jetIndex);
 }
@@ -156,20 +156,20 @@ bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const 
 
 //jet b-tagging
 bool treeReader::bTaggedDeepCSVBase(const unsigned jetIndex, const unsigned wp, const double bTagWP[3]) const{
-	if(wp > 2){
-		std::cerr << "Error: trying to evaluate deepCSV b-tagging WP that is out of range." << std::endl;
-	}
-	return ( (_jetDeepCsv_b[jetIndex] + _jetDeepCsv_bb[jetIndex]) > bTagWP[wp] );
+    if(wp > 2){
+        std::cerr << "Error: trying to evaluate deepCSV b-tagging WP that is out of range." << std::endl;
+    }
+    return ( (_jetDeepCsv_b[jetIndex] + _jetDeepCsv_bb[jetIndex]) > bTagWP[wp] );
 }
 
 bool treeReader::bTaggedDeepCSV2016(const unsigned jetIndex, const unsigned wp) const{
-	static const double bTagDeepCSVWP2016[3] = {0.2219, 0.6324,  0.8958}; 
-	return bTaggedDeepCSVBase(jetIndex, wp, bTagDeepCSVWP2016);
+    static const double bTagDeepCSVWP2016[3] = {0.2219, 0.6324,  0.8958}; 
+    return bTaggedDeepCSVBase(jetIndex, wp, bTagDeepCSVWP2016);
 }
 
 bool treeReader::bTaggedDeepCSV2017(const unsigned jetIndex, const unsigned wp) const{
-	static const double bTagDeepCSVWP2017[3] = {0.1522,  0.4941,  0.8001};
-	return bTaggedDeepCSVBase(jetIndex, wp, bTagDeepCSVWP2017); 
+    static const double bTagDeepCSVWP2017[3] = {0.1522,  0.4941,  0.8001};
+    return bTaggedDeepCSVBase(jetIndex, wp, bTagDeepCSVWP2017); 
 }
 
 bool treeReader::bTaggedDeepCSV(const unsigned jetIndex, const unsigned wp) const{
@@ -181,20 +181,20 @@ bool treeReader::bTaggedDeepCSV(const unsigned jetIndex, const unsigned wp) cons
 }
 
 bool treeReader::bTaggedCSVv2Base(const unsigned jetIndex, const unsigned wp, const double bTagWP[3]) const{
-	if(wp > 2){
-		std::cerr << "Error: trying to evaluate CSVv2 b-tagging WP that is out of range." << std::endl;
-	}
-	return ( _jetCsvV2[jetIndex] > bTagWP[wp] );
+    if(wp > 2){
+        std::cerr << "Error: trying to evaluate CSVv2 b-tagging WP that is out of range." << std::endl;
+    }
+    return ( _jetCsvV2[jetIndex] > bTagWP[wp] );
 }
 
 bool treeReader::bTaggedCSVv22016(const unsigned jetIndex, const unsigned wp) const{
-	static const double bTagCSVv2WP2016[3] = {0.5426, 0.8484, 0.9535};
-	return bTaggedCSVv2Base(jetIndex, wp, bTagCSVv2WP2016);
+    static const double bTagCSVv2WP2016[3] = {0.5426, 0.8484, 0.9535};
+    return bTaggedCSVv2Base(jetIndex, wp, bTagCSVv2WP2016);
 } 
 
 bool treeReader::bTaggedCSVv22017(const unsigned jetIndex, const unsigned wp) const{
-	static const double bTagCSVv2WP2017[3] = {0.5803, 0.8838, 0.9693};
-	return bTaggedCSVv2Base(jetIndex, wp, bTagCSVv2WP2017);
+    static const double bTagCSVv2WP2017[3] = {0.5803, 0.8838, 0.9693};
+    return bTaggedCSVv2Base(jetIndex, wp, bTagCSVv2WP2017);
 }   
 
 bool treeReader::bTaggedCSVv2(const unsigned jetIndex, const unsigned wp) const{

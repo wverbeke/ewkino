@@ -5,8 +5,8 @@
 #include "../interface/treeReader.h"
 
 //pu SF 
-inline double treeReader::puWeight(const unsigned period, const unsigned unc) const{
-    return reweighter->puWeight(_nTrueInt, period, unc);
+inline double treeReader::puWeight(const unsigned unc) const{
+    return reweighter->puWeight(_nTrueInt, currentSample, unc);
 }
 
 //b-tagging SF for given flavor
@@ -22,7 +22,7 @@ double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) cons
                 if(bTagged(j, 1, true)){
                     pMC *= eff;
                     pData *= eff*sf;
-                } else{
+                } else {
                     pMC *= (1 - eff);
                     pData *= (1 - eff*sf);
                 }
@@ -63,33 +63,38 @@ double treeReader::leptonWeight() const{
     }
     return sf;
 }
+
+//check if scale-factors have to be initialized, and do so if needed
+void treeReader::initializeWeights(){
+    static bool weightsAre2016 = is2016();
+    bool firstTime = ( reweighter.use_count() == 0 );
+    bool changedEra = ( weightsAre2016 != is2016() );
+    if( firstTime || changedEra){
+        weightsAre2016 = is2016();
+        reweighter.reset(new Reweighter(samples, is2016() ) );
+    } 
+}
     
 double treeReader::sfWeight(){
-    if(reweighter.use_count() == 0 ){
-        //reweighter = std::make_shared<Reweighter>();
-        reweighter.reset(new Reweighter); 
-    }
+    initializeWeights();
     double sf = puWeight();
     sf *= bTagWeight();
     sf *= leptonWeight();
     return sf;
 }
 
+
 //fake rate
 double treeReader::fakeRateWeight(const unsigned unc){
-    if(reweighter.use_count() == 0 ){
-        reweighter.reset(new Reweighter);
-    }
+    initializeWeights();
     double sf = -1.;
     for(unsigned l = 0; l < _nLight; ++l){
         if(lepIsGood(l) && !lepIsTight(l) ){
             double fr = 1.;
-            if(_lFlavor[l] == 1)        fr = reweighter->muonFakeRate(_lPt[l], _lEta[l], unc);
-            else if(_lFlavor[l] == 0)   fr = reweighter->electronFakeRate(_lPt[l], _lEta[l], unc);
+            if(_lFlavor[l] == 1) fr = reweighter->muonFakeRate(_lPt[l], _lEta[l], unc);
+            else if(_lFlavor[l] == 0) fr = reweighter->electronFakeRate(_lPt[l], _lEta[l], unc);
             sf *= -fr/(1 - fr);
         }
     }
     return sf;
 }
-
-

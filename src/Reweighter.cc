@@ -9,44 +9,42 @@
 //include other parts of code 
 #include "../interface/analysisTools.h"
 
-Reweighter::Reweighter(const std::vector<Sample>& samples, const bool is2016){
-    initializeAllWeights(samples, is2016);
+Reweighter::Reweighter(const std::vector<Sample>& samples, const bool sampleIs2016) : is2016(sampleIs2016) {
+    initializeAllWeights(samples);
 }
 
-void Reweighter::initializeAllWeights(const std::vector<Sample>& samples, const bool is2016){
+void Reweighter::initializeAllWeights(const std::vector<Sample>& samples){
 
     //initialize pu weights
     initializePuWeights(samples);
+    std::cout << "pu weights initialized" << std::endl;
 
     //initialize b-tag weights
-    initializeBTagWeights(is2016);
+    initializeBTagWeights();
+    std::cout << "b-tag weights initialized" << std::endl;
 
     //initialize electron weights 
-    initializeElectronWeights(is2016);
+    initializeElectronWeights();
+    std::cout << "electron weights initialized" << std::endl;
 
     //initialize muon weights 
-    initializeMuonWeights(is2016);
+    initializeMuonWeights();
+    std::cout << "muon weights initialized" << std::endl;
 
-    //initialize fake-rate 
-
-    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
-    const std::string frUnc[3] = {"", "_down", "_up"};
-    for(unsigned unc = 0; unc < 3; ++unc){
-        frMapEle[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]);
-        frMapEle[unc]->SetDirectory(gROOT);
-        frMapMu[unc] = (TH2D*) frFile->Get((const TString&) "FR_mva090_mu_data_comb" + frUnc[unc]);
-        frMapMu[unc]->SetDirectory(gROOT);
-    }
-    frFile->Close();
+    //initialize fake-rate
+    initializeFakeRate();
+    std::cout << "fake-rate weights initialized" << std::endl;
 }
 
 void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
 
     static const std::string minBiasVariation[3] = {"central", "down", "up"};
     for(auto& sample : sampleList){
+        //no pu weights for data 
+        if( sample.isData() ) continue;
 
         //open root file corresponding to sample
-        TFile* puFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName() + ".root");
+        TFile* puFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName());
 
         //extract pu weights 
         for(unsigned var = 0; var < 3; ++var){
@@ -62,7 +60,7 @@ void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
     }
 }
 
-void Reweighter::initializeBTagWeights(const bool is2016){
+void Reweighter::initializeBTagWeights(){
 
     //assuming medium WP of deepCSV tagger 
     std::string sfFileName;
@@ -80,9 +78,9 @@ void Reweighter::initializeBTagWeights(const bool is2016){
     //initialize b-tag efficiencies
     std::string effFileName;
     if(is2016){
-        sfFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2016.root";
+        effFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2016.root";
     } else {
-        sfFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2017.root";
+        effFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2017.root";
     }
 
     TFile* bTagFile = TFile::Open( (const TString&) "weights/" + effFileName);
@@ -94,10 +92,27 @@ void Reweighter::initializeBTagWeights(const bool is2016){
     bTagFile->Close();
 }
 
-void Reweighter::initializeElectronWeights(const bool is2016){	
+void Reweighter::initializeElectronWeights(){	
 
     //read electron reco SF weights
+    if( is2016 ){
+        TFile* electronRecoFile = TFile::Open("weights/electronRecoSF_2016.root");
+        electronRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile->Get("EGamma_SF2D") );
+        electronRecoSF->SetDirectory(gROOT);
+        electronRecoFile->Close();
+    } else {
+        //low pT SF
+        TFile* electronRecoFile_pT0to20 = TFile::Open("weights/electronRecoSF_2017_pT0to20.root");
+        electronRecoSF_pT0to20 = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT0to20->Get("EGamma_SF2D") );
+        electronRecoSF_pT0to20->SetDirectory(gROOT);
+        electronRecoFile_pT0to20->Close();
 
+        //high pT SF
+        TFile* electronRecoFile_pT20toInf = TFile::Open("weights/electronRecoSF_2017_pT20toInf.root");
+        electronRecoSF_pT20toInf = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT20toInf->Get("EGamma_SF2D") );
+        electronRecoSF_pT20toInf->SetDirectory(gROOT);
+        electronRecoFile_pT20toInf->Close();
+    }
 
     //read electron ID SF weights
     TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_2016.root");
@@ -115,7 +130,7 @@ void Reweighter::initializeElectronWeights(const bool is2016){
 }
 
 
-void Reweighter::initializeMuonWeights(const bool is2016){
+void Reweighter::initializeMuonWeights(){
 
     //read muon reco SF weights
     if(is2016){
@@ -144,7 +159,7 @@ void Reweighter::initializeMuonWeights(const bool is2016){
     muonIdFile->Close();	
 }
 
-void Reweighter::initializeFakeRate(const bool is2016){
+void Reweighter::initializeFakeRate(){
 
     //WARNING : To be updated with new fake-rate in 2016/2017 splitting
     TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
@@ -213,25 +228,53 @@ double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const d
 
 double Reweighter::muonRecoWeight(const double eta) const{
     //!!!! To be split for 2016 and 2017 data !!!!
-    return muonRecoSF->Eval(std::max(-2.4,std::min(eta, 2.4) ) );
+    if( is2016 ){
+        return muonRecoSF->Eval(std::max(-2.4,std::min(eta, 2.4) ) );
+    } else {
+        //WARNING temporary, implement this later
+        return 1.;
+    }
 }
 
 double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
-    //!!!! To be split for 2016 and 2017 data !!!!
-    return electronRecoSF->GetBinContent( electronRecoSF->FindBin( std::max(-2.49, std::min(superClusterEta, 2.49)) , std::max(40., std::min(pt, 499.) )  ) );
+    double croppedSuperClusterEta = std::max(-2.49, std::min(superClusterEta, 2.49) );
+    if( is2016 ){
+        double croppedPt = std::max(40., std::min(pt, 499.) );
+        return electronRecoSF->GetBinContent( electronRecoSF->FindBin( croppedSuperClusterEta , croppedPt ) );
+    } else {
+        if( pt <= 20 ){
+            double croppedPt = std::max(10.01, pt);
+            return electronRecoSF_pT0to20->GetBinContent( electronRecoSF_pT0to20->FindBin( croppedSuperClusterEta, croppedPt ) );
+        } else {
+            double croppedPt = std::min(pt, 499.); 
+            return electronRecoSF_pT20toInf->GetBinContent( electronRecoSF_pT20toInf->FindBin( croppedSuperClusterEta, croppedPt ) );
+        }
+    }
 }
 
-double Reweighter::muonIdWeight(const double pt, const double eta) const{
+double Reweighter::muonLooseIdWeight(const double pt, const double eta) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( fabs(eta), 2.39 ); 
+    return muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+}
+
+double Reweighter::electronLooseIdWeight(const double pt, const double eta) const{
+    double croppedPt = std::min(pt, 199.);
+    double croppedEta = std::min( fabs(eta), 2.49 ); 
+    return electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+}
+
+double Reweighter::muonTightIdWeight(const double pt, const double eta) const{
+    double croppedPt = std::min(pt, 199.);
+    double croppedEta = std::min( fabs(eta), 2.39);
     double sf = muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
     sf*= muonTightToLooseSF->GetBinContent( muonTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
 }
 
-double Reweighter::electronIdWeight(const double pt, const double eta) const{
+double Reweighter::electronTightIdWeight(const double pt, const double eta) const{
     double croppedPt = std::min(pt, 199.);
-    double croppedEta = std::min( fabs(eta), 2.49 ); 
+    double croppedEta = std::min( fabs(eta), 2.49 );
     double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
     sf*= electronTightToLooseSF->GetBinContent( electronTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;

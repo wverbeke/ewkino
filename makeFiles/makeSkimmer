@@ -1,5 +1,5 @@
 CC=g++ -Wall -Wextra
-CFLAGS= -Wl,--no-as-needed
+CFLAGS= -Wl,--no-as-needed,-lTMVA
 LDFLAGS=`root-config --glibs --cflags`
 SOURCES= src/Sample.cc src/eventSelection.cc src/skimmer.cc src/treeReader.cc src/analysisTools.cc src/objectSelection.cc src/treeReaderErrors.cc src/kinematicTools.cc
 OBJECTS=$(SOURCES:.cc=.o)

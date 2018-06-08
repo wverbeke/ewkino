@@ -24,13 +24,24 @@ class Reweighter{
         //b-tag weight
         double bTagWeight(const unsigned jetFlavor, const double jetPt, const double jetEta, const double jetCSV, const unsigned unc = 0) const;
 
+        //b-tagging efficiency
+        double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
+
         //lepton id + reconstruction weight
-        double muonWeight(const double pt, const double eta) const{ 
-            return muonRecoWeight(eta)*muonIdWeight(pt,eta);
+        double muonTightWeight(const double pt, const double eta) const{ 
+            return muonRecoWeight(eta)*muonTightIdWeight(pt,eta);
         }
 
-        double electronWeight(const double pt, const double eta, const double superClusterEta) const{ 
-            return electronRecoWeight(superClusterEta, pt)*electronIdWeight(pt,eta);
+        double electronTightWeight(const double pt, const double eta, const double superClusterEta) const{ 
+            return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,eta);
+        }
+
+        double muonLooseWeight(const double pt, const double eta) const{
+            return  muonRecoWeight(eta)*muonLooseIdWeight(pt,eta);
+        }
+
+        double electronLooseWeight(const double pt, const double eta, const double superClusterEta) const{
+            return electronRecoWeight(superClusterEta, pt)*electronLooseIdWeight(pt,eta);
         }
 
         //fakerates 
@@ -38,6 +49,9 @@ class Reweighter{
         double electronFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
 
     private:
+        //boolean flagging weights as 2016 or 2017
+        bool is2016;
+
         //pu weights (one for every sample)
         std::map< std::string, std::vector< std::shared_ptr<TH1D> > > puWeights;
 
@@ -49,6 +63,8 @@ class Reweighter{
         //reconstruction scale factors
         std::shared_ptr<TGraph> muonRecoSF;
         std::shared_ptr<TH2D> electronRecoSF;
+        std::shared_ptr<TH2D> electronRecoSF_pT0to20;
+        std::shared_ptr<TH2D> electronRecoSF_pT20toInf;
 
         //muon id scale factors
         std::shared_ptr<TH2D> muonLooseToRecoSF;
@@ -76,29 +92,30 @@ class Reweighter{
         double muonRecoWeight(const double eta) const;
         double electronRecoWeight(const double superClusterEta, const double pt) const;
 
-        //id weights
-        double muonIdWeight(const double pt, const double eta) const;
-        double electronIdWeight(const double pt, const double eta) const;
+        //loose id weights
+        double muonLooseIdWeight(const double pt, const double eta) const;
+        double electronLooseIdWeight(const double pt, const double eta) const;
 
-        //b-tagging efficiency
-        double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
+        //tight id weights
+        double muonTightIdWeight(const double pt, const double eta) const;
+        double electronTightIdWeight(const double pt, const double eta) const;
 
         //read pu weights for a given list of samples
         void initializePuWeights(const std::vector< Sample >&); 
 
         //read b-tagging weights
-        void initializeBTagWeights(const bool);
+        void initializeBTagWeights();
 
         //read electron id and reco weights
-        void initializeElectronWeights(const bool);
+        void initializeElectronWeights();
 
         //read muon id and reco weights 
-        void initializeMuonWeights(const bool);
+        void initializeMuonWeights();
 
         //initialize fake-rate
-        void initializeFakeRate(const bool);
+        void initializeFakeRate();
 
         //initialize all weights 
-        void initializeAllWeights(const std::vector< Sample>&, const bool);
+        void initializeAllWeights(const std::vector< Sample>&);
 };
 #endif

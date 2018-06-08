@@ -18,6 +18,9 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 
+//temporary inlcude of TMVA
+#include "TMVA/Reader.h"
+
 
 void treeReader::skimTree(const std::string& fileName, std::string outputDirectory, const bool isData){//std::string outputFileName){
     //Read tree	
@@ -56,6 +59,46 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     TTree* outputTree = new TTree("blackJackAndHookersTree","blackJackAndHookersTree");
     setOutputTree(outputTree, isData);
 
+    //TEMPORARY MVA READER: REMOVE THIS LATER
+    float pt, eta, trackMultClosestJet, miniIsoCharged, miniIsoNeutral, ptRel, ptRatio, relIso, deepCsvClosestJet, sip3d, dxy, dz, electronMva, electronMvaFall17NoIso, segmentCompatibility;
+    std::shared_ptr<TMVA::Reader> leptonMvaReader[2][2];
+    for(unsigned era = 0; era < 2; ++era){
+        for(unsigned flavor = 0; flavor < 2; ++flavor){
+            leptonMvaReader[era][flavor] = std::make_shared<TMVA::Reader>( "!Color:!Silent");
+            leptonMvaReader[era][flavor]->AddVariable( "pt", &pt );
+            leptonMvaReader[era][flavor]->AddVariable( "eta", &eta );
+            leptonMvaReader[era][flavor]->AddVariable( "trackMultClosestJet", &trackMultClosestJet );
+            leptonMvaReader[era][flavor]->AddVariable( "miniIsoCharged", &miniIsoCharged );
+            leptonMvaReader[era][flavor]->AddVariable( "miniIsoNeutral", &miniIsoNeutral);
+            leptonMvaReader[era][flavor]->AddVariable( "pTRel", &ptRel);
+            leptonMvaReader[era][flavor]->AddVariable( "ptRatio", &ptRatio);
+            leptonMvaReader[era][flavor]->AddVariable( "relIso", &relIso);
+            leptonMvaReader[era][flavor]->AddVariable( "deepCsvClosestJet", &deepCsvClosestJet);
+            leptonMvaReader[era][flavor]->AddVariable( "sip3d", &sip3d);
+            leptonMvaReader[era][flavor]->AddVariable( "dxy", &dxy);
+            leptonMvaReader[era][flavor]->AddVariable( "dz", &dz);
+            if(flavor == 0){
+                if(era == 0){
+                    leptonMvaReader[era][flavor]->AddVariable("electronMvaSpring16GP", &electronMva);
+                } else {
+                    leptonMvaReader[era][flavor]->AddVariable("electronMvaFall17NoIso", &electronMvaFall17NoIso);
+                }
+            } else {
+                leptonMvaReader[era][flavor]->AddVariable("segmentCompatibility", &segmentCompatibility);
+            }
+            if(flavor == 0 && era == 0){
+                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "/user/wverbeke/Work/AnalysisCode/ewkino/weights/leptonMva/el_tZqTTV16_BDTG.weights.xml");
+            } else if (flavor == 0 && era == 1){
+                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "/user/wverbeke/Work/AnalysisCode/ewkino/weights/leptonMva/el_tZqTTV17_BDTG.weights.xml");
+            } else if (flavor == 1 && era == 0){
+                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "/user/wverbeke/Work/AnalysisCode/ewkino/weights/leptonMva/mu_tZqTTV16_BDTG.weights.xml");
+            } else {
+                leptonMvaReader[era][flavor]->BookMVA("BDTG method", "/user/wverbeke/Work/AnalysisCode/ewkino/weights/leptonMva/mu_tZqTTV17_BDTG.weights.xml");
+            }
+        }
+    }
+    /////////////////////////////////////////
+
     double progress = 0; 	//For printing progress bar
     long nEntries = sampleTree->GetEntries();
     for (long it=0; it <nEntries; ++it) {
@@ -71,6 +114,30 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         std::vector<unsigned> ind;
         unsigned lCount = selectLep(ind);
         if(lCount < 2) continue;
+
+        for(unsigned l = 0; l < _nLight; ++l){
+            pt = _lPt[l];
+            eta = fabs(_lEta[l]);
+            trackMultClosestJet = _selectedTrackMult[l];
+            miniIsoCharged = _miniIsoCharged[l];
+            miniIsoNeutral = _miniIso[l] - _miniIsoCharged[l];
+            ptRel = _ptRel[l];
+            ptRatio = std::min(_ptRatio[l], 1.5);
+            deepCsvClosestJet = std::max( (std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : _closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) , 0.);
+            sip3d = _3dIPSig[l];
+            dxy = log(fabs(_dxy[l]));
+            dz = log(fabs(_dz[l]));
+            if( isElectron(l) ){
+                electronMva = _lElectronMva[l];
+                electronMvaFall17NoIso = _lElectronMvaFall17NoIso[l];
+                _leptonMvatZqTTV16[l] = leptonMvaReader[0][0]->EvaluateMVA("BDTG method");
+                _leptonMvatZqTTV17[l] = leptonMvaReader[1][0]->EvaluateMVA("BDTG method");
+            } else {
+                segmentCompatibility = _lMuonSegComp[l];
+                _leptonMvatZqTTV16[l] = leptonMvaReader[0][1]->EvaluateMVA("BDTG method");
+                _leptonMvatZqTTV17[l] = leptonMvaReader[1][1]->EvaluateMVA("BDTG method");
+            }
+        }
 
         outputTree->Fill();
     }   
