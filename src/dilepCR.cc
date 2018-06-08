@@ -25,6 +25,7 @@
 #include "../interface/HistCollectionDist.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
+#include "../interface/Reweighter.h"
 
 
 void treeReader::setup(){
@@ -203,6 +204,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     } else {
         maxPuBin = 99.5;
     }
+
+    //read SF weights
+    std::shared_ptr< Reweighter > reweighter(new Reweighter(samples, is2016() ) );
     
     const unsigned nDist = histInfo.size();
     const unsigned nRuns = histCollection.categoryRange(0);
@@ -295,6 +299,19 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                         if(_lFlavor[ind[l]] == 0 && dist == 20) continue;  //do not plot muonSegComp for electrons
                         if(_lFlavor[ind[l]] == 1 && (dist == 16 || dist == 17 || dist == 18 || dist == 19) ) continue;  //do not plot electronMva for muons
                         for(unsigned r = 0; r < nRuns; ++r){
+
+                            //apply loose ID scale factors 
+                            double leptonW = 1.;
+                            if( !isData() && r == 0) {
+                                for(unsigned l = 0; l < lCount; ++l){
+                                    if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]], _lEta[ind[l]] , _lEtaSC[ind[l]]); 
+                                    else if (isMuon(ind[l]) ) leptonW *= reweighter->muonLooseWeight(_lPt[ind[l]], _lEta[ind[l]]);
+                                    else {
+                                        std::cerr << "Error: selected muon seems to be neither electron nor muon!" << std::endl;
+                                    }
+                                }
+                            }
+
                             if(!samp.isData() || r == run || r == 0){
                                 double puw = 1.;
                                 
@@ -302,8 +319,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                                 if( !isData() && pu == 1){
                                     puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, maxPuBin) ) );
                                 }
-                                histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight*puw); 
-                                histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight*puw);
+                                histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight*puw*leptonW); 
+                                histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight*puw*leptonW);
 
                             }
                         }
@@ -349,6 +366,18 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             for(unsigned pu = 0; pu < nPuRew; ++pu){
                 for(unsigned dist = 21; dist < nDist - 45; ++dist){     //-45 since there are 45 jet variables
                     for(unsigned r = 0; r < nRuns; ++r){
+                        //apply loose ID scale factors 
+                        double leptonW = 1.;
+                        if( !isData() && r == 0) {
+                            for(unsigned l = 0; l < lCount; ++l){
+                                if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]], _lEta[ind[l]] , _lEtaSC[ind[l]]);
+                                else if (isMuon(ind[l]) ) leptonW *= reweighter->muonLooseWeight(_lPt[ind[l]], _lEta[ind[l]]);
+                                else {
+                                    std::cerr << "Error: selected muon seems to be neither electron nor muon!" << std::endl;
+                                }
+                            }
+                        }
+
                         if(!samp.isData() || r == run || r == 0){
                             double puw = 1.;
 
@@ -356,8 +385,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                             if( !isData() && pu == 1){
                                 puw = puWeights[run]->GetBinContent(puWeights[run]->FindBin( std::min(_nTrueInt, maxPuBin) ) );
                             }
-                            histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist - 21], histInfo[dist].maxBinCenter()), weight*puw);
-                            histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist - 21], histInfo[dist].maxBinCenter()), weight*puw);
+                            histCollection.access(dist, {r, flav, j, pu})->Fill(std::min(fill[dist - 21], histInfo[dist].maxBinCenter()), weight*puw*leptonW);
+                            histCollection.access(dist, {r, 0,    j, pu})->Fill(std::min(fill[dist - 21], histInfo[dist].maxBinCenter()), weight*puw*leptonW);
                         }
                     }
                 }
@@ -377,6 +406,19 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 for(unsigned pu = 0; pu < nPuRew; ++pu){
                     for(unsigned dist = 0; dist < 13; ++dist){
                         for(unsigned r = 0; r < nRuns; ++r){
+
+                            //apply loose ID scale factors 
+                            double leptonW = 1.;
+                            if( !isData() && r == 0) {
+                                for(unsigned l = 0; l < lCount; ++l){
+                                    if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]], _lEta[ind[l]] , _lEtaSC[ind[l]]);
+                                    else if (isMuon(ind[l]) ) leptonW *= reweighter->muonLooseWeight(_lPt[ind[l]], _lEta[ind[l]]);
+                                    else {
+                                        std::cerr << "Error: selected muon seems to be neither electron nor muon!" << std::endl;
+                                    }
+                                }
+                            } 
+
                             if(!samp.isData() || r == run || r == 0){
                                 double puw = 1.;
 
@@ -387,21 +429,21 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                                 
                                 if(dist < 3){
                                     //std::cout <<  histInfo[dist + 21 + 38].name() << std::endl;
-                                    histCollection.access(dist + 21 + 38, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw);
-                                    histCollection.access(dist + 21 + 38, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw);
+                                    histCollection.access(dist + 21 + 38, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw*leptonW);
+                                    histCollection.access(dist + 21 + 38, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw*leptonW);
                                 } else {
                                     if( fabs(_jetEta[j]) <= 2.4){
-                                        histCollection.access(dist + 21 + 38, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw);
-                                        histCollection.access(dist + 21 + 38, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw);
+                                        histCollection.access(dist + 21 + 38, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw*leptonW);
+                                        histCollection.access(dist + 21 + 38, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38].maxBinCenter()), weight*puw*leptonW);
                                     } else if( fabs(_jetEta[j]) <= 2.7){
-                                        histCollection.access(dist + 21 + 38 + 10, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 10].maxBinCenter()), weight*puw);
-                                        histCollection.access(dist + 21 + 38 + 10, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 10].maxBinCenter()), weight*puw);
+                                        histCollection.access(dist + 21 + 38 + 10, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 10].maxBinCenter()), weight*puw*leptonW);
+                                        histCollection.access(dist + 21 + 38 + 10, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 10].maxBinCenter()), weight*puw*leptonW);
                                     } else if( fabs(_jetEta[j]) <= 3.0){
-                                        histCollection.access(dist + 21 + 38 + 20, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 20].maxBinCenter()), weight*puw);
-                                        histCollection.access(dist + 21 + 38 + 20, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 20].maxBinCenter()), weight*puw);
+                                        histCollection.access(dist + 21 + 38 + 20, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 20].maxBinCenter()), weight*puw*leptonW);
+                                        histCollection.access(dist + 21 + 38 + 20, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 20].maxBinCenter()), weight*puw*leptonW);
                                     } else{
-                                        histCollection.access(dist + 21 + 38 + 30, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 30].maxBinCenter()), weight*puw);
-                                        histCollection.access(dist + 21 + 38 + 30, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 30].maxBinCenter()), weight*puw);
+                                        histCollection.access(dist + 21 + 38 + 30, {r, flav, jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 30].maxBinCenter()), weight*puw*leptonW);
+                                        histCollection.access(dist + 21 + 38 + 30, {r, 0,    jetCat, pu})->Fill(std::min(fillJets[dist], histInfo[dist + 21 + 38 + 30].maxBinCenter()), weight*puw*leptonW);
                                     }
                                 }
                              
