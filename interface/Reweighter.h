@@ -28,12 +28,20 @@ class Reweighter{
         double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
 
         //lepton id + reconstruction weight
-        double muonWeight(const double pt, const double eta) const{ 
-            return muonRecoWeight(eta)*muonIdWeight(pt,eta);
+        double muonTightWeight(const double pt, const double eta) const{ 
+            return muonRecoWeight(eta)*muonTightIdWeight(pt,eta);
         }
 
-        double electronWeight(const double pt, const double eta, const double superClusterEta) const{ 
-            return electronRecoWeight(superClusterEta, pt)*electronIdWeight(pt,eta);
+        double electronTightWeight(const double pt, const double eta, const double superClusterEta) const{ 
+            return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,eta);
+        }
+
+        double muonLooseWeight(const double pt, const double eta) const{
+            return  muonRecoWeight(eta)*muonLooseIdWeight(pt,eta);
+        }
+
+        double electronLooseWeight(const double pt, const double eta, const double superClusterEta) const{
+            return electronRecoWeight(superClusterEta, pt)*electronLooseIdWeight(pt,eta);
         }
 
         //fakerates 
@@ -84,9 +92,13 @@ class Reweighter{
         double muonRecoWeight(const double eta) const;
         double electronRecoWeight(const double superClusterEta, const double pt) const;
 
-        //id weights
-        double muonIdWeight(const double pt, const double eta) const;
-        double electronIdWeight(const double pt, const double eta) const;
+        //loose id weights
+        double muonLooseIdWeight(const double pt, const double eta) const;
+        double electronLooseIdWeight(const double pt, const double eta) const;
+
+        //tight id weights
+        double muonTightIdWeight(const double pt, const double eta) const;
+        double electronTightIdWeight(const double pt, const double eta) const;
 
         //read pu weights for a given list of samples
         void initializePuWeights(const std::vector< Sample >&); 
