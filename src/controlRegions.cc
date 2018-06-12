@@ -183,7 +183,9 @@ void treeReader::Analyze(){
             }
 
             //apply event weight
-            weight*=sfWeight();
+            if( isMC() ){
+                weight*=sfWeight();
+            }
 
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
