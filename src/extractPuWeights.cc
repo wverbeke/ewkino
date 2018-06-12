@@ -60,7 +60,7 @@ void extractPuWeights(const Sample& sample){
     }
 
     //directory where ntuples are stored 
-    const std::string directory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/";
+    const std::string directory = "~/Work/ntuples_tzq/";
 
     //read MC pu distribution from given MC sample
     TFile* inputFile = TFile::Open((const TString&) directory + sample.getFileName() );
@@ -102,9 +102,11 @@ void extractPuWeights(const Sample& sample){
             //normalize histogram to unity
             numerator->Scale(1./numerator->GetSumOfWeights());
 
+
             //denominator is MC PU distribution
             std::shared_ptr<TH1D> denominator = std::shared_ptr<TH1D>(mcPuDist);
             denominator->SetDirectory(gROOT);
+
 
             //rebin denominator or numerator histogram if needed
             if( sample.is2016() && (year == "2017") ){
@@ -141,14 +143,14 @@ int main(int argc, char* argv[]){
     std::vector< Sample > sampleVector;
     
     //read sample lists from txt 
-    std::ifstream file2016("sampleLists/samples_dilepCR_2016.txt");
+    std::ifstream file2016("sampleLists/samples2016.txt");
     do {
         sampleVector.push_back(Sample(file2016));
     } while(!file2016.eof());
     sampleVector.pop_back();
     file2016.close();       //close file after usage
 
-    std::ifstream file2017("sampleLists/samples_dilepCR_2017.txt");
+    std::ifstream file2017("sampleLists/samples2017.txt");
     do {
         sampleVector.push_back(Sample(file2017));
     } while(!file2017.eof());
@@ -157,6 +159,7 @@ int main(int argc, char* argv[]){
 
     for(const auto& sample : sampleVector){
         if(sample.isData()) continue;
+        std::cout << "Extracting weights for " << sample.getFileName() << std::endl;
         extractPuWeights(sample);
     }
     return 0;
