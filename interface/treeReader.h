@@ -305,7 +305,7 @@ class treeReader {
         bool is2017() const { return currentSample.is2017(); }
         bool is2016() const { return currentSample.is2016(); }                  //if sample is not 2017 it is automatically 2016
         bool isData() const { return currentSample.isData(); }
-        bool isMC() const { return isMC(); } 
+        bool isMC() const { return currentSample.isMC(); } 
 
         //check lepton flavors 
         bool isElectron(const unsigned leptonIndex) const { return (_lFlavor[leptonIndex] == 0); }
