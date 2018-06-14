@@ -38,17 +38,8 @@ void treeReader::computeBTagEff(const std::string& analysis, const bool clean, c
     for(auto& sam : samples){
         initSample(); 
         std::cout<<"Entries in "<< sam.getFileName() << " " << nEntries << std::endl;
-        double progress = 0;    //for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
 
-            //print progress bar        
-            if(it%100 == 0 && it != 0){
-                progress += (double) (100./nEntries);
-                tools::printProgress(progress);
-            } else if(it == nEntries -1){
-                progress = 1.;
-                tools::printProgress(progress);
-            }
             GetEntry(sam, it);
 
             //make all weights equal to 1 to get maximum statistics
@@ -105,7 +96,7 @@ void treeReader::computeBTagEff(const std::string& analysis, const bool clean, c
     const std::string outputName = "bTagEff_" + taggerNames[deepCSV] + "_" + cleanNames[clean] + "_" + analysis + "_" + (is2016 ? "2016" : "2017"); 
 
     //save histograms to file
-    TFile* bTagEffFile = TFile::Open( (const TString&) "../weights/" + outputName + ".root", "recreate");
+    TFile* bTagEffFile = TFile::Open( (const TString&) "weights/" + outputName + ".root", "recreate");
 
     //divide histograms to compute the efficiency and save to file
     for(unsigned wp = 0; wp < 3; ++wp){
