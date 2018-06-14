@@ -245,7 +245,12 @@ double Reweighter::muonLooseIdWeight(const double pt, const double eta) const{
 
 double Reweighter::electronLooseIdWeight(const double pt, const double eta) const{
     double croppedPt = std::min(pt, 199.);
-    double croppedEta = std::min( fabs(eta), 2.49 ); 
+    double croppedEta;
+    if( is2016 ){   //asymmetric scale factors are currently only available for 2016 data!
+        croppedEta = std::min( std::max( -2.49, eta ), 2.49 ); 
+    } else {
+        croppedEta = std::min( fabs(eta), 2.49); 
+    }
     return electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
 }
 
@@ -259,7 +264,12 @@ double Reweighter::muonTightIdWeight(const double pt, const double eta) const{
 
 double Reweighter::electronTightIdWeight(const double pt, const double eta) const{
     double croppedPt = std::min(pt, 199.);
-    double croppedEta = std::min( fabs(eta), 2.49 );
+    double croppedEta;
+    if( is2016 ){   //asymmetric scale factors are currently only available for 2016 data!
+        croppedEta = std::min( std::max( -2.49, eta ), 2.49 ); 
+    } else {
+        croppedEta = std::min( fabs(eta), 2.49); 
+    }
     double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
     sf*= electronTightToLooseSF->GetBinContent( electronTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
