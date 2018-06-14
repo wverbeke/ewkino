@@ -282,7 +282,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                 _ptRel[ind[l]], 
                 _ptRatio[ind[l]], 
                 _closestJetCsvV2[ind[l]], 
-                _closestJetDeepCsv_b[ind[l]] + _closestJetDeepCsv_bb[ind[l]], 
+                closestJetDeepCSV( ind[l] ),
                 (double) _selectedTrackMult[ind[l]], 
                 (_lFlavor[ind[l]] == 0) ? _lElectronMva[ind[l]] : 0,  
                 (_lFlavor[ind[l]] == 0) ? _lElectronMvaHZZ[ind[l]] : 0,

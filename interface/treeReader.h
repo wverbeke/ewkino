@@ -219,7 +219,7 @@ class treeReader {
         bool lepIsTight(const unsigned) const;
         bool lepFromMEExtConversion(const unsigned) const;
         bool eleIsClean(const unsigned) const;
-        double closestJetDeepCsv(const unsigned) const;
+        double closestJetDeepCSV(const unsigned) const;
 
         unsigned selectLep(std::vector<unsigned>&);
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned) const;
@@ -229,6 +229,7 @@ class treeReader {
         bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true, const bool allowForward = false) const;
         unsigned nJets(const unsigned unc = 0, const bool clean = true) const;                                   //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;    //with jet pt ordering
+        double deepCSV(const unsigned) const;
         bool bTagged(const unsigned ind, const unsigned wp = 1, const bool deepCSV = true) const;
         unsigned nBJets(const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;
         unsigned nBJets(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = true, const bool clean = true, const unsigned wp = 1) const;

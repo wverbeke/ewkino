@@ -25,10 +25,10 @@ bool treeReader::eleIsCleanBase(const unsigned electronIndex, bool (treeReader::
     return true;
 }
 
-double treeReader::closestJetDeepCsv(const unsigned leptonIndex) const{
-    double closestJetDeepCsvVal = _closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex];
-    bool isNan = std::isnan(closestJetDeepCsvVal);
-    return isNan ? 0. : closestJetDeepCsvVal;
+double treeReader::closestJetDeepCSV(const unsigned leptonIndex) const{
+    double closestJetDeepCSVVal = _closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex];
+    bool isNan = std::isnan(closestJetDeepCSVVal);
+    return isNan ? 0. : closestJetDeepCSVVal;
 }
 
 bool treeReader::eleIsClean2016(const unsigned electronIndex) const{
@@ -155,11 +155,15 @@ bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const 
 
 
 //jet b-tagging
+double treeReader::deepCSV(const unsigned jetIndex) const{
+    return _jetDeepCsv_b[jetIndex] + _jetDeepCsv_bb[jetIndex];
+}
+
 bool treeReader::bTaggedDeepCSVBase(const unsigned jetIndex, const unsigned wp, const double bTagWP[3]) const{
     if(wp > 2){
         std::cerr << "Error: trying to evaluate deepCSV b-tagging WP that is out of range." << std::endl;
     }
-    return ( (_jetDeepCsv_b[jetIndex] + _jetDeepCsv_bb[jetIndex]) > bTagWP[wp] );
+    return ( deepCSV(jetIndex) > bTagWP[wp] );
 }
 
 bool treeReader::bTaggedDeepCSV2016(const unsigned jetIndex, const unsigned wp) const{
