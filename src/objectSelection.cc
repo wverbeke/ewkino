@@ -99,28 +99,34 @@ bool treeReader::passLeptonMva(const unsigned leptonIndex, const double mvaCut) 
 
 bool treeReader::lepIsGoodBase(const unsigned leptonIndex) const{
     if(!lepIsLoose(leptonIndex)) return false;
-    //keep this threshold at 15 GeV or lower?
     if(_lPt[leptonIndex] <= 10) return false;
-    //put any general cut on the closest jet csv?
-    //if(_closestJetCsvV2[leptonIndex] >= 0.8484) return false;
-    if( passLeptonMva(leptonIndex, 0.8) ){
-        if(_ptRatio[leptonIndex] <= 0.5) return false;
-        if( closestJetDeepCsv(leptonIndex) >= 0.25) return false;
-        if(_lFlavor[leptonIndex] == 1 && _lMuonSegComp[leptonIndex] <= 0.3) return false;
-        //TO-DO FO cuts on electron MVA to be added after they are tuned
-    }
-    if( isElectron(leptonIndex) ){
-        if(!_lElectronPassEmu[leptonIndex]) return false;
-    }
     return true;
 }
 
 bool treeReader::lepIsGood2016(const unsigned leptonIndex) const{
-    return lepIsGoodBase(leptonIndex);
+    if( !lepIsGoodBase(leptonIndex) ) return false;
+    if( closestJetDeepCsv(leptonIndex) >  0.8958) return false;
+    if( !passLeptonMva( leptonIndex, 0.8) ){
+        if( _ptRatio[leptonIndex] <= 0.7) return false;
+        if( closestJetDeepCsv( leptonIndex ) >= 0.4) return false;
+        if( isElectron(leptonIndex) ){
+            if( _lElectronMva[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.4 : 0.9 ) ) return false;
+        } 
+    }
+    return true;
 } 
 
 bool treeReader::lepIsGood2017(const unsigned leptonIndex) const{
-    return lepIsGoodBase(leptonIndex);
+    if( !lepIsGoodBase(leptonIndex) ) return false;
+    if( closestJetDeepCsv(leptonIndex) >  0.8001) return false;
+    if( !passLeptonMva( leptonIndex, 0.8) ){
+        if( _ptRatio[leptonIndex] <= 0.6) return false;
+        if( closestJetDeepCsv( leptonIndex ) >= 0.2) return false;
+        if( isElectron(leptonIndex) ){
+            if( _lElectronMvaFall17NoIso[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.3 : 0.6 ) ) return false;
+        } 
+    }
+    return true;   
 }
 
 bool treeReader::lepIsGood(const unsigned leptonIndex) const{
