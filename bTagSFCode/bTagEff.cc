@@ -144,18 +144,21 @@ int main(int argc, char* argv[]){
         
         //catch wrong arguments given to code
         bool wrongArguments = false;
+        if( ! (argvStr[1] == "tZq" || argvStr[1] == "ttZ3l" ||  argvStr[1] == "ttZ4l" || argvStr[1] == "ttW") ){
+            wrongArguments = true;
+        }
         if( ! (argvStr[2] == "clean" || argvStr[2] == "unclean") ){
             wrongArguments = true;
         }
         if( ! (argvStr[3] == "deepCSV" || argvStr[3] == "CSVv2") ){
             wrongArguments = true;
         }
-        if( ! (argvStr[4] == "2016" || argvStr[4] == "2016") ){
+        if( ! (argvStr[4] == "2016" || argvStr[4] == "2017") ){
             wrongArguments = true;
         }
         if( wrongArguments ){
             std::cerr << "Error: unrecognized arguments given to bTagEff program. Aborting." << std::endl;
-            std::cerr << "Give in arguments as follows : <clean,unclean> <deepCSV, CSVv2> <2016, 2017>" << std::endl;
+            std::cerr << "Give in arguments as follows : <tZq, ttZ3l, ttZ4l, ttW> <clean,unclean> <deepCSV, CSVv2> <2016, 2017>" << std::endl;
             return 1;
         }
 
