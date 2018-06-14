@@ -134,15 +134,33 @@ int main(int argc, char* argv[]){
                 std::string scriptName = ( "bTagEff_" + year + "_" + analysis + ".sh" );
                 std::ofstream submitScript(scriptName);
                 tools::initScript(submitScript);
-                submitScript << ( "./bTagEff " + analysis + " clean deepCsv year" ); 
+                submitScript << ( "./bTagEff " + analysis + " clean deepCSV " + year ); 
                 submitScript.close();
                 tools::submitScript(scriptName, "100:00:00");
                 tools::deleteFile(scriptName);
             }
         }
     } else if(argc == 5){
+        
+        //catch wrong arguments given to code
+        bool wrongArguments = false;
+        if( ! (argvStr[2] == "clean" || argvStr[2] == "unclean") ){
+            wrongArguments = true;
+        }
+        if( ! (argvStr[3] == "deepCSV" || argvStr[3] == "CSVv2") ){
+            wrongArguments = true;
+        }
+        if( ! (argvStr[4] == "2016" || argvStr[4] == "2016") ){
+            wrongArguments = true;
+        }
+        if( wrongArguments ){
+            std::cerr << "Error: unrecognized arguments given to bTagEff program. Aborting." << std::endl;
+            std::cerr << "Give in arguments as follows : <clean,unclean> <deepCSV, CSVv2> <2016, 2017>" << std::endl;
+            return 1;
+        }
+
         bool clean = (argvStr[2] == "clean");
-        bool deepCsv = (argvStr[3] == "deepCsv");
+        bool deepCsv = (argvStr[3] == "deepCSV");
         bool is2016 = (argvStr[4] == "2016");
         
         treeReader reader;
