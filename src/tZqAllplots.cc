@@ -257,10 +257,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             {"ltmet", 0.},
             {"deltaRWlepRecoilingJet",0.},
             {"deltaRTaggedbJetRecoilingJet", 0.},
-            {"deltaRHighestDeepCsvJetMostForwardJet", 0.},
+            {"deltaRHighestDeepCSVJetMostForwardJet", 0.},
             {"deltaRLeadingbJetRecoilingJet", 0.},
-            {"highestDeepCsv_b", 0.},
-            {"highestDeepCsv_bb", 0.},
+            {"highestDeepCSV_b", 0.},
+            {"highestDeepCSV_bb", 0.},
             {"etaLeadingJet", 0.},
             {"pTLeadingJet", 0.},
             {"maxMlj", 0.},
@@ -333,17 +333,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //vector containing good lepton indices
         std::vector<unsigned> ind;
 
-        /*
         //select leptons
         const unsigned lCount = selectLep(ind);
         if(lCount != 3) continue;
         if(tightLepCount(ind, lCount) != 3) continue; //require 3 tight leptons
-        */
-
-        //WARNING, REMOVE THIS AND TAKE PREVIOUS LINES BACK IN
-        //Testing with TOP-16-0-200 selection
-        const unsigned lCount = selectLep_TOP16_020(ind);
-        if(lCount != 3) continue;
 
         //require pt cuts (25, 15, 10) to be passed
         if(!passPtCuts(ind)) continue;
@@ -450,7 +443,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         unsigned counter = 0;
         for(unsigned j = 0; j < jetCount; ++j){
             if(fabs(_jetEta[jetInd[j]]) < 2.4) {
-                if( (counter == 0) || ( (_jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]]) > (_jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI]) ) ) highestDeepCSVI = jetInd[j];
+                if( (counter == 0) || ( deepCSV(jetInd[j]) > deepCSV(highestDeepCSVI) ) ) highestDeepCSVI = jetInd[j];
                 if( (counter == 0) || ( _jetCsvV2[jetInd[j]] > _jetCsvV2[highestCSVv2I] ) ) highestCSVv2I = jetInd[j];
                 ++counter;
             }
@@ -603,7 +596,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["topMass"] =  std::max(topV.M(), 0.);
         bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
         bdtVariableMap["mTW"] = kinematics::mt(lepV[lw], met);
-        bdtVariableMap["highestDeepCSV"] = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
+        bdtVariableMap["highestDeepCSV"] = (jetCount == 0) ? 0. : deepCSV(highestDeepCSVI);
         bdtVariableMap["numberOfJets"] = jetCount;
         bdtVariableMap["numberOfBJets"] = bJetCount;
         bdtVariableMap["pTLeadingLepton"] = _lPt[ind[0]];
@@ -636,10 +629,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["ltmet"] = LT + _met;
         bdtVariableMap["deltaRWlepRecoilingJet"] = lepV[lw].DeltaR(recoilingJet);
         bdtVariableMap["deltaRTaggedbJetRecoilingJet"] = taggedBJet.DeltaR(recoilingJet);
-        bdtVariableMap["deltaRHighestDeepCsvJetMostForwardJet"] = highestDeepCSVJet.DeltaR(highestEtaJet);
+        bdtVariableMap["deltaRHighestDeepCSVJetMostForwardJet"] = highestDeepCSVJet.DeltaR(highestEtaJet);
         bdtVariableMap["deltaRLeadingbJetRecoilingJet"] = leadingBJet.DeltaR(recoilingJet);
-        bdtVariableMap["highestDeepCsv_b"] = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI];
-        bdtVariableMap["highestDeepCsv_bb"] = (jetCount == 0) ? 0. : _jetDeepCsv_bb[highestDeepCSVI];
+        bdtVariableMap["highestDeepCSV_b"] = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI];
+        bdtVariableMap["highestDeepCSV_bb"] = (jetCount == 0) ? 0. : _jetDeepCsv_bb[highestDeepCSVI];
         bdtVariableMap["etaLeadingJet"] = fabs(leadingJet.Eta());
         bdtVariableMap["pTLeadingJet"] = leadingJet.Pt();
         bdtVariableMap["maxMlj"] = maxMLeptonJet;
@@ -668,7 +661,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
          highestEtaJet.Pt(), std::max(topV.M(), 0.), (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
 
-        _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI],
+        deepCSV(highestDeepCSVI),
         _jetDeepCsv_b[highestDeepCSVI],
         _jetDeepCsv_bb[highestDeepCSVI],
         _jetCsvV2[highestCSVv2I],

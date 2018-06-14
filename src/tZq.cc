@@ -221,7 +221,7 @@ void treeReader::Analyze(){
             unsigned counter = 0;
             for(unsigned j = 0; j < jetCount; ++j){
                 if(fabs(_jetEta[jetInd[j]]) < 2.4) {
-                    if( (counter == 0) || ( (_jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]]) > (_jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI]) ) ) highestDeepCSVI = jetInd[j];
+                    if( (counter == 0) || ( deepCSV(jetInd[j]) > deepCSV(highestDeepCSVI) ) ) highestDeepCSVI = jetInd[j];
                     if( (counter == 0) || ( _jetCsvV2[jetInd[j]] > _jetCsvV2[highestCSVv2I] ) ) highestCSVv2I = jetInd[j];
                     ++counter;
                 }
@@ -287,7 +287,7 @@ void treeReader::Analyze(){
             bdtVariableMap["etaRecoilingJet"] = fabs(recoilingJet.Eta());
             bdtVariableMap["maxMjj"] = std::max(maxMJetJet, 0.);
             bdtVariableMap["asymmetryWlep"] = fabs(_lEta[ind[lw]])*_lCharge[ind[lw]];
-            bdtVariableMap["highestDeepCSV"] = (jetCount == 0) ? 0. : _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI];
+            bdtVariableMap["highestDeepCSV"] = (jetCount == 0) ? 0. : deepCSV(highestDeepCSVI);
             bdtVariableMap["ltmet"] = LT + _met;
             bdtVariableMap["maxDeltaPhijj"] = maxDeltaPhiJetJet;
             bdtVariableMap["mTW"] = kinematics::mt(lepV[lw], met);

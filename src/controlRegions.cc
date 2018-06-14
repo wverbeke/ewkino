@@ -212,7 +212,7 @@ void treeReader::Analyze(){
             unsigned counter = 0;
             for(unsigned j = 0; j < jetCount; ++j){
                 if(fabs(_jetEta[jetInd[j]]) < 2.4) {
-                    if( (counter == 0) || ( (_jetDeepCsv_b[jetInd[j]] + _jetDeepCsv_bb[jetInd[j]]) > (_jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI]) ) ) highestDeepCSVI = jetInd[j];
+                    if( (counter == 0) || ( deepCSV( jetInd[j] ) > deepCSV(highestDeepCSVI) ) ) highestDeepCSVI = jetInd[j];
                     ++counter;
                 }
             } 
@@ -271,7 +271,7 @@ void treeReader::Analyze(){
             double fill[nDist] = { fabs(recoilingJet.Eta()), 
                 maxMJetJet,
                 fabs(lepV[lw].Eta())*_lCharge[ind[lw]],
-                _jetDeepCsv_b[highestDeepCSVI] + _jetDeepCsv_bb[highestDeepCSVI],
+                (jetCount == 0) ? 0. : deepCSV(highestDeepCSVI),
                 LT + _met,
                 maxDeltaPhiJetJet,
                 kinematics::mt(lepV[lw], met),

@@ -11,10 +11,10 @@ bool treeReader::lepIsGoodtZq(const unsigned leptonIndex) const{
 
 bool treeReader::lepIsGoodttZ3l2016(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
-    if( closestJetDeepCsv(leptonIndex) >  0.8958) return false;
+    if( closestJetDeepCSV(leptonIndex) >  0.8958) return false;
     if( !passLeptonMva( leptonIndex, 0.4) ){
         if( _ptRatio[leptonIndex] <= 0.4) return false;
-        if( closestJetDeepCsv( leptonIndex ) >= 0.4) return false;
+        if( closestJetDeepCSV( leptonIndex ) >= 0.4) return false;
         if( isElectron(leptonIndex) ){
             if( _lElectronMva[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? -0.1 : 0.7 ) ) return false;
         }
@@ -24,10 +24,10 @@ bool treeReader::lepIsGoodttZ3l2016(const unsigned leptonIndex) const{
 
 bool treeReader::lepIsGoodttZ3l2017(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
-    if( closestJetDeepCsv(leptonIndex) >  0.8001) return false;
+    if( closestJetDeepCSV(leptonIndex) >  0.8001) return false;
     if( !passLeptonMva( leptonIndex, 0.4) ){
         if( _ptRatio[leptonIndex] <= 0.3) return false;
-        if( closestJetDeepCsv( leptonIndex ) >= 0.2) return false;
+        if( closestJetDeepCSV( leptonIndex ) >= 0.2) return false;
         if( isElectron(leptonIndex) ){
             if( _lElectronMva[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.0 : 0.3 ) ) return false;
         }
@@ -62,10 +62,10 @@ bool treeReader::lepIsGoodttZ4l(const unsigned leptonIndex) const{
 
 bool treeReader::lepIsGoodttW2016(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
-    if( closestJetDeepCsv(leptonIndex) >  0.8958) return false;
+    if( closestJetDeepCSV(leptonIndex) >  0.8958) return false;
     if( !passLeptonMva( leptonIndex, 0.6) ){
         if( _ptRatio[leptonIndex] <= 0.5) return false;
-        if( closestJetDeepCsv( leptonIndex ) >= 0.3) return false;
+        if( closestJetDeepCSV( leptonIndex ) >= 0.3) return false;
         if( isElectron(leptonIndex) ){
             if( _lElectronMva[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.3 : 0.8 ) ) return false;
         }
@@ -75,10 +75,10 @@ bool treeReader::lepIsGoodttW2016(const unsigned leptonIndex) const{
 
 bool treeReader::lepIsGoodttW2017(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
-    if( closestJetDeepCsv(leptonIndex) >  0.8001) return false;
+    if( closestJetDeepCSV(leptonIndex) >  0.8001) return false;
     if( !passLeptonMva( leptonIndex, 0.6) ){
         if( _ptRatio[leptonIndex] <= 0.4) return false;
-        if( closestJetDeepCsv( leptonIndex ) >= 0.4) return false;
+        if( closestJetDeepCSV( leptonIndex ) >= 0.4) return false;
         if( isElectron(leptonIndex) ){
             if( _lElectronMva[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.4 : 0.8 ) ) return false;
         }
