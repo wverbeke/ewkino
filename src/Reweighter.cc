@@ -65,29 +65,30 @@ void Reweighter::initializeBTagWeights(){
         sfFileName = "DeepCSV_94XSF_V2_B_F.csv";
     }
     bTagCalib = std::shared_ptr<BTagCalibration>( new BTagCalibration("deepCsv", "weights/" + sfFileName) );
+
+    //WARNING: b-tagging efficiencies currently assume medium deepCSV tagger!
     bTagCalibReader = std::shared_ptr<BTagCalibrationReader>( new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up", "down"}) );
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_B, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_C, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_UDSG, "incl");    
 
-    //WARNING: b-tagging efficiencies are yet to be computed and are currently not available 
-    /*
     //initialize b-tag efficiencies
     std::string effFileName;
     if(is2016){
-        effFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2016.root";
+        effFileName = "bTagEff_deepCSV_cleaned_tZq_2016.root";
     } else {
-        effFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2017.root";
+        effFileName = "bTagEff_deepCSV_cleaned_tZq_2017.root";
     }
 
     TFile* bTagFile = TFile::Open( (const TString&) "weights/" + effFileName);
     const std::string quarkFlavors[3] = {"udsg", "charm", "beauty"};
     for(unsigned flav = 0; flav < 3; ++flav){
-        bTagEffHist[flav] = (TH1D*) bTagFile->Get( (const TString&) "bTagEff_" + quarkFlavors[flav]);
+        
+        //WARNING: b-tagging efficiencies currently assume medium deepCSV tagger!
+        bTagEffHist[flav] = std::shared_ptr<TH1D>( (TH1D*) bTagFile->Get( (const TString&) "bTagEff_medium" + quarkFlavors[flav]) );
         bTagEffHist[flav]->SetDirectory(gROOT);
     }
     bTagFile->Close();
-    */
 }
 
 void Reweighter::initializeElectronWeights(){	
@@ -207,8 +208,9 @@ double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, cons
 }
 
 double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const{
-    //!!!! To be split for 2016 and 2017 data !!!!
-    return bTagEffHist[flavorInd(jetFlavor)]->GetBinContent(bTagEffHist[flavorInd(jetFlavor)]->FindBin(std::min(jetPt, 599.), std::min(fabs(jetEta), 2.4)) );
+    double croppedPt = std::min( std::max(jetPt, 25.), 599.);
+    double croppedAbsEta = std::max( fabs(jetEta), 2.39 ); 
+    return bTagEffHist[flavorInd(jetFlavor)]->GetBinContent(bTagEffHist[flavorInd(jetFlavor)]->FindBin(croppedPt, croppedAbsEta) );
 }
 
 double Reweighter::muonRecoWeight(const double eta) const{

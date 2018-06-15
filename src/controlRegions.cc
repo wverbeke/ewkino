@@ -63,7 +63,11 @@ void treeReader::Analyze(){
         HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 30, 0, 7),
         HistInfo("m3l", "M_{3l} (GeV)", 30, 0, 600),
         HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 30, 0, 5),
-        HistInfo("nbJets", "BDT output", 10, -1, 1)
+        HistInfo("nbJets", "BDT output", 10, -1, 1),
+        HistInfo("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
+        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
+        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
+        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -285,7 +289,11 @@ void treeReader::Analyze(){
                 lepV[lw].DeltaR(taggedBJet),
                 m3l,
                 fabs(highestEtaJet.Eta()),
-                (double) bJetCount
+                (double) bJetCount,
+                _met,
+                _lPt[ind[0]],
+                _lPt[ind[1]],
+                _lPt[ind[2]]
             };
 
             //fill histograms
