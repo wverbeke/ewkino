@@ -112,7 +112,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         sampleTree->GetEntry(it);
 
         //preselect 3 loose leptons
-        unsigned looseCount;
+        unsigned looseCount = 0;
         for(unsigned l = 0; l < _nLight; ++l){
             if( lepIsLoose(l) ){
                 ++looseCount;
