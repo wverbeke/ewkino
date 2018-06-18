@@ -9,7 +9,7 @@ bool treeReader::eleIsCleanBase(const unsigned electronIndex, bool (treeReader::
     //make sure this lepton is an electron
     if( !isElectron(electronIndex) ){
         std::cerr << "Error: trying to clean non-electron object from muon overlap." << std::endl;
-        return 999;
+        return false;
     }
     //check separation with every muon
     for(unsigned m = 0; m < _nMu; ++m){
@@ -23,12 +23,6 @@ bool treeReader::eleIsCleanBase(const unsigned electronIndex, bool (treeReader::
         }
     }
     return true;
-}
-
-double treeReader::closestJetDeepCSV(const unsigned leptonIndex) const{
-    double closestJetDeepCSVVal = _closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex];
-    bool isNan = std::isnan(closestJetDeepCSVVal);
-    return isNan ? 0. : closestJetDeepCSVVal;
 }
 
 bool treeReader::eleIsClean2016(const unsigned electronIndex) const{
@@ -47,10 +41,16 @@ bool treeReader::eleIsClean(const unsigned electronIndex) const{
     }
 } 
 
+double treeReader::closestJetDeepCSV(const unsigned leptonIndex) const{
+    double closestJetDeepCSVVal = _closestJetDeepCsv_b[leptonIndex] + _closestJetDeepCsv_bb[leptonIndex];
+    bool isNan = std::isnan(closestJetDeepCSVVal);
+    return isNan ? 0. : closestJetDeepCSVVal;
+}
+
 bool treeReader::lepIsLooseBase(const unsigned leptonIndex) const{
     if( isTau(leptonIndex) ) return false;
     if(_lPt[leptonIndex] <= 10) return false;
-    if(fabs(_lEta[leptonIndex]) >= (2.5 - 0.1*_lFlavor[leptonIndex])) return false;
+    if(fabs(_lEta[leptonIndex]) >= (2.5 - 0.1*isMuon(leptonIndex) ) ) return false;
     if(fabs(_dxy[leptonIndex]) >= 0.05) return false;
     if(fabs(_dz[leptonIndex]) >= 0.1) return false;
     if(_3dIPSig[leptonIndex] >= 8) return false;
@@ -100,6 +100,9 @@ bool treeReader::passLeptonMva(const unsigned leptonIndex, const double mvaCut) 
 bool treeReader::lepIsGoodBase(const unsigned leptonIndex) const{
     if(!lepIsLoose(leptonIndex)) return false;
     if(_lPt[leptonIndex] <= 10) return false;
+    if( isMuon(leptonIndex) ){
+        if( !_lPOGMedium[leptonIndex] ) return false;
+    }
     return true;
 }
 
@@ -111,7 +114,7 @@ bool treeReader::lepIsGood2016(const unsigned leptonIndex) const{
         if( closestJetDeepCSV( leptonIndex ) >= 0.4) return false;
         if( isElectron(leptonIndex) ){
             if( _lElectronMva[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.4 : 0.9 ) ) return false;
-        } 
+        }
     }
     return true;
 } 

@@ -87,7 +87,7 @@ unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsig
 bool treeReader::passPtCuts(const std::vector<unsigned>& ind) const{
     if(_lPt[ind[0]] <= 25) return false;
     if(_lPt[ind[1]] <= 15) return false;
-    if(_lPt[ind[0]] <= 10) return false;
+    if(_lPt[ind[2]] <= 10) return false;
     return true;
 }
 
