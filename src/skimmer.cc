@@ -113,57 +113,32 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
 
         std::vector<unsigned> ind;
         //Select both TOP-16-020 and FO leptons. Remove the former later.
+        for(unsigned l = 0; l < _nLight; ++l){
+            pt = _lPt[l];
+            eta = fabs(_lEta[l]);
+            trackMultClosestJet = _selectedTrackMult[l];
+            miniIsoCharged = _miniIsoCharged[l];
+            miniIsoNeutral = _miniIso[l] - _miniIsoCharged[l];
+            ptRel = _ptRel[l];
+            ptRatio = std::min(_ptRatio[l], 1.5);
+            deepCsvClosestJet = std::max( (std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : _closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) , 0.);
+            sip3d = _3dIPSig[l];
+            dxy = log(fabs(_dxy[l]));
+            dz = log(fabs(_dz[l]));
+            if( isElectron(l) ){
+                electronMva = _lElectronMva[l];
+                electronMvaFall17NoIso = _lElectronMvaFall17NoIso[l];
+                _leptonMvatZqTTV16[l] = leptonMvaReader[0][0]->EvaluateMVA("BDTG method");
+                _leptonMvatZqTTV17[l] = leptonMvaReader[1][0]->EvaluateMVA("BDTG method");
+            } else {
+                segmentCompatibility = _lMuonSegComp[l];
+                _leptonMvatZqTTV16[l] = leptonMvaReader[0][1]->EvaluateMVA("BDTG method");
+                _leptonMvatZqTTV17[l] = leptonMvaReader[1][1]->EvaluateMVA("BDTG method");
+            }
+
+        }
         unsigned lCount = std::max(selectLep(ind), selectLep_TOP16_020(ind) );
         if(lCount < 3) continue;
-        for(unsigned l = 0; l < _nLight; ++l){
-            pt = _lPt[l];
-            eta = fabs(_lEta[l]);
-            trackMultClosestJet = _selectedTrackMult[l];
-            miniIsoCharged = _miniIsoCharged[l];
-            miniIsoNeutral = _miniIso[l] - _miniIsoCharged[l];
-            ptRel = _ptRel[l];
-            ptRatio = std::min(_ptRatio[l], 1.5);
-            deepCsvClosestJet = std::max( (std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : _closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) , 0.);
-            sip3d = _3dIPSig[l];
-            dxy = log(fabs(_dxy[l]));
-            dz = log(fabs(_dz[l]));
-            if( isElectron(l) ){
-                electronMva = _lElectronMva[l];
-                electronMvaFall17NoIso = _lElectronMvaFall17NoIso[l];
-                _leptonMvatZqTTV16[l] = leptonMvaReader[0][0]->EvaluateMVA("BDTG method");
-                _leptonMvatZqTTV17[l] = leptonMvaReader[1][0]->EvaluateMVA("BDTG method");
-            } else {
-                segmentCompatibility = _lMuonSegComp[l];
-                _leptonMvatZqTTV16[l] = leptonMvaReader[0][1]->EvaluateMVA("BDTG method");
-                _leptonMvatZqTTV17[l] = leptonMvaReader[1][1]->EvaluateMVA("BDTG method");
-            }
-
-        }
-
-        for(unsigned l = 0; l < _nLight; ++l){
-            pt = _lPt[l];
-            eta = fabs(_lEta[l]);
-            trackMultClosestJet = _selectedTrackMult[l];
-            miniIsoCharged = _miniIsoCharged[l];
-            miniIsoNeutral = _miniIso[l] - _miniIsoCharged[l];
-            ptRel = _ptRel[l];
-            ptRatio = std::min(_ptRatio[l], 1.5);
-            deepCsvClosestJet = std::max( (std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : _closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) , 0.);
-            sip3d = _3dIPSig[l];
-            dxy = log(fabs(_dxy[l]));
-            dz = log(fabs(_dz[l]));
-            if( isElectron(l) ){
-                electronMva = _lElectronMva[l];
-                electronMvaFall17NoIso = _lElectronMvaFall17NoIso[l];
-                _leptonMvatZqTTV16[l] = leptonMvaReader[0][0]->EvaluateMVA("BDTG method");
-                _leptonMvatZqTTV17[l] = leptonMvaReader[1][0]->EvaluateMVA("BDTG method");
-            } else {
-                segmentCompatibility = _lMuonSegComp[l];
-                _leptonMvatZqTTV16[l] = leptonMvaReader[0][1]->EvaluateMVA("BDTG method");
-                _leptonMvatZqTTV17[l] = leptonMvaReader[1][1]->EvaluateMVA("BDTG method");
-            }
-        }
-
         outputTree->Fill();
     }   
     std::cout << std::endl;
