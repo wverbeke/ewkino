@@ -90,7 +90,15 @@ void treeReader::Analyze(){
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
+        
+        std::ofstream file;
         initSample();
+
+        if( isData() ){
+            std::cout << "opening file" << std::endl;
+            file.open("dump.txt");
+        }
+
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
@@ -115,10 +123,10 @@ void treeReader::Analyze(){
 
             //select leptons
             const unsigned lCount = selectLep(ind);
-            if( lCount != 3 && lCount != 4) continue;
+            if( !(lCount == 3 || lCount == 4) ) continue;
             unsigned lCountTight = tightLepCount(ind, lCount);
-            if( lCountTight != 3 && lCount != 4 ) continue; //require 3 tight leptons
-
+            if( !(lCountTight == lCount) ) continue; //require 3 tight leptons
+           
             //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;
 
@@ -184,6 +192,11 @@ void treeReader::Analyze(){
 
             } else {
                 std::cerr << "Error: controlRegion number does not match any known control region." << std::endl;
+            }
+
+            if( isData() && tzq::isZZControlRegion(controlRegion) ){
+                std::cout << "writing to file! " << std::endl;
+                file << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl;
             }
 
             //apply event weight
@@ -307,6 +320,10 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 tools::setNegativeZero( hists[cr][dist][sam].get() );
             }	
+        }
+
+        if( isData() ){
+            file.close();
         }
     }
     //merge histograms with the same physical background
