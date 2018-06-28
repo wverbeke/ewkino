@@ -31,7 +31,6 @@ double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) cons
         }
     }
     return pData/pMC;
-    return 1.;
 }
 
 //light flavor b-tagging SF

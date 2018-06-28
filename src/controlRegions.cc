@@ -46,28 +46,29 @@ void treeReader::Analyze(){
     //name      xlabel    nBins,  min, max
     histInfo = {
         //HistInfo("bdt", "BDT output", 10, -1, 1)
-        HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 30, 0, 5),
-        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 30, 0, 1200),
-        HistInfo("asymmetryWLep", "asymmetry (lepton from W)",30, -2.5, 2.5),
-        HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 30, 0, 1),
-        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 30, 0, 800),
-        HistInfo("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 30, 0, 3.15),
-        HistInfo("mt", "M_{T} (GeV)", 30, 0, 300),
-        HistInfo("mtop", "M_{(W + b)} (GeV)", 30, 0, 400),
-        HistInfo("maxpTJetJet", "P_{T}^{max}(jet + jet) (GeV)", 30, 0, 300),
-        HistInfo("minDeltaPhiLeptonBJet", "min(#Delta#Phi(l, bjet))", 30, 0, 3.15),
-        HistInfo("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 30, 0, 3.15),
-        HistInfo("HT", "H_{T} (GeV)", 30, 0, 800),
+        HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
+        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 20, 0, 1200),
+        HistInfo("asymmetryWLep", "asymmetry (lepton from W)",20, -2.5, 2.5),
+        HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 20, 0, 1),
+        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 20, 0, 800),
+        HistInfo("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 20, 0, 3.15),
+        HistInfo("mt", "M_{T} (GeV)", 20, 0, 300),
+        HistInfo("mtop", "M_{(W + b)} (GeV)", 20, 0, 400),
+        HistInfo("maxpTJetJet", "P_{T}^{max}(jet + jet) (GeV)", 20, 0, 300),
+        HistInfo("minDeltaPhiLeptonBJet", "min(#Delta#Phi(l, bjet))", 20, 0, 3.15),
+        HistInfo("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 20, 0, 3.15),
+        HistInfo("HT", "H_{T} (GeV)", 20, 0, 800),
         HistInfo("nJets", "number of jets", 10, 0, 10),
-        HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 30, 0, 10),
-        HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 30, 0, 7),
-        HistInfo("m3l", "M_{3l} (GeV)", 30, 0, 600),
-        HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 30, 0, 5),
-        HistInfo("nbJets", "BDT output", 10, -1, 1),
-        HistInfo("met", "E_{T}^{miss} (GeV)", 30, 0, 300),
-        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 30, 25, 200),
-        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 30, 15, 200),
-        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 30, 10, 200)
+        HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 20, 0, 10),
+        HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 20, 0, 7),
+        HistInfo("m3l", "M_{3l} (GeV)", 20, 0, 600),
+        HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 20, 0, 5),
+        HistInfo("nbJets", "number of b-jets", 8, 0, 8),
+        HistInfo("met", "E_{T}^{miss} (GeV)", 20, 0, 300),
+        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 20, 25, 200),
+        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 20, 15, 200),
+        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200),
+        HistInfo("nVertices", "number of vertices", 20, 0, 60)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -90,14 +91,25 @@ void treeReader::Analyze(){
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        
         std::ofstream file;
+        //WARNING: temporary patch for corrupted sample
+        if(samples[sam].getFileName() == "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1_Summer16.root"
+            //samples[sam].getFileName() == "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_Summer16.root" ||
+            //samples[sam].getFileName() == "ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1_Summer16.root" ||
+            //samples[sam].getFileName() == "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_Summer16.root"
+        )
+        {   
+            samples.erase(samples.begin() + sam);
+            continue;
+        }
         initSample();
 
-        if( isData() ){
+        if(currentSample.getFileName() != "ZZTo4L_13TeV_powheg_pythia8_Summer16.root") continue;
+
+        //if( isData() ){
             std::cout << "opening file" << std::endl;
             file.open("dump.txt");
-        }
+        //}
 
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
@@ -135,7 +147,69 @@ void treeReader::Analyze(){
 
             //require presence of OSSF pair
             if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
+            if(_eventNb == 563045540 || _eventNb == 686510312){
+            std::cout << "######################################" << std::endl;
+            std::cout << ( is2016() ? "2016" : "2017" ) << " event" << std::endl;
+            std::cout << ( isData() ? "data" : "MC" ) << " event" << std::endl;
+            std::cout << "RunNb LumiBlock EventNb : " << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl;
+            for(unsigned l = 0; l < _nLight; ++l){
+                std::cout << "lepton " << l << " -> ";
+                if(_lFlavor[l] == 0) std::cout << "electron :";
+                else if(_lFlavor[l] == 1) std::cout << "muon :";
+                else std::cout << "tau :";
+                
+                std::cout << "pT = " << _lPt[l] << "\t eta = " << _lEta[l] << "\t";
+                std::cout << "charge = " << _lCharge[l];
+                if( lepIsLoose(l) ) std::cout << "\tloose\t";
+                else std::cout << "\tfail_loose\t";
+                if( lepIsGood(l) ) std::cout << "FO\t";
+                else std::cout << "fail_FO\t";
+                if( lepIsTight(l) ) std::cout << "tight\t";
+                else std::cout << "fail_tight\t";
+                std::cout << "leptonMVA16 = " << _leptonMvatZqTTV16[l];
+                std::cout << "\tleptonMVA17 = " << _leptonMvatZqTTV17[l];
+                std::cout << std::endl;
 
+                std::cout << "lepton MVA inputs : selectedTrackMult = " << _selectedTrackMult[l]
+                    << "\tminiIsoCharged = " << _miniIsoCharged[l] 
+                    << "\tminiIsoNeutral = " << _miniIso[l] - _miniIsoCharged[l]
+                    << "\tptRel = " << _ptRel[l]
+                    << "\tptRatio = " << _ptRatio[l]
+                    << "\trelIso = " << _relIso[l]
+                    << "\tdeepCsvClosestJet = " << closestJetDeepCSV(l)
+                    << "\tsip3d = " << _3dIPSig[l]
+                    << "\tdxy = " << _dxy[l]
+                    << "\tdz = " << _dz[l];
+                if( _lFlavor[l] == 0 ){
+                    std::cout << "\telectronMvaSpring16GP = " << _lElectronMva[l]
+                        << "\telectronMvaFall17NoIso = " << _lElectronMvaFall17NoIso[l];
+                } else {
+                    std::cout << "\tsegmentCompatibility = " << _lMuonSegComp[l];
+                }
+                std::cout << std::endl;
+            }
+            if(_nLight < 2) continue;
+            for(unsigned l = 0; l < (unsigned)_nLight - 1; ++l){
+                TLorentzVector lep1;
+                lep1.SetPtEtaPhiE(_lPt[l], _lEta[l], _lPhi[l], _lE[l]);
+                for(unsigned k = l + 1; k < _nLight; ++k){
+                    std::cout << "lepton " << l << " + lepton " << k << " : ";
+                    if( _lCharge[l] != _lCharge[k] ){
+                        if(_lFlavor[l] == _lFlavor[k]){
+                            std::cout << "OSSF ";
+                        } else {
+                            std::cout << "OSOF ";
+                        } 
+                    } else {
+                        std::cout << "SS ";
+                    }
+                    TLorentzVector lep2;
+                    lep2.SetPtEtaPhiE(_lPt[k], _lEta[k], _lPhi[k], _lE[k]);
+                    std::cout << "mass = " << (lep1 + lep2).M();
+                    std::cout << std::endl;
+                }
+            }
+            }
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
             TLorentzVector lepSyst(0,0,0,0);    //vector sum of all leptons
@@ -187,6 +261,8 @@ void treeReader::Analyze(){
                 } 
 
                 //check presence of second Z in the event
+                if( _lCharge[ind[secondZ.first]] == _lCharge[ind[secondZ.second]]) continue;
+                if( _lFlavor[ind[secondZ.first]] != _lFlavor[ind[secondZ.second]]) continue;
                 double mllSecond = (lepV[secondZ.first] + lepV[secondZ.second]).M();
                 if( fabs(mllSecond - 91.1876) > 15) continue;
 
@@ -194,15 +270,25 @@ void treeReader::Analyze(){
                 std::cerr << "Error: controlRegion number does not match any known control region." << std::endl;
             }
 
-            if( isData() && tzq::isZZControlRegion(controlRegion) ){
-                std::cout << "writing to file! " << std::endl;
-                file << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl;
-            }
-
             //apply event weight
             if( isMC() ){
                 weight*=sfWeight();
             }
+
+            //if( isData() && tzq::isZZControlRegion(controlRegion) ){
+            if( tzq::isZZControlRegion(controlRegion) && currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root" ){
+                file << _runNb << " " << _lumiBlock << " " << _eventNb << " : ";
+                for(unsigned l  = 0; l < lCount; ++l){
+                    if( isMuon(ind[l]) ){
+                        file << std::setprecision(3) << reweighter->muonTightWeight(_lPt[ind[l]], _lEta[ind[l]]);
+                    } else if( isElectron(ind[l]) ){
+                        file << std::setprecision(3) << reweighter->electronTightWeight(_lPt[ind[l]], _lEta[ind[l]], _lEtaSC[ind[l]]);
+                    }
+                    file << "\t";
+                }
+                file << std::endl;
+            }
+
 
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
@@ -306,7 +392,8 @@ void treeReader::Analyze(){
                 _met,
                 _lPt[ind[0]],
                 _lPt[ind[1]],
-                _lPt[ind[2]]
+                _lPt[ind[2]],
+                (double) _nVertex
             };
 
             //fill histograms
@@ -322,7 +409,8 @@ void treeReader::Analyze(){
             }	
         }
 
-        if( isData() ){
+        //.if( isData() ){
+        if( currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root") {
             file.close();
         }
     }

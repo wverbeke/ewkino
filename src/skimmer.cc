@@ -120,8 +120,6 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         }
         if( looseCount < 3 ) continue;
 
-        std::vector<unsigned> ind;
-        //Select both TOP-16-020 and FO leptons. Remove the former later.
         for(unsigned l = 0; l < _nLight; ++l){
             pt = _lPt[l];
             eta = fabs(_lEta[l]);
@@ -130,6 +128,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             miniIsoNeutral = _miniIso[l] - _miniIsoCharged[l];
             ptRel = _ptRel[l];
             ptRatio = std::min(_ptRatio[l], 1.5);
+            relIso = _relIso[l];
             deepCsvClosestJet = closestJetDeepCSV(l);
             sip3d = _3dIPSig[l];
             dxy = log(fabs(_dxy[l]));
@@ -146,6 +145,9 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             }
 
         }
+
+        std::vector<unsigned> ind;
+        //Select both TOP-16-020 and FO leptons. Remove the former later.
         unsigned lCount = std::max(selectLep(ind), selectLep_TOP16_020(ind) );
         if(lCount < 3) continue;
         outputTree->Fill();
