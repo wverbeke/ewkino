@@ -123,7 +123,8 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
             miniIsoNeutral = _miniIso[l] - _miniIsoCharged[l];
             ptRel = _ptRel[l];
             ptRatio = std::min(_ptRatio[l], 1.5);
-            deepCsvClosestJet = std::max( (std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : _closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) , 0.);
+            relIso = _relIso[l];
+            deepCsvClosestJet = closestJetDeepCSV(l);
             sip3d = _3dIPSig[l];
             dxy = log(fabs(_dxy[l]));
             dz = log(fabs(_dz[l]));
