@@ -111,6 +111,9 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         }
         sampleTree->GetEntry(it);
 
+        //print event info to efficiently determine in which file a particular event was contained
+        std::cout << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl;
+
         std::vector<unsigned> ind;
         unsigned lCount = selectLep(ind);
         if(lCount < 2) continue;
