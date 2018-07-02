@@ -89,12 +89,12 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
-    const std::vector< long unsigned > eventsToScan = { 5640102, 3882865, 2874577, 971731, 3627954, 4339911,  4105339, 2766357, 1562069, 3737164, 3561076, 375612};
+    //const std::vector< long unsigned > eventsToScan = { 5640102, 3882865, 2874577, 971731, 3627954, 4339911,  4105339, 2766357, 1562069, 3737164, 3561076, 375612};
+    const std::vector< long unsigned > eventsToScan = {4899224, 5080879, 5448368, 4377053, 949250, 1423919, 4038544, 3365384, 1770283, 6521066, 4752496, 4546044, 2990524, 5697101};
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
         std::ofstream file;
-        //WARNING: temporary patch for corrupted sample
         /*
         if(samples[sam].getFileName() == "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1_Summer16.root"
             //samples[sam].getFileName() == "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_Summer16.root" ||
@@ -108,27 +108,15 @@ void treeReader::Analyze(){
         */
         initSample();
     
-        if(currentSample.getFileName() != "ZZTo4L_13TeV_powheg_pythia8_Summer16_noSkim.root") continue;
+        if(currentSample.getFileName() != "ZZTo4L_13TeV_powheg_pythia8_Summer16.root") continue;
 
         //if( isData() ){
-            std::cout << "opening file" << std::endl;
             file.open("dump.txt");
         //}
        
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
-
-            GetEntry(it);
-            /*
-            //TEMP FOR SYNC : check which events to scan
-            bool inList = (std::find( eventsToScan.begin(), eventsToScan.end(), _eventNb) != eventsToScan.end() );
-
-            if(inList){
-                std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-                std::cout << _eventNb << std::endl;
-                std::cout << "met phi = " << _metPhi << std::endl;
-            }
 
             //print progress bar	
             if(it%100 == 0 && it != 0){
@@ -141,6 +129,14 @@ void treeReader::Analyze(){
 
             GetEntry(it);
 
+            bool inList = (std::find( eventsToScan.begin(), eventsToScan.end(), _eventNb) != eventsToScan.end() );
+            if(inList){
+                std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+                std::cout << _eventNb << std::endl;
+                printLeptonContent();
+                printLeptonPairing();
+            }
+
             //apply triggers and MET filters
             if( !passTriggerCocktail() ) continue;
             if( !passMETFilters() ) continue;
@@ -148,94 +144,26 @@ void treeReader::Analyze(){
             if(inList){
                 std::cout << "passed triggers and MET filters" << std::endl;
             }
-            if( inList ){
-            std::cout << "######################################" << std::endl;
-            std::cout << ( is2016() ? "2016" : "2017" ) << " event" << std::endl;
-            std::cout << ( isData() ? "data" : "MC" ) << " event" << std::endl;
-            std::cout << "RunNb LumiBlock EventNb : " << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl;
-            for(unsigned l = 0; l < _nLight; ++l){
-                std::cout << "lepton " << l << " -> ";
-                if(_lFlavor[l] == 0) std::cout << "electron :";
-                else if(_lFlavor[l] == 1) std::cout << "muon :";
-                else std::cout << "tau :";
-                
-                std::cout << "pT = " << _lPt[l] << "\t eta = " << _lEta[l] << "\t";
-                std::cout << "charge = " << _lCharge[l];
-                if( lepIsLoose(l) ) std::cout << "\tloose\t";
-                else std::cout << "\tfail_loose\t";
-                if( lepIsGood(l) ) std::cout << "FO\t";
-                else std::cout << "fail_FO\t";
-                if( lepIsTight(l) ) std::cout << "tight\t";
-                else std::cout << "fail_tight\t";
-                std::cout << "leptonMVA16 = " << _leptonMvatZqTTV16[l];
-                std::cout << "\tleptonMVA17 = " << _leptonMvatZqTTV17[l];
-                std::cout << std::endl;
-
-                std::cout << "lepton MVA inputs : selectedTrackMult = " << _selectedTrackMult[l]
-                    << "\tminiIsoCharged = " << _miniIsoCharged[l] 
-                    << "\tminiIsoNeutral = " << _miniIso[l] - _miniIsoCharged[l]
-                    << "\tptRel = " << _ptRel[l]
-                    << "\tptRatio = " << _ptRatio[l]
-                    << "\trelIso = " << _relIso[l]
-                    << "\tdeepCsvClosestJet = " << closestJetDeepCSV(l)
-                    << "\tsip3d = " << _3dIPSig[l]
-                    << "\tdxy = " << _dxy[l]
-                    << "\tdz = " << _dz[l];
-                if( _lFlavor[l] == 0 ){
-                    std::cout << "\telectronMvaSpring16GP = " << _lElectronMva[l]
-                        << "\telectronMvaFall17NoIso = " << _lElectronMvaFall17NoIso[l];
-                } else {
-                    std::cout << "\tsegmentCompatibility = " << _lMuonSegComp[l];
-                }
-                std::cout << std::endl;
-            }
-            if(_nLight < 2) continue;
-            for(unsigned l = 0; l < (unsigned)_nLight - 1; ++l){
-                TLorentzVector lep1;
-                lep1.SetPtEtaPhiE(_lPt[l], _lEta[l], _lPhi[l], _lE[l]);
-                for(unsigned k = l + 1; k < _nLight; ++k){
-                    std::cout << "lepton " << l << " + lepton " << k << " : ";
-                    if( _lCharge[l] != _lCharge[k] ){
-                        if(_lFlavor[l] == _lFlavor[k]){
-                            std::cout << "OSSF ";
-                        } else {
-                            std::cout << "OSOF ";
-                        } 
-                    } else {
-                        std::cout << "SS ";
-                    }
-                    TLorentzVector lep2;
-                    lep2.SetPtEtaPhiE(_lPt[k], _lEta[k], _lPhi[k], _lE[k]);
-                    std::cout << "mass = " << (lep1 + lep2).M();
-                    std::cout << std::endl;
-                }
-            }
-            }
 
             //vector containing good lepton indices
             std::vector<unsigned> ind;
 
-
-            const unsigned lCount = selectLep(ind);
             //select leptons
+            const unsigned lCount = selectLep(ind);
+
             if(inList){
-                std::cout << "lCount = " << lCount << std::endl;
+                std::cout << "event has " << lCount << " FO leptons" << std::endl;
             }
 
             if( !(lCount == 3 || lCount == 4) ) continue;
     
-            if( inList ){
-                std::cout << "event has " << lCount << " FO leptons" << std::endl;
-            }
-
             unsigned lCountTight = tightLepCount(ind, lCount);
-            if( !(lCountTight == lCount) ) continue; //require 3 tight leptons
 
             if( inList ) {  
                 std::cout << "event hass " << lCountTight << " tight leptons" << std::endl;
             }
 
-
+            if( !(lCountTight == lCount) ) continue; //require 3 tight leptons
 
             //WARNING  : REMOVE AFTER SYNC
             //ask exactly 4 loose leptons for sync
@@ -261,7 +189,6 @@ void treeReader::Analyze(){
             if( inList ){
                 std::cout << "event has OSSF pair" << std::endl;
             }
-
 
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
@@ -345,6 +272,7 @@ void treeReader::Analyze(){
             }
 
             //if( isData() && tzq::isZZControlRegion(controlRegion) ){
+            /*
             if( tzq::isZZControlRegion(controlRegion) && currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root" ){
                 file << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl; // << " : ";
                 for(unsigned l  = 0; l < lCount; ++l){
@@ -357,7 +285,7 @@ void treeReader::Analyze(){
                 }
                 file << std::endl;
             }
-
+            */
 
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
@@ -469,7 +397,6 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 hists[controlRegion][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
             }
-            */
 
         }
         //set histograms to 0 if negative
