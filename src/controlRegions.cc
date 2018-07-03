@@ -89,8 +89,7 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
-    //const std::vector< long unsigned > eventsToScan = { 5640102, 3882865, 2874577, 971731, 3627954, 4339911,  4105339, 2766357, 1562069, 3737164, 3561076, 375612};
-    const std::vector< long unsigned > eventsToScan = {4899224, 5080879, 5448368, 4377053, 949250, 1423919, 4038544, 3365384, 1770283, 6521066, 4752496, 4546044, 2990524, 5697101};
+    const std::vector< long unsigned > eventsToScan = {983142, 1137407, 3143717, 3733360, 5468774, 4715872, 3640612};
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
@@ -163,12 +162,25 @@ void treeReader::Analyze(){
                 std::cout << "event hass " << lCountTight << " tight leptons" << std::endl;
             }
 
+            if( inList ){
+                for(unsigned l = 0; l < _nLight; ++l){
+                    if( isMuon(l) ){
+                        std::cout << "muon pT = "  << _lPt[l] << "\t";
+                        if( _lPOGMedium[l] ) std::cout << "pass medium";
+                        else std::cout << "fail medium";
+                        std::cout << std::endl;
+                    }
+                }
+            }
+
             if( !(lCountTight == lCount) ) continue; //require 3 tight leptons
 
             //WARNING  : REMOVE AFTER SYNC
             //ask exactly 4 loose leptons for sync
             unsigned looseCount = 0;
             for(unsigned l = 0; l < _nLight; ++l){
+                if( closestJetDeepCSV(l) > ( is2016() ? 0.8958 : 0.8001) ) continue;
+                if( isMuon(l) && !_lPOGMedium[l]) continue;
                 if( lepIsLoose(l) ) ++looseCount;
             }
             if(looseCount != lCount) continue;
@@ -247,6 +259,13 @@ void treeReader::Analyze(){
                         }
                     }
                 } 
+                if( inList ){
+                    std::cout << "bestZ.first = " << ind[bestZ.first] << std::endl;
+                    std::cout << "bestZ.second = " << ind[bestZ.second] << std::endl;
+                    std::cout << "secondZ.first = " << ind[secondZ.first] << std::endl;
+                    std::cout << "secondZ.second = " << ind[secondZ.second] << std::endl;
+
+                }
 
                 //check presence of second Z in the event
                 if( _lCharge[ind[secondZ.first]] == _lCharge[ind[secondZ.second]]) continue;
@@ -268,13 +287,12 @@ void treeReader::Analyze(){
 
             //apply event weight
             if( isMC() ){
-                //weight*=sfWeight();
+                weight*=sfWeight();
             }
 
             //if( isData() && tzq::isZZControlRegion(controlRegion) ){
-            /*
             if( tzq::isZZControlRegion(controlRegion) && currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root" ){
-                file << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl; // << " : ";
+                file << _runNb << " " << _lumiBlock << " " << _eventNb << " : ";
                 for(unsigned l  = 0; l < lCount; ++l){
                     if( isMuon(ind[l]) ){
                         file << std::setprecision(3) << reweighter->muonTightWeight(_lPt[ind[l]], _lEta[ind[l]]);
@@ -285,7 +303,6 @@ void treeReader::Analyze(){
                 }
                 file << std::endl;
             }
-            */
 
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
