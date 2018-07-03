@@ -18,7 +18,7 @@ std::shared_ptr<TH1D> rebinHistogram(const std::shared_ptr<TH1D>& oldHist, const
 
     bool error = false;
     if(newNBins > oldNBins){
-        std::cerr << "Error: trying to rebin histogram to a larger amount of bins that it originally had!" << std::endl;
+        std::cerr << "Error: trying to rebin histogram to a larger amount of bins than it originally had!" << std::endl;
         error = true;
     }
 
@@ -29,6 +29,11 @@ std::shared_ptr<TH1D> rebinHistogram(const std::shared_ptr<TH1D>& oldHist, const
 
     if(error){
         return std::shared_ptr<TH1D>( (TH1D*) nullptr );
+    }
+
+    if(oldNBins == newNBins){
+        std::cerr << "Warning: attempting to rebin histogram to original amount of bins. Returning clone of the original histogram" << std::endl;
+        return std::shared_ptr<TH1D>( (TH1D*) oldHist->Clone() );
     }
 
     //range of new histogram
@@ -63,8 +68,10 @@ void extractPuWeights(const Sample& sample){
     const std::string directory = "~/Work/ntuples_tzq/";
 
     //read MC pu distribution from given MC sample
-    TFile* inputFile = TFile::Open((const TString&) directory + sample.getFileName() );
-    std::shared_ptr<TH1D> mcPuDist = std::shared_ptr<TH1D>( (TH1D*) inputFile->Get("blackJackAndHookers/nTrueInteractions") );
+    std::shared_ptr<TFile> mcInputFile = sample.getFile( directory );
+    std::shared_ptr<TH1D> mcPuDist = std::shared_ptr<TH1D>( (TH1D*) mcInputFile->Get("blackJackAndHookers/nTrueInteractions") );
+    mcPuDist->SetDirectory(gROOT);
+    mcInputFile->Close();
 
     //normalize histogram to unity
     mcPuDist->Scale(1./mcPuDist->GetSumOfWeights());
@@ -83,28 +90,22 @@ void extractPuWeights(const Sample& sample){
         for(unsigned unc = 0; unc < 3; ++unc){
 
             //different location for 2016 and 2017 pu weights
-            std::string year;
-            if( allEras[e].find("2016") != std::string::npos){
-                year = "2016";
-            } else {
-                year = "2017";
-            }
+            std::string year = allEras[e].substr(0, 4); 
 
             //read data pu distributions 
             TFile* dataFile = TFile::Open( (const TString&) "weights/pileUpData/" + year + "/dataPuHist_" + allEras[e] + "_" + uncertainty[unc] + ".root");
-            std::shared_ptr<TH1D> dataHist = std::shared_ptr<TH1D>( (TH1D*) dataFile->Get("pileup") );
-            dataHist->SetDirectory(gROOT);
+            std::shared_ptr<TH1D> dataPuDist = std::shared_ptr<TH1D>( (TH1D*) dataFile->Get("pileup") );
+            dataPuDist->SetDirectory(gROOT);
 
-            //extract copy of data histogram as numerator 
-            std::shared_ptr<TH1D> numerator = std::shared_ptr<TH1D> ( (TH1D*) dataHist->Clone() );
+            //make a copy of the data PU profile as the numerator 
+            std::shared_ptr<TH1D> numerator = std::shared_ptr<TH1D> ( (TH1D*) dataPuDist->Clone() );
             numerator->SetDirectory(gROOT);
 
             //normalize histogram to unity
             numerator->Scale(1./numerator->GetSumOfWeights());
 
-
-            //denominator is MC PU distribution
-            std::shared_ptr<TH1D> denominator = std::shared_ptr<TH1D>(mcPuDist);
+            //make a copy of the MC PU profile as the denominator
+            std::shared_ptr<TH1D> denominator = std::shared_ptr<TH1D>( (TH1D*) mcPuDist->Clone() );
             denominator->SetDirectory(gROOT);
 
 
@@ -112,7 +113,7 @@ void extractPuWeights(const Sample& sample){
             if( sample.is2016() && (year == "2017") ){
                 numerator = rebinHistogram(numerator, 50);
             } else if( sample.is2017() && (year == "2016") ){
-                denominator = rebinHistogram(mcPuDist, 50);
+                denominator = rebinHistogram(denominator, 50);
             }
 
             //divide data and MC shapes
@@ -134,7 +135,6 @@ void extractPuWeights(const Sample& sample){
         }
     }
     outputFile->Close();
-    inputFile->Close();
 }
 
 int main(int argc, char* argv[]){
