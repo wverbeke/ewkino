@@ -364,7 +364,8 @@ class treeReader {
 
         bool lepIsGoodMultiAnalysis(const std::string&, const unsigned) const;
 
-        //era-specific event weights
+        //functionalities to compute all tZq search variables
+        std::map<   
 
         //initialize SF weights
         void initializeWeights();
