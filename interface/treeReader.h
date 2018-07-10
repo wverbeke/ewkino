@@ -14,6 +14,7 @@
 #include "Reweighter.h"
 #include "Sample.h"
 #include "HistInfo.h"
+#include "BDTReader.h"
 
 class treeReader {
     public :
@@ -365,7 +366,31 @@ class treeReader {
         bool lepIsGoodMultiAnalysis(const std::string&, const unsigned) const;
 
         //functionalities to compute all tZq search variables
-        std::map<   
+        unsigned setSearchVariablestZq(const std::string&, const std::vector<unsigned>&, const std::pair<unsigned, unsigned>& );
+        std::map< std::string, float > bdtVariableMap =
+        {
+            {"etaRecoilingJet", 0.},
+            {"maxMjj", 0.},
+            {"asymmetryWlep", 0.},
+            {"highestDeepCSV", 0.},
+            {"ltmet", 0.},
+            {"maxDeltaPhijj", 0.},
+            {"mTW", 0.},
+            {"topMass", 0.},
+            {"pTMaxjj", 0.},  
+            {"minDeltaPhilb", 0.},
+            {"maxDeltaPhill", 0.},
+            {"ht", 0.},
+            {"deltaRTaggedbJetRecoilingJet", 0.},
+            {"deltaRWLeptonTaggedbJet", 0.},
+            {"m3l", 0.},
+            {"etaMostForward", 0.},
+            {"numberOfJets", 0.}
+        };
+        std::shared_ptr<BDTReader> bdtReader1bJet23Jets;
+        std::shared_ptr<BDTReader> bdtReader1bJet4Jets;
+        std::shared_ptr<BDTReader> bdtReader2bJets;
+        double bdtOutput( unsigned tzqCat );
 
         //initialize SF weights
         void initializeWeights();

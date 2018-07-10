@@ -5,7 +5,7 @@
 #include "../interface/treeReader.h"
 
 //pu SF 
-inline double treeReader::puWeight(const unsigned unc) const{
+double treeReader::puWeight(const unsigned unc) const{
     return reweighter->puWeight(_nTrueInt, currentSample, unc);
 }
 
