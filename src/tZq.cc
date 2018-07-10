@@ -192,6 +192,11 @@ void treeReader::Analyze(){
             //compute nominal values for all search variables
             unsigned tzqCat = setSearchVariablestZq("nominal", ind, bestZ);             
 
+            //event reweighting
+            if( isMC() ){
+                weight *= sfWeight(); 
+            }
+
             //compute nominal bdt value
             double bdtNominal = 999.;
             if(tzqCat > 2 && tzqCat < 6){
@@ -202,44 +207,47 @@ void treeReader::Analyze(){
                 }
             }
 
+            //no nuisances for data
+            if( isData() ) continue;
+
             //vary JEC Down
             unsigned tzqCatJECDown = setSearchVariablestZq("JECDown", ind, bestZ);
             if(tzqCatJECDown > 2 && tzqCatJECDown < 6){
-                double bdtJECDown = bdtOutput( tzqCat );
+                double bdtJECDown = bdtOutput( tzqCatJECDown );
                 double fill[nDist] = {bdtJECDown, bdtJECDown};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMap["JECDown"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMap["JECDown"][mllCat][tzqCatJECDown - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
                 
             }
-            
+
             //vary JEC up
             unsigned tzqCatJECUp = setSearchVariablestZq("JECUp", ind, bestZ);
             if(tzqCatJECUp > 2 && tzqCatJECUp < 6){
-                double bdtJECUp = bdtOutput( tzqCat );
+                double bdtJECUp = bdtOutput( tzqCatJECUp );
                 double fill[nDist] = {bdtJECUp, bdtJECUp};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMap["JECUp"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMap["JECUp"][mllCat][tzqCatJECUp - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
             //vary unclustered down
-            unsigned tzqCatUnclDown = setSearchVariablestZq("UnclDown", ind, bestZ);
+            unsigned tzqCatUnclDown = setSearchVariablestZq("unclDown", ind, bestZ);
             if(tzqCatUnclDown > 2 && tzqCatUnclDown < 6){
-                double bdtUnclDown = bdtOutput( tzqCat );
+                double bdtUnclDown = bdtOutput( tzqCatUnclDown );
                 double fill[nDist] = {bdtUnclDown, bdtUnclDown};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMap["UnclDown"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMap["unclDown"][mllCat][tzqCatUnclDown - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
             //vary unclustered up
-            unsigned tzqCatUnclUp = setSearchVariablestZq("UnclUp", ind, bestZ);
+            unsigned tzqCatUnclUp = setSearchVariablestZq("unclUp", ind, bestZ);
             if(tzqCatUnclUp  > 2 && tzqCatUnclUp < 6){
-                double bdtUnclUp = bdtOutput( tzqCat );
+                double bdtUnclUp = bdtOutput( tzqCatUnclUp );
                 double fill[nDist] = {bdtUnclUp, bdtUnclUp};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMap["UnclUp"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMap["unclUp"][mllCat][tzqCatUnclUp - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
@@ -313,6 +321,31 @@ void treeReader::Analyze(){
             }
         }
     }
+    
+    //compute final pdf uncertainties
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                for(unsigned sam = 0; sam < samples.size(); ++sam){
+                    uncHistMap["pdfDown"][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName() + "pdfDown");
+                    uncHistMap["pdfUp"][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName() + "pdfUp");
+                    for(unsigned bin = 1; bin < (unsigned) uncHistMap["pdf"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
+                        double pdfVarRms = 0.;
+                        for(unsigned pdf = 0; pdf < 100; ++pdf){
+                            double diff = (  pdfUncHists[pdf][m][cat][dist][sam]->GetBinContent(bin) - hists[m][cat][dist][sam]->GetBinContent(bin) );
+                            pdfVarRms += diff * diff;
+                        }
+                        pdfVarRms = sqrt( 0.01 * pdfVarRms );
+                        uncHistMap["pdfDown"][m][cat][dist][sam]->SetBinContent( bin, hists[m][cat][dist][sam]->GetBinContent(bin) - pdfVarRms);
+                        uncHistMap["pdfUp"][m][cat][dist][sam]->SetBinContent( bin, hists[m][cat][dist][sam]->GetBinContent(bin) + pdfVarRms);
+                    }
+                }
+            }
+        }
+    }
+
+    //add pdf and scale variation uncertainties of the cross-section
+
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -332,6 +365,32 @@ void treeReader::Analyze(){
             }
         }
     }
+
+    //merging for uncertainties
+    std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMap;
+    for( auto& key : uncNames ){
+        mergedUncMap[key] = std::vector< std::vector< std::vector< std::vector< TH1D* > > > >(nMll);
+        for(unsigned mll = 0; mll < nMll; ++mll){
+            mergedUncMap[key][mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
+            for(unsigned cat = 0; cat < nCat; ++cat){
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    mergedUncMap[key][mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
+                    for(size_t m = 0, sam = 0; m < proc.size(); ++m){
+                        mergedUncMap[key][mll][cat][dist][m] = (TH1D*) uncHistMap[key][mll][cat][dist][sam]->Clone();
+                        while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
+                            mergedUncMap[key][mll][cat][dist][m]->Add( uncHistMap[key][mll][cat][dist][sam + 1].get());
+                            ++sam;
+                        }
+                        ++sam;
+                    }
+                }
+            }
+        }
+    } 
+
+    //make final uncertainty histogram for plots 
+    const std::vector<double> flatHist = {1.025, 1.06, 1.05}; //lumi, leptonID, trigger
+
     //TEMPORARY//////
     //replace data with sum of all backgrounds
     for(unsigned m = 0; m < nMll; ++m){

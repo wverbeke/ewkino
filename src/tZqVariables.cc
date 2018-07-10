@@ -12,8 +12,8 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
         {"nominal", 0},
         {"JECDown", 1},
         {"JECUp", 2},
-        {"UnclDown", 0},
-        {"UnclUp", 0}
+        {"unclDown", 0},
+        {"unclUp", 0}
     };
 
     //check if uncertainty argument exists 
@@ -63,9 +63,9 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
         met.SetPtEtaPhiE(_metJECDown, _metPhiJECDown, 0, _metJECDown);
     } else if( uncertainty == "JECUp"){
         met.SetPtEtaPhiE(_metJECUp, _metPhiJECUp, 0, _metJECUp);
-    } else if( uncertainty == "UnclDown"){
+    } else if( uncertainty == "unclDown"){
         met.SetPtEtaPhiE(_metUnclDown, _metPhiUnclDown, 0, _metPhiJECDown);
-    } else if( uncertainty == "UnclUp"){
+    } else if( uncertainty == "unclUp"){
         met.SetPtEtaPhiE(_metUnclUp, _metPhiUnclUp, 0, _metUnclUp);
     }
 
