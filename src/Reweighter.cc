@@ -62,7 +62,7 @@ void Reweighter::initializeBTagWeights(){
     if(is2016){
         sfFileName = "DeepCSV_Moriond17_B_H.csv";
     } else {
-        sfFileName = "DeepCSV_94XSF_V2_B_F.csv";
+        sfFileName = "DeepCSV_94XSF_V3_B_F.csv";
     }
     bTagCalib = std::shared_ptr<BTagCalibration>( new BTagCalibration("deepCsv", "weights/" + sfFileName) );
     bTagCalibReader = std::shared_ptr<BTagCalibrationReader>( new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up", "down"}) );
