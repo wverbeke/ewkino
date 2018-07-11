@@ -113,7 +113,11 @@ bool treeReader::lepIsGoodBase(const unsigned leptonIndex) const{
 bool treeReader::lepIsGood2016(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
     if( closestJetDeepCSV(leptonIndex) >  0.8958) return false;
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //WARNING: CHANGE THIS BACK TO THE CORRECT WP
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if( !passLeptonMva( leptonIndex, 0.8) ){
+    //if( !passLeptonMva( leptonIndex, 0.6) ){
         if( _ptRatio[leptonIndex] <= 0.7) return false;
         if( closestJetDeepCSV( leptonIndex ) >= 0.4) return false;
         if( isElectron(leptonIndex) ){
@@ -126,7 +130,11 @@ bool treeReader::lepIsGood2016(const unsigned leptonIndex) const{
 bool treeReader::lepIsGood2017(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
     if( closestJetDeepCSV(leptonIndex) >  0.8001) return false;
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //WARNING: CHANGE THIS BACK TO THE CORRECT WP
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if( !passLeptonMva( leptonIndex, 0.8) ){
+    //if( !passLeptonMva( leptonIndex, 0.6) ){
         if( _ptRatio[leptonIndex] <= 0.6) return false;
         if( closestJetDeepCSV( leptonIndex ) >= 0.2) return false;
         if( isElectron(leptonIndex) ){
@@ -149,7 +157,11 @@ bool treeReader::lepIsTightBase(const unsigned leptonIndex) const{
     if( isMuon(leptonIndex) ){
         if(!_lPOGMedium[leptonIndex]) return false;
     }
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //WARNING: CHANGE THIS BACK TO THE CORRECT WP
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return passLeptonMva(leptonIndex, 0.8); 
+    //return passLeptonMva(leptonIndex, 0.6); 
 }
 
 bool treeReader::lepIsTight2016(const unsigned leptonIndex) const{
