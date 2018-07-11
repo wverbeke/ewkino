@@ -89,11 +89,11 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
-    const std::vector< long unsigned > eventsToScan = {983142, 1137407, 3143717, 3733360, 5468774, 4715872, 3640612};
+    //const std::vector< long unsigned > eventsToScan = {983142, 1137407, 3143717, 3733360, 5468774, 4715872, 3640612};
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        std::ofstream file;
+        //std::ofstream file;
         /*
         if(samples[sam].getFileName() == "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1_Summer16.root"
             //samples[sam].getFileName() == "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_Summer16.root" ||
@@ -107,11 +107,11 @@ void treeReader::Analyze(){
         */
         initSample();
     
-        if(currentSample.getFileName() != "ZZTo4L_13TeV_powheg_pythia8_Summer16.root") continue;
-
-        //if( isData() ){
-            file.open("dump.txt");
-        //}
+        /*
+        if( isData() ){
+          file.open("dump.txt");
+        }
+        */
        
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
@@ -127,7 +127,8 @@ void treeReader::Analyze(){
             }
 
             GetEntry(it);
-
+    
+            /*
             bool inList = (std::find( eventsToScan.begin(), eventsToScan.end(), _eventNb) != eventsToScan.end() );
             if(inList){
                 std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
@@ -135,6 +136,8 @@ void treeReader::Analyze(){
                 printLeptonContent();
                 printLeptonPairing();
             }
+            */
+            bool inList = false;
 
             //apply triggers and MET filters
             if( !passTriggerCocktail() ) continue;
@@ -288,9 +291,13 @@ void treeReader::Analyze(){
             //apply event weight
             if( isMC() ){
                 weight*=sfWeight();
+                if( std::isnan( sfWeight() ) ){
+                    std::cout << "reweighting gives nan" << std::endl;
+                }
             }
 
             //if( isData() && tzq::isZZControlRegion(controlRegion) ){
+            /*
             if( tzq::isZZControlRegion(controlRegion) && currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root" ){
                 file << _runNb << " " << _lumiBlock << " " << _eventNb << " : ";
                 for(unsigned l  = 0; l < lCount; ++l){
@@ -303,6 +310,7 @@ void treeReader::Analyze(){
                 }
                 file << std::endl;
             }
+            */
 
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
@@ -424,9 +432,9 @@ void treeReader::Analyze(){
         }
 
         //.if( isData() ){
-        if( currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root") {
-            file.close();
-        }
+        //if( currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root") {
+        //    file.close();
+        //}
     }
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
