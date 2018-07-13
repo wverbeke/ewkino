@@ -29,19 +29,21 @@ class Reweighter{
 
         //lepton id + reconstruction weight
         double muonTightWeight(const double pt, const double eta) const{ 
+            //std::cout << muonRecoWeight(eta) << "\t" << muonTightIdWeight(pt,eta) << std::endl;
             return muonRecoWeight(eta)*muonTightIdWeight(pt,eta);
         }
 
-        double electronTightWeight(const double pt, const double eta, const double superClusterEta) const{ 
-            return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,eta);
+        double electronTightWeight(const double pt, const double superClusterEta) const{ 
+            std::cout << electronRecoWeight(superClusterEta, pt) << "\t";
+            return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,superClusterEta);
         }
 
         double muonLooseWeight(const double pt, const double eta) const{
             return  muonRecoWeight(eta)*muonLooseIdWeight(pt,eta);
         }
 
-        double electronLooseWeight(const double pt, const double eta, const double superClusterEta) const{
-            return electronRecoWeight(superClusterEta, pt)*electronLooseIdWeight(pt,eta);
+        double electronLooseWeight(const double pt, const double superClusterEta) const{
+            return electronRecoWeight(superClusterEta, pt)*electronLooseIdWeight(pt,superClusterEta);
         }
 
         //fakerates 
@@ -94,11 +96,11 @@ class Reweighter{
 
         //loose id weights
         double muonLooseIdWeight(const double pt, const double eta) const;
-        double electronLooseIdWeight(const double pt, const double eta) const;
+        double electronLooseIdWeight(const double pt, const double superClusterEta) const;
 
         //tight id weights
         double muonTightIdWeight(const double pt, const double eta) const;
-        double electronTightIdWeight(const double pt, const double eta) const;
+        double electronTightIdWeight(const double pt, const double superClusterEta) const;
 
         //read pu weights for a given list of samples
         void initializePuWeights(const std::vector< Sample >&); 
