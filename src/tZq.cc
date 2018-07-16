@@ -187,7 +187,7 @@ void treeReader::Analyze(){
             std::vector<unsigned> ind;
 
             //select leptons
-            const unsigned lCount = selectLep(ind);
+            const unsigned lCount = selectLepConeCorr(ind);
             if(lCount != 3) continue;
 
             //require pt cuts (25, 15, 10) to be passed
@@ -195,6 +195,11 @@ void treeReader::Analyze(){
 
             //require presence of OSSF pair
             if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
+
+            //explicitly require selected leptons in MC to be prompt, if one of them is not prompt, reject the event
+            if( isMC() ){
+                if( !promptLeptons() ) continue;
+            } 
 
             //index to use when filling histogram 
             unsigned fillIndex = sam;
@@ -205,7 +210,7 @@ void treeReader::Analyze(){
                 fillIndex = samples.size();
 
                 //apply fake-rate weights 
-                
+                weight *= fakeRateWeight(); 
             }
 
             //remove overlap between samples
@@ -236,7 +241,7 @@ void treeReader::Analyze(){
                 bdtNominal = bdtOutput( tzqCat );
                 double fill[nDist] = {bdtNominal, bdtNominal};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    hists[mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
@@ -249,7 +254,7 @@ void treeReader::Analyze(){
                 double bdtJECDown = bdtOutput( tzqCatJECDown );
                 double fill[nDist] = {bdtJECDown, bdtJECDown};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown["JEC"][mllCat][tzqCatJECDown - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapDown["JEC"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
                 
             }
@@ -260,7 +265,7 @@ void treeReader::Analyze(){
                 double bdtJECUp = bdtOutput( tzqCatJECUp );
                 double fill[nDist] = {bdtJECUp, bdtJECUp};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapUp["JEC"][mllCat][tzqCatJECUp - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapUp["JEC"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
@@ -270,7 +275,7 @@ void treeReader::Analyze(){
                 double bdtUnclDown = bdtOutput( tzqCatUnclDown );
                 double fill[nDist] = {bdtUnclDown, bdtUnclDown};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown["uncl"][mllCat][tzqCatUnclDown - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapDown["uncl"][mllCat][tzqCatUnclDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
@@ -280,7 +285,7 @@ void treeReader::Analyze(){
                 double bdtUnclUp = bdtOutput( tzqCatUnclUp );
                 double fill[nDist] = {bdtUnclUp, bdtUnclUp};
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapUp["uncl"][mllCat][tzqCatUnclUp - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapUp["uncl"][mllCat][tzqCatUnclUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
@@ -290,58 +295,58 @@ void treeReader::Analyze(){
 
             //vary scale down
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["scale"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[8]);
+                uncHistMapDown["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[8]);
             }
 
             //vary scale up
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["scale"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[4]);
+                uncHistMapUp["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[4]);
             }
 
             //vary pu down
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["pileup"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(1)/puWeight(0));
+                uncHistMapDown["pileup"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(1)/puWeight(0));
             }
 
             //vary pu up            
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["pileup"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(2)/puWeight(0));
+                uncHistMapUp["pileup"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(2)/puWeight(0));
             }
 
             //vary b-tag down for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(1)/puWeight(0));
+                uncHistMapDown["bTag_udsg"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(1)/puWeight(0));
             }
 
             //vary b-tag up for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_udsg"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
+                uncHistMapUp["bTag_udsg"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
             }
 
             //vary b-tag down for c 
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_c"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)/bTagWeight_c(0));
+                uncHistMapDown["bTag_c"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)/bTagWeight_c(0));
             }
 
             //vary b-tag up for c
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_c"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)/bTagWeight_c(0));
+                uncHistMapUp["bTag_c"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)/bTagWeight_c(0));
             }
 
             //vary b-tag down for b
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_b"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_b(1)/bTagWeight_b(0));
+                uncHistMapDown["bTag_b"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_b(1)/bTagWeight_b(0));
             }
 
             //vary b-tag up for b
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_b"][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_b(2)/bTagWeight_b(0));
+                uncHistMapUp["bTag_b"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_b(2)/bTagWeight_b(0));
             }
 
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    pdfUncHists[pdf][mllCat][tzqCat - 3][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[pdf + 9]);
+                    pdfUncHists[pdf][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[pdf + 9]);
                 }
             }
         }
@@ -350,7 +355,31 @@ void treeReader::Analyze(){
             for(unsigned cat = 0; cat < nCat; ++cat){
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     tools::setNegativeZero( hists[m][cat][dist][sam].get() );
+                    for(auto & key : uncNames){
+                        tools::setNegativeZero(uncHistMapDown[key][m][cat][dist][sam].get() );
+                        tools::setNegativeZero(uncHistMapUp[key][m][cat][dist][sam].get() );
+                    } 
+                    for(unsigned pdf = 0; pdf < 100; ++pdf){    
+                        tools::setNegativeZero(pdfUncHists[pdf][m][cat][dist][sam].get() );
+                    }
                 }	
+            }
+        }
+    }
+
+    //set nonprompt bins to 0 if negative
+    for(unsigned m = 0; m < nMll; ++m){
+        for( unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                unsigned nonpromptIndex = samples.size();
+                tools::setNegativeZero( hists[m][cat][dist][nonpromptIndex].get() );
+                for(auto & key : uncNames){
+                    tools::setNegativeZero(uncHistMapDown[key][m][cat][dist][nonpromptIndex].get() );
+                    tools::setNegativeZero(uncHistMapUp[key][m][cat][dist][nonpromptIndex].get() );
+                } 
+                for(unsigned pdf = 0; pdf < 100; ++pdf){    
+                    tools::setNegativeZero(pdfUncHists[pdf][m][cat][dist][nonpromptIndex].get() );
+                }
             }
         }
     }
@@ -359,7 +388,7 @@ void treeReader::Analyze(){
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned sam = 0; sam < samples.size(); ++sam){
+                for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
                     uncHistMapDown["pdf"][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName() + "pdfDown");
                     uncHistMapUp["pdf"][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName() + "pdfUp");
                     for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["pdf"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
@@ -426,12 +455,22 @@ void treeReader::Analyze(){
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned sam = 0; sam < samples.size(); ++sam){
-                    for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["scaleXsec"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
-                        uncHistMapDown["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + scaleXsecUncDown[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
-                        uncHistMapUp["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + scaleXsecUncUp[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
-                        uncHistMapDown["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + pdfXsecUncDown[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
-                        uncHistMapUp["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + pdfXsecUncUp[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
+                for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
+                    if(sam < samples.size() ){
+                        for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["scaleXsec"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
+                            uncHistMapDown["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + scaleXsecUncDown[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
+                            uncHistMapUp["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + scaleXsecUncUp[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
+                            uncHistMapDown["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + pdfXsecUncDown[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
+                            uncHistMapUp["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + pdfXsecUncUp[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
+                        }
+                    //WARNING: CURRENTLY THE SCALE AND PDF XSEC UNCERTAINTIES ON DATA-DRIVEN FAKES ARE SET TO ZERO
+                    } else {
+                        for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["scaleXsec"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
+                            uncHistMapDown["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, hists[m][cat][dist][sam]->GetBinContent(bin) );
+                            uncHistMapUp["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, hists[m][cat][dist][sam]->GetBinContent(bin) );
+                            uncHistMapDown["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, hists[m][cat][dist][sam]->GetBinContent(bin) );
+                            uncHistMapUp["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, hists[m][cat][dist][sam]->GetBinContent(bin) );
+                        }
                     }
                 }
             }
@@ -439,14 +478,16 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
+    std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 mergedHists[mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
-                for(size_t m = 0, sam = 0; m < proc.size(); ++m){
+
+                //cut off loop before nonprompt contribution
+                for(size_t m = 0, sam = 0; m < proc.size() - 1; ++m){
                     mergedHists[mll][cat][dist][m] = (TH1D*) hists[mll][cat][dist][sam]->Clone();
                     while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
                         mergedHists[mll][cat][dist][m]->Add(hists[mll][cat][dist][sam + 1].get());
@@ -454,6 +495,9 @@ void treeReader::Analyze(){
                     }
                     ++sam;
                 }
+
+                //add nonprompt histogram
+                mergedHists[mll][cat][dist].push_back( (TH1D*) hists[mll][cat][dist][samples.size()].get() );
             }
         }
     }
@@ -471,6 +515,8 @@ void treeReader::Analyze(){
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     mergedUncMapDown[key][mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
                     mergedUncMapUp[key][mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
+
+                    //cut off loop before nonprompt contribution
                     for(size_t m = 0, sam = 0; m < proc.size(); ++m){
                         mergedUncMapDown[key][mll][cat][dist][m] = (TH1D*) uncHistMapDown[key][mll][cat][dist][sam]->Clone();
                         mergedUncMapUp[key][mll][cat][dist][m] = (TH1D*) uncHistMapUp[key][mll][cat][dist][sam]->Clone();
@@ -481,13 +527,21 @@ void treeReader::Analyze(){
                         }
                         ++sam;
                     }
+
+                    //add nonprompt histograms 
+                    mergedUncMapDown[key][mll][cat][dist].push_back( (TH1D*) uncHistMapDown[key][mll][cat][dist][samples.size()]->Clone() );
+                    mergedUncMapUp[key][mll][cat][dist].push_back( (TH1D*) uncHistMapUp[key][mll][cat][dist][samples.size()]->Clone());
                 }
             }
         }
     } 
 
     //make final uncertainty histogram for plots 
-    std::vector<double> flatHist = {1.025, 1.06, 1.05, 1.00, 1.00}; //lumi, leptonID, trigger , pdf and scale effects on cross section
+    std::vector<double> flatUnc = {1.025, 1.06, 1.05, 1.00, 1.00}; //lumi, leptonID, trigger , pdf and scale effects on cross section
+    std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
+        {
+            {"Nonprompt e/#mu", 1.3}
+        };
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > totalSystUnc = mergedHists; //copy pointers to fix dimensionality of vector
     for(unsigned mll = 0; mll < nMll; ++mll){
         for(unsigned cat = 0; cat < nCat; ++cat){
@@ -509,17 +563,19 @@ void treeReader::Analyze(){
                         }
                         
                         //add flat uncertainties
-                        for( double unc : flatHist ){
+                        for( double unc : flatUnc ){
                             double binContent = mergedHists[mll][cat][dist][p]->GetBinContent(bin);
                             double var = binContent*( 1. - unc); 
                             binUnc += var*var;
                         }
+
+                        //add background specific uncertainties
+                        for(auto& uncPair : backgroundSpecificUnc){
+                            double var = mergedHists[mll][cat][dist][p]->GetBinContent(bin)*(uncPair.second);
+                            binUnc += var*var;
+                        }
                         
                         totalSystUnc[mll][cat][dist][p]->SetBinContent(bin, sqrt(binUnc) );
-
-                        //sanity print
-                        if(  mergedHists[mll][cat][dist][p]->GetBinContent(bin) != 0 ){
-                        }
                     }
                 }
             }
