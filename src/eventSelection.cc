@@ -36,10 +36,14 @@ unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind) const{
 
 //apply cone-correction to leptons
 double treeReader::coneCorr(const unsigned ind) const{
-    return 1. + std::max(_relIso[ind] - 0.1, 0.);
+    double corr = 1.;
+    if( !lepIsTight(ind) ){
+        corr *=( 1. + std::max(_relIso[ind] - 0.1, 0.) );
+    }
+    return corr;
 }
 
-void treeReader::setConePt(){
+void treeReader::applyConeCorrection(){
     for(unsigned l = 0; l < _nLight; ++l){
         double coneC = coneCorr(l);
         _lPt[l] *= coneC;
@@ -48,7 +52,7 @@ void treeReader::setConePt(){
 }
 
 //select good leptons and order them by pT 
-unsigned treeReader::selectLep(std::vector<unsigned>& ind){
+unsigned treeReader::selectLep(std::vector<unsigned>& ind) const{
     ind.clear();
     unsigned lCount = 0;
     for(unsigned l = 0; l < _nLight; ++l){
@@ -57,10 +61,15 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
             ind.push_back(l);
         }
     }
-    //setConePt(); REMOVE CONE CORRECTION UNTIL MOVING TO FR
     if(lCount < 2) return 0;
     orderByPt(ind, _lPt, lCount);
     return lCount;	
+}
+
+//lepton selection with cone-correction application
+unsigned treeReader::selectLepConeCorr(std::vector<unsigned>& ind){
+    applyConeCorrection();
+    return selectLep(ind);
 }
 
 //amount of consecutive tight leptons
