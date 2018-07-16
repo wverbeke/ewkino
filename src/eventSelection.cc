@@ -37,13 +37,13 @@ unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind) const{
 //apply cone-correction to leptons
 double treeReader::coneCorr(const unsigned ind) const{
     double corr = 1.;
-    if(!lepIsTight(ind)){
+    if(lepIsGood(ind) && !lepIsTight(ind)){
         corr *= 0.9/_ptRatio[ind];
     }
     return corr;
 }
 
-void treeReader::setConePt(){
+void treeReader::applyConeCorrection(){
     for(unsigned l = 0; l < _nLight; ++l){
         double coneC = coneCorr(l);
         _lPt[l] *= coneC;
@@ -52,7 +52,7 @@ void treeReader::setConePt(){
 }
 
 //select good leptons and order them by pT 
-unsigned treeReader::selectLep(std::vector<unsigned>& ind){
+unsigned treeReader::selectLep(std::vector<unsigned>& ind) const{
     ind.clear();
     unsigned lCount = 0;
     for(unsigned l = 0; l < _nLight; ++l){
@@ -61,16 +61,21 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind){
             ind.push_back(l);
         }
     }
-    //setConePt(); REMOVE CONE CORRECTION UNTIL MOVING TO FR
     if(lCount < 2) return 0;
-
-    //set cone pt's after baseline object selection
-    //WARNING CONEPT CAN NOT BE SIMPLY PUT IN HERE, OTHERWISE THE SKIMMER WILL WRITE IT TO THE SKIMMED TREES!!!!!!!!!!!!
-    //setConePt();
 
     //order particles by pT
     orderByPt(ind, _lPt, lCount);
     return lCount;	
+}
+
+//lepton selection with cone-correction application
+unsigned treeReader::selectLepConeCorr(std::vector<unsigned>& ind){
+
+    //apply cone correction
+    applyConeCorrection();
+
+    //select and order cone-corrected leptons
+    return selectLep(ind);
 }
 
 //amount of consecutive tight leptons

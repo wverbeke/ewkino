@@ -214,9 +214,9 @@ class treeReader {
         void orderByPt(std::vector<unsigned>&, const double*, const unsigned) const;
         unsigned dilFlavorComb(const std::vector<unsigned>&) const;
         double coneCorr(const unsigned) const;
-        void setConePt();
-
         bool elePassVLooseMvaIDSUSY(const unsigned ind) const;
+        void applyConeCorrection();
+
         bool lepIsLoose(const unsigned) const;
         bool lepIsGood(const unsigned) const;
         bool lepIsTight(const unsigned) const;
@@ -224,7 +224,8 @@ class treeReader {
         bool eleIsClean(const unsigned) const;
         double closestJetDeepCSV(const unsigned) const;
 
-        unsigned selectLep(std::vector<unsigned>&);
+        unsigned selectLep(std::vector<unsigned>&) const;
+        unsigned selectLepConeCorr(std::vector<unsigned>&);
         unsigned tightLepCount(const std::vector<unsigned>&, const unsigned) const;
 
         bool passPtCuts(const std::vector<unsigned>&) const;
