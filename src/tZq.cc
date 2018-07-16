@@ -59,17 +59,18 @@ void treeReader::Analyze(){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 hists[m][cat].push_back(std::vector < std::shared_ptr< TH1D > >() );
-                for(size_t sam = 0; sam < samples.size(); ++sam){
-                    hists[m][cat][dist].push_back(histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName()) );
-                    /*
-                        hists[m][cat][dist][sam] = new TH1D( (const TString&) (samples[sam].getUniqueName() + histInfo[dist].name() + catNames[cat] + mllNames[m]), (const TString&) ( samples[sam].getUniqueName() + histInfo[dist].name() + catNames[cat] + mllNames[m] + ";" + std::get<1>(histInfo[dist]) + ";Events" ),  histInfoDist, std::get<3>(histInfo[dist]), std::get<4>(histInfo[dist]) );
-                    */
+                for(size_t sam = 0; sam < samples.size() + 1; ++sam){
+                    if(sam < samples.size()){
+                        hists[m][cat][dist].push_back(histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName()) );
+                    } else {
+                        //extra histogram for nonprompt prediction
+                        hists[m][cat][dist].push_back( histInfo[dist].makeHist(catNames[cat] + mllNames[m] + "nonprompt") ); 
+                    }
                 }
             }
         }
     }
 
-    //const std::vector< std::string > uncNames = {"JECDown", "JECUp", "unclDown", "unclUp", "scaleDown", "scaleUp", "pileupDown", "pileupUp", "bTag_udsg_Down", "bTag_udsg_Up", "bTag_c_Down", "bTag_c_Up", "bTag_b_Down", "bTag_b_Up"};
     const std::vector< std::string > uncNames = {"JEC", "uncl", "scale", "pileup", "bTag_udsg", "bTag_c", "bTag_b", "pdf", "scaleXsec", "pdfXsec"};
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
@@ -83,11 +84,18 @@ void treeReader::Analyze(){
                 uncHistMapUp[key][m][cat] = std::vector < std::vector< std::shared_ptr< TH1D > > >( nDist );
                 uncHistMapDown[key][m][cat] = std::vector < std::vector< std::shared_ptr< TH1D > > >( nDist );
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size());
-                    uncHistMapUp[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size());
+                    uncHistMapDown[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size() + 1);
+                    uncHistMapUp[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size() + 1);
                     for(size_t sam = 0; sam < samples.size(); ++sam){
-                        uncHistMapDown[key][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName() + key + "Down");
-                        uncHistMapUp[key][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName() + key + "Up");
+                        std::string sampleName;
+                        if(sam < samples.size() ){
+                            sampleName = samples[sam].getUniqueName();
+                        } else {
+                            //the nonprompt prediction is also affected by all nuisances through the prompt MC subtraction
+                            sampleName = "nonprompt";
+                        }
+                        uncHistMapDown[key][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + sampleName + key + "Down");
+                        uncHistMapUp[key][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + sampleName + key + "Up");
                     }
                 }
             }
@@ -104,7 +112,13 @@ void treeReader::Analyze(){
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     pdfUncHists[pdf][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >( samples.size() );
                     for(size_t sam = 0; sam < samples.size(); ++sam){
-                       pdfUncHists[pdf][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName() + "pdf" + std::to_string(pdf) );
+                        std::string sampleName;
+                        if(sam < samples.size() ){
+                            sampleName = samples[sam].getUniqueName();
+                        } else {
+                            sampleName = "nonprompt";
+                        } 
+                        pdfUncHists[pdf][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + sampleName + "pdf" + std::to_string(pdf) );
                     }
                 }
             }
@@ -175,16 +189,28 @@ void treeReader::Analyze(){
             //select leptons
             const unsigned lCount = selectLep(ind);
             if(lCount != 3) continue;
-            if(tightLepCount(ind, lCount) != 3) continue; //require 3 tight leptons
 
             //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;
 
+            //require presence of OSSF pair
+            if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
+
+            //index to use when filling histogram 
+            unsigned fillIndex = sam;
+            bool passTightCut = (tightLepCount(ind, lCount) == 3);
+            if(!passTightCut){
+
+                //fill last histogram (nonprompt)
+                fillIndex = samples.size();
+
+                //apply fake-rate weights 
+                
+            }
+
             //remove overlap between samples
             if(photonOverlap(currentSample)) continue;
 
-            //require presence of OSSF pair
-            if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
 
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
