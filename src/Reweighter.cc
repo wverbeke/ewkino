@@ -160,16 +160,19 @@ void Reweighter::initializeMuonWeights(){
 
 void Reweighter::initializeFakeRate(){
 
-    //WARNING : To be updated with new fake-rate in 2016/2017 splitting
-    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
-    const std::string frUnc[3] = {"", "_down", "_up"};
-    for(unsigned unc = 0; unc < 3; ++unc){
-        frMapEle[unc] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]) );
-        frMapEle[unc]->SetDirectory(gROOT);
-        frMapMu[unc] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get((const TString&) "FR_mva090_mu_data_comb" + frUnc[unc]) );
-        frMapMu[unc]->SetDirectory(gROOT);
+    //WARNING : Currently no fakerate maps with electroweak variations are available
+    for( auto& flavor : {std::string("e"), std::string("mu")} ){
+        std::string year = (  is2016 ? "2016" : "2017" );
+        TFile* frFile = TFile::Open( (const TString&) "weights/fakeRate_tZq_" + flavor + "_" + year + ".root");
+        if( flavor == "e"){
+            frMapEle[0] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get("passed") );
+            frMapEle[0]->SetDirectory(gROOT);
+        } else {
+            frMapMu[0] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get("passed") );
+            frMapMu[0]->SetDirectory(gROOT);
+        }
+        frFile->Close();
     }
-    frFile->Close();
 }
 
 Reweighter::~Reweighter(){}
@@ -280,7 +283,15 @@ double Reweighter::electronTightIdWeight(const double pt, const double superClus
 double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
     //!!!! To be split for 2016 and 2017 data !!!! 
     if(unc < 3){
-        return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.4) ) );
+        double croppedPt = std::min(pt, 99.);
+        double croppedEta = std::min( fabs(eta), 2.39);
+
+        //WARNING: temporary patch for empty spot at low muon pT, |eta| > 2.1
+        if( croppedPt <= 15){
+            croppedEta = std::min( fabs(eta), 2.09);
+        }
+
+        return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin( croppedPt, croppedEta ) );
     } else {
         std::cerr << "Error: invalid muon fake-rate uncertainty requested: returning fake-rate 99" << std::endl;
         return 99;
@@ -290,7 +301,9 @@ double Reweighter::muonFakeRate(const double pt, const double eta, const unsigne
 double Reweighter::electronFakeRate(const double pt, const double eta, const unsigned unc) const{
     //!!!! To be split for 2016 and 2017 data !!!!
     if(unc < 3){ 
-        return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.5) ) );
+        double croppedPt = std::min(pt, 99.);
+        double croppedEta = std::min( fabs(eta), 2.49);
+        return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin( croppedPt, croppedEta ) );
     } else {
         std::cerr << "Error: invalid electron fake-rate uncertainty requested: returning fake-rate 99" << std::endl;
         return 99;

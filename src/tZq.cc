@@ -86,7 +86,7 @@ void treeReader::Analyze(){
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     uncHistMapDown[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size() + 1);
                     uncHistMapUp[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size() + 1);
-                    for(size_t sam = 0; sam < samples.size(); ++sam){
+                    for(size_t sam = 0; sam < samples.size() + 1; ++sam){
                         std::string sampleName;
                         if(sam < samples.size() ){
                             sampleName = samples[sam].getUniqueName();
@@ -110,8 +110,8 @@ void treeReader::Analyze(){
             for(unsigned cat = 0; cat < nCat; ++cat){
                 pdfUncHists[pdf][m][cat] = std::vector < std::vector< std::shared_ptr< TH1D > > >( nDist );
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    pdfUncHists[pdf][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >( samples.size() );
-                    for(size_t sam = 0; sam < samples.size(); ++sam){
+                    pdfUncHists[pdf][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >( samples.size() + 1);
+                    for(size_t sam = 0; sam < samples.size() + 1; ++sam){
                         std::string sampleName;
                         if(sam < samples.size() ){
                             sampleName = samples[sam].getUniqueName();
@@ -205,7 +205,6 @@ void treeReader::Analyze(){
             unsigned fillIndex = sam;
             bool passTightCut = (tightLepCount(ind, lCount) == 3);
             if(!passTightCut){
-
                 //fill last histogram (nonprompt)
                 fillIndex = samples.size();
 
