@@ -39,7 +39,7 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples2016.txt");
+    readSamples("sampleLists/samples_nonpromptDataDriven_2016.txt");
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
@@ -167,7 +167,7 @@ void treeReader::Analyze(){
         initSample();          //2 = combined luminosity
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -476,8 +476,9 @@ void treeReader::Analyze(){
         }
     }
 
+    std::cout << "merging histograms" << std::endl;
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
+    std::vector<std::string> proc = {"total bkg.", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
@@ -496,11 +497,12 @@ void treeReader::Analyze(){
                 }
 
                 //add nonprompt histogram
-                mergedHists[mll][cat][dist].push_back( (TH1D*) hists[mll][cat][dist][samples.size()].get() );
+                mergedHists[mll][cat][dist][proc.size() - 1] = (TH1D*) hists[mll][cat][dist][samples.size()].get()->Clone();
             }
         }
     }
 
+    std::cout << "merging uncertainties" << std::endl;
     //merging for uncertainties
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapDown;
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapUp;
@@ -516,7 +518,7 @@ void treeReader::Analyze(){
                     mergedUncMapUp[key][mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
 
                     //cut off loop before nonprompt contribution
-                    for(size_t m = 0, sam = 0; m < proc.size(); ++m){
+                    for(size_t m = 0, sam = 0; m < proc.size() - 1; ++m){
                         mergedUncMapDown[key][mll][cat][dist][m] = (TH1D*) uncHistMapDown[key][mll][cat][dist][sam]->Clone();
                         mergedUncMapUp[key][mll][cat][dist][m] = (TH1D*) uncHistMapUp[key][mll][cat][dist][sam]->Clone();
                         while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
@@ -528,13 +530,14 @@ void treeReader::Analyze(){
                     }
 
                     //add nonprompt histograms 
-                    mergedUncMapDown[key][mll][cat][dist].push_back( (TH1D*) uncHistMapDown[key][mll][cat][dist][samples.size()]->Clone() );
-                    mergedUncMapUp[key][mll][cat][dist].push_back( (TH1D*) uncHistMapUp[key][mll][cat][dist][samples.size()]->Clone());
+                    mergedUncMapDown[key][mll][cat][dist][proc.size() - 1] = (TH1D*) uncHistMapDown[key][mll][cat][dist][samples.size()]->Clone();
+                    mergedUncMapUp[key][mll][cat][dist][proc.size() - 1] = (TH1D*) uncHistMapUp[key][mll][cat][dist][samples.size()]->Clone();
                 }
             }
         }
     } 
 
+    std::cout << "adding uncertainties in quadrature" << std::endl;
     //make final uncertainty histogram for plots 
     std::vector<double> flatUnc = {1.025, 1.06, 1.05, 1.00, 1.00}; //lumi, leptonID, trigger , pdf and scale effects on cross section
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
@@ -553,6 +556,7 @@ void treeReader::Analyze(){
 
                         //add all shape uncertainties 
                         for( auto& key : uncNames ){
+                            if(p == (proc.size() -1) ) std::cout << key << std::endl;
                             double down = fabs(mergedUncMapDown[key][mll][cat][dist][p]->GetBinContent(bin) - mergedHists[mll][cat][dist][p]->GetBinContent(bin) );
                             double up = fabs(mergedUncMapUp[key][mll][cat][dist][p]->GetBinContent(bin) - mergedHists[mll][cat][dist][p]->GetBinContent(bin) );
                             double var = std::max(down, up);
@@ -564,23 +568,23 @@ void treeReader::Analyze(){
                         //add flat uncertainties
                         for( double unc : flatUnc ){
                             double binContent = mergedHists[mll][cat][dist][p]->GetBinContent(bin);
-                            double var = binContent*( 1. - unc); 
+                            double var = binContent*(unc - 1.); 
                             binUnc += var*var;
                         }
 
                         //add background specific uncertainties
                         for(auto& uncPair : backgroundSpecificUnc){
-                            double var = mergedHists[mll][cat][dist][p]->GetBinContent(bin)*(uncPair.second);
-                            binUnc += var*var;
+                            if(proc[p] == uncPair.first){
+                                double var = mergedHists[mll][cat][dist][p]->GetBinContent(bin)*(uncPair.second - 1.);
+                                binUnc += var*var;
+                            }
                         }
-                        
                         totalSystUnc[mll][cat][dist][p]->SetBinContent(bin, sqrt(binUnc) );
                     }
                 }
             }
         }
     }
-
 
     //TEMPORARY//////
     //replace data with sum of all backgrounds
@@ -606,6 +610,8 @@ void treeReader::Analyze(){
             }
         }
     }
+
+    std::cout << "making plots" << std::endl;
     //plot all distributions
     const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     for(unsigned m = 0; m < nMll; ++m){
