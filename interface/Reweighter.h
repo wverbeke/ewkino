@@ -29,12 +29,10 @@ class Reweighter{
 
         //lepton id + reconstruction weight
         double muonTightWeight(const double pt, const double eta) const{ 
-            //std::cout << muonRecoWeight(eta) << "\t" << muonTightIdWeight(pt,eta) << std::endl;
             return muonRecoWeight(eta)*muonTightIdWeight(pt,eta);
         }
 
         double electronTightWeight(const double pt, const double superClusterEta) const{ 
-            std::cout << electronRecoWeight(superClusterEta, pt) << "\t";
             return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,superClusterEta);
         }
 

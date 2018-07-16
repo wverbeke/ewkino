@@ -68,7 +68,11 @@ void treeReader::Analyze(){
         HistInfo("leadPt", "P_{T}^{leading} (GeV)", 20, 25, 200),
         HistInfo("subPt", "P_{T}^{subleading} (GeV)", 20, 15, 200),
         HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200),
-        HistInfo("nVertices", "number of vertices", 20, 0, 60)
+        HistInfo("etaLeading", "|#eta| (leading lepton)", 30, -2.5, 2.5),
+        HistInfo("etaSubLeading", "|#eta| (subleading lepton)", 30, -2.5, 2.5),
+        HistInfo("etaTrailing", "|#eta| (trailing lepton)", 30, -2.5, 2.5),
+        HistInfo("nVertices", "number of vertices", 20, 0, 60),
+        HistInfo("flavors", "flavors", 5, 0, 5)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -106,12 +110,11 @@ void treeReader::Analyze(){
         }
         */
         initSample();
-    
-        /*
-        if( isData() ){
-          file.open("dump.txt");
-        }
-        */
+
+        //if( currentSample.getFileName() != "TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root") continue;
+
+        //std::ofstream file; 
+        //file.open("dump.txt");
        
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
@@ -127,6 +130,8 @@ void treeReader::Analyze(){
             }
 
             GetEntry(it);
+
+            if(_eventNb != 524536) continue;
     
             /*
             bool inList = (std::find( eventsToScan.begin(), eventsToScan.end(), _eventNb) != eventsToScan.end() );
@@ -267,7 +272,6 @@ void treeReader::Analyze(){
                     std::cout << "bestZ.second = " << ind[bestZ.second] << std::endl;
                     std::cout << "secondZ.first = " << ind[secondZ.first] << std::endl;
                     std::cout << "secondZ.second = " << ind[secondZ.second] << std::endl;
-
                 }
 
                 //check presence of second Z in the event
@@ -291,15 +295,13 @@ void treeReader::Analyze(){
             //apply event weight
             if( isMC() ){
                 weight*=sfWeight();
-                if( std::isnan( sfWeight() ) ){
-                    std::cout << "reweighting gives nan" << std::endl;
-                }
             }
 
             //if( isData() && tzq::isZZControlRegion(controlRegion) ){
-            /*
-            if( tzq::isZZControlRegion(controlRegion) && currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root" ){
-                file << _runNb << " " << _lumiBlock << " " << _eventNb << " : ";
+            //if( tzq::isZZControlRegion(controlRegion) && currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root" ){
+            if( tzq::isZZControlRegion(controlRegion) ){
+                //file << _runNb << " " << _lumiBlock << " " << _eventNb << " : ";
+                /*
                 for(unsigned l  = 0; l < lCount; ++l){
                     if( isMuon(ind[l]) ){
                         file << std::setprecision(3) << reweighter->muonTightWeight(_lPt[ind[l]], _lEta[ind[l]]);
@@ -308,9 +310,11 @@ void treeReader::Analyze(){
                     }
                     file << "\t";
                 }
-                file << std::endl;
+                */
+                //file << leptonWeight() << "\t" << bTagWeight();
+                //file << std::endl;
+                //file << _runNb << " " << _lumiBlock << " " << _eventNb << " : " << leptonWeight() << "\t" << bTagWeight() << std::endl;
             }
-            */
 
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
@@ -415,7 +419,12 @@ void treeReader::Analyze(){
                 _lPt[ind[0]],
                 _lPt[ind[1]],
                 _lPt[ind[2]],
-                (double) _nVertex
+                _lEta[ind[0]],
+                _lEta[ind[1]],
+                _lEta[ind[2]],
+                (double) _nVertex,
+                (double) ( tzq::isZZControlRegion(controlRegion) ? trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) :  trilep::flavorComposition(ind, _lFlavor, lCount)  ) + 0.5
+
             };
 
             //fill histograms
@@ -432,10 +441,11 @@ void treeReader::Analyze(){
         }
 
         //.if( isData() ){
-        //if( currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root") {
-        //    file.close();
-        //}
+        if( currentSample.getFileName() == "TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root") {
+            //file.close();
+        }
     }
+
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "DY", "TT + Jets", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nCr);

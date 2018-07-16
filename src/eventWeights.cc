@@ -18,14 +18,17 @@ double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) cons
         if(_jetHadronFlavor[j] == jetFlavor){
             //QUESTION: should JEC and b-tag weights also be varied up and down at the same time when computing systematics?
             if(jetIsGood(j, 25., 0, true) && fabs(_jetEta[j]) < 2.4){
+                //std::cout << "jet Pt = " << _jetPt[j] << "\teta = " << _jetEta[j] << "\t";
                 double sf = reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], deepCSV(j), unc);
                 double eff = reweighter->bTagEff(_jetHadronFlavor[j], _jetPt[j], _jetEta[j]);
                 if(bTagged(j, 1, true)){
                     pMC *= eff;
                     pData *= eff*sf;
+                    //std::cout << "sf = " << eff*sf/eff << std::endl;
                 } else {
                     pMC *= (1 - eff);
                     pData *= (1 - eff*sf);
+                    //std::cout << "sf = " << (1 - eff*sf)/(1 - eff) << std::endl;
                 }
             }
         }
@@ -59,15 +62,17 @@ double treeReader::leptonWeight() const{
     for(unsigned l = 0; l < _nLight; ++l){
         if( lepIsTight(l) ){
             if( isMuon(l) ){
+                //std::cout << "muon with pT " << _lPt[l] << " ";
                 sf *= reweighter->muonTightWeight(_lPt[l], _lEta[l]);
             } else if( isElectron(l) ){
-                sf *= reweighter->electronTightWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
+                //std::cout << "electron with pT " << _lPt[l] << " ";
+                sf *= reweighter->electronTightWeight(_lPt[l], _lEtaSC[l]);
             }
         } else if( lepIsLoose(l) ){
             if( isMuon(l) ){
                 sf *= reweighter->muonLooseWeight(_lPt[l], _lEta[l]);
             } else if( isElectron(l) ){
-                sf *= reweighter->electronLooseWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
+                sf *= reweighter->electronLooseWeight(_lPt[l], _lEtaSC[l]);
             }
         }
     }
