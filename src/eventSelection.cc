@@ -37,7 +37,7 @@ unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind) const{
 //apply cone-correction to leptons
 double treeReader::coneCorr(const unsigned ind) const{
     double corr = 1.;
-    if( !lepIsTight(ind) ){
+    if( lepIsGood(ind) && !lepIsTight(ind) ){
         corr *=( 1. + std::max(_relIso[ind] - 0.1, 0.) );
     }
     return corr;
@@ -68,7 +68,11 @@ unsigned treeReader::selectLep(std::vector<unsigned>& ind) const{
 
 //lepton selection with cone-correction application
 unsigned treeReader::selectLepConeCorr(std::vector<unsigned>& ind){
+
+    //apply cone correction
     applyConeCorrection();
+
+    //select and order cone-corrected leptons
     return selectLep(ind);
 }
 
