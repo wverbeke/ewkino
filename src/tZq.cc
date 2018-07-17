@@ -160,14 +160,16 @@ void treeReader::Analyze(){
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
+        /*
         if(sam == 0){                   //skip data for now
             ++currentSampleIndex;
             continue;
         }
+        */
         initSample();          //2 = combined luminosity
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries/100; ++it){
+        for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -242,7 +244,20 @@ void treeReader::Analyze(){
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
+                //in case of data fakes fill all uncertainties for nonprompt with nominal values
+                if( isData() && !passTightCut){
+                    for(unsigned dist = 0; dist < nDist; ++dist){
+                        for(auto& key: uncNames){
+                            uncHistMapDown[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                            uncHistMapUp[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                        }
+                        for(unsigned pdf = 0; pdf < 100; ++pdf){
+                             pdfUncHists[pdf][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                        }
+                    }
+                }
             }
+
 
             //no nuisances for data
             if( isData() ) continue;
