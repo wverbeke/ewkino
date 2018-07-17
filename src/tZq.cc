@@ -44,7 +44,28 @@ void treeReader::Analyze(){
     histInfo = {
         //new BDT distribution
         HistInfo("bdt", "BDT output", 30, -1, 1),
-        HistInfo("bdt_10bins", "BDT output", 10, -1, 1)
+        HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
+
+        HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
+        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 20, 0, 1200),
+        HistInfo("asymmetryWLep", "asymmetry (lepton from W)",20, -2.5, 2.5),
+        HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 20, 0, 1),
+        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 20, 0, 800),
+        HistInfo("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 20, 0, 3.15),
+        HistInfo("mt", "M_{T} (GeV)", 20, 0, 300),
+        HistInfo("mtop", "M_{(W + b)} (GeV)", 20, 0, 400),
+        HistInfo("maxpTJetJet", "P_{T}^{max}(jet + jet) (GeV)", 20, 0, 300), 
+        HistInfo("minDeltaPhiLeptonBJet", "min(#Delta#Phi(l, bjet))", 20, 0, 3.15),
+        HistInfo("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 20, 0, 3.15),
+        HistInfo("HT", "H_{T} (GeV)", 20, 0, 800), 
+        HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 20, 0, 10),
+        HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 20, 0, 7),
+        HistInfo("m3l", "M_{3l} (GeV)", 20, 0, 600),
+        HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 20, 0, 5),
+        HistInfo("nJets", "number of jets", 10, 0, 10),
+        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 20, 25, 200),
+        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 20, 15, 200),
+        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -199,7 +220,7 @@ void treeReader::Analyze(){
             if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
 
             //explicitly require selected leptons in MC to be prompt, if one of them is not prompt, reject the event
-            if( isMC() ){
+            if( isMC() && !isSMSignal() ){
                 if( !promptLeptons() ) continue;
             } 
 
@@ -240,7 +261,28 @@ void treeReader::Analyze(){
             double bdtNominal = 999.;
             if(tzqCat > 2 && tzqCat < 6){
                 bdtNominal = bdtOutput( tzqCat );
-                double fill[nDist] = {bdtNominal, bdtNominal};
+                double fill[nDist] = {bdtNominal, bdtNominal,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]]
+                    };
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
@@ -266,7 +308,29 @@ void treeReader::Analyze(){
             unsigned tzqCatJECDown = setSearchVariablestZq("JECDown", ind, bestZ);
             if(tzqCatJECDown > 2 && tzqCatJECDown < 6){
                 double bdtJECDown = bdtOutput( tzqCatJECDown );
-                double fill[nDist] = {bdtJECDown, bdtJECDown};
+                double fill[nDist] = {bdtJECDown, bdtJECDown,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]]
+                    };
+ 
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     uncHistMapDown["JEC"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
@@ -277,7 +341,29 @@ void treeReader::Analyze(){
             unsigned tzqCatJECUp = setSearchVariablestZq("JECUp", ind, bestZ);
             if(tzqCatJECUp > 2 && tzqCatJECUp < 6){
                 double bdtJECUp = bdtOutput( tzqCatJECUp );
-                double fill[nDist] = {bdtJECUp, bdtJECUp};
+                double fill[nDist] = {bdtJECUp, bdtJECUp,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]]
+                    };
+
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     uncHistMapUp["JEC"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
@@ -287,7 +373,29 @@ void treeReader::Analyze(){
             unsigned tzqCatUnclDown = setSearchVariablestZq("unclDown", ind, bestZ);
             if(tzqCatUnclDown > 2 && tzqCatUnclDown < 6){
                 double bdtUnclDown = bdtOutput( tzqCatUnclDown );
-                double fill[nDist] = {bdtUnclDown, bdtUnclDown};
+                double fill[nDist] = {bdtUnclDown, bdtUnclDown,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]]
+                    };
+
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     uncHistMapDown["uncl"][mllCat][tzqCatUnclDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
@@ -297,7 +405,29 @@ void treeReader::Analyze(){
             unsigned tzqCatUnclUp = setSearchVariablestZq("unclUp", ind, bestZ);
             if(tzqCatUnclUp  > 2 && tzqCatUnclUp < 6){
                 double bdtUnclUp = bdtOutput( tzqCatUnclUp );
-                double fill[nDist] = {bdtUnclUp, bdtUnclUp};
+                double fill[nDist] = {bdtUnclUp, bdtUnclUp,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]]
+                    };
+
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     uncHistMapUp["uncl"][mllCat][tzqCatUnclUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
@@ -305,7 +435,32 @@ void treeReader::Analyze(){
 
             //now nominal cuts can be safely used
             if(tzqCat < 3 || tzqCat > 5) continue;
-            double fill[nDist] = {bdtNominal, bdtNominal};
+            
+            //reset nominal values 
+            setSearchVariablestZq("nominal", ind, bestZ);
+            double fill[nDist] = {bdtNominal, bdtNominal,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]]
+                    };
+
 
             //vary scale down
             for(unsigned dist = 0; dist < nDist; ++dist){
@@ -329,7 +484,7 @@ void treeReader::Analyze(){
 
             //vary b-tag down for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(1)/puWeight(0));
+                uncHistMapDown["bTag_udsg"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
             }
 
             //vary b-tag up for udsg
