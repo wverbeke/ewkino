@@ -4,7 +4,7 @@ DY		        DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_Fall17.root   
 DY		        DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root					                5765.4
 TT		        TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_Fall17.root   					                        87.31483776
 TT		        TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17.root				                        364.35080448
-WZ              WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root						                    4.42965
+WZ              WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root						                    4.71
 multiboson      WWTo2L2Nu_NNPDF31_TuneCP5_13TeV-powheg-pythia8_Fall17.root                                      12.178 
 multiboson	    WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_Fall17.root							                    0.2086
 multiboson	    WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root							                0.1651                  forceIs2017
@@ -33,7 +33,7 @@ Xgamma          ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16.root   
 Xgamma          WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16.root                                  489                     forceIs2017
 Xgamma          TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_Fall17.root                                  3.697
 Xgamma		    TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8_Summer16.root						        2.967                   forceIs2017
-ZZH	            ZZTo4L_13TeV_powheg_pythia8_Fall17.root								                            1.212 
+ZZH	            ZZTo4L_13TeV_powheg_pythia8_Fall17.root								                            1.256 
 ZZH             GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8_Fall17.root                                     0.006699
 ZZH             GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8_Fall17.root                                    0.006699
 ZZH             GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8_Fall17.root                                   0.006699
