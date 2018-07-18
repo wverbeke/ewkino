@@ -212,7 +212,7 @@ double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, cons
 
 double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const{
     double croppedPt = std::min( std::max(jetPt, 25.), 599.);
-    double croppedAbsEta = std::max( fabs(jetEta), 2.39 ); 
+    double croppedAbsEta = std::min( fabs(jetEta), 2.39 ); 
     return bTagEffHist[flavorInd(jetFlavor)]->GetBinContent(bTagEffHist[flavorInd(jetFlavor)]->FindBin(croppedPt, croppedAbsEta) );
 }
 
