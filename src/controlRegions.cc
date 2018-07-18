@@ -98,6 +98,7 @@ void treeReader::Analyze(){
 
         //if( currentSample.getProcessName() != "WZ" ) continue;
 
+        initSample();
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
