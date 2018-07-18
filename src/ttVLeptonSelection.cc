@@ -45,11 +45,13 @@ bool treeReader::lepIsGoodttZ3l(const unsigned leptonIndex) const{
 
 bool treeReader::lepIsGoodttZ4l2016(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
+    return true;
 
 }
 
 bool treeReader::lepIsGoodttZ4l2017(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
+    return true;
 }
 
 bool treeReader::lepIsGoodttZ4l(const unsigned leptonIndex) const{
