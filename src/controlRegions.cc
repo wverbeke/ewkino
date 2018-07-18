@@ -111,6 +111,7 @@ void treeReader::Analyze(){
         */
         initSample();
 
+        if( currentSample.getProcessName() != "WZ" ) continue;
         //if( currentSample.getFileName() != "TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root") continue;
 
         //std::ofstream file; 
@@ -131,7 +132,7 @@ void treeReader::Analyze(){
 
             GetEntry(it);
 
-            if(_eventNb != 524536) continue;
+            //if(_eventNb != 524536) continue;
     
             /*
             bool inList = (std::find( eventsToScan.begin(), eventsToScan.end(), _eventNb) != eventsToScan.end() );
@@ -295,6 +296,19 @@ void treeReader::Analyze(){
             //apply event weight
             if( isMC() ){
                 weight*=sfWeight();
+            }
+        
+            if( tzq::isWZControlRegion(controlRegion) ){
+                if( trilep::flavorComposition(ind, _lFlavor, lCount) == 0){
+                    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+                     for(unsigned l  = 0; l < lCount; ++l){
+                         if( isElectron(ind[l]) ){
+                             //std::cout << "muon pT = " << _lPt[ind[l]] << " eta = " << _lEta[ind[l]] << "\tID SF = " << std::setprecision(3) << reweighter->muonTightWeight(_lPt[ind[l]], _lEta[ind[l]]) << std::endl;
+                             std::cout << "electron pT = " << _lPt[ind[l]] << " eta = " << _lEta[ind[l]] << "\tID SF = " << std::setprecision(3) << reweighter->electronTightWeight(_lPt[ind[l]], _lEtaSC[ind[l]]) << std::endl;
+                         }
+                     }
+                     //std::cout << "leptonWeight = " << leptonWeight() << std::endl;
+                }
             }
 
             //if( isData() && tzq::isZZControlRegion(controlRegion) ){
