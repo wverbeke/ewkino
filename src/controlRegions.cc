@@ -93,30 +93,11 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
-    //const std::vector< long unsigned > eventsToScan = {983142, 1137407, 3143717, 3733360, 5468774, 4715872, 3640612};
-
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        //std::ofstream file;
-        /*
-        if(samples[sam].getFileName() == "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1_Summer16.root"
-            //samples[sam].getFileName() == "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_Summer16.root" ||
-            //samples[sam].getFileName() == "ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1_Summer16.root" ||
-            //samples[sam].getFileName() == "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_Summer16.root"
-        )
-        {   
-            samples.erase(samples.begin() + sam);
-            continue;
-        }
-        */
-        initSample();
 
-        if( currentSample.getProcessName() != "WZ" ) continue;
-        //if( currentSample.getFileName() != "TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root") continue;
+        //if( currentSample.getProcessName() != "WZ" ) continue;
 
-        //std::ofstream file; 
-        //file.open("dump.txt");
-       
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
@@ -132,26 +113,9 @@ void treeReader::Analyze(){
 
             GetEntry(it);
 
-            //if(_eventNb != 524536) continue;
-    
-            /*
-            bool inList = (std::find( eventsToScan.begin(), eventsToScan.end(), _eventNb) != eventsToScan.end() );
-            if(inList){
-                std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-                std::cout << _eventNb << std::endl;
-                printLeptonContent();
-                printLeptonPairing();
-            }
-            */
-            bool inList = false;
-
             //apply triggers and MET filters
             if( !passTriggerCocktail() ) continue;
             if( !passMETFilters() ) continue;
-
-            if(inList){
-                std::cout << "passed triggers and MET filters" << std::endl;
-            }
 
             //vector containing good lepton indices
             std::vector<unsigned> ind;
@@ -159,28 +123,10 @@ void treeReader::Analyze(){
             //select leptons
             const unsigned lCount = selectLep(ind);
 
-            if(inList){
-                std::cout << "event has " << lCount << " FO leptons" << std::endl;
-            }
 
             if( !(lCount == 3 || lCount == 4) ) continue;
     
             unsigned lCountTight = tightLepCount(ind, lCount);
-
-            if( inList ) {  
-                std::cout << "event hass " << lCountTight << " tight leptons" << std::endl;
-            }
-
-            if( inList ){
-                for(unsigned l = 0; l < _nLight; ++l){
-                    if( isMuon(l) ){
-                        std::cout << "muon pT = "  << _lPt[l] << "\t";
-                        if( _lPOGMedium[l] ) std::cout << "pass medium";
-                        else std::cout << "fail medium";
-                        std::cout << std::endl;
-                    }
-                }
-            }
 
             if( !(lCountTight == lCount) ) continue; //require 3 tight leptons
 
@@ -197,20 +143,12 @@ void treeReader::Analyze(){
             //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;
 
-            if( inList ){
-                std::cout << "event passes pT cuts" << std::endl;
-            }
-
             //remove overlap between samples
             if(photonOverlap(currentSample)) continue;
 
             //require presence of OSSF pair
             if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
             
-            if( inList ){
-                std::cout << "event has OSSF pair" << std::endl;
-            }
-
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
             TLorentzVector lepSyst(0,0,0,0);    //vector sum of all leptons
@@ -229,10 +167,6 @@ void treeReader::Analyze(){
 
             //reject events falling out of the control regions
             if( !tzq::isControlRegion(controlRegion) ) continue;
-
-            if( inList ) {
-                std::cout << "event is in a control region" << std::endl;
-            }
 
             //make ordered jet and bjet collections and count jet numbers
             std::vector<unsigned> jetInd, bJetInd;
@@ -253,10 +187,6 @@ void treeReader::Analyze(){
 
             } else if ( tzq::isZZControlRegion(controlRegion) ){
 
-                if(inList){
-                    std::cout << "event in ZZ control region" << std::endl;
-                }
-                
                 //find leptons not making best Z pair
                 std::pair<unsigned, unsigned> secondZ = {99, 99};
                 for(unsigned l = 0; l < lCount; ++l){
@@ -268,26 +198,13 @@ void treeReader::Analyze(){
                         }
                     }
                 } 
-                if( inList ){
-                    std::cout << "bestZ.first = " << ind[bestZ.first] << std::endl;
-                    std::cout << "bestZ.second = " << ind[bestZ.second] << std::endl;
-                    std::cout << "secondZ.first = " << ind[secondZ.first] << std::endl;
-                    std::cout << "secondZ.second = " << ind[secondZ.second] << std::endl;
-                }
 
                 //check presence of second Z in the event
                 if( _lCharge[ind[secondZ.first]] == _lCharge[ind[secondZ.second]]) continue;
                 if( _lFlavor[ind[secondZ.first]] != _lFlavor[ind[secondZ.second]]) continue;
 
-                if(inList){
-                    std::cout << "event has second OSSF pair" << std::endl;
-                }
                 double mllSecond = (lepV[secondZ.first] + lepV[secondZ.second]).M();
                 if( fabs(mllSecond - 91.1876) > 15) continue;
-
-                if( inList){
-                    std::cout << "event has second onZ pair" << std::endl;
-                }
 
             } else {
                 std::cerr << "Error: controlRegion number does not match any known control region." << std::endl;
@@ -298,38 +215,6 @@ void treeReader::Analyze(){
                 weight*=sfWeight();
             }
         
-            if( tzq::isWZControlRegion(controlRegion) ){
-                if( trilep::flavorComposition(ind, _lFlavor, lCount) == 0){
-                    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-                     for(unsigned l  = 0; l < lCount; ++l){
-                         if( isElectron(ind[l]) ){
-                             //std::cout << "muon pT = " << _lPt[ind[l]] << " eta = " << _lEta[ind[l]] << "\tID SF = " << std::setprecision(3) << reweighter->muonTightWeight(_lPt[ind[l]], _lEta[ind[l]]) << std::endl;
-                             std::cout << "electron pT = " << _lPt[ind[l]] << " eta = " << _lEta[ind[l]] << "\tID SF = " << std::setprecision(3) << reweighter->electronTightWeight(_lPt[ind[l]], _lEtaSC[ind[l]]) << std::endl;
-                         }
-                     }
-                     //std::cout << "leptonWeight = " << leptonWeight() << std::endl;
-                }
-            }
-
-            //if( isData() && tzq::isZZControlRegion(controlRegion) ){
-            //if( tzq::isZZControlRegion(controlRegion) && currentSample.getFileName() == "ZZTo4L_13TeV_powheg_pythia8_Summer16.root" ){
-            if( tzq::isZZControlRegion(controlRegion) ){
-                //file << _runNb << " " << _lumiBlock << " " << _eventNb << " : ";
-                /*
-                for(unsigned l  = 0; l < lCount; ++l){
-                    if( isMuon(ind[l]) ){
-                        file << std::setprecision(3) << reweighter->muonTightWeight(_lPt[ind[l]], _lEta[ind[l]]);
-                    } else if( isElectron(ind[l]) ){
-                        file << std::setprecision(3) << reweighter->electronTightWeight(_lPt[ind[l]], _lEta[ind[l]], _lEtaSC[ind[l]]);
-                    }
-                    file << "\t";
-                }
-                */
-                //file << leptonWeight() << "\t" << bTagWeight();
-                //file << std::endl;
-                //file << _runNb << " " << _lumiBlock << " " << _eventNb << " : " << leptonWeight() << "\t" << bTagWeight() << std::endl;
-            }
-
             //make LorentzVector for all jets 
             TLorentzVector jetV[(const unsigned) _nJets];
             for(unsigned j = 0; j < _nJets; ++j){
@@ -452,11 +337,6 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 tools::setNegativeZero( hists[cr][dist][sam].get() );
             }	
-        }
-
-        //.if( isData() ){
-        if( currentSample.getFileName() == "TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root") {
-            //file.close();
         }
     }
 
