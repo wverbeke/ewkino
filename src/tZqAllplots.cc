@@ -465,8 +465,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             leadingJet = jetV[jetInd[0]];
             if(jetCount > 1) trailingJet = jetV[jetInd[jetInd.size() - 1]];
             highestEtaJet = jetV[highestEtaJ];
-            highestDeepCSVJet = jetV[highestDeepCSVI];
-            highestCSVv2Jet = jetV[highestCSVv2I]; 
+            if( highestDeepCSVI != 99 ) highestDeepCSVJet = jetV[highestDeepCSVI];
+            if( highestCSVv2I != 99 ) highestCSVv2Jet = jetV[highestCSVv2I]; 
         }
         if(bJetCount != 0){
             leadingBJet = jetV[bJetInd[0]];
@@ -596,7 +596,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         bdtVariableMap["topMass"] =  std::max(topV.M(), 0.);
         bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
         bdtVariableMap["mTW"] = kinematics::mt(lepV[lw], met);
-        bdtVariableMap["highestDeepCSV"] = (jetCount == 0) ? 0. : deepCSV(highestDeepCSVI);
+        bdtVariableMap["highestDeepCSV"] = (jetCount == 0 && highestDeepCSVI != 99) ? 0. : deepCSV(highestDeepCSVI);
         bdtVariableMap["numberOfJets"] = jetCount;
         bdtVariableMap["numberOfBJets"] = bJetCount;
         bdtVariableMap["pTLeadingLepton"] = _lPt[ind[0]];
@@ -661,9 +661,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         (double) nBJets(0, false), fabs(highestEtaJet.Eta()), fabs(leadingJet.Eta()), leadingJet.Pt(), trailingJet.Pt(), leadingBJet.Pt(), trailingBJet.Pt(),
          highestEtaJet.Pt(), std::max(topV.M(), 0.), (lepV[0] + lepV[1] + lepV[2]).M(), taggedBJet.Pt(), fabs(taggedBJet.Eta()), recoilingJet.Pt(), fabs(recoilingJet.Eta()),
 
-        deepCSV(highestDeepCSVI),
-        _jetDeepCsv_b[highestDeepCSVI],
-        _jetDeepCsv_bb[highestDeepCSVI],
+        (highestDeepCSVI != 99) ? deepCSV(highestDeepCSVI) : 0.,
+        (highestDeepCSVI != 99) ? _jetDeepCsv_b[highestDeepCSVI] : 0.,
+        (highestDeepCSVI != 99) ? _jetDeepCsv_bb[highestDeepCSVI] : 0.,
         _jetCsvV2[highestCSVv2I],
         highestDeepCSVJet.Pt(),
         taggedBJet.DeltaR(recoilingJet),

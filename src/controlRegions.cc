@@ -261,7 +261,7 @@ void treeReader::Analyze(){
             if(taggedJetI[0] != 99) taggedBJet = jetV[taggedJetI[0]];
             if(taggedJetI[1] != 99) recoilingJet = jetV[taggedJetI[1]];
             if(jetCount != 0){
-                highestDeepCSVJet = jetV[highestDeepCSVI];
+                if( highestDeepCSVI != 99 ) highestDeepCSVJet = jetV[highestDeepCSVI];
                 highestEtaJet = jetV[highestEtaJ];
             }
 
@@ -300,7 +300,7 @@ void treeReader::Analyze(){
             double fill[nDist] = { fabs(recoilingJet.Eta()), 
                 maxMJetJet,
                 fabs(lepV[lw].Eta())*_lCharge[ind[lw]],
-                (jetCount == 0) ? 0. : deepCSV(highestDeepCSVI),
+                (jetCount == 0 && highestDeepCSVI != 99) ? 0. : deepCSV(highestDeepCSVI),
                 LT + _met,
                 maxDeltaPhiJetJet,
                 kinematics::mt(lepV[lw], met),
