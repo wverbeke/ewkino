@@ -403,8 +403,10 @@ class treeReader {
         void checkEraOrthogonality() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
 
         //debugging prints
+        void printEventTags( std::ostream& os = std::cout ) const;
         void printLeptonContent( std::ostream& os = std::cout ) const;
         void printLeptonPairing( std::ostream& os = std::cout ) const;
+        void printJetContent( std::ostream& os = std::cout ) const;
 
         //general function to read a list of samples
         void readSamples(const std::string&, std::vector<Sample>&);
