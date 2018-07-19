@@ -29,13 +29,17 @@ void treeReader::checkEraOrthogonality() const{
     }
 }
 
-void treeReader::printLeptonContent( std::ostream& os ) const{
-    
-    //event tags
+void treeReader::printEventTags( std::ostream& os) const{
     os << "######################################\n";
     os << ( is2016() ? "2016" : "2017" ) << " event\n";
     os << ( isData() ? "data" : "MC" ) << " event\n";
     os << "RunNb LumiBlock EventNb : " << _runNb << " " << _lumiBlock << " " << _eventNb << "\n";
+}
+
+void treeReader::printLeptonContent( std::ostream& os ) const{
+    
+    //event tags
+    printEventTags( os );
 
     for(unsigned l = 0; l < _nLight; ++l){
         
@@ -122,7 +126,66 @@ void treeReader::printLeptonPairing( std::ostream& os ) const{
             TLorentzVector lep2;
             lep2.SetPtEtaPhiE(_lPt[k], _lEta[k], _lPhi[k], _lE[k]);
             os << "mass = " << (lep1 + lep2).M();
-            os << std::endl;
+            os << "\n";
         }
     }
+    os << std::flush;
+}
+
+std::string jetFlavor( const unsigned jetHadronFlavor ){
+    if( jetHadronFlavor == 0 ){
+        return "light-jet";
+    } else if( jetHadronFlavor == 4){
+        return "c-jet";
+    } else {
+        return "b-jet";
+    }
+}
+
+void treeReader::printJetContent( std::ostream& os) const{
+    
+    //event tags
+    printEventTags( os );
+
+    for(unsigned j = 0; j < _nJets; ++j){
+        
+        os << "jet " << j;
+    
+        //jet flavor 
+        os << "\t" << jetFlavor( _jetHadronFlavor[j] );
+
+        //jet id decisions 
+        os << "\t";
+        if( _jetIsLoose[j]){
+            os << "loose\t";
+        } else {
+            os << "fail loose\t";
+        }
+
+        if( _jetIsTight[j]){
+            os << "tight\t";
+        } else {
+            os << "fail tight\t";
+        }
+
+        if( _jetIsTightLepVeto[j]){
+            os << "tightLepVeto";
+        } else {
+            os << "fail tightLepVeto";
+        }
+
+        //jet pt , eta, phi
+        os << "\tpT = " << _jetPt[j] << "\teta = " << _jetEta[j] << "\tphi = " << _jetPhi[j];
+
+        //jet mass
+        TLorentzVector jet; 
+        jet.SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
+        os << "\tmass = " << jet.M();
+
+        //jet CSV values 
+        os << "\tdeepCSV = " << deepCSV(j) << "\tCSVv2 = " << _jetCsvV2[j];
+        
+        os << "\n";
+    }
+    os << std::flush;
 }
