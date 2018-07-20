@@ -300,7 +300,7 @@ void treeReader::Analyze(){
             double fill[nDist] = { fabs(recoilingJet.Eta()), 
                 maxMJetJet,
                 fabs(lepV[lw].Eta())*_lCharge[ind[lw]],
-                (jetCount == 0 && highestDeepCSVI != 99) ? 0. : deepCSV(highestDeepCSVI),
+                (jetCount == 0 || highestDeepCSVI != 99) ? 0. : deepCSV(highestDeepCSVI),
                 LT + _met,
                 maxDeltaPhiJetJet,
                 kinematics::mt(lepV[lw], met),

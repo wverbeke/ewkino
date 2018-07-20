@@ -173,7 +173,7 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     bdtVariableMap["etaRecoilingJet"] = fabs(recoilingJet.Eta());
     bdtVariableMap["maxMjj"] = std::max(maxMJetJet, 0.);
     bdtVariableMap["asymmetryWlep"] = fabs(_lEta[ind[lw]])*_lCharge[ind[lw]];
-    bdtVariableMap["highestDeepCSV"] = (jetCount == 0 && highestDeepCSVI != 99) ? 0. : deepCSV(highestDeepCSVI);
+    bdtVariableMap["highestDeepCSV"] = (jetCount == 0 || highestDeepCSVI != 99) ? 0. : deepCSV(highestDeepCSVI);
     bdtVariableMap["ltmet"] = LT + _met;
     bdtVariableMap["maxDeltaPhijj"] = maxDeltaPhiJetJet;
     bdtVariableMap["mTW"] = kinematics::mt(lepV[lw], met);
