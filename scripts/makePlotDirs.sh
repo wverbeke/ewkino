@@ -50,9 +50,14 @@ for dir1 in 2016 2017 combined; do
         for dir3 in WZ ZZ Xgamma; do
             mkdir -p ${dir1}/${dir2}/${dir3}
         done
+        for dir3 in offZ noOSSF; do
+            for dir4 in 1bJet23Jets 1bJet4Jets 2bJets; do
+                mkdir -p ${dir1}/${dir2}/${dir3}/${dir4}
+            done
+        done
     done
-    mkdir ${dir1}/lowBDT
-    mkdir ${dir1}/final
+    mkdir -p ${dir1}/lowBDT
+    mkdir -p ${dir1}/final
 done
 
 for dir1 in TOP-16-020; do
