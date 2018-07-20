@@ -109,7 +109,15 @@ double treeReader::sfWeight(){
 //fake rate
 double treeReader::fakeRateWeight(const unsigned unc){
     initializeWeights();
-    double sf = -1.;
+    double sf;
+    if( isData() ){
+        sf = -1.;
+
+    //subtract prompt MC fakes from data-driven prediction
+    } else {
+        sf = 1.;
+    }
+
     for(unsigned l = 0; l < _nLight; ++l){
         if(lepIsGood(l) && !lepIsTight(l) ){
             double fr = 1.;
