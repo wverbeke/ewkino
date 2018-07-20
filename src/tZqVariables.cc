@@ -188,26 +188,6 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
     bdtVariableMap["numberOfJets"] = jetCount;
 
-    bool isNan = false;
-    for( auto& pair : bdtVariableMap ){
-        if( std::isnan(pair.second) ) isNan = true;
-    }
-    if( isNan ){
-        std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-        printEventTags();
-        std::cout << uncertainty << std::endl;
-        for( auto& pair : bdtVariableMap ){
-            std::cout << pair.first << " : " << pair.second << std::endl;
-        }
-        std::cout << "lepV[lw].Pt() = " << lepV[lw].Pt() << "\tlepV[lw].Eta() = " << lepV[lw].Eta() << "\tlepV[lw].Phi() = " << lepV[lw].Phi() << "\tlepV[lw].E() = " << lepV[lw].E() << std::endl;
-        std::cout << "met.Pt() = " << met.Pt() << "\tmet.Eta() = " << met.Eta() << "\tmet.Phi() = " << met.Phi() << "\tmet.E() = " << met.E() << std::endl;
-        std::cout << "_met = " << _met << "\t_metPhi = " << _metPhi << std::endl;
-        std::cout << "_metJECUp = " << _metJECUp << "\t_metPhiJECUp = " << _metPhiJECUp << std::endl;
-        std::cout << "_metJECDown = " << _metJECDown << "\t_metPhiJECDown = " << _metPhiJECDown << std::endl;
-        std::cout << "_metUnclUp = " << _metUnclUp << "\t_metPhiUnclUp = " << _metPhiUnclUp << std::endl;
-        std::cout << "_metUnclDown = " << _metUnclDown << "\t_metPhiUnclDown = " << _metPhiUnclDown << std::endl;
-    }
-
     return tzqCat;
 }
 
