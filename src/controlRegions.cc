@@ -96,9 +96,8 @@ void treeReader::Analyze(){
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
 
-        //if( currentSample.getProcessName() != "WZ" ) continue;
-
         initSample();
+        if( currentSample.getProcessName() != "WZ" ) continue;
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
@@ -295,12 +294,12 @@ void treeReader::Analyze(){
             for(unsigned l = 0; l < lCount; ++l){
                 LT += _lPt[ind[l]];
             }
-            
+
             //variables to fill
             double fill[nDist] = { fabs(recoilingJet.Eta()), 
                 maxMJetJet,
                 fabs(lepV[lw].Eta())*_lCharge[ind[lw]],
-                (jetCount == 0 || highestDeepCSVI != 99) ? 0. : deepCSV(highestDeepCSVI),
+                (jetCount == 0 || highestDeepCSVI == 99) ? 0. : deepCSV(highestDeepCSVI),
                 LT + _met,
                 maxDeltaPhiJetJet,
                 kinematics::mt(lepV[lw], met),
