@@ -72,7 +72,7 @@ void treeReader::Analyze(){
     const unsigned nCat = 3;                //Several categories enriched in different processes
     const unsigned nMll = 1;                //categories based on dilepton Mass
     const std::string mllNames[nMll] = {"onZ"};
-    const std::string catNames[nCat] = {"1bJet_23Jets", "1bJet_4Jets", "2bJets"};
+    const std::string catNames[nCat] = {"1bJet23Jets", "1bJet4Jets", "2bJets"};
     //initialize vector holding all histograms
     std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > > hists(nMll);
     for(unsigned m = 0; m < nMll; ++m){
@@ -726,7 +726,6 @@ void treeReader::Analyze(){
 
                         //add all shape uncertainties 
                         for( auto& key : uncNames ){
-                            if(p == (proc.size() -1) ) std::cout << key << std::endl;
                             double down = fabs(mergedUncMapDown[key][mll][cat][dist][p]->GetBinContent(bin) - mergedHists[mll][cat][dist][p]->GetBinContent(bin) );
                             double up = fabs(mergedUncMapUp[key][mll][cat][dist][p]->GetBinContent(bin) - mergedHists[mll][cat][dist][p]->GetBinContent(bin) );
                             double var = std::max(down, up);
