@@ -54,6 +54,32 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
         if( l != bestZ.first && l != bestZ.second ) lw = l;
     }
 
+    //Catch shifted met values of inf, this was observed to occur in a ttZ event (1:32731:5662311)
+    bool metJECDownIsInf = false;
+       if( std::isinf( _metJECDown ) ){
+        metJECDownIsInf = true;
+    } 
+    bool metJECUpIsInf = false;
+    if( std::isinf( _metJECUp ) ){
+        metJECUpIsInf = true;
+    }
+    if( metJECDownIsInf || metJECUpIsInf){
+        
+        printEventTags();
+        std::cerr << "Error: " << 
+            ( metJECDownIsInf ? "_metJECDown " : " ") << ( (metJECUpIsInf && metJECUpIsInf) ? "and" : "") << 
+            (metJECUpIsInf ? "_metJECUp" : "") << ( (metJECUpIsInf && metJECUpIsInf) ? " are" : " is") << 
+            " inf. Setting varied met and metPhi to nominal values." << std::endl;
+
+        if(metJECDownIsInf){
+            _metJECDown = _met;
+            _metPhiJECDown = _metPhi;
+        } 
+        if(metJECUpIsInf){
+            _metJECUp = _met;
+            _metPhiJECDown = _metPhi;
+        }
+    }
 
     //make met vector 
     TLorentzVector met;
@@ -69,7 +95,6 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
         met.SetPtEtaPhiE(_metUnclUp, _metPhiUnclUp, 0, _metUnclUp);
     }
 
-
     //make lorentzvectors for leptons
     TLorentzVector lepV[lCount];
     for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
@@ -81,16 +106,13 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
 
     //find jets with highest DeepCSV and CSVv2 values
     unsigned highestDeepCSVI = 99;
-    unsigned highestCSVv2I = 99;
     unsigned counter = 0;
     for(unsigned j = 0; j < jetCount; ++j){
         if(fabs(_jetEta[jetInd[j]]) < 2.4) {
             if( (counter == 0) || ( deepCSV(jetInd[j]) > deepCSV(highestDeepCSVI) ) ) highestDeepCSVI = jetInd[j];
-            if( (counter == 0) || ( _jetCsvV2[jetInd[j]] > _jetCsvV2[highestCSVv2I] ) ) highestCSVv2I = jetInd[j];
             ++counter;
         }
     }
-
 
     //initialize new vectors to make sure everything is defined for 0 jet events!
     TLorentzVector leadingJet(0,0,0,0);
@@ -101,15 +123,13 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     TLorentzVector leadingBJet(0,0,0,0);
     TLorentzVector trailingBJet(0,0,0,0);
     TLorentzVector highestDeepCSVJet(0,0,0,0);
-    TLorentzVector highestCSVv2Jet(0,0,0,0);
     if(taggedJetI[0] != 99) taggedBJet = jetV[taggedJetI[0]];
     if(taggedJetI[1] != 99) recoilingJet = jetV[taggedJetI[1]];
     if(jetCount != 0){
         leadingJet = jetV[jetInd[0]];
         if(jetCount > 1) trailingJet = jetV[jetInd[jetInd.size() - 1]];
         highestEtaJet = jetV[highestEtaJ];
-        highestDeepCSVJet = jetV[highestDeepCSVI];
-        highestCSVv2Jet = jetV[highestCSVv2I];
+        if(highestDeepCSVI != 99) highestDeepCSVJet = jetV[highestDeepCSVI];
     }
     if(bJetCount != 0){
         leadingBJet = jetV[bJetInd[0]];
@@ -139,7 +159,6 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     //lepton lepton 
     double maxDeltaPhiLeptonLepton = kinematics::maxDeltaPhi(lepV, lepVecInd);
 
-
     //compute HT
     double HT = 0;
     for(unsigned j = 0; j < jetCount; ++j){
@@ -168,12 +187,26 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     bdtVariableMap["m3l"] = (lepV[0] + lepV[1] + lepV[2]).M();
     bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
     bdtVariableMap["numberOfJets"] = jetCount;
-    /*
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    for( auto& pair : bdtVariableMap){
-        std::cout << pair.first << " = " << pair.second << std::endl;
+
+    bool isNan = false;
+    for( auto& pair : bdtVariableMap ){
+        if( std::isnan(pair.second) ) isNan = true;
     }
-    */
+    if( isNan ){
+        std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+        printEventTags();
+        std::cout << uncertainty << std::endl;
+        for( auto& pair : bdtVariableMap ){
+            std::cout << pair.first << " : " << pair.second << std::endl;
+        }
+        std::cout << "lepV[lw].Pt() = " << lepV[lw].Pt() << "\tlepV[lw].Eta() = " << lepV[lw].Eta() << "\tlepV[lw].Phi() = " << lepV[lw].Phi() << "\tlepV[lw].E() = " << lepV[lw].E() << std::endl;
+        std::cout << "met.Pt() = " << met.Pt() << "\tmet.Eta() = " << met.Eta() << "\tmet.Phi() = " << met.Phi() << "\tmet.E() = " << met.E() << std::endl;
+        std::cout << "_met = " << _met << "\t_metPhi = " << _metPhi << std::endl;
+        std::cout << "_metJECUp = " << _metJECUp << "\t_metPhiJECUp = " << _metPhiJECUp << std::endl;
+        std::cout << "_metJECDown = " << _metJECDown << "\t_metPhiJECDown = " << _metPhiJECDown << std::endl;
+        std::cout << "_metUnclUp = " << _metUnclUp << "\t_metPhiUnclUp = " << _metPhiUnclUp << std::endl;
+        std::cout << "_metUnclDown = " << _metUnclDown << "\t_metPhiUnclDown = " << _metPhiUnclDown << std::endl;
+    }
 
     return tzqCat;
 }
