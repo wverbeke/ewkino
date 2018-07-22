@@ -581,8 +581,6 @@ void treeReader::Analyze(){
     std::vector< double > pdfXsecUncDown = {0.};
     std::vector< double > pdfXsecUncUp = {0.};
 
-    std::cout << "setting up pdf uncertainties" << std::endl;
-
     //loop over all processes
     for( unsigned sam = 0; sam < samples.size(); ++sam){ 
         
@@ -619,7 +617,6 @@ void treeReader::Analyze(){
         pdfXsecUncUp.push_back( rms );
     }
 
-    std::cout << "adding pdf and scale effects on the cross section as shape uncertainties" << std::endl;
     //add pdf and scale effects to shape uncertainties to automatically take into account the fractional effects from every sample that is merged
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
@@ -646,7 +643,6 @@ void treeReader::Analyze(){
         }
     }
 
-    std::cout << "merging histograms" << std::endl;
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -672,7 +668,6 @@ void treeReader::Analyze(){
         }
     }
 
-    std::cout << "merging uncertainties" << std::endl;
     //merging for uncertainties
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapDown;
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapUp;
@@ -707,7 +702,6 @@ void treeReader::Analyze(){
         }
     } 
 
-    std::cout << "adding uncertainties in quadrature" << std::endl;
     //make final uncertainty histogram for plots 
     std::vector<double> flatUnc = {1.025, 1.06, 1.05, 1.00, 1.00}; //lumi, leptonID, trigger , pdf and scale effects on cross section
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
@@ -780,8 +774,6 @@ void treeReader::Analyze(){
         }
     }
 
-    /*
-    std::cout << "making plots" << std::endl;
     //plot all distributions
     const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     for(unsigned m = 0; m < nMll; ++m){
@@ -793,7 +785,6 @@ void treeReader::Analyze(){
             }
         }
     }
-    */
     
     //make shape datacards for each category
     const unsigned nBkg = proc.size() - 2;  //number of background processes
