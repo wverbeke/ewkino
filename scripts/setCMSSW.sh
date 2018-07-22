@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CMSSW="CMSSW_9_4_6_patch1"
+CMSSW="CMSSW_9_4_8"
 
 #set up a CMSSW environment if there is none
 if [ ! -d /user/${USER}/${CMSSW} ]; then
@@ -27,11 +27,11 @@ makeSubmit(){
 #submit a job and catch invalid credentials in the process
 submitJob(){
     output=~/outputCheck.txt
-    qsub $1 -l walltime=04:00:00 > $output 2>> $output
+    qsub $1 -l walltime=12:00:00 > $output 2>> $output
     while grep "Invalid credential" $output || grep "Error" $output || grep "Expired credential" $output; do
         echo "Invalid credential or batch protocol error caught, resubmitting"
         sleep 2  #sleep 2 seconds before attemtping resubmission
-        qsub $1 -l walltime=04:00:00 > $output 2>> $output
+        qsub $1 -l walltime=12:00:00 > $output 2>> $output
     done
     cat $output
     rm $output
