@@ -38,7 +38,7 @@ unsigned treeReader::dilFlavorComb(const std::vector<unsigned>& ind) const{
 double treeReader::coneCorr(const unsigned ind) const{
     double corr = 1.;
     if(lepIsGood(ind) && !lepIsTight(ind)){
-        corr *= 0.9/_ptRatio[ind];
+        corr *= 0.95/_ptRatio[ind]; //cross-check magic factor with Illia, I thought it was 0.9
     }
     return corr;
 }
