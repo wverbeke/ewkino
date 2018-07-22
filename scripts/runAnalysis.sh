@@ -6,7 +6,7 @@ for process in tZq controlRegions tZq_lowBDT nonpromptControlRegions; do
         makeSubmit $script ${PWD}/..
         echo "make -f makeFiles/make${process}${year}" >> $script
         echo "./${process}${year}" >> $script
-        #submitJob $script "12:00:00"
-        cat $script
+        submitJob $script "12:00:00"
+        #cat $script
     done
 done
