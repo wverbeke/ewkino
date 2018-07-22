@@ -24,7 +24,7 @@ skimSample(){                                           #function to skim one sa
     files=${1}/*/*/*root
     for f in $files
         do if (( $count % 50 == 0)); then
-            submitJob $submit
+            submitJob $submit "12:00:00"
             makeSubmit $submit $2
         fi
         #filename=${f##*/}                               
@@ -33,15 +33,16 @@ skimSample(){                                           #function to skim one sa
         echo "${cwd}/../skimTree $f $outputDir/ > ${outputDir}/${filename}_log.txt 2> ${outputDir}/${filename}_err.txt" >> $submit
         count=$((count+1))
     done
-    submitJob $submit
+    submitJob $submit "12:00:00"
     rm $submit                                          #remove temporary submit file
 }
 
 baseFolder=/pnfs/iihe/cms/store/user/wverbeke/heavyNeutrino
 cd $baseFolder
-foldersMC=*/*ewkino2017MCList-v15p5                              #add suffix for newer versions
-foldersMC2=*/*ewkino2016MCList-v15p5                              #add suffix for newer versions
-foldersData=*/*2017LeptonicDataList_v15p5
-for d in $foldersMC $foldersMC2 $foldersData                         #skim all samples 
+foldersData=*/*2016LeptonicDataList_v21p1
+foldersMC=*/*ewkino2016MCList-v21
+foldersData17=*/*2017LeptonicDataList_v19p1
+foldersMC17=*/*ewkino2017MCList-v19
+for d in $foldersMC $foldersMC17 $foldersData $foldersData17                        #skim all samples 
     do skimSample $d $baseFolder
 done
