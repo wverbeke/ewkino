@@ -97,8 +97,6 @@ double treeReader::sfWeight(){
     sf *= leptonWeight();
     if( sf == 0){
         std::cerr << "Error: event sf is zero! This has to be debugged!" << std::endl;
-        std::cout << "puWeight() = " << puWeight() << std::endl;
-        std::cout << "nTrueInt = " << _nTrueInt << std::endl;
     } else if( std::isnan(sf) ){
         std::cerr << "Error: event sf is nan! This has to be debugged" << std::endl;
     }
