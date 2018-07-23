@@ -46,26 +46,26 @@ void treeReader::Analyze(){
         HistInfo("bdt", "BDT output", 30, -1, 1),
         HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
 
-        HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 10, 0, 5),
-        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 10, 0, 1200),
-        HistInfo("asymmetryWLep", "asymmetry (lepton from W)",10, -2.5, 2.5),
-        HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 10, 0, 1),
-        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 10, 0, 800),
-        HistInfo("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 10, 0, 3.15),
-        HistInfo("mt", "M_{T} (GeV)", 10, 0, 300),
-        HistInfo("mtop", "M_{(W + b)} (GeV)", 10, 0, 400),
-        HistInfo("maxpTJetJet", "P_{T}^{max}(jet + jet) (GeV)", 10, 0, 300), 
-        HistInfo("minDeltaPhiLeptonBJet", "min(#Delta#Phi(l, bjet))", 10, 0, 3.15),
-        HistInfo("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 10, 0, 3.15),
-        HistInfo("HT", "H_{T} (GeV)", 10, 0, 800), 
-        HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 10, 0, 10),
-        HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 10, 0, 7),
-        HistInfo("m3l", "M_{3l} (GeV)", 10, 0, 600),
-        HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 10, 0, 5),
+        HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
+        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 20, 0, 1200),
+        HistInfo("asymmetryWLep", "asymmetry (lepton from W)",20, -2.5, 2.5),
+        HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 20, 0, 1),
+        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 20, 0, 800),
+        HistInfo("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 20, 0, 3.15),
+        HistInfo("mt", "M_{T} (GeV)", 20, 0, 300),
+        HistInfo("mtop", "M_{(W + b)} (GeV)", 20, 0, 400),
+        HistInfo("maxpTJetJet", "P_{T}^{max}(jet + jet) (GeV)", 20, 0, 300), 
+        HistInfo("minDeltaPhiLeptonBJet", "min(#Delta#Phi(l, bjet))", 20, 0, 3.15),
+        HistInfo("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 20, 0, 3.15),
+        HistInfo("HT", "H_{T} (GeV)", 20, 0, 800), 
+        HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 20, 0, 10),
+        HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 20, 0, 7),
+        HistInfo("m3l", "M_{3l} (GeV)", 20, 0, 600),
+        HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 20, 0, 5),
         HistInfo("nJets", "number of jets", 10, 0, 10),
-        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 10, 25, 200),
-        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 10, 15, 200),
-        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 10, 10, 200)
+        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 20, 25, 200),
+        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 20, 15, 200),
+        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -92,7 +92,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC", "uncl", "scale", "pileup", "bTag_udsg", "bTag_c", "bTag_b", "pdf", "scaleXsec", "pdfXsec"};
+    const std::vector< std::string > uncNames = {"JEC", "uncl", "scale", "pileup", "bTag_udsg", "bTag_bc", "pdf", "scaleXsec", "pdfXsec"};
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
     for( auto& key : uncNames ){
@@ -181,12 +181,7 @@ void treeReader::Analyze(){
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        /*
-        if(sam == 0){                   //skip data for now
-            ++currentSampleIndex;
-            continue;
-        }
-        */
+
         initSample();          //2 = combined luminosity
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
@@ -302,7 +297,6 @@ void treeReader::Analyze(){
                 }
             }
 
-
             //no nuisances for data
             if( isData() ) continue;
 
@@ -310,7 +304,7 @@ void treeReader::Analyze(){
             unsigned tzqCatJECDown = setSearchVariablestZq("JECDown", ind, bestZ);
             if(tzqCatJECDown > 2 && tzqCatJECDown < 6){
                 double bdtJECDown = bdtOutput( tzqCatJECDown );
-                if(bdtJECDown < 0.){
+                if( bdtJECDown < 0.){
                     double fill[nDist] = {bdtJECDown, bdtJECDown,
                         bdtVariableMap["etaRecoilingJet"],
                         bdtVariableMap["maxMjj"],
@@ -344,7 +338,7 @@ void treeReader::Analyze(){
             unsigned tzqCatJECUp = setSearchVariablestZq("JECUp", ind, bestZ);
             if(tzqCatJECUp > 2 && tzqCatJECUp < 6){
                 double bdtJECUp = bdtOutput( tzqCatJECUp );
-                if( bdtJECUp < 0.){
+                if(bdtJECUp < 0.){
                     double fill[nDist] = {bdtJECUp, bdtJECUp,
                         bdtVariableMap["etaRecoilingJet"],
                         bdtVariableMap["maxMjj"],
@@ -378,7 +372,7 @@ void treeReader::Analyze(){
             unsigned tzqCatUnclDown = setSearchVariablestZq("unclDown", ind, bestZ);
             if(tzqCatUnclDown > 2 && tzqCatUnclDown < 6){
                 double bdtUnclDown = bdtOutput( tzqCatUnclDown );
-                if(bdtUnclDown < 0.){
+                if( bdtUnclDown < 0.){
                     double fill[nDist] = {bdtUnclDown, bdtUnclDown,
                         bdtVariableMap["etaRecoilingJet"],
                         bdtVariableMap["maxMjj"],
@@ -412,7 +406,7 @@ void treeReader::Analyze(){
             unsigned tzqCatUnclUp = setSearchVariablestZq("unclUp", ind, bestZ);
             if(tzqCatUnclUp  > 2 && tzqCatUnclUp < 6){
                 double bdtUnclUp = bdtOutput( tzqCatUnclUp );
-                if(bdtUnclUp < 0.){
+                if( bdtUnclUp < 0.){
                     double fill[nDist] = {bdtUnclUp, bdtUnclUp,
                         bdtVariableMap["etaRecoilingJet"],
                         bdtVariableMap["maxMjj"],
@@ -444,8 +438,8 @@ void treeReader::Analyze(){
 
             //now nominal cuts can be safely used
             if(tzqCat < 3 || tzqCat > 5) continue;
-            if(bdtNominal >= 0.) continue;
-
+            if( bdtNominal >= 0.) continue;
+            
             //reset nominal values 
             setSearchVariablestZq("nominal", ind, bestZ);
             double fill[nDist] = {bdtNominal, bdtNominal,
@@ -502,24 +496,14 @@ void treeReader::Analyze(){
                 uncHistMapUp["bTag_udsg"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
             }
 
-            //vary b-tag down for c 
+            //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_c"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)/bTagWeight_c(0));
+                uncHistMapDown["bTag_bc"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
-            //vary b-tag up for c
+            //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_c"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)/bTagWeight_c(0));
-            }
-
-            //vary b-tag down for b
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_b"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_b(1)/bTagWeight_b(0));
-            }
-
-            //vary b-tag up for b
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_b"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_b(2)/bTagWeight_b(0));
+                uncHistMapUp["bTag_bc"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
             //100 pdf variations
@@ -591,8 +575,6 @@ void treeReader::Analyze(){
     std::vector< double > pdfXsecUncDown = {0.};
     std::vector< double > pdfXsecUncUp = {0.};
 
-    std::cout << "setting up pdf uncertainties" << std::endl;
-
     //loop over all processes
     for( unsigned sam = 0; sam < samples.size(); ++sam){ 
         
@@ -629,7 +611,6 @@ void treeReader::Analyze(){
         pdfXsecUncUp.push_back( rms );
     }
 
-    std::cout << "adding pdf and scale effects on the cross section as shape uncertainties" << std::endl;
     //add pdf and scale effects to shape uncertainties to automatically take into account the fractional effects from every sample that is merged
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
@@ -656,7 +637,6 @@ void treeReader::Analyze(){
         }
     }
 
-    std::cout << "merging histograms" << std::endl;
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"total bkg.", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -682,7 +662,6 @@ void treeReader::Analyze(){
         }
     }
 
-    std::cout << "merging uncertainties" << std::endl;
     //merging for uncertainties
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapDown;
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapUp;
@@ -717,7 +696,6 @@ void treeReader::Analyze(){
         }
     } 
 
-    std::cout << "adding uncertainties in quadrature" << std::endl;
     //make final uncertainty histogram for plots 
     std::vector<double> flatUnc = {1.025, 1.06, 1.05, 1.00, 1.00}; //lumi, leptonID, trigger , pdf and scale effects on cross section
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
@@ -765,6 +743,19 @@ void treeReader::Analyze(){
         }
     }
 
+    //TEMPORARY//////
+    //replace data with sum of all backgrounds
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                mergedHists[m][cat][dist][0] = (TH1D*) mergedHists[m][cat][dist][1]->Clone(); 
+                for(unsigned p = 2; p < proc.size(); ++p){
+                    mergedHists[m][cat][dist][0]->Add(mergedHists[m][cat][dist][p]);
+                }
+            }
+        }
+    }
+    ////////////////
     const std::string sigNames[1] = {"tZq"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
     for(unsigned m = 0; m < nMll; ++m){
@@ -777,107 +768,17 @@ void treeReader::Analyze(){
         }
     }
 
-    std::cout << "making plots" << std::endl;
     //plot all distributions
     const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/lowBDT/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2016", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/lowBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "lowBDT_2017", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/lowBDT/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2016" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/lowBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "lowBDT_2017" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
             }
         }
     }
-    
-    //make shape datacards for each category
-    const unsigned nBkg = proc.size() - 2;  //number of background processes
-    const std::string bkgNames[nBkg] = {"DY", "TTJets", "WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH"}; //rewrite bkg names not to confuse combine
-
-    const unsigned nSyst = 11 + 1 + 2*nBkg; //11 general uncertainties + stat signal + stat bkg + extra unc per bkg
-    std::string systNames[nSyst] = {"lumi", "pdfXsec", "scaleXsec", "JEC", "metUncl", "scale", "pdf", "pu", "btagSF", "id_eff", "trigeff"};
-    std::vector<std::vector<double>> systUnc(nSyst, std::vector<double>(nBkg + 1, 0)); //2D array containing all systematics
-    //initialize flat and shape systematics
-    for(unsigned p = 0; p < nBkg + 1; ++p){ //signal and bkg
-        systUnc[0][p] = 1.025;   //lumi
-        systUnc[1][p] = 0;       //pdfXsec
-        systUnc[2][p] = 0;       //   
-        systUnc[3][p] = 1.05;    //JEC
-        systUnc[4][p] = 1.05;    //PU 
-        systUnc[5][p] = 1.05;    //MET unclustered 
-        systUnc[6][p] = 1.1;     //b-tag SF
-        systUnc[7][p] = 1.05;    //scale shape
-        systUnc[8][p] = 1.02;    //pdf shape
-        systUnc[9][p] = 1.06;    //id eff
-        systUnc[10][p] = 1.05;   //trig eff  
-    }
-    //scale and pdf xsection on tzq
-    systUnc[1][0] = 1.1;
-    systUnc[2][0] = 1.1;
-    //set statistical uncertainties
-    for(unsigned p = 0; p < nBkg + 1; ++p){
-        systUnc[11 + p][p] = 1.00;
-    }
-
-    std::string systDist[nSyst]; //probability distribution of nuisances
-    for(unsigned syst = 0; syst < nSyst; ++syst){
-        if(syst < 11  + 1 || syst  > 11 + nBkg) systDist[syst] = "lnN"; //no shapes at the moment
-        else systDist[syst] = "shape";                                     //statistical shape of BDT
-    }
-    const double extraUnc[nBkg] = {1.3, 1.3, 1.15, 1.5, 1.15, 1.15, 1.15, 1.15}; //extra flat uncertainties assigned to each background
-    for(unsigned syst = 12 + nBkg; syst < nSyst; ++syst){//loop over last nBkg uncertainties, being the exta uncertainties for each bkg
-        unsigned bkg = syst - 12 - nBkg;//index of the background corresponding to the uncertainty index
-        systNames[syst] = "extra" + bkgNames[bkg];
-        systUnc[syst][bkg + 1] = extraUnc[bkg];
-    }
-    TH1D* bdtShape[nMll][nCat][(const size_t) proc.size()] ; //shape histograms of bdt
-    TH1D* bdtShapeStatUp[nMll][nCat][(const size_t) proc.size()][(const size_t) proc.size()]; //statistical shape uncertainty on bdt
-    TH1D* bdtShapeStatDown[nMll][nCat][(const size_t) proc.size()][(const size_t) proc.size()]; //statistical shape uncertainty on bdt
-
-    //set up background yield array
-
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            //Set bkg yields 
-            double bkgYields[(const size_t) proc.size() - 2];
-            for(unsigned bkg = 0; bkg < proc.size() - 2; ++bkg) bkgYields[bkg] = mergedHists[m][cat][0][2 + bkg]->GetSumOfWeights();
-            //Set names of statistical systematics
-            for(unsigned p = 1; p < proc.size(); ++p){
-                if(p == 1)  systNames[11 + p - 1] = "stattZq" + mllNames[m] + catNames[cat];
-                else        systNames[11 + p - 1] = "stat" + bkgNames[p -2] + mllNames[m] + catNames[cat];
-            }
-            //set BDT shape histogram
-            TFile* shapeFile = new TFile((const TString&) "./datacards/shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  ".root", "recreate");
-            for(unsigned p = 0; p < proc.size(); ++p){
-                bdtShape[m][cat][p] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
-                if(p == 0) bdtShape[m][cat][p]->Write("data_obs");
-                else if (p == 1) bdtShape[m][cat][p]->Write("tZq");
-                else bdtShape[m][cat][p]->Write((const TString&) bkgNames[p -2]);
-                if(p != 0){     //set statistical uncertainty as shape
-                    for(unsigned k = 1; k < proc.size(); ++k){
-                        bdtShapeStatUp[m][cat][p][k] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
-                        bdtShapeStatDown[m][cat][p][k] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
-                        if(k == p){
-                            for(int bin = 1; bin < mergedHists[m][cat][0][p]->GetNbinsX() + 1; ++bin){
-                                bdtShapeStatUp[m][cat][p][k]->SetBinContent(bin, std::max( bdtShapeStatUp[m][cat][p][k]->GetBinContent(bin) + bdtShapeStatUp[m][cat][p][k]->GetBinError(bin),  std::numeric_limits< double >::min() ));
-                                bdtShapeStatDown[m][cat][p][k]->SetBinContent(bin, std::max( bdtShapeStatDown[m][cat][p][k]->GetBinContent(bin) - bdtShapeStatDown[m][cat][p][k]->GetBinError(bin), std::numeric_limits< double >::min() ));
-                            }
-                            if (p == 1){
-                                bdtShapeStatUp[m][cat][p][k]->Write((const TString&) "tZq_" + systNames[11 + k - 1] + "Up"); 
-                                bdtShapeStatDown[m][cat][p][k]->Write((const TString&) "tZq_" + systNames[11 + k - 1] + "Down");
-                            } else{
-                                bdtShapeStatUp[m][cat][p][k]->Write((const TString&) bkgNames[p -2] + "_" + systNames[11 + k - 1] + "Up"); 
-                                bdtShapeStatDown[m][cat][p][k]->Write((const TString&) bkgNames[p -2] + "_" + systNames[11 + k - 1] + "Down");
-                            }
-                        }
-                    }
-                }
-            }
-            shapeFile->Close();
-            tools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, systNames, systDist, "datacards/datacard_" + mllNames[m] + "_" + catNames[cat], true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m]);
-        }
-    }
-
 }
 int main(){
     treeReader reader;
