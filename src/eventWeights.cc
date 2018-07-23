@@ -91,6 +91,10 @@ void treeReader::initializeWeights(){
 double treeReader::sfWeight(){
     initializeWeights();
     double sf = puWeight();
+    if( _nTrueInt < 0){
+        std::cerr << "Error: event with negative pileup, returning SF weight 0." << std::endl;
+        return 0.;
+    }
     sf *= bTagWeight();
     sf *= leptonWeight();
     return sf;

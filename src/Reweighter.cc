@@ -192,7 +192,14 @@ double Reweighter::puWeight(const double nTrueInt, const Sample& sample, const u
         double maxBin = (sampleIsSimulatedFor2016 ?  49.5 : 99.5 );
 
         TH1D* weights = ( (*weightVectorIter).second)[unc].get();
-        return weights->GetBinContent(weights->FindBin(std::min(nTrueInt, maxBin) ) );
+
+        //buggy events in 2017 MC can have negative pileup! catch them 
+        if( nTrueInt >= 0){
+            return weights->GetBinContent(weights->FindBin(std::min(nTrueInt, maxBin) ) );
+        } else {
+            std::cerr << "Error: event with nTrueInt = " << nTrueInt << " , returning weight 9999." << std::endl;
+            return 9999.;
+        }
     }
     else {
         std::cerr << "Error: invalid pu uncertainty requested: returning weight 0" << std::endl;
