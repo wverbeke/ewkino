@@ -854,23 +854,9 @@ void treeReader::Analyze(){
         if(syst < 3 || syst  >= nGeneralSystematics + nStatUnc) systDist[syst] = "lnN"; //flat unc 
         else systDist[syst] = "shape";                                                 //stat and all other shapes are shape unc 
     }
-    /*
-    std::cout << "datacard preview:" << std::endl;
-    for(unsigned syst = 0; syst < nSyst; ++syst){
-        std::cout << systNames[syst] << "\t" << systDist[syst];
-        for(unsigned p = 0; p < proc.size() -1; ++p){
-            std::cout << "\t" << systUnc[syst][p];
-        }
-        std::cout << "\n";
-    }
-    */
-
-
 
     //statistic shape uncertainties 
     TH1D* bdtShape[nMll][nCat][(const size_t) proc.size()] ; //shape histograms of bdt
-    //TH1D* bdtShapeStatUp[nMll][nCat][(const size_t) proc.size()][(const size_t) proc.size()][(const size_t) nBinsFit]; //statistical shape uncertainty on bdt
-    //TH1D* bdtShapeStatDown[nMll][nCat][(const size_t) proc.size()][(const size_t) proc.size()][(const size_t) nBinsFit]; //statistical shape uncertainty on bdt
     TH1D* bdtShapeStatDown[nMll][nCat][(const size_t) proc.size()][nBinsFit]; //statistical shape uncertainty on bdt
     TH1D* bdtShapeStatUp[nMll][nCat][(const size_t) proc.size()][nBinsFit]; //statistical shape uncertainty on bdt
 
