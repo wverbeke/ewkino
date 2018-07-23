@@ -114,14 +114,13 @@ bool treeReader::lepIsGood2016(const unsigned leptonIndex) const{
     if( !lepIsGoodBase(leptonIndex) ) return false;
     if( closestJetDeepCSV(leptonIndex) >  0.8958) return false;
     if( !passLeptonMva( leptonIndex, 0.8) ){
-        if( _ptRatio[leptonIndex] <= 0.7) return false;
-        if( closestJetDeepCSV( leptonIndex ) >= 0.4) return false;
+        if( _ptRatio[leptonIndex] <= 0.6) return false;         //used to be 0.7 with old FR tune
+        if( closestJetDeepCSV( leptonIndex ) >= 0.3) return false; //used to be 0.4 with old FR tune
         if( isElectron(leptonIndex) ){
-            if( _lElectronMva[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.4 : 0.9 ) ) return false;
+            if( _lElectronMva[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.4 : 0.7 ) ) return false; //used to be 0.4 : 0.9 with old FR tune
         }
     }
     return true;
-    //return lepIsGoodttZ3l2016(leptonIndex);
 } 
 
 bool treeReader::lepIsGood2017(const unsigned leptonIndex) const{
@@ -135,7 +134,6 @@ bool treeReader::lepIsGood2017(const unsigned leptonIndex) const{
         } 
     }
     return true;   
-    //return lepIsGoodttZ3l2017(leptonIndex);
 }
 
 bool treeReader::lepIsGood(const unsigned leptonIndex) const{
@@ -152,7 +150,6 @@ bool treeReader::lepIsTightBase(const unsigned leptonIndex) const{
         if(!_lPOGMedium[leptonIndex]) return false;
     }
     return passLeptonMva(leptonIndex, 0.8); 
-    //return passLeptonMva(leptonIndex, 0.4); 
 }
 
 bool treeReader::lepIsTight2016(const unsigned leptonIndex) const{
