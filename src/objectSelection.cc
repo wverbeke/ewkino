@@ -192,15 +192,28 @@ bool treeReader::jetIsClean(const unsigned jetIndex) const{
 }
 
 bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const unsigned unc, const bool clean, const bool allowForward) const{
+
     //only select loose jets:
     if(!_jetIsLoose[jetIndex]) return false;
+
     //only select jets in tracker volume
     if( (!allowForward) && ( fabs(_jetEta[jetIndex]) >= 2.4 ) ) return false;
+
+    //pT cut that can be modified for certain eta regions
+    double ptThreshold = ptCut;
+
+    //put harsh pT cuts  on jetc in problematic region for 2017
+    if( is2017() ){
+        if( fabs(_jetEta[jetIndex]) > 2.7 && fabs(_jetEta[jetIndex]) < 3 ){
+            ptThreshold = 60;
+        }
+    }   
+
     //apply jet pT cuts
     switch(unc){
-        case 0: if(_jetPt[jetIndex] < ptCut) return false; break;
-        case 1: if(_jetPt_JECDown[jetIndex] < ptCut) return false; break;
-        case 2: if(_jetPt_JECUp[jetIndex] < ptCut) return false; break;
+        case 0: if(_jetPt[jetIndex] < ptThreshold) return false; break;
+        case 1: if(_jetPt_JECDown[jetIndex] < ptThreshold) return false; break;
+        case 2: if(_jetPt_JECUp[jetIndex] < ptThreshold) return false; break;
         default: {
                      std::cerr << "Error: uncertainty case larger than 2 given to jetIsGood, option not recognized" << std::endl;
                      return false; 
