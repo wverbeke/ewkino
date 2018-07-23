@@ -191,7 +191,8 @@ bool treeReader::jetIsClean(const unsigned jetIndex) const{
     return jetIsCleanBase(jetIndex, &treeReader::lepIsGood);
 }
 
-bool treeReader::jetIsGood(const unsigned jetIndex, const unsigned ptCut, const unsigned unc, const bool clean, const bool allowForward) const{
+
+bool treeReader::jetIsGood(const unsigned jetIndex, const double ptCut, const unsigned unc, const bool clean, const bool allowForward) const{
 
     //only select loose jets:
     if(!_jetIsLoose[jetIndex]) return false;

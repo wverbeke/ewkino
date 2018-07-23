@@ -74,7 +74,7 @@ bool treeReader::jetIsClean_TOP16_020(const unsigned ind) const{
     return true;
 }
 
-bool treeReader::jetIsGood_TOP16_020(const unsigned ind, const unsigned ptCut, const unsigned unc, const bool clean) const{
+bool treeReader::jetIsGood_TOP16_020(const unsigned ind, const double ptCut, const unsigned unc, const bool clean) const{
 
     if( fabs(_jetEta[ind]) >= 4.5) return false;
 

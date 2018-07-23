@@ -230,7 +230,7 @@ class treeReader {
 
         bool passPtCuts(const std::vector<unsigned>&) const;
         bool jetIsClean(const unsigned) const;
-        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true, const bool allowForward = true) const;
+        bool jetIsGood(const unsigned, const double ptCut = 25, const unsigned unc = 0, const bool clean = true, const bool allowForward = true) const;
         unsigned nJets(const unsigned unc = 0, const bool clean = true) const;                                   //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;    //with jet pt ordering
         double deepCSV(const unsigned) const;
@@ -254,7 +254,7 @@ class treeReader {
         bool lepIsTight_TOP16_020(const unsigned) const;
         unsigned selectLep_TOP16_020(std::vector<unsigned>&) const;
         bool jetIsClean_TOP16_020(const unsigned) const;
-        bool jetIsGood_TOP16_020(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true) const;
+        bool jetIsGood_TOP16_020(const unsigned, const double ptCut = 25, const unsigned unc = 0, const bool clean = true) const;
         unsigned nJets_TOP16_020(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;
         unsigned nBJets_TOP16_020(std::vector<unsigned>& bJetInd, const unsigned unc = 0, const bool deepCSV = false, const bool clean = true, const unsigned wp = 0) const;
 
