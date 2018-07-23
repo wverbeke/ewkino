@@ -187,7 +187,7 @@ void treeReader::Analyze(){
 
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -470,6 +470,13 @@ void treeReader::Analyze(){
                     };
 
 
+            //set pdf and scale weight for GluGluToContinToZZ samples which do not include lhe weights
+            if( currentSample.getFileName().find("GluGluToContinToZZ") != std::string::npos ){
+                for(unsigned lhe = 0; lhe < 110; ++lhe){
+                    _lheWeight[lhe] = 1.;
+                }
+            }
+
             //vary scale down
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapDown["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[8]);
@@ -615,6 +622,14 @@ void treeReader::Analyze(){
         rms = sqrt( 0.01 * rms);
         pdfXsecUncDown.push_back( -rms );
         pdfXsecUncUp.push_back( rms );
+
+        //set pdf and scale uncertainties to zero for GluGluToContinToZZ samples which do not include the necessary weights
+        if( samples[sam].getFileName().find("GluGluToContinToZZ") != std::string::npos){
+            scaleXsecUncDown[sam] = 0.;
+            scaleXsecUncUp[sam] = 0.;
+            pdfXsecUncDown[sam] = 0.;
+            pdfXsecUncUp[sam] = 0.;
+        }
     }
 
     std::cout << "adding pdf and scale effects on the cross section as shape uncertainties" << std::endl;

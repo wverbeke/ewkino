@@ -512,7 +512,12 @@ void treeReader::Analyze(){
                     (double) ( tzq::isZZControlRegion(controlRegion) ? trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) :  trilep::flavorComposition(ind, _lFlavor, lCount)  ) + 0.5
                     };
 
-
+            //set pdf and scale weight for GluGluToContinToZZ samples which do not include lhe weights
+            if( currentSample.getFileName().find("GluGluToContinToZZ") != std::string::npos ){
+                for(unsigned lhe = 0; lhe < 110; ++lhe){
+                    _lheWeight[lhe] = 1.;
+                }
+            }
 
             //vary scale down
             for(unsigned dist = 0; dist < nDist; ++dist){
@@ -650,8 +655,22 @@ void treeReader::Analyze(){
             rms += pdfUnc*pdfUnc;
         }
         rms = sqrt( 0.01 * rms);
+
+        //catch CRAZY pdf uncertainty of TTZ-M1to10 in 2016 and set to zero
+        if( samples[sam].getFileName() == "TTZToLL_M-1to10_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root"){
+            rms = 0.;
+        }
+
         pdfXsecUncDown.push_back( -rms );
         pdfXsecUncUp.push_back( rms );
+
+        //set pdf and scale uncertainties to zero for GluGluToContinToZZ samples which do not include the necessary weights
+        if( samples[sam].getFileName().find("GluGluToContinToZZ") != std::string::npos){
+            scaleXsecUncDown[sam] = 0.;
+            scaleXsecUncUp[sam] = 0.;
+            pdfXsecUncDown[sam] = 0.;
+            pdfXsecUncUp[sam] = 0.;
+        }
     }
 
     //add pdf and scale effects to shape uncertainties to automatically take into account the fractional effects from every sample that is merged

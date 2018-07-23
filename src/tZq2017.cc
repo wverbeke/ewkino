@@ -456,6 +456,12 @@ void treeReader::Analyze(){
                     _lPt[ind[2]]
                     };
 
+            //set pdf and scale weight for GluGluToContinToZZ samples which do not include lhe weights
+            if( currentSample.getFileName().find("GluGluToContinToZZ") != std::string::npos ){
+                for(unsigned lhe = 0; lhe < 110; ++lhe){
+                    _lheWeight[lhe] = 1.;
+                }
+            }
 
             //vary scale down
             for(unsigned dist = 0; dist < nDist; ++dist){
@@ -600,6 +606,14 @@ void treeReader::Analyze(){
         rms = sqrt( 0.01 * rms);
         pdfXsecUncDown.push_back( -rms );
         pdfXsecUncUp.push_back( rms );
+
+        //set pdf and scale uncertainties to zero for GluGluToContinToZZ samples which do not include the necessary weights
+        if( samples[sam].getFileName().find("GluGluToContinToZZ") != std::string::npos){
+            scaleXsecUncDown[sam] = 0.;
+            scaleXsecUncUp[sam] = 0.;
+            pdfXsecUncDown[sam] = 0.;
+            pdfXsecUncUp[sam] = 0.;
+        }
     }
 
     //add pdf and scale effects to shape uncertainties to automatically take into account the fractional effects from every sample that is merged
