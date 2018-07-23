@@ -227,7 +227,7 @@ class treeReader {
 
         bool passPtCuts(const std::vector<unsigned>&) const;
         bool jetIsClean(const unsigned) const;
-        bool jetIsGood(const unsigned, const unsigned ptCut = 25, const unsigned unc = 0, const bool clean = true, const bool allowForward = false) const;
+        bool jetIsGood(const unsigned, const double ptCut = 25., const unsigned unc = 0, const bool clean = true, const bool allowForward = false) const;
         unsigned nJets(const unsigned unc = 0, const bool clean = true) const;                                   //without jet pt ordering
         unsigned nJets(std::vector<unsigned>& jetInd, const unsigned unc = 0, const bool clean = true) const;    //with jet pt ordering
         double deepCSV(const unsigned) const;
