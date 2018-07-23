@@ -76,7 +76,6 @@ void treeReader::Analyze(){
     const unsigned nCr = 3;                 //Several categories enriched in different processes
     const std::string crNames[nCr] = {"WZ", "Xgamma", "ZZ"};
  
-    std::cout << "crash 1" << std::endl;
      //initialize vector holding all histograms
     std::vector< std::vector < std::vector< std::shared_ptr< TH1D > > > > hists(nCr);
     for(unsigned cr = 0; cr < nCr; ++cr){
@@ -92,7 +91,6 @@ void treeReader::Analyze(){
         }
     }
 
-    std::cout << "crash 2" << std::endl;
     const std::vector< std::string > uncNames = {"JEC", "uncl", "scale", "pileup", "bTag_udsg", "bTag_bc", "pdf", "scaleXsec", "pdfXsec"};
     std::map < std::string, std::vector< std::vector< std::vector< std::shared_ptr< TH1D > > > > > uncHistMapDown;
     std::map < std::string, std::vector< std::vector< std::vector< std::shared_ptr< TH1D > > > > > uncHistMapUp;
@@ -120,7 +118,6 @@ void treeReader::Analyze(){
         }
     }
     
-    std::cout << "crash 3" << std::endl;
     std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > > pdfUncHists(100);
     for(unsigned pdf = 0; pdf < 100; ++pdf){
         pdfUncHists[pdf] = std::vector< std::vector< std::vector< std::shared_ptr< TH1D > > > >(nCr);
@@ -141,7 +138,6 @@ void treeReader::Analyze(){
         }
     }
 
-    std::cout << "crash 4" << std::endl;
     //tweakable options
     const TString extra = ""; //for plot names
 
