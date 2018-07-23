@@ -181,12 +181,7 @@ void treeReader::Analyze(){
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
-        /*
-        if(sam == 0){                   //skip data for now
-            ++currentSampleIndex;
-            continue;
-        }
-        */
+
         initSample();          //2 = combined luminosity
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
