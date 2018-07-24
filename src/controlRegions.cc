@@ -296,9 +296,9 @@ void treeReader::Analyze(){
                     _lPt[ind[0]],
                     _lPt[ind[1]],
                     _lPt[ind[2]],
-                    fabs( _lEta[ind[0]]),
-                    fabs( _lEta[ind[1]]),
-                    fabs( _lEta[ind[2]]),
+                    _lEta[ind[0]],
+                    _lEta[ind[1]],
+                    _lEta[ind[2]],
                     (double) _nVertex,
                     (double) ( tzq::isZZControlRegion(controlRegion) ? trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) :  trilep::flavorComposition(ind, _lFlavor, lCount)  ) + 0.5
                     };
@@ -348,9 +348,9 @@ void treeReader::Analyze(){
                     _lPt[ind[0]],
                     _lPt[ind[1]],
                     _lPt[ind[2]],
-                    fabs( _lEta[ind[0]]),
-                    fabs( _lEta[ind[1]]),
-                    fabs( _lEta[ind[2]]),
+                    _lEta[ind[0]],
+                    _lEta[ind[1]],
+                    _lEta[ind[2]],
                     (double) _nVertex,
                     (double) ( tzq::isZZControlRegion(controlRegion) ? trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) :  trilep::flavorComposition(ind, _lFlavor, lCount)  ) + 0.5
                     };
@@ -388,9 +388,9 @@ void treeReader::Analyze(){
                     _lPt[ind[0]],
                     _lPt[ind[1]],
                     _lPt[ind[2]],
-                    fabs( _lEta[ind[0]]),
-                    fabs( _lEta[ind[1]]),
-                    fabs( _lEta[ind[2]]),
+                    _lEta[ind[0]],
+                    _lEta[ind[1]],
+                    _lEta[ind[2]],
                     (double) _nVertex,
                     (double) ( tzq::isZZControlRegion(controlRegion) ? trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) :  trilep::flavorComposition(ind, _lFlavor, lCount)  ) + 0.5
                     };
@@ -426,9 +426,9 @@ void treeReader::Analyze(){
                     _lPt[ind[0]],
                     _lPt[ind[1]],
                     _lPt[ind[2]],
-                    fabs( _lEta[ind[0]]),
-                    fabs( _lEta[ind[1]]),
-                    fabs( _lEta[ind[2]]),
+                    _lEta[ind[0]],
+                    _lEta[ind[1]],
+                    _lEta[ind[2]],
                     (double) _nVertex,
                     (double) ( tzq::isZZControlRegion(controlRegion) ? trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) :  trilep::flavorComposition(ind, _lFlavor, lCount)  ) + 0.5
                     };
@@ -465,9 +465,9 @@ void treeReader::Analyze(){
                     _lPt[ind[0]],
                     _lPt[ind[1]],
                     _lPt[ind[2]],
-                    fabs( _lEta[ind[0]]),
-                    fabs( _lEta[ind[1]]),
-                    fabs( _lEta[ind[2]]),
+                    _lEta[ind[0]],
+                    _lEta[ind[1]],
+                    _lEta[ind[2]],
                     (double) _nVertex,
                     (double) ( tzq::isZZControlRegion(controlRegion) ? trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) :  trilep::flavorComposition(ind, _lFlavor, lCount)  ) + 0.5
                     };
@@ -505,9 +505,9 @@ void treeReader::Analyze(){
                     _lPt[ind[0]],
                     _lPt[ind[1]],
                     _lPt[ind[2]],
-                    fabs( _lEta[ind[0]]),
-                    fabs( _lEta[ind[1]]),
-                    fabs( _lEta[ind[2]]),
+                    _lEta[ind[0]],
+                    _lEta[ind[1]],
+                    _lEta[ind[2]],
                     (double) _nVertex,
                     (double) ( tzq::isZZControlRegion(controlRegion) ? trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) :  trilep::flavorComposition(ind, _lFlavor, lCount)  ) + 0.5
                     };
