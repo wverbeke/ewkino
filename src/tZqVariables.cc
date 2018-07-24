@@ -5,7 +5,7 @@
 #include "../interface/kinematicTools.h"
 
 
-unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const std::vector<unsigned>& ind, const std::pair<unsigned, unsigned>& bestZ){
+unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const std::vector<unsigned>& ind, const std::pair<unsigned, unsigned>& bestZ, const bool isSearchRegion){
 
     static const std::map< std::string, unsigned > uncertaintyArguments = 
     {
@@ -31,7 +31,7 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     unsigned tzqCat = tzq::cat(jetCount, bJetCount);
 
     //don't waste resources on events outside the search categories
-    if(tzqCat < 3 || tzqCat > 5) return tzqCat;
+    if( isSearchRegion && (tzqCat < 3 || tzqCat > 5) ) return tzqCat;
 
     //find highest eta jet
     unsigned highestEtaJ = (jetCount == 0) ? 99 : jetInd[0];
@@ -186,7 +186,10 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     bdtVariableMap["deltaRWLeptonTaggedbJet"] = lepV[lw].DeltaR(taggedBJet);
     bdtVariableMap["m3l"] = (lepV[0] + lepV[1] + lepV[2]).M();
     bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
+
+    //variables not used in BDT training, but that are nonetheless plotted 
     bdtVariableMap["numberOfJets"] = jetCount;
+    bdtVariableMap["numberOfbJets"] = bJetCount;
 
     return tzqCat;
 }

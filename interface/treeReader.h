@@ -369,7 +369,7 @@ class treeReader {
         bool lepIsGoodMultiAnalysis(const std::string&, const unsigned) const;
 
         //functionalities to compute all tZq search variables
-        unsigned setSearchVariablestZq(const std::string&, const std::vector<unsigned>&, const std::pair<unsigned, unsigned>& );
+        unsigned setSearchVariablestZq(const std::string&, const std::vector<unsigned>&, const std::pair<unsigned, unsigned>&, const bool isSearchRegion = true);
         std::map< std::string, float > bdtVariableMap =
         {
             {"etaRecoilingJet", 0.},
@@ -388,7 +388,10 @@ class treeReader {
             {"deltaRWLeptonTaggedbJet", 0.},
             {"m3l", 0.},
             {"etaMostForward", 0.},
-            {"numberOfJets", 0.}
+
+            //variables not explicitly used in BDT training, but for plots
+            {"numberOfJets", 0.},
+            {"numberOfbJets", 0.}
         };
         std::shared_ptr<BDTReader> bdtReader1bJet23Jets;
         std::shared_ptr<BDTReader> bdtReader1bJet4Jets;
