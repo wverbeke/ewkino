@@ -183,14 +183,23 @@ bool treeReader::lepFromMEExtConversion(const unsigned leptonIndex) const{
 }
 
 //reject events with overlapping photon-production phase-space
-bool treeReader::photonOverlap(const Sample& samp) const{
-    bool isInclusiveSample = (samp.getFileName().find("DYJetsToLL") != std::string::npos) || 
-        (samp.getFileName().find("TTTo2L") != std::string::npos) || 
-        (samp.getFileName().find("TTJets") != std::string::npos );
+bool treeReader::photonOverlap(const Sample& samp, const bool mcNonprompt) const{
 
-    bool isPhotonSample = (samp.getFileName().find("ZGTo2LG") != std::string::npos) ||
-        (samp.getFileName().find("TTGJets") != std::string::npos) ||
-        (samp.getFileName().find("WGToLNuG") != std::string::npos);
+    //in case of data-driven nonprompt estimation the only sample that is to be cleaned is Wgamma (for overlap with WZ)
+    bool isInclusiveSample;
+    bool isPhotonSample;
+    if( mcNonprompt ){
+        isInclusiveSample = (samp.getFileName().find("DYJetsToLL") != std::string::npos) ||
+            (samp.getFileName().find("TTTo2L") != std::string::npos) ||
+            (samp.getFileName().find("TTJets") != std::string::npos );
+
+        isPhotonSample = (samp.getFileName().find("ZGTo2LG") != std::string::npos) ||
+            (samp.getFileName().find("TTGJets") != std::string::npos) ||
+            (samp.getFileName().find("WGToLNuG") != std::string::npos);
+    } else {
+        isInclusiveSample = false;
+        isPhotonSample = (samp.getFileName().find("WGToLNuG") != std::string::npos);
+    }
 
     //require inclusive sample to contain no external conversions
     if(isInclusiveSample){
@@ -212,12 +221,9 @@ bool treeReader::photonOverlap(const Sample& samp) const{
     return false;
 }
 
-//OLD function: consider deprecating or refactoring
-/*
-bool treeReader::photonOverlap() const{
-    return photonOverlap(samples[currentSample - 1]);
+bool treeReader::photonOverlap(const bool mcNonprompt) const{
+    return photonOverlap(currentSample, mcNonprompt);
 }
-*/
 
 //overlap removal between inclusive and HT-binned samples
 bool treeReader::htOverlap(const Sample& samp) const{
@@ -229,12 +235,9 @@ bool treeReader::htOverlap(const Sample& samp) const{
     return false;
 }
 
-//OLD function: consider deprecating or refactoring
-/*
 bool treeReader::htOverlap() const{
-    return htOverlap(samples[currentSample - 1]);
+    return htOverlap(currentSample);
 }
-*/
 
 /*
 * trigger selection
