@@ -199,7 +199,7 @@ void treeReader::Analyze(){
 
             //index to use when filling histogram 
             unsigned fillIndex = sam;
-            bool passTightCut = (tightLepCount(ind, lCount) == 3);
+            bool passTightCut = (tightLepCount(ind, lCount) == lCount);
             if(!passTightCut){
                 //fill last histogram (nonprompt)
                 fillIndex = samples.size();

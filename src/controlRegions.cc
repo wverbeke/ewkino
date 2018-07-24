@@ -199,7 +199,7 @@ void treeReader::Analyze(){
 
             //index to use when filling histogram 
             unsigned fillIndex = sam;
-            bool passTightCut = (tightLepCount(ind, lCount) == 3);
+            bool passTightCut = (tightLepCount(ind, lCount) == lCount);
             if(!passTightCut){
                 //fill last histogram (nonprompt)
                 fillIndex = samples.size();
@@ -258,6 +258,7 @@ void treeReader::Analyze(){
 
                 double mllSecond = (lepV[secondZ.first] + lepV[secondZ.second]).M();
                 if( fabs(mllSecond - 91.1876) > 15) continue;
+                std::cout << "event passed final ZZ selection!" << std::endl;
 
             } else {
                 std::cerr << "Error: controlRegion number does not match any known control region." << std::endl;
