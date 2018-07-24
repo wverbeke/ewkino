@@ -398,7 +398,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgErrors->Draw("e2");
     bkgErrors->Draw("e2 same");
     bkgStatErrors->Draw("e2 same");
-    obsRatio->Draw("pe1 same");
+    obsRatio->Draw("pe01 same");
     legend2.Draw("same");
     gPad->RedrawAxis();
 
