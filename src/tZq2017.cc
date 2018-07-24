@@ -912,7 +912,7 @@ void treeReader::Analyze(){
             }
 
             //set BDT shape histogram
-            TFile* shapeFile =TFile::Open((const TString&) "./datacards/shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  ".root", "recreate");
+            TFile* shapeFile =TFile::Open((const TString&) "./datacards/shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  "_2017.root", "recreate");
 
             //loop over all processes 
             for(unsigned p = 0; p < proc.size(); ++p){
