@@ -246,9 +246,9 @@ class treeReader {
         bool passMETFilters() const;
 
         //overlap removal between samples
-        bool photonOverlap() const;                                                                          //sample overlap due to photons
-        bool photonOverlap(const Sample&) const;
-        bool htOverlap() const;                                                                              //sample overlap due to HT binning
+        bool photonOverlap(const bool mcNonprompt = true) const;                                            //sample overlap due to photons
+        bool photonOverlap(const Sample&, const bool mcNonprompt = true) const;
+        bool htOverlap() const;                                                                             //sample overlap due to HT binning
         bool htOverlap(const Sample&) const;
 
         //check if leptons are prompt in MC
