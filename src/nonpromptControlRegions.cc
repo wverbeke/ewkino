@@ -230,8 +230,7 @@ void treeReader::Analyze(){
             }
 
             //remove overlap between samples
-            if(photonOverlap(currentSample)) continue;
-
+            if(photonOverlap(currentSample, false)) continue;
 
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
