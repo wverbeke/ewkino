@@ -763,19 +763,6 @@ void treeReader::Analyze(){
         }
     }
 
-    //TEMPORARY//////
-    //replace data with sum of all backgrounds
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                mergedHists[m][cat][dist][0] = (TH1D*) mergedHists[m][cat][dist][1]->Clone(); 
-                for(unsigned p = 2; p < proc.size(); ++p){
-                    mergedHists[m][cat][dist][0]->Add(mergedHists[m][cat][dist][p]);
-                }
-            }
-        }
-    }
-    ////////////////
     const std::string sigNames[1] = {"tZq"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
     for(unsigned m = 0; m < nMll; ++m){
