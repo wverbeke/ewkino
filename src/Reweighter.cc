@@ -198,7 +198,7 @@ double Reweighter::puWeight(const double nTrueInt, const Sample& sample, const u
         TH1D* weights = ( (*weightVectorIter).second)[unc].get();
 
         //buggy events in 2017 MC can have negative pileup! catch them 
-        if( nTrueInt > 0){
+        if( nTrueInt >= 0){
             return weights->GetBinContent(weights->FindBin(std::min(nTrueInt, maxBin) ) );
         } else {
             std::cerr << "Error: event with nTrueInt = " << nTrueInt << " , returning weight 9999." << std::endl;

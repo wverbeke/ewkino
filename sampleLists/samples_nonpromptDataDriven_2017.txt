@@ -20,7 +20,7 @@ TTX             TTZZ_TuneCP5_13TeV-madgraph-pythia8_Fall17.root                 
 TTX             ST_tWll_5f_LO_13TeV_MadGraph_pythia8_Summer16.root                                              1.103e-02               forceIs2017
 Xgamma          DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_Fall17.root                               18610
 Xgamma          DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root                                  5765.4
-#Xgamm          ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16.root                                   117.864                 forceIs2017
+#Xgamma          ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16.root                                   117.864                 forceIs2017
 Xgamma          WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16.root                                  489                     forceIs2017
 Xgamma          TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8_Fall17.root                                  3.697
 Xgamma		    TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8_Summer16.root						        2.967                   forceIs2017
