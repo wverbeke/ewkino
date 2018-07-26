@@ -249,6 +249,9 @@ void treeReader::Analyze(){
             //event reweighting
             if( isMC() ){
                 weight *= sfWeight(); 
+                if( weight == 0.){
+                    continue;
+                }
             }
 
             //compute nominal bdt value
@@ -806,7 +809,13 @@ void treeReader::Analyze(){
 
     std::map< std::string, double > bkgSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
-            {"nonprompt", 1.3}
+            {"nonprompt", 1.3},
+            {"WZ", 1.1},
+            {"Xgamma", 1.1},
+            {"ZZH", 1.1},
+            {"TTZ", 1.1},
+            {"TTX", 1.1},
+            {"multiboson", 1.5}
         };
 
     const unsigned nBinsFit = mergedHists[0][0][0][0]->GetNbinsX(); //number of bins used in the final fit

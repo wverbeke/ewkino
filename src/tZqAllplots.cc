@@ -330,6 +330,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         if( !passTriggerCocktail() ) continue;
         if( !passMETFilters() ) continue;
 
+        //reject bad MC events 
+        if( _nTrueInt < 0.) continue;
+
         //vector containing good lepton indices
         std::vector<unsigned> ind;
 
@@ -407,7 +410,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         //apply event weight
         if(!samp.isData() ){
-            weight*=sfWeight();
+            //weight*=sfWeight();
             //std::cout << "sfWeight() = " << sfWeight() << std::endl;
         }
 

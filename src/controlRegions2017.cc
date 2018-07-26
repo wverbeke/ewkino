@@ -269,6 +269,9 @@ void treeReader::Analyze(){
             //event reweighting
             if( isMC() ){
                 weight *= sfWeight(); 
+                if( weight == 0.){
+                    continue;
+                }
             }
 
             //compute nominal bdt value
