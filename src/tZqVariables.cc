@@ -42,7 +42,13 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     //make LorentzVector for all jets 
     TLorentzVector jetV[(const unsigned) _nJets];
     for(unsigned j = 0; j < _nJets; ++j){
-        jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
+        if( uncertainty == "JECDown"){
+            jetV[j].SetPtEtaPhiE(_jetPt_JECDown[j], _jetEta[j], _jetPhi[j], _jetE[j]*(_jetPt_JECDown[j]/_jetPt[j]) );
+        } else if( uncertainty == "JECUp"){
+            jetV[j].SetPtEtaPhiE(_jetPt_JECUp[j], _jetEta[j], _jetPhi[j], _jetE[j]*(_jetPt_JECUp[j]/_jetPt[j]));
+        } else {
+            jetV[j].SetPtEtaPhiE(_jetPt[j], _jetEta[j], _jetPhi[j], _jetE[j]);
+        }
     }
 
     //set lCount, which is equal to the amount of lepton indices
