@@ -15,7 +15,7 @@ for year in 2016 2017; do
             echo "done">> $script
             #qsub $script -q highmem -lnodes=1:ppn=16 -l walltime=40:00:00
             #qsub $script -l walltime=40:00:00
-            submitJob $script
+            submitJob $script "10:00:00"
             #cat $script
             rm $script
         done
