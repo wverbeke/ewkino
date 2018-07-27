@@ -65,7 +65,8 @@ void treeReader::Analyze(){
         HistInfo("nJets", "number of jets", 10, 0, 10),
         HistInfo("leadPt", "P_{T}^{leading} (GeV)", 20, 25, 200),
         HistInfo("subPt", "P_{T}^{subleading} (GeV)", 20, 15, 200),
-        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200)
+        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200),
+        HistInfo("flavors", "flavors", 4, 0, 4)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -279,7 +280,8 @@ void treeReader::Analyze(){
                     bdtVariableMap["numberOfJets"],
                     _lPt[ind[0]],
                     _lPt[ind[1]],
-                    _lPt[ind[2]]
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
                     };
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
@@ -326,7 +328,8 @@ void treeReader::Analyze(){
                     bdtVariableMap["numberOfJets"],
                     _lPt[ind[0]],
                     _lPt[ind[1]],
-                    _lPt[ind[2]]
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
                     };
  
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -359,7 +362,8 @@ void treeReader::Analyze(){
                     bdtVariableMap["numberOfJets"],
                     _lPt[ind[0]],
                     _lPt[ind[1]],
-                    _lPt[ind[2]]
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
                     };
 
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -391,7 +395,8 @@ void treeReader::Analyze(){
                     bdtVariableMap["numberOfJets"],
                     _lPt[ind[0]],
                     _lPt[ind[1]],
-                    _lPt[ind[2]]
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
                     };
 
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -423,7 +428,8 @@ void treeReader::Analyze(){
                     bdtVariableMap["numberOfJets"],
                     _lPt[ind[0]],
                     _lPt[ind[1]],
-                    _lPt[ind[2]]
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
                     };
 
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -456,7 +462,8 @@ void treeReader::Analyze(){
                     bdtVariableMap["numberOfJets"],
                     _lPt[ind[0]],
                     _lPt[ind[1]],
-                    _lPt[ind[2]]
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
                     };
 
             //set pdf and scale weight for GluGluToContinToZZ samples which do not include lhe weights
