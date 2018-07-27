@@ -8,14 +8,14 @@ fillJob(){
     name=${name##*/}
     name=${name#ntuples_temp_*}
     name=${name}.root
-    if [ ! -d ~/Work/ntuples_forJana ]
-        then mkdir ~/Work/ntuples_forJana
+    if [ ! -d ~/Work/ntuples_ewkino ]
+        then mkdir ~/Work/ntuples_ewkino
     fi
-    echo "if [ -f ~/Work/ntuples_forJana/$name ]" >> $2
-    echo "    then rm ~/Work/ntuples_forJana/$name" >> $2
+    echo "if [ -f ~/Work/ntuples_ewkino/$name ]" >> $2
+    echo "    then rm ~/Work/ntuples_ewkino/$name" >> $2
     echo "fi" >> $2
-    echo "hadd ~/Work/ntuples_forJana/$name ${1}/*root" >> $2
-    #echo "rm -r ${1}" >> $2
+    echo "hadd ~/Work/ntuples_ewkino/$name ${1}/*root" >> $2
+    echo "rm -r ${1}" >> $2
 }
 
 mergeTuple(){
