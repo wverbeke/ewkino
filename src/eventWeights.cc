@@ -128,7 +128,7 @@ double treeReader::fakeRateWeight(const unsigned unc){
             } else if( isElectron(l) ){
                 fr = reweighter->electronFakeRate(_lPt[l], _lEta[l], unc);
             }
-            sf *= -fr/(1 - fr);
+            sf *= -fr/(1. - fr);
         }
     }
     return sf;
