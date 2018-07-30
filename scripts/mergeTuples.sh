@@ -29,7 +29,7 @@ submitMergeTuple(){
     > mergeJob.sh
     setCMSSW mergeJob.sh
     fillJob $1 mergeJob.sh
-    submitJob mergeJob.sh
+    submitJob mergeJob.sh "12:00:00"
     rm mergeJob.sh
 }
 
