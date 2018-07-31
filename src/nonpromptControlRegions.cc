@@ -180,17 +180,27 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
+    /*
     unsigned nMuonFakes = 0;
     unsigned nEleFakes = 0;
-
     double avgMuonFR = 0.;
     double avgEleFR = 0.;
+    std::ofstream fileMainBand;
+    std::ofstream fileSideBand;
+    */
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
 
-
+        
         initSample();          //2 = combined luminosity
+    
+        /*
+        if( isData() ){
+            fileMainBand.open("dump_mainband.txt");
+            fileSideBand.open("dump_sideband.txt");
+        }
+        */
 
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
@@ -266,19 +276,31 @@ void treeReader::Analyze(){
             //compute nominal values for all search variables
             unsigned tzqCat = setSearchVariablestZq("nominal", ind, bestZ);             
 
+            /*
             if( tzqCat == 3 && mllCat == 1){
-                for(unsigned l = 0; l < _nLight; ++l){
-                    if( lepIsGood(l) && !lepIsTight(l) ){
-                        if( isMuon(l) ){
+                if(passTightCut){
+                    fileMainBand << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl;
+                } else {
+                    fileSideBand << _runNb << " " << _lumiBlock << " " << _eventNb << " " << std::setprecision(3) << fakeRateWeight();
+                }
+                for(unsigned l = 0; l < lCount; ++l){
+                    if( lepIsGood(ind[l]) && !lepIsTight(ind[l]) ){
+                        if( isMuon(ind[l]) ){
                             ++nMuonFakes;
-                            avgMuonFR += reweighter->muonFakeRate(_lPt[l], _lEta[l], 0); 
+                            avgMuonFR += reweighter->muonFakeRate(_lPt[ind[l]], _lEta[ind[l]], 0); 
+                            fileSideBand << " " <<  std::setprecision(3) << _lPt[ind[l]] << " " << _lEta[ind[l]] << " " << reweighter->muonFakeRate(_lPt[ind[l]], _lEta[ind[l]], 0);
                         } else {
                             ++nEleFakes;
-                            avgEleFR += reweighter->electronFakeRate(_lPt[l], _lEta[l], 0);
+                            avgEleFR += reweighter->electronFakeRate(_lPt[ind[l]], _lEta[ind[l]], 0);
+                            fileSideBand << " " <<  std::setprecision(3) << _lPt[ind[l]] << " " << _lEta[ind[l]] << " " << reweighter->electronFakeRate(_lPt[ind[l]], _lEta[ind[l]], 0);
                         }
                     }
                 }
+                if(!passTightCut){
+                    fileSideBand << std::endl;
+                }
             }
+            */
 
 
             //event reweighting
@@ -552,12 +574,19 @@ void treeReader::Analyze(){
             }
         }
 
-        std::cout << "########################################" << std::endl;
-        std::cout << "number of fake muons = " << nMuonFakes << std::endl;
-        std::cout << "average muon FR = " << avgMuonFR/( (double) nMuonFakes ) << std::endl;
-        std::cout << "number of fake electrons = " << nEleFakes << std::endl;
-        std::cout << "average electron FR = " << avgEleFR/( (double) nEleFakes ) << std::endl;
-        std::cout << "########################################" << std::endl;
+        /*
+        if( isData() ){
+            std::cout << "########################################" << std::endl;
+            std::cout << "number of fake muons = " << nMuonFakes << std::endl;
+            std::cout << "average muon FR = " << avgMuonFR/( (double) nMuonFakes ) << std::endl;
+            std::cout << "number of fake electrons = " << nEleFakes << std::endl;
+            std::cout << "average electron FR = " << avgEleFR/( (double) nEleFakes ) << std::endl;
+            std::cout << "########################################" << std::endl;
+
+            fileMainBand.close();
+            fileSideBand.close();
+        } 
+        */
 
         //set histograms to 0 if negative
         for(unsigned m = 0; m < nMll; ++m){
