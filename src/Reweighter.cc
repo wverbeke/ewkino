@@ -295,7 +295,11 @@ double Reweighter::electronTightIdWeight(const double pt, const double superClus
 double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
     //!!!! To be split for 2016 and 2017 data !!!! 
     if(unc < 3){
-        double croppedPt = std::min(pt, 99.);
+
+        //normally croppedPt should allow values up to 99, but to avoid the region where the 
+        //fake-rate measurement suffers from too severe EWK contamination, we don't use the 
+        //last two fake-rate bins.
+        double croppedPt = std::min(pt, 44.);
         double croppedEta = std::min( fabs(eta), 2.39);
 
         //WARNING: temporary patch for empty spot at low muon pT, |eta| > 2.1
@@ -313,7 +317,11 @@ double Reweighter::muonFakeRate(const double pt, const double eta, const unsigne
 double Reweighter::electronFakeRate(const double pt, const double eta, const unsigned unc) const{
     //!!!! To be split for 2016 and 2017 data !!!!
     if(unc < 3){ 
-        double croppedPt = std::min(pt, 99.);
+        
+        //normally croppedPt should allow values up to 99, but to avoid the region where the 
+        //fake-rate measurement suffers from too severe EWK contamination, we don't use the 
+        //last two fake-rate bins.
+        double croppedPt = std::min(pt, 44.); 
         double croppedEta = std::min( fabs(eta), 2.49);
         return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin( croppedPt, croppedEta ) );
     } else {
