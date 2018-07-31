@@ -140,10 +140,17 @@ bool treeReader::jetIsClean(const unsigned jetIndex) const{
 }
 
 bool treeReader::jetIsGood(const unsigned jetIndex, const double ptCut, const unsigned unc, const bool clean, const bool allowForward) const{
-    //only select loose jets:
-    if(!_jetIsLoose[jetIndex]) return false;
+
+    //only select loose jets in 2016 and tight jets in 2017
+    if( is2016() ){
+        if( !_jetIsLoose[jetIndex] ) return false;
+    } else {
+        if( !_jetIsTight[jetIndex] ) return false;
+    }
+
     //only select jets in tracker volume
     if( (!allowForward) && ( fabs(_jetEta[jetIndex]) >= 2.4 ) ) return false;
+
     //apply jet pT cuts
     switch(unc){
         case 0: if(_jetPt[jetIndex] < ptCut) return false; break;
