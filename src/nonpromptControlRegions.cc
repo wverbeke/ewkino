@@ -180,6 +180,12 @@ void treeReader::Analyze(){
     //tweakable options
     const TString extra = ""; //for plot names
 
+    unsigned nMuonFakes = 0;
+    unsigned nEleFakes = 0;
+
+    double avgMuonFR = 0.;
+    double avgEleFR = 0.;
+
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
 
@@ -259,6 +265,21 @@ void treeReader::Analyze(){
 
             //compute nominal values for all search variables
             unsigned tzqCat = setSearchVariablestZq("nominal", ind, bestZ);             
+
+            if( tzqCat == 3 && mllCat == 1){
+                for(unsigned l = 0; l < _nLight; ++l){
+                    if( lepIsGood(l) && !lepIsTight(l) ){
+                        if( isMuon(l) ){
+                            ++nMuonFakes;
+                            avgMuonFR += reweighter->muonFakeRate(_lPt[l], _lEta[l], 0); 
+                        } else {
+                            ++nEleFakes;
+                            avgEleFR += reweighter->electronFakeRate(_lPt[l], _lEta[l], 0);
+                        }
+                    }
+                }
+            }
+
 
             //event reweighting
             if( isMC() ){
@@ -530,6 +551,14 @@ void treeReader::Analyze(){
                 }
             }
         }
+
+        std::cout << "########################################" << std::endl;
+        std::cout << "number of fake muons = " << nMuonFakes << std::endl;
+        std::cout << "average muon FR = " << avgMuonFR/( (double) nMuonFakes ) << std::endl;
+        std::cout << "number of fake electrons = " << nEleFakes << std::endl;
+        std::cout << "average electron FR = " << avgEleFR/( (double) nEleFakes ) << std::endl;
+        std::cout << "########################################" << std::endl;
+
         //set histograms to 0 if negative
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned cat = 0; cat < nCat; ++cat){
