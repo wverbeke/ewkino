@@ -75,7 +75,7 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
     card << "kmax " << nSyst << " number of nuisance parameters (sources of systematical uncertainties) \n";
     card << "---------------------------------------------------------------------------------------- \n";
     //define the channels and the number of observed events
-    card << "bin 1 \n";
+    card << "bin bin1 \n";
     card << "observation " << obsYield << "\n";
     //define all backgrounds and their yields
     card << "---------------------------------------------------------------------------------------- \n";
@@ -85,7 +85,7 @@ void tools::printDataCard(const double obsYield, const double sigYield, const st
     }
     card << "bin	";
     for(unsigned proc = 0; proc < nBkg + 1; ++proc){
-        card << "	" << 1;
+        card << "	" << "bin1";
     }
     card << "\n";
     card << "process";
