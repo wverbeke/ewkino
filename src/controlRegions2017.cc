@@ -758,8 +758,16 @@ void treeReader::Analyze(){
     std::vector<double> flatUnc = {1.025, 1.06, 1.05, 1.00, 1.00}; //lumi, leptonID, trigger , pdf and scale effects on cross section
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
-            {"Nonprompt e/#mu", 1.3}
+            {"Nonprompt e/#mu", 1.3},
+            {"WZ", 1.1},
+            {"X + #gamma", 1.1},
+            {"ZZ/H", 1.1},
+            {"TTZ", 1.15}
         };
+
+    std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
+
+
     std::vector< std::vector< std::vector< TH1D* > > > totalSystUnc = mergedHists; //copy pointers to fix dimensionality of vector
     for(unsigned cr = 0; cr < nCr; ++cr){
         for(unsigned dist = 0; dist < nDist; ++dist){
@@ -771,6 +779,15 @@ void treeReader::Analyze(){
 
                     //add all shape uncertainties 
                     for( auto& key : uncNames ){
+
+                        //ignore theory uncertainty for certain processes
+                        if( key.find("Xsec") != std::string::npos ){
+                            bool processWithoutTheoryUnc =  ( std::find( ignoreTheoryUncInPlot.cbegin(), ignoreTheoryUncInPlot.cend(), proc[p] ) != ignoreTheoryUncInPlot.cend() );
+                            if( processWithoutTheoryUnc){
+                                    continue;
+                            }
+                        }
+
                         double down = fabs(mergedUncMapDown[key][cr][dist][p]->GetBinContent(bin) - mergedHists[cr][dist][p]->GetBinContent(bin) );
                         double up = fabs(mergedUncMapUp[key][cr][dist][p]->GetBinContent(bin) - mergedHists[cr][dist][p]->GetBinContent(bin) );
                         double var = std::max(down, up);
@@ -825,7 +842,11 @@ void treeReader::Analyze(){
 
     std::map< std::string, double > bkgSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
-            {"nonprompt", 1.3}
+            {"nonprompt", 1.3},
+            {"WZ", 1.1},
+            {"Xgamma", 1.1},
+            {"ZZH", 1.1},
+            {"TTZ", 1.15}
         };
 
     const unsigned nBinsFit = mergedHists[0][0][0]->GetNbinsX(); //number of bins used in the final fit
@@ -845,10 +866,20 @@ void treeReader::Analyze(){
         systUnc[2][p] = 1.02;   //trig eff  
     }
 
+    //ignore theory xsec uncertainties for some processes
+    std::vector<unsigned> ignoreTheoryUncForIndices = {0, 1, 4, 5, 6, 7};
+
     //initialize general shape uncertainties
     for(unsigned p = 0; p < nBkg + 1; ++p){
         for(unsigned shape = 0; shape < nShapeSyst; ++shape){
-            if( shape >= nShapeSyst - 2 && p == nBkg) continue; //skip xsec uncertainties for nonprompt
+
+            //skip xsec uncertainties for nonprompt
+            //skip xsec uncertainties for other processes that are measured directly 
+            bool uncIsXsec = ( shape >= nShapeSyst - 2 );
+            bool processWithoutTheoryUnc = ( std::find(ignoreTheoryUncForIndices.cbegin(), ignoreTheoryUncForIndices.cend(), p) != ignoreTheoryUncForIndices.cend() );
+            processWithoutTheoryUnc = processWithoutTheoryUnc || (p == nBkg); //make sure nonprompt is always skipped here
+            if( uncIsXsec && processWithoutTheoryUnc) continue;
+
             systUnc[nFlatSyst + shape][p] = 1.00;
         }
     }

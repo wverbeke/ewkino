@@ -792,8 +792,15 @@ void treeReader::Analyze(){
     std::vector<double> flatUnc = {1.025, 1.06, 1.05, 1.00, 1.00}; //lumi, leptonID, trigger , pdf and scale effects on cross section
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
-            {"Nonprompt e/#mu", 1.3}
+            {"Nonprompt e/#mu", 1.3},
+            {"WZ", 1.1},
+            {"X + #gamma", 1.1},
+            {"ZZ/H", 1.1},
+            {"TTZ", 1.15}
         };
+
+    std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
+
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > totalSystUnc = mergedHists; //copy pointers to fix dimensionality of vector
     for(unsigned mll = 0; mll < nMll; ++mll){
         for(unsigned cat = 0; cat < nCat; ++cat){
@@ -806,6 +813,15 @@ void treeReader::Analyze(){
 
                         //add all shape uncertainties 
                         for( auto& key : uncNames ){
+
+                             //ignore theory uncertainty for certain processes
+                            if( key.find("Xsec") != std::string::npos ){
+                                bool processWithoutTheoryUnc =  ( std::find( ignoreTheoryUncInPlot.cbegin(), ignoreTheoryUncInPlot.cend(), proc[p] ) != ignoreTheoryUncInPlot.cend() );
+                                if( processWithoutTheoryUnc){
+                                        continue;
+                                }
+                            }
+
                             double down = fabs(mergedUncMapDown[key][mll][cat][dist][p]->GetBinContent(bin) - mergedHists[mll][cat][dist][p]->GetBinContent(bin) );
                             double up = fabs(mergedUncMapUp[key][mll][cat][dist][p]->GetBinContent(bin) - mergedHists[mll][cat][dist][p]->GetBinContent(bin) );
                             double var = std::max(down, up);
