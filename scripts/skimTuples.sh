@@ -7,6 +7,19 @@ cwd=$(pwd)                                          #current working directory n
 
 skimSample(){                                           #function to skim one sample
     name="${1%/*}"                                      #remove everything before the last "/" in the path to the sample
+
+    if [[ $1 = *"_realistic_v10"* ]]; then
+        name="${name}_realistic_v10"
+    elif [[ $1 = *"_realistic_v14"* ]]; then
+        name="${name}_realistic_v14"
+    elif [[ $1 = *"_realistic_v11"* ]]; then
+        name="${name}_realistic_v11"
+    fi
+
+    if [[ $1 = *"_RECOPF"* ]]; then
+        name="${name}_RECOPF"
+    fi
+
     if [[ $1 = *"Fall17"* ]] || [[ $1 = *"Run2017"* ]]; then
         name="${name}_Fall17"
     else 
@@ -39,10 +52,12 @@ skimSample(){                                           #function to skim one sa
 
 baseFolder=/pnfs/iihe/cms/store/user/wverbeke/heavyNeutrino
 cd $baseFolder
-foldersData=*/*2016LeptonicDataList_v21p1
-foldersMC=*/*ewkino2016MCList-v21
-foldersData17=*/*2017LeptonicDataList_v19p1
-foldersMC17=*/*ewkino2017MCList-v19
-for d in $foldersMC $foldersMC17 $foldersData $foldersData17                        #skim all samples 
+foldersData=*/*2016LeptonicDataList_v22p2
+foldersMC=*/*ewkino2016MCList-v22p2
+foldersData17=*/*2017LeptonicDataList_v22p3
+foldersMC17=*/*ewkino2017MCList-v22p2
+foldersLeptonMva16=*CUETP8M1*/*leptonMvaTrainingList-v5
+#for d in $foldersMC $foldersMC17 $foldersData $foldersData17                        #skim all samples 
+for d in $foldersLeptonMva16
     do skimSample $d $baseFolder
 done
