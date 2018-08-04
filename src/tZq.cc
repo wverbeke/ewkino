@@ -859,7 +859,7 @@ void treeReader::Analyze(){
     }
 
     //ignore theory xsec uncertainties for some processes
-    std::vector<unsigned> ignoreTheoryUncForIndices = {0, 1, 4, 5, 6, 7};
+    std::vector<unsigned> ignoreTheoryUncForIndices = {0, 1, 3, 5, 6, 7};
 
     //initialize general shape uncertainties
     for(unsigned p = 0; p < nBkg + 1; ++p){
@@ -897,7 +897,7 @@ void treeReader::Analyze(){
     //set background specific uncertainties
     unsigned specCount = 0;
     for(auto& entry : bkgSpecificUnc){
-        systNames.push_back( entry.first + "_extra");
+        systNames.push_back( entry.first + "_norm");
         unsigned process = 999;
         for(unsigned bkg = 0; bkg < nBkg; ++bkg){
             if( bkgNames[bkg] == entry.first) process = bkg + 1;

@@ -827,7 +827,7 @@ void treeReader::Analyze(){
     }
 
     //ignore theory xsec uncertainties for some processes
-    std::vector<unsigned> ignoreTheoryUncForIndices = {0, 1, 4, 5, 6, 7};
+    std::vector<unsigned> ignoreTheoryUncForIndices = {0, 1, 3, 5, 6, 7};
 
     std::map< std::string, double > bkgSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
@@ -891,7 +891,7 @@ void treeReader::Analyze(){
     //set background specific uncertainties
     unsigned specCount = 0;
     for(auto& entry : bkgSpecificUnc){
-        systNames.push_back( entry.first + "_extra");
+        systNames.push_back( entry.first + "_norm");
         unsigned process = 999;
         for(unsigned bkg = 0; bkg < nBkg; ++bkg){
             if( bkgNames[bkg] == entry.first) process = bkg + 1;
