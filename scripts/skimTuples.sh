@@ -57,7 +57,8 @@ foldersMC=*/*ewkino2016MCList-v22p2
 foldersData17=*/*2017LeptonicDataList_v22p3
 foldersMC17=*/*ewkino2017MCList-v22p2
 foldersLeptonMva16=*CUETP8M1*/*leptonMvaTrainingList-v5
+foldersLeptonMva17=TTTo*CP5*/*leptonMvaTrainingList-v5
 #for d in $foldersMC $foldersMC17 $foldersData $foldersData17                        #skim all samples 
-for d in $foldersLeptonMva16
+for d in TTJets*CP5*/*leptonMvaTrainingList-v5
     do skimSample $d $baseFolder
 done

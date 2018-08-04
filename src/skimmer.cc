@@ -115,9 +115,10 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         std::cout << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl;
 
         std::vector<unsigned> ind;
+        /*
         unsigned lCount = selectLep(ind);
         if(lCount < 2) continue;
-
+        */
         for(unsigned l = 0; l < _nLight; ++l){
             pt = _lPt[l];
             eta = fabs(_lEta[l]);
