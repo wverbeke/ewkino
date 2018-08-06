@@ -717,6 +717,46 @@ void treeReader::Analyze(){
         }
     } 
 
+    //print the effect of systematic uncertainty
+    //compute minimum and maximum impact on each bin
+    for(unsigned bdt = 0; bdt < 2; ++bdt){
+        std::cout << "##################################################" << std::endl;
+        if(bdt == 0){
+            std::cout << "uncetainty ranges for 30 BDT bins: " << std::endl;
+        } else{
+            std::cout << "uncetainty ranges for 10 BDT bins: " << std::endl;
+        }
+        for(auto& key : uncNames ){
+            double maxUnc = 0.;
+            double minUnc = 999.;
+            for(unsigned mll = 0; mll < nMll; ++mll){
+                for(unsigned cat = 0; cat < nCat; ++cat){
+                    for(unsigned bin = 1; bin < ( unsigned) mergedHists[mll][cat][0][0]->GetNbinsX() + 1; ++bin){
+                        double binUnc = 0.;
+                        double binContent = 0.;
+                        for(unsigned p = 1; p < proc.size(); ++p){
+                            if( (key.find("XSec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
+                                continue;
+                            }
+                            double binUncDown = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapDown[key][mll][cat][bdt][p]->GetBinContent(bin) );
+                            double binUncUp = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapUp[key][mll][cat][bdt][p]->GetBinContent(bin) );
+                            binUnc += std::max(binUncDown, binUncUp);
+                            binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
+                        }
+                        double fractionalUnc = binUnc/binContent;
+                        if( fractionalUnc > maxUnc){
+                            maxUnc = fractionalUnc;
+                        }
+                        if( fractionalUnc < minUnc){
+                            minUnc = fractionalUnc;
+                        }
+                    }
+                }
+            }
+            std::cout << "Uncertainty : " << key << "\t" << std::setprecision(2) << minUnc*100 << "% - " << maxUnc*100 << "%" << std::endl;
+        }
+    }
+
     //make final uncertainty histogram for plots 
     std::vector<double> flatUnc = {1.025, 1.06, 1.02}; //lumi, leptonID, trigger , pdf and scale effects on cross section
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
