@@ -656,6 +656,16 @@ void treeReader::Analyze(){
         double scaleUpUnc = (sumOfWeights_scaleUp/sumOfWeights - 1.); //Warning: nominal sum of weights has to be in the denominator!
         scaleXsecUncUp.push_back( scaleUpUnc );
 
+        //filter out cross section effects from scale shape uncertainty
+        for(unsigned cr = 0; cr < nCr; ++cr){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
+                    uncHistMapDown["scale"][cr][dist][sam]->Scale(sumOfWeights/sumOfWeights_scaleDown);
+                    uncHistMapUp["scale"][cr][dist][sam]->Scale(sumOfWeights/sumOfWeights_scaleUp);
+                }
+            }
+        }
+
         //pdf effect on xSec:
         double rms = 0.;
         for(unsigned pdf = 0; pdf < 100; ++pdf){

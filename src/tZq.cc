@@ -35,13 +35,17 @@
 #include "TMVA/Reader.h"
 
 void treeReader::Analyze(){
+
     //Set CMS plotting style
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
+
     //read samples and cross sections from txt file
     readSamples("sampleLists/samples_nonpromptDataDriven_2016.txt");
+
     //name      xlabel    nBins,  min, max
     histInfo = {
+
         //new BDT distribution
         HistInfo("bdt", "BDT output", 30, -1, 1),
         HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
@@ -74,6 +78,7 @@ void treeReader::Analyze(){
     const unsigned nMll = 1;                //categories based on dilepton Mass
     const std::string mllNames[nMll] = {"onZ"};
     const std::string catNames[nCat] = {"1bJet23Jets", "1bJet4Jets", "2bJets"};
+
     //initialize vector holding all histograms
     std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > > hists(nMll);
     for(unsigned m = 0; m < nMll; ++m){
@@ -85,6 +90,7 @@ void treeReader::Analyze(){
                     if(sam < samples.size()){
                         hists[m][cat][dist].push_back(histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName()) );
                     } else {
+
                         //extra histogram for nonprompt prediction
                         hists[m][cat][dist].push_back( histInfo[dist].makeHist(catNames[cat] + mllNames[m] + "nonprompt") ); 
                     }
@@ -285,6 +291,7 @@ void treeReader::Analyze(){
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
+
                 //in case of data fakes fill all uncertainties for nonprompt with nominal values
                 if( isData() && !passTightCut){
                     for(unsigned dist = 0; dist < nDist; ++dist){
@@ -588,11 +595,13 @@ void treeReader::Analyze(){
         if(sam == 0){
             continue;
         }
+
         //get file for sample
         std::shared_ptr<TFile> sample = samples[sam].getFile("../../ntuples_tzq/");
 
         //extract histogram containing sum of weights for all possible pdf variations
         std::shared_ptr<TH1D> hCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/hCounter") );
+
         //nominal sum of weights 
         double sumOfWeights = hCounter->GetBinContent(1);
         std::shared_ptr<TH1D> lheCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/lheCounter"));
@@ -605,6 +614,18 @@ void treeReader::Analyze(){
         double sumOfWeights_scaleUp = lheCounter->GetBinContent(5);
         double scaleUpUnc = (sumOfWeights_scaleUp/sumOfWeights - 1.); //Warning: nominal sum of weights has to be in the denominator!
         scaleXsecUncUp.push_back( scaleUpUnc );
+
+        //filter out cross section effects from scale shape uncertainty
+        for(unsigned m = 0; m < nMll; ++m){
+            for(unsigned cat = 0; cat < nCat; ++cat){
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
+                        uncHistMapDown["scale"][m][cat][dist][sam]->Scale(sumOfWeights/sumOfWeights_scaleDown);
+                        uncHistMapUp["scale"][m][cat][dist][sam]->Scale(sumOfWeights/sumOfWeights_scaleUp);
+                    }
+                }
+            }
+        }
 
         //pdf effect on xSec:
         double rms = 0.;
@@ -630,6 +651,7 @@ void treeReader::Analyze(){
             pdfXsecUncDown[sam] = 0.;
             pdfXsecUncUp[sam] = 0.;
         }
+
     }
 
     //add pdf and scale effects to shape uncertainties to automatically take into account the fractional effects from every sample that is merged
@@ -822,6 +844,7 @@ void treeReader::Analyze(){
         }
     }
 
+    /*
     //TEMPORARY//////
     //replace data with sum of all backgrounds
     for(unsigned m = 0; m < nMll; ++m){
@@ -835,6 +858,8 @@ void treeReader::Analyze(){
         }
     }
     ////////////////
+    */
+
     const std::string sigNames[1] = {"tZq"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
     for(unsigned m = 0; m < nMll; ++m){
