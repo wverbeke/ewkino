@@ -80,8 +80,8 @@ void treeReader::Analyze(const Sample& samp){
             {"pTRel", 0.},
             {"ptRatio", 0.},
             {"relIso", 0.},
-            {"relIso0p4", 0.},
-            {"csvV2ClosestJet", 0.},
+            //{"relIso0p4", 0.},
+            //{"csvV2ClosestJet", 0.},
             {"deepCsvClosestJet", 0.},
             {"sip3d", 0.},
             {"dxy", 0.},
@@ -99,7 +99,7 @@ void treeReader::Analyze(const Sample& samp){
     TrainingTree muonTree("leptonMvaTraining/muon_", samp, {{""}}, trainingVariableMap, samp.isSMSignal() );
     TrainingTree electronTree("leptonMvaTraining/electron_", samp, {{""}}, trainingVariableMap, samp.isSMSignal() );
 
-    initSample(samp, 1);  //use 2017 lumi
+    initSample(samp);  //use 2017 lumi
 
     std::cout<< samp.getFileName() << " : " << nEntries << " entries" << std::endl;
     double progress = 0;    //for printing progress bar
@@ -133,8 +133,8 @@ void treeReader::Analyze(const Sample& samp){
                 trainingVariableMap["pTRel"] = _ptRel[l];
                 trainingVariableMap["ptRatio"] = std::min(_ptRatio[l], 1.5);
                 trainingVariableMap["relIso"] = _relIso[l];
-                trainingVariableMap["relIso0p4"] = _relIso0p4[l];
-                trainingVariableMap["csvV2ClosestJet"] = std::max(_closestJetCsvV2[l], 0.);
+                //trainingVariableMap["relIso0p4"] = _relIso0p4[l];
+                //trainingVariableMap["csvV2ClosestJet"] = std::max(_closestJetCsvV2[l], 0.);
                 trainingVariableMap["deepCsvClosestJet"] = std::isnan(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l]) ? 0. : std::max(_closestJetDeepCsv_b[l] + _closestJetDeepCsv_bb[l], 0.); 
                 trainingVariableMap["sip3d"] = _3dIPSig[l];
                 trainingVariableMap["dxy"] = log( fabs( _dxy[l] ) );
