@@ -34,7 +34,7 @@ float BDTReader::computeBDT(const std::map < std::string, float>& varMap){
     static bool firstEvent = true;
     if(firstEvent){
         for(auto it = variableMap.cbegin(); it != variableMap.cend(); ++it){
-            if(varMap.find(it->first) == variableMap.end()){
+            if(varMap.find(it->first) == varMap.end()){
                 std::cerr << "Error in BDTReader computation, map passed as argument does not contain variable : " << it->first << std::endl;
             }
         }
