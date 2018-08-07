@@ -9,5 +9,6 @@ namespace trilep{
     unsigned flavorChargeComb(const std::vector<unsigned>& ind, const unsigned*, const int*, const unsigned); //Determine whether event contains OSSF or OSOF pair, or not 
     std::pair<double, double> neutrinoPZ(const TLorentzVector& wLep, const TLorentzVector& met);              //solve the neutrino Z momentum from the W mass constraint
     unsigned flavorComposition(const std::vector<unsigned>& ind, const unsigned*, const unsigned);
+    unsigned flavorCompositionFourlepton(const std::vector<unsigned>& ind, const unsigned*, const unsigned);
 }
 #endif

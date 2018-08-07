@@ -43,7 +43,7 @@ std::pair<double, double> trilep::neutrinoPZ(const TLorentzVector& wLep, const T
     return {preFac*(wLep.Pz() + term2), preFac*(wLep.Pz() - term2)};
 }
 
-enum leptonFlavor
+enum leptonFlavorTrilep
 {
     eee, //0
     eem, //1
@@ -86,5 +86,68 @@ unsigned trilep::flavorComposition(const std::vector<unsigned>& ind, const unsig
         }
     } else{
         return ttt;
+    }
+}
+
+enum leptonFlavorFourlep
+{
+    eeee, //0
+    eeem, //1
+    eemm, //2
+    emmm, //3
+    mmmm, //4
+    eeet, //5
+    eemt, //6
+    emmt, //7
+    mmmt, //8
+    eett, //9
+    emtt, //10
+    mmtt, //11
+    ettt, //12
+    mttt, //13
+    tttt //14
+};
+
+unsigned trilep::flavorCompositionFourlepton(const std::vector<unsigned>& ind, const unsigned* flavor, const unsigned lCount){
+    unsigned flavCount[3] = {0, 0, 0};
+    for(unsigned l = 0; l < lCount; ++l) ++flavCount[flavor[ind[l]]];
+    if(flavCount[2] == 0){
+        if(flavCount[1] == 0){
+            return eeee;
+        } else if(flavCount[1] == 1){
+            return eeem;
+        } else if(flavCount[1] == 2){
+            return eemm;
+        } else if(flavCount[1] == 3){
+            return emmm;
+        } else{
+            return mmmm;
+        }
+    } else if(flavCount[2] == 1){
+        if(flavCount[1] == 0){
+            return eeet;
+        } else if(flavCount[1] == 1){
+            return eemt;
+        } else if(flavCount[1] == 2){
+            return emmt;
+        } else{
+            return mmmt;
+        }
+    } else if(flavCount[2] == 2){
+        if(flavCount[1] == 0){
+            return eett;
+        } else if(flavCount[1] == 1){
+            return emtt;
+        } else {
+            return mmtt;
+        }
+    } else if(flavCount[2] == 3){
+        if(flavCount[1] == 0){
+            return ettt;
+        } else {
+            return mttt;
+        }
+    } else{
+        return tttt;
     }
 }
