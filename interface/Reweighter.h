@@ -58,7 +58,7 @@ class Reweighter{
         //btag scale factors and efficiencies
         std::shared_ptr<BTagCalibration> bTagCalib;
         std::shared_ptr<BTagCalibrationReader> bTagCalibReader;
-        std::shared_ptr<TH1D> bTagEffHist[3];
+        std::shared_ptr<TH2D> bTagEffHist[3];
 
         //reconstruction scale factors
         std::shared_ptr<TGraph> muonRecoSF;
@@ -73,6 +73,9 @@ class Reweighter{
         std::shared_ptr<TH2D> electronLooseToRecoSF;
         std::shared_ptr<TH2D> electronTightToLooseSF;
 
+        //fake rate maps
+        std::shared_ptr<TH2D> frMapEle[3];
+        std::shared_ptr<TH2D> frMapMu[3];
 
         //initialize all weight histograms
         void initialize2016Weights();
@@ -82,10 +85,6 @@ class Reweighter{
         unsigned flavorInd(const unsigned jetFlavor) const{ 
             return 0 + (jetFlavor == 4) + 2*(jetFlavor == 5);
         }
-
-        //fake rate maps
-        std::shared_ptr<TH2D> frMapEle[3];
-        std::shared_ptr<TH2D> frMapMu[3];
 
         //tracking + reconstruction weights
         double muonRecoWeight(const double eta) const;
