@@ -128,7 +128,7 @@ bool treeReader::lepIsGood2017(const unsigned leptonIndex) const{
     if( closestJetDeepCSV(leptonIndex) >  0.8001) return false;
     if( !passLeptonMva( leptonIndex, 0.8) ){
         if( _ptRatio[leptonIndex] <= 0.6) return false;
-        if( closestJetDeepCSV( leptonIndex ) >= 0.2) return false;
+        if( closestJetDeepCSV( leptonIndex ) >= 0.4) return false;  //used to be 0.4 in old FR maps
         if( isElectron(leptonIndex) ){
             if( _lElectronMvaFall17NoIso[leptonIndex] <= ( ( fabs(_lEta[leptonIndex]) < 1.479 ) ? 0.3 : 0.6 ) ) return false;
         } 
