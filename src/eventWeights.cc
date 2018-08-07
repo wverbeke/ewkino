@@ -5,21 +5,19 @@
 #include "../interface/treeReader.h"
 
 //pu SF 
-inline double treeReader::puWeight(const unsigned unc) const{
+double treeReader::puWeight(const unsigned unc) const{
     return reweighter->puWeight(_nTrueInt, currentSample, unc);
 }
 
 //b-tagging SF for given flavor
 double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) const{
-    //WARNING: reactivate this code once the b-tag efficiencies have been computed 
-    /*
     double pMC = 1.;
     double pData = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
         if(_jetHadronFlavor[j] == jetFlavor){
             //QUESTION: should JEC and b-tag weights also be varied up and down at the same time when computing systematics?
             if(jetIsGood(j, 25., 0, true) && fabs(_jetEta[j]) < 2.4){
-                double sf = reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], _jetDeepCsv_b[j] + _jetDeepCsv_bb[j], unc);
+                double sf = reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], deepCSV(j), unc);
                 double eff = reweighter->bTagEff(_jetHadronFlavor[j], _jetPt[j], _jetEta[j]);
                 if(bTagged(j, 1, true)){
                     pMC *= eff;
@@ -32,8 +30,6 @@ double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) cons
         }
     }
     return pData/pMC;
-    */
-    return 1.;
 }
 
 //light flavor b-tagging SF
@@ -64,15 +60,15 @@ double treeReader::leptonWeight() const{
             if( isMuon(l) ){
                 sf *= reweighter->muonTightWeight(_lPt[l], _lEta[l]);
             } else if( isElectron(l) ){
-                sf *= reweighter->electronTightWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
+                sf *= reweighter->electronTightWeight(_lPt[l], _lEtaSC[l]);
             }
         } else if( lepIsLoose(l) ){
             if( isMuon(l) ){
                 sf *= reweighter->muonLooseWeight(_lPt[l], _lEta[l]);
             } else if( isElectron(l) ){
-                sf *= reweighter->electronLooseWeight(_lPt[l], _lEta[l], _lEtaSC[l]);
+                sf *= reweighter->electronLooseWeight(_lPt[l], _lEtaSC[l]);
             }
-        }
+        } 
     }
     return sf;
 }
@@ -97,6 +93,13 @@ double treeReader::sfWeight(){
     }
     sf *= bTagWeight();
     sf *= leptonWeight();
+    if( sf == 0){
+        std::cerr << "Error: event sf is zero! This has to be debugged!" << std::endl;
+    } else if( std::isnan(sf) ){
+        std::cerr << "Error: event sf is nan! This has to be debugged!" << std::endl;
+    } else if( std::isinf(sf) ){
+        std::cerr << "Error: event sf is inf! This has to be debugged!" << std::endl;
+    }
     return sf;
 }
 
@@ -121,7 +124,7 @@ double treeReader::fakeRateWeight(const unsigned unc){
             } else if( isElectron(l) ){
                 fr = reweighter->electronFakeRate(_lPt[l], _lEta[l], unc);
             }
-            sf *= -fr/(1 - fr);
+            sf *= -fr/(1. - fr);
         }
     }
     return sf;
