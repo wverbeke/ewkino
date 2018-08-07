@@ -121,29 +121,16 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     }
 
     //initialize new vectors to make sure everything is defined for 0 jet events!
-    TLorentzVector leadingJet(0,0,0,0);
-    TLorentzVector trailingJet(0,0,0,0);
     TLorentzVector highestEtaJet(0,0,0,0);
     TLorentzVector recoilingJet(0,0,0,0);
     TLorentzVector taggedBJet(0,0,0,0);
-    TLorentzVector leadingBJet(0,0,0,0);
-    TLorentzVector trailingBJet(0,0,0,0);
     TLorentzVector highestDeepCSVJet(0,0,0,0);
     if(taggedJetI[0] != 99) taggedBJet = jetV[taggedJetI[0]];
     if(taggedJetI[1] != 99) recoilingJet = jetV[taggedJetI[1]];
     if(jetCount != 0){
-        leadingJet = jetV[jetInd[0]];
-        if(jetCount > 1) trailingJet = jetV[jetInd[jetInd.size() - 1]];
         highestEtaJet = jetV[highestEtaJ];
         if(highestDeepCSVI != 99) highestDeepCSVJet = jetV[highestDeepCSVI];
     }
-    if(bJetCount != 0){
-        leadingBJet = jetV[bJetInd[0]];
-        if(bJetCount > 1) trailingBJet = jetV[bJetInd[bJetInd.size() - 1]];
-    } else if(jetCount > 1){
-        leadingBJet = jetV[jetInd[1]];
-    }
-
 
     //compute top vector
     TLorentzVector topV = (neutrino + lepV[lw] + taggedBJet);
@@ -192,9 +179,9 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     bdtVariableMap["deltaRWLeptonTaggedbJet"] = lepV[lw].DeltaR(taggedBJet);
     bdtVariableMap["m3l"] = (lepV[0] + lepV[1] + lepV[2]).M();
     bdtVariableMap["etaMostForward"] = fabs(highestEtaJet.Eta());
+    bdtVariableMap["numberOfJets"] = jetCount;
 
     //variables not used in BDT training, but that are nonetheless plotted 
-    bdtVariableMap["numberOfJets"] = jetCount;
     bdtVariableMap["numberOfbJets"] = bJetCount;
 
     return tzqCat;
