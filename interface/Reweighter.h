@@ -32,16 +32,16 @@ class Reweighter{
             return muonRecoWeight(eta)*muonTightIdWeight(pt,eta);
         }
 
-        double electronTightWeight(const double pt, const double eta, const double superClusterEta) const{ 
-            return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,eta);
+        double electronTightWeight(const double pt, const double superClusterEta) const{ 
+            return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,superClusterEta);
         }
 
         double muonLooseWeight(const double pt, const double eta) const{
             return  muonRecoWeight(eta)*muonLooseIdWeight(pt,eta);
         }
 
-        double electronLooseWeight(const double pt, const double eta, const double superClusterEta) const{
-            return electronRecoWeight(superClusterEta, pt)*electronLooseIdWeight(pt,eta);
+        double electronLooseWeight(const double pt, const double superClusterEta) const{
+            return electronRecoWeight(superClusterEta, pt)*electronLooseIdWeight(pt,superClusterEta);
         }
 
         //fakerates 
@@ -58,7 +58,7 @@ class Reweighter{
         //btag scale factors and efficiencies
         std::shared_ptr<BTagCalibration> bTagCalib;
         std::shared_ptr<BTagCalibrationReader> bTagCalibReader;
-        std::shared_ptr<TH1D> bTagEffHist[3];
+        std::shared_ptr<TH2D> bTagEffHist[3];
 
         //reconstruction scale factors
         std::shared_ptr<TGraph> muonRecoSF;
@@ -73,6 +73,9 @@ class Reweighter{
         std::shared_ptr<TH2D> electronLooseToRecoSF;
         std::shared_ptr<TH2D> electronTightToLooseSF;
 
+        //fake rate maps
+        std::shared_ptr<TH2D> frMapEle[3];
+        std::shared_ptr<TH2D> frMapMu[3];
 
         //initialize all weight histograms
         void initialize2016Weights();
@@ -83,21 +86,17 @@ class Reweighter{
             return 0 + (jetFlavor == 4) + 2*(jetFlavor == 5);
         }
 
-        //fake rate maps
-        std::shared_ptr<TH2D> frMapEle[3];
-        std::shared_ptr<TH2D> frMapMu[3];
-
         //tracking + reconstruction weights
         double muonRecoWeight(const double eta) const;
         double electronRecoWeight(const double superClusterEta, const double pt) const;
 
         //loose id weights
         double muonLooseIdWeight(const double pt, const double eta) const;
-        double electronLooseIdWeight(const double pt, const double eta) const;
+        double electronLooseIdWeight(const double pt, const double superClusterEta) const;
 
         //tight id weights
         double muonTightIdWeight(const double pt, const double eta) const;
-        double electronTightIdWeight(const double pt, const double eta) const;
+        double electronTightIdWeight(const double pt, const double superClusterEta) const;
 
         //read pu weights for a given list of samples
         void initializePuWeights(const std::vector< Sample >&); 

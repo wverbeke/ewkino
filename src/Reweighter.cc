@@ -35,11 +35,12 @@ void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
 
     static const std::string minBiasVariation[3] = {"central", "down", "up"};
     for(auto& sample : sampleList){
+
         //no pu weights for data 
         if( sample.isData() ) continue;
 
         //open root file corresponding to sample
-        TFile* puFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName());
+        TFile* puFile = TFile::Open( (const TString&) "weights/pileUpWeights/puWeights_" + sample.getFileName() );
 
         //extract pu weights 
         for(unsigned var = 0; var < 3; ++var){
@@ -65,29 +66,30 @@ void Reweighter::initializeBTagWeights(){
         sfFileName = "DeepCSV_94XSF_V3_B_F.csv";
     }
     bTagCalib = std::shared_ptr<BTagCalibration>( new BTagCalibration("deepCsv", "weights/" + sfFileName) );
+
+    //WARNING: b-tagging efficiencies currently assume medium deepCSV tagger!
     bTagCalibReader = std::shared_ptr<BTagCalibrationReader>( new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up", "down"}) );
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_B, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_C, "comb");
     bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_UDSG, "incl");    
 
-    //WARNING: b-tagging efficiencies are yet to be computed and are currently not available 
-    /*
     //initialize b-tag efficiencies
     std::string effFileName;
     if(is2016){
-        effFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2016.root";
+        effFileName = "bTagEff_deepCSV_cleaned_tZq_2016.root";
     } else {
-        effFileName = "bTagEff_deepCSV_medium_cleaned_tZq_2017.root";
+        effFileName = "bTagEff_deepCSV_cleaned_tZq_2017.root";
     }
 
     TFile* bTagFile = TFile::Open( (const TString&) "weights/" + effFileName);
     const std::string quarkFlavors[3] = {"udsg", "charm", "beauty"};
     for(unsigned flav = 0; flav < 3; ++flav){
-        bTagEffHist[flav] = (TH1D*) bTagFile->Get( (const TString&) "bTagEff_" + quarkFlavors[flav]);
+        
+        //WARNING: b-tagging efficiencies currently assume medium deepCSV tagger!
+        bTagEffHist[flav] = std::shared_ptr<TH1D>( (TH2D*) bTagFile->Get( (const TString&) "bTagEff_medium" + quarkFlavors[flav]) );
         bTagEffHist[flav]->SetDirectory(gROOT);
     }
     bTagFile->Close();
-    */
 }
 
 void Reweighter::initializeElectronWeights(){	
@@ -128,17 +130,12 @@ void Reweighter::initializeMuonWeights(){
         muonRecoSF = std::shared_ptr<TGraph>( (TGraph*) muonRecoFile->Get("ratio_eff_eta3_dr030e030_corr") );
         muonRecoFile->Close();
     } else {
-
+        //WARNING: 2017 muon reco SF are currently not available
     }	
 
     //read muon ID SF weights
-    TFile* muonIdFile = TFile::Open("weights/muonIDScaleFactors_2016.root");
-    std::string sfFileName;
-    if(is2016){
-        sfFileName = "muonIDScaleFactors_2016.root";
-    } else {
-        sfFileName = "muonIDScaleFactors_2017.root";
-    }
+    std::string year = ( is2016 ? "2016" : "2017" );
+    TFile* muonIdFile = TFile::Open( (const TString&) "weights/muonIDScaleFactors_" + year + ".root");
     muonLooseToRecoSF = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLoose") );
     muonLooseToRecoSF->SetDirectory(gROOT);
     muonTightToLooseSF = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("TTVLooseToTTVLeptonMvatZq") );
@@ -148,16 +145,19 @@ void Reweighter::initializeMuonWeights(){
 
 void Reweighter::initializeFakeRate(){
 
-    //WARNING : To be updated with new fake-rate in 2016/2017 splitting
-    TFile* frFile = TFile::Open("weights/FR_data_ttH_mva.root");
-    const std::string frUnc[3] = {"", "_down", "_up"};
-    for(unsigned unc = 0; unc < 3; ++unc){
-        frMapEle[unc] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get((const TString&) "FR_mva090_el_data_comb_NC" + frUnc[unc]) );
-        frMapEle[unc]->SetDirectory(gROOT);
-        frMapMu[unc] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get((const TString&) "FR_mva090_mu_data_comb" + frUnc[unc]) );
-        frMapMu[unc]->SetDirectory(gROOT);
+    //WARNING : Currently no fakerate maps with electroweak variations are available
+    for( auto& flavor : {std::string("e"), std::string("mu")} ){
+        std::string year = (  is2016 ? "2016" : "2017" );
+        TFile* frFile = TFile::Open( (const TString&) "weights/fakeRate_tZq_" + flavor + "_" + year + ".root");
+        if( flavor == "e"){
+            frMapEle[0] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get("passed") );
+            frMapEle[0]->SetDirectory(gROOT);
+        } else {
+            frMapMu[0] = std::shared_ptr<TH2D>( (TH2D*) frFile->Get("passed") );
+            frMapMu[0]->SetDirectory(gROOT);
+        }
+        frFile->Close();
     }
-    frFile->Close();
 }
 
 Reweighter::~Reweighter(){}
@@ -208,12 +208,16 @@ double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, cons
 }
 
 double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const{
-    //!!!! To be split for 2016 and 2017 data !!!!
-    return bTagEffHist[flavorInd(jetFlavor)]->GetBinContent(bTagEffHist[flavorInd(jetFlavor)]->FindBin(std::min(jetPt, 599.), std::min(fabs(jetEta), 2.4)) );
+    if(jetPt > 25){
+        double croppedPt = std::min( std::max(jetPt, 25.), 599.);
+        double croppedAbsEta = std::min( fabs(jetEta), 2.39 ); 
+        return bTagEffHist[flavorInd(jetFlavor)]->GetBinContent(bTagEffHist[flavorInd(jetFlavor)]->FindBin(croppedPt, croppedAbsEta) );
+    } else{
+        std::cerr << "Error: requesting b-tag efficiency for jet with pT below 25 GeV, this jet should not enter the selection!" << std::endl;
+    } 
 }
 
 double Reweighter::muonRecoWeight(const double eta) const{
-    //!!!! To be split for 2016 and 2017 data !!!!
     if( is2016 ){
         return muonRecoSF->Eval(std::max(-2.4,std::min(eta, 2.4) ) );
     } else {
@@ -239,14 +243,9 @@ double Reweighter::muonLooseIdWeight(const double pt, const double eta) const{
     return muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
 }
 
-double Reweighter::electronLooseIdWeight(const double pt, const double eta) const{
+double Reweighter::electronLooseIdWeight(const double pt, const double superClusterEta) const{
     double croppedPt = std::min(pt, 199.);
-    double croppedEta;
-    if( is2016 ){   //asymmetric scale factors are currently only available for 2016 data!
-        croppedEta = std::min( std::max( -2.49, eta ), 2.49 ); 
-    } else {
-        croppedEta = std::min( fabs(eta), 2.49); 
-    }
+    double croppedEta = std::min( std::max( -2.49, superClusterEta ), 2.49 ); 
     return electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
 }
 
@@ -258,14 +257,9 @@ double Reweighter::muonTightIdWeight(const double pt, const double eta) const{
     return sf;
 }
 
-double Reweighter::electronTightIdWeight(const double pt, const double eta) const{
+double Reweighter::electronTightIdWeight(const double pt, const double superClusterEta) const{
     double croppedPt = std::min(pt, 199.);
-    double croppedEta;
-    if( is2016 ){   //asymmetric scale factors are currently only available for 2016 data!
-        croppedEta = std::min( std::max( -2.49, eta ), 2.49 ); 
-    } else {
-        croppedEta = std::min( fabs(eta), 2.49); 
-    }
+    double croppedEta = std::min( std::max( -2.49, superClusterEta ), 2.49 ); 
     double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
     sf*= electronTightToLooseSF->GetBinContent( electronTightToLooseSF->FindBin( croppedPt, croppedEta) );
     return sf;
@@ -274,7 +268,19 @@ double Reweighter::electronTightIdWeight(const double pt, const double eta) cons
 double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
     //!!!! To be split for 2016 and 2017 data !!!! 
     if(unc < 3){
-        return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.4) ) );
+
+        //normally croppedPt should allow values up to 99, but to avoid the region where the 
+        //fake-rate measurement suffers from too severe EWK contamination, we don't use the 
+        //last two fake-rate bins.
+        double croppedPt = std::min(pt, 44.);
+        double croppedEta = std::min( fabs(eta), 2.39);
+
+        //WARNING: temporary patch for empty spot at low muon pT, |eta| > 2.1 in 2016 fake-rate map
+        if( is2016 && croppedPt <= 15){
+            croppedEta = std::min( fabs(eta), 2.09);
+        }
+
+        return frMapMu[unc]->GetBinContent(frMapMu[unc]->FindBin( croppedPt, croppedEta ) );
     } else {
         std::cerr << "Error: invalid muon fake-rate uncertainty requested: returning fake-rate 99" << std::endl;
         return 99;
@@ -284,7 +290,13 @@ double Reweighter::muonFakeRate(const double pt, const double eta, const unsigne
 double Reweighter::electronFakeRate(const double pt, const double eta, const unsigned unc) const{
     //!!!! To be split for 2016 and 2017 data !!!!
     if(unc < 3){ 
-        return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin(std::min(pt, 99.), std::min(fabs(eta), 2.5) ) );
+        
+        //normally croppedPt should allow values up to 99, but to avoid the region where the 
+        //fake-rate measurement suffers from too severe EWK contamination, we don't use the 
+        //last two fake-rate bins.
+        double croppedPt = std::min(pt, 44.); 
+        double croppedEta = std::min( fabs(eta), 2.49);
+        return frMapEle[unc]->GetBinContent(frMapEle[unc]->FindBin( croppedPt, croppedEta ) );
     } else {
         std::cerr << "Error: invalid electron fake-rate uncertainty requested: returning fake-rate 99" << std::endl;
         return 99;
