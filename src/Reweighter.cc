@@ -86,7 +86,7 @@ void Reweighter::initializeBTagWeights(){
     for(unsigned flav = 0; flav < 3; ++flav){
         
         //WARNING: b-tagging efficiencies currently assume medium deepCSV tagger!
-        bTagEffHist[flav] = std::shared_ptr<TH1D>( (TH2D*) bTagFile->Get( (const TString&) "bTagEff_medium" + quarkFlavors[flav]) );
+        bTagEffHist[flav] = std::shared_ptr<TH2D>( (TH2D*) bTagFile->Get( (const TString&) "bTagEff_medium" + quarkFlavors[flav]) );
         bTagEffHist[flav]->SetDirectory(gROOT);
     }
     bTagFile->Close();
@@ -212,8 +212,9 @@ double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const d
         double croppedPt = std::min( std::max(jetPt, 25.), 599.);
         double croppedAbsEta = std::min( fabs(jetEta), 2.39 ); 
         return bTagEffHist[flavorInd(jetFlavor)]->GetBinContent(bTagEffHist[flavorInd(jetFlavor)]->FindBin(croppedPt, croppedAbsEta) );
-    } else{
-        std::cerr << "Error: requesting b-tag efficiency for jet with pT below 25 GeV, this jet should not enter the selection!" << std::endl;
+    } else {
+        std::cerr << "Error: requesting b-tag efficiency for jet with pT below 25 GeV, this jet should not enter the selection! Returning efficiency 0." << std::endl;
+        return 0.;
     } 
 }
 

@@ -304,7 +304,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                             double leptonW = 1.;
                             if( !isData() && r == 0) {
                                 for(unsigned l = 0; l < lCount; ++l){
-                                    if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]], _lEta[ind[l]] , _lEtaSC[ind[l]]); 
+                                    if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]], _lEtaSC[ind[l]]); 
                                     else if (isMuon(ind[l]) ) leptonW *= reweighter->muonLooseWeight(_lPt[ind[l]], _lEta[ind[l]]);
                                     else {
                                         std::cerr << "Error: selected muon seems to be neither electron nor muon!" << std::endl;
@@ -370,7 +370,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                         double leptonW = 1.;
                         if( !isData() && r == 0) {
                             for(unsigned l = 0; l < lCount; ++l){
-                                if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]], _lEta[ind[l]] , _lEtaSC[ind[l]]);
+                                if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]], _lEtaSC[ind[l]]);
                                 else if (isMuon(ind[l]) ) leptonW *= reweighter->muonLooseWeight(_lPt[ind[l]], _lEta[ind[l]]);
                                 else {
                                     std::cerr << "Error: selected muon seems to be neither electron nor muon!" << std::endl;
@@ -411,7 +411,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
                             double leptonW = 1.;
                             if( !isData() && r == 0) {
                                 for(unsigned l = 0; l < lCount; ++l){
-                                    if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]], _lEta[ind[l]] , _lEtaSC[ind[l]]);
+                                    if( isElectron(ind[l]) ) leptonW *= reweighter->electronLooseWeight(_lPt[ind[l]],  _lEtaSC[ind[l]]);
                                     else if (isMuon(ind[l]) ) leptonW *= reweighter->muonLooseWeight(_lPt[ind[l]], _lEta[ind[l]]);
                                     else {
                                         std::cerr << "Error: selected muon seems to be neither electron nor muon!" << std::endl;
