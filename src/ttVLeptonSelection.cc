@@ -89,6 +89,13 @@ bool treeReader::lepIsGoodttW2017(const unsigned leptonIndex) const{
 }
 
 bool treeReader::lepIsGoodttW(const unsigned leptonIndex) const{
+    if( isMuon(leptonIndex) ){
+        if( (_lMuonTrackPtErr[leptonIndex]/_lMuonTrackPt[leptonIndex]) > 0.2 ) return false;
+    } else if( isElectron(leptonIndex) ){
+        if( !_lElectronChargeConst[leptonIndex] ) return false;
+        if( !_lElectronPassConvVeto[leptonIndex] ) return false;
+        if( _lElectronMissingHits[leptonIndex] != 0 ) return false; 
+    }
     if( is2016() ){
         return lepIsGoodttW2016(leptonIndex);
     } else {
