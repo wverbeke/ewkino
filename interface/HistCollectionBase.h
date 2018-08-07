@@ -60,6 +60,7 @@ class HistCollectionBase{
         //range for every categorization
         size_t categoryRange(const size_t c) const { return category->getRange(c); }
 
+    //protected:
         size_t getCategoryIndex(const std::vector<size_t>& categoryIndices) const { return category->getIndex(categoryIndices); }
 
     private:

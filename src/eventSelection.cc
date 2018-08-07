@@ -116,20 +116,20 @@ bool treeReader::promptLeptons() const{
 */
 
 //select and count jets
-unsigned treeReader::nJets(const unsigned unc, const bool clean) const{
+unsigned treeReader::nJets(const unsigned unc, const bool clean, const bool allowForward ) const{
     unsigned nJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 25, unc, clean)) ++nJets;
+        if(jetIsGood(j, 25, unc, clean, allowForward)) ++nJets;
     }
     return nJets;
 }
 
 //select, count, and order jets by pT
-unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, const bool clean) const{
+unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, const bool clean, const bool allowForward) const{
     unsigned nJets = 0;
     jetInd.clear();
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 25, unc, clean)){
+        if(jetIsGood(j, 25, unc, clean, allowForward)){
             ++nJets;
             jetInd.push_back(j);
         }
@@ -195,6 +195,7 @@ bool treeReader::photonOverlap(const Sample& samp, const bool mcNonprompt) const
 
         isPhotonSample = (samp.getFileName().find("ZGTo2LG") != std::string::npos) ||
             (samp.getFileName().find("TTGJets") != std::string::npos) ||
+            (samp.getFileName().find("TTGamma") != std::string::npos) ||
             (samp.getFileName().find("WGToLNuG") != std::string::npos);
     } else {
         isInclusiveSample = false;
