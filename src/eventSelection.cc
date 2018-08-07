@@ -114,20 +114,20 @@ bool treeReader::promptLeptons() const{
 */
 
 //select and count jets
-unsigned treeReader::nJets(const unsigned unc, const bool clean) const{
+unsigned treeReader::nJets(const unsigned unc, const bool clean, const bool allowForward ) const{
     unsigned nJets = 0;
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 30, unc, clean)) ++nJets;
+        if(jetIsGood(j, 30, unc, clean, allowForward)) ++nJets;
     }
     return nJets;
 }
 
 //select, count, and order jets by pT
-unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, const bool clean) const{
+unsigned treeReader::nJets(std::vector<unsigned>& jetInd, const unsigned unc, const bool clean, const bool allowForward) const{
     unsigned nJets = 0;
     jetInd.clear();
     for(unsigned j = 0; j < _nJets; ++j){
-        if(jetIsGood(j, 30, unc, clean)){
+        if(jetIsGood(j, 30, unc, clean, allowForward)){
             ++nJets;
             jetInd.push_back(j);
         }
