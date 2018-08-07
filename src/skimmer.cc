@@ -151,7 +151,8 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
 
         std::vector<unsigned> ind;
         //Select both TOP-16-020 and FO leptons. Remove the former later.
-        unsigned lCount = std::max(selectLep(ind), selectLep_TOP16_020(ind) );
+        //unsigned lCount = std::max(selectLep(ind), selectLep_TOP16_020(ind) );
+        unsigned lCount = selectLep(ind);
         if(lCount < 3) continue;
         outputTree->Fill();
     }   

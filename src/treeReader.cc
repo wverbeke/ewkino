@@ -63,6 +63,7 @@ void treeReader::initSample(const Sample& samp){
     //update current sample
     currentSample = samp;
     sampleFile = samp.getFile("../../ntuples_tzq/");
+    //sampleFile = samp.getFile("/pnfs/iihe/cms/store/user/wverbeke/ntuples_unskimmed/");
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
     initTree(fChain, samp.isData());
