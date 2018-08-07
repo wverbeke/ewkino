@@ -62,7 +62,7 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
 
     //Catch shifted met values of inf, this was observed to occur in a ttZ event (1:32731:5662311)
     bool metJECDownIsInf = false;
-       if( std::isinf( _metJECDown ) ){
+    if( std::isinf( _metJECDown ) ){
         metJECDownIsInf = true;
     } 
     bool metJECUpIsInf = false;
@@ -96,7 +96,7 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     } else if( uncertainty == "JECUp"){
         met.SetPtEtaPhiE(_metJECUp, _metPhiJECUp, 0, _metJECUp);
     } else if( uncertainty == "unclDown"){
-        met.SetPtEtaPhiE(_metUnclDown, _metPhiUnclDown, 0, _metPhiJECDown);
+        met.SetPtEtaPhiE(_metUnclDown, _metPhiUnclDown, 0, _metUnclDown);
     } else if( uncertainty == "unclUp"){
         met.SetPtEtaPhiE(_metUnclUp, _metPhiUnclUp, 0, _metUnclUp);
     }
