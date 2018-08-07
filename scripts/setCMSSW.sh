@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CMSSW="CMSSW_9_4_8"
+CMSSW="CMSSW_9_4_9"
 
 #set up a CMSSW environment if there is none
 if [ ! -d /user/${USER}/${CMSSW} ]; then

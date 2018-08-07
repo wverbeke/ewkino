@@ -94,33 +94,22 @@ void Reweighter::initializeBTagWeights(){
 void Reweighter::initializeElectronWeights(){	
 
     //read electron reco SF weights
-    if( is2016 ){
-        TFile* electronRecoFile = TFile::Open("weights/electronRecoSF_2016.root");
-        electronRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile->Get("EGamma_SF2D") );
-        electronRecoSF->SetDirectory(gROOT);
-        electronRecoFile->Close();
-    } else {
-        //low pT SF
-        TFile* electronRecoFile_pT0to20 = TFile::Open("weights/electronRecoSF_2017_pT0to20.root");
-        electronRecoSF_pT0to20 = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT0to20->Get("EGamma_SF2D") );
-        electronRecoSF_pT0to20->SetDirectory(gROOT);
-        electronRecoFile_pT0to20->Close();
+    std::string year = ( is2016 ? "2016" : "2017" );
 
-        //high pT SF
-        TFile* electronRecoFile_pT20toInf = TFile::Open("weights/electronRecoSF_2017_pT20toInf.root");
-        electronRecoSF_pT20toInf = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT20toInf->Get("EGamma_SF2D") );
-        electronRecoSF_pT20toInf->SetDirectory(gROOT);
-        electronRecoFile_pT20toInf->Close();
-    }
+    //low pT SF
+    TFile* electronRecoFile_pT0to20 = TFile::Open( (const TString&) "weights/electronRecoSF_" + year + "_pT0to20.root");
+    electronRecoSF_pT0to20 = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT0to20->Get("EGamma_SF2D") );
+    electronRecoSF_pT0to20->SetDirectory(gROOT);
+    electronRecoFile_pT0to20->Close();
+
+    //high pT SF
+    TFile* electronRecoFile_pT20toInf = TFile::Open( (const TString&) "weights/electronRecoSF_" + year + "_pT20toInf.root");
+    electronRecoSF_pT20toInf = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT20toInf->Get("EGamma_SF2D") );
+    electronRecoSF_pT20toInf->SetDirectory(gROOT);
+    electronRecoFile_pT20toInf->Close();
 
     //read electron ID SF weights
-    TFile* electronIdFile = TFile::Open("weights/electronIDScaleFactors_2016.root");
-    std::string sfFileName;
-    if(is2016){
-        sfFileName = "electronIDScaleFactors_2016.root";
-    } else {
-        sfFileName = "electronIDScaleFactors_2017.root";
-    } 
+    TFile* electronIdFile = TFile::Open( (const TString&) "weights/electronIDScaleFactors_" + year + ".root");
     electronLooseToRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose") );
     electronLooseToRecoSF->SetDirectory(gROOT);
     electronTightToLooseSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("TTVLooseToTTVLeptonMvatZq") );
@@ -240,17 +229,12 @@ double Reweighter::muonRecoWeight(const double eta) const{
 
 double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
     double croppedSuperClusterEta = std::max(-2.49, std::min(superClusterEta, 2.49) );
-    if( is2016 ){
-        double croppedPt = std::max(40., std::min(pt, 499.) );
-        return electronRecoSF->GetBinContent( electronRecoSF->FindBin( croppedSuperClusterEta , croppedPt ) );
+    if( pt <= 20 ){
+        double croppedPt = std::max(10.01, pt);
+        return electronRecoSF_pT0to20->GetBinContent( electronRecoSF_pT0to20->FindBin( croppedSuperClusterEta, croppedPt ) );
     } else {
-        if( pt <= 20 ){
-            double croppedPt = std::max(10.01, pt);
-            return electronRecoSF_pT0to20->GetBinContent( electronRecoSF_pT0to20->FindBin( croppedSuperClusterEta, croppedPt ) );
-        } else {
-            double croppedPt = std::min(pt, 499.); 
-            return electronRecoSF_pT20toInf->GetBinContent( electronRecoSF_pT20toInf->FindBin( croppedSuperClusterEta, croppedPt ) );
-        }
+        double croppedPt = std::min(pt, 499.); 
+        return electronRecoSF_pT20toInf->GetBinContent( electronRecoSF_pT20toInf->FindBin( croppedSuperClusterEta, croppedPt ) );
     }
 }
 

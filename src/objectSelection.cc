@@ -194,7 +194,7 @@ bool treeReader::jetIsClean(const unsigned jetIndex) const{
 
 bool treeReader::jetIsGood(const unsigned jetIndex, const double ptCut, const unsigned unc, const bool clean, const bool allowForward) const{
 
-    //only select loose jets in 2016 and tight in 2017
+    //only select loose jets in 2016 and tight jets in 2017
     if( is2016() ){
         if( !_jetIsLoose[jetIndex] ) return false;
     } else {

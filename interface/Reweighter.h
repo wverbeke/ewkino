@@ -62,7 +62,6 @@ class Reweighter{
 
         //reconstruction scale factors
         std::shared_ptr<TGraph> muonRecoSF;
-        std::shared_ptr<TH2D> electronRecoSF;
         std::shared_ptr<TH2D> electronRecoSF_pT0to20;
         std::shared_ptr<TH2D> electronRecoSF_pT20toInf;
 

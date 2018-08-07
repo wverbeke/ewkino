@@ -7,6 +7,19 @@ cwd=$(pwd)                                          #current working directory n
 
 skimSample(){                                           #function to skim one sample
     name="${1%/*}"                                      #remove everything before the last "/" in the path to the sample
+
+    if [[ $1 = *"_realistic_v10"* ]]; then
+        name="${name}_realistic_v10"
+    elif [[ $1 = *"_realistic_v14"* ]]; then
+        name="${name}_realistic_v14"
+    elif [[ $1 = *"_realistic_v11"* ]]; then
+        name="${name}_realistic_v11"
+    fi
+
+    if [[ $1 = *"_RECOPF"* ]]; then
+        name="${name}_RECOPF"
+    fi
+
     if [[ $1 = *"Fall17"* ]] || [[ $1 = *"Run2017"* ]]; then
         name="${name}_Fall17"
     else 
