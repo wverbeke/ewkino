@@ -8,19 +8,14 @@ fillJob(){
     name=${name##*/}
     name=${name#ntuples_temp_*}
     name=${name}.root
-    if [ ! -d ~/Work/ntuples_unskimmed ]
-        then mkdir ~/Work/ntuples_unskimmed
+    if [ ! -d ~/Work/ntuples_tzq ]
+        then mkdir ~/Work/ntuples_tzq
     fi
-    echo "if [ -f ~/Work/ntuples_unskimmed/$name ]" >> $2
-    echo "    then rm ~/Work/ntuples_unskimmed/$name" >> $2
+    echo "if [ -f ~/Work/ntuples_tzq/$name ]" >> $2
+    echo "    then rm ~/Work/ntuples_tzq/$name" >> $2
     echo "fi" >> $2
-<<<<<<< HEAD
-    echo "hadd ~/Work/ntuples_ewkino/$name ${1}/*root" >> $2
-    echo "rm -r ${1}" >> $2
-=======
-    echo "hadd ~/Work/ntuples_unskimmed/$name ${1}/*root" >> $2
+    echo "hadd ~/Work/ntuples_tzq/$name ${1}/*root" >> $2
     echo "rm -r $1" >> $2
->>>>>>> master
 }
 
 mergeTuple(){
@@ -34,11 +29,7 @@ submitMergeTuple(){
     > mergeJob.sh
     setCMSSW mergeJob.sh
     fillJob $1 mergeJob.sh
-<<<<<<< HEAD
-    submitJob mergeJob.sh "2:00:00"
-=======
     submitJob mergeJob.sh "12:00:00"
->>>>>>> master
     rm mergeJob.sh
 }
 
