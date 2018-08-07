@@ -6,11 +6,13 @@
 
 //remove electrons overlapping with muons
 bool treeReader::eleIsCleanBase(const unsigned electronIndex, bool (treeReader::*looseMuon)(const unsigned) const) const{
+
     //make sure this lepton is an electron
     if( !isElectron(electronIndex) ){
         std::cerr << "Error: trying to clean non-electron object from muon overlap." << std::endl;
         return false;
     }
+
     //check separation with every muon
     for(unsigned m = 0; m < _nMu; ++m){
         if( !isMuon(m) ){
@@ -207,10 +209,10 @@ bool treeReader::jetIsGood(const unsigned jetIndex, const double ptCut, const un
     //pT cut that can be modified for certain eta regions
     double ptThreshold = ptCut;
 
-    //put harsh pT cuts  on jetc in problematic region for 2017
+    //put harsh pT cuts on jets in problematic region for 2017
     if( is2017() ){
         if( fabs(_jetEta[jetIndex]) > 2.7 && fabs(_jetEta[jetIndex]) < 3 ){
-            ptThreshold = 60;
+            ptThreshold = std::max(60., ptCut);
         }
     }   
 
