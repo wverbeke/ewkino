@@ -92,7 +92,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC", "uncl", "scale", "pileup", "bTag_udsg", "bTag_bc", "pdf", "scaleXsec", "pdfXsec"};
+    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "pdf", "scaleXsec", "pdfXsec"};
     std::map < std::string, std::vector< std::vector< std::vector< std::shared_ptr< TH1D > > > > > uncHistMapDown;
     std::map < std::string, std::vector< std::vector< std::vector< std::shared_ptr< TH1D > > > > > uncHistMapUp;
     for( auto& key : uncNames ){
@@ -346,7 +346,7 @@ void treeReader::Analyze(){
 
  
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown["JEC"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapDown["JEC_2017"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
                 
             }
@@ -386,7 +386,7 @@ void treeReader::Analyze(){
                     };
 
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapUp["JEC"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapUp["JEC_2017"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
@@ -534,22 +534,22 @@ void treeReader::Analyze(){
 
             //vary b-tag down for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
+                uncHistMapDown["bTag_udsg_2017"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
             }
 
             //vary b-tag up for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_udsg"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
+                uncHistMapUp["bTag_udsg_2017"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
             }
 
             //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_bc"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapDown["bTag_bc_2017"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
             //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_bc"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapUp["bTag_bc_2017"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
             //100 pdf variations
@@ -590,16 +590,40 @@ void treeReader::Analyze(){
     
     }
 
+    //compute lhe cross section ratio for every sample and variation
+    std::vector< std::vector< double> > crossSectionRatio(samples.size(), std::vector<double>(110, 1.) );
+    for(unsigned sam = 1; sam < samples.size(); ++sam){
+
+        //lhe weights are not available for GluGlu->ZZ
+        if( samples[sam].getFileName().find("GluGluToContinToZZ") != std::string::npos ) continue;
+
+        std::shared_ptr<TFile> sample = samples[sam].getFile("../../ntuples_tzq/");
+
+        //extract histogram containing nominal sum of weights
+        std::shared_ptr<TH1D> hCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/hCounter") );
+        double sumOfWeights = hCounter->GetBinContent(1);
+
+        //extract histogram containing sum of weights for all possible pdf variations
+        std::shared_ptr<TH1D> lheCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/lheCounter"));
+        for(unsigned lhe = 0; lhe < 110; ++lhe){
+            double variedSumOfWeights = lheCounter->GetBinContent(lhe + 1);
+            crossSectionRatio[sam][lhe] = sumOfWeights/( variedSumOfWeights );
+        }
+    }
+
     //compute final pdf uncertainties
     for(unsigned cr = 0; cr < nCr; ++cr){
         for(unsigned dist = 0; dist < nDist; ++dist){
             for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
-                uncHistMapDown["pdf"][cr][dist][sam] = histInfo[dist].makeHist(crNames[cr]+ samples[sam].getUniqueName() + "pdfDown");
-                uncHistMapUp["pdf"][cr][dist][sam] = histInfo[dist].makeHist(crNames[cr] + samples[sam].getUniqueName() + "pdfUp");
                 for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["pdf"][cr][dist][sam]->GetNbinsX() + 1; ++bin){
                     double pdfVarRms = 0.;
                     for(unsigned pdf = 0; pdf < 100; ++pdf){
-                        double diff = (  pdfUncHists[pdf][cr][dist][sam]->GetBinContent(bin) - hists[cr][dist][sam]->GetBinContent(bin) );
+                        
+                        double variedBin = pdfUncHists[pdf][cr][dist][sam]->GetBinContent(bin);
+                        if( sam != samples.size() ){
+                            variedBin *= crossSectionRatio[sam][pdf + 9];
+                        }
+                        double diff = (  variedBin - hists[cr][dist][sam]->GetBinContent(bin) );
                         pdfVarRms += diff * diff;
                     }
                     pdfVarRms = sqrt( 0.01 * pdfVarRms );
@@ -616,45 +640,30 @@ void treeReader::Analyze(){
     std::vector< double > pdfXsecUncDown = {0.};
     std::vector< double > pdfXsecUncUp = {0.};
 
-    //loop over all processes
-    for( unsigned sam = 0; sam < samples.size(); ++sam){ 
-        
-        if(sam == 0){
-            continue;
-        }
-        //get file for sample
-        std::shared_ptr<TFile> sample = samples[sam].getFile("../../ntuples_tzq/");
-
-        //extract histogram containing sum of weights for all possible pdf variations
-        std::shared_ptr<TH1D> hCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/hCounter") );
-        //nominal sum of weights 
-        double sumOfWeights = hCounter->GetBinContent(1);
-        std::shared_ptr<TH1D> lheCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/lheCounter"));
+    for( unsigned sam = 1; sam < samples.size(); ++sam){
 
         //scale effect on xSec :
-        double sumOfWeights_scaleDown = lheCounter->GetBinContent(9);
-        double scaleDownUnc = (sumOfWeights_scaleDown/sumOfWeights - 1.); //Warning: nominal sum of weights has to be in the denominator!
+        double scaleDownUnc = (1./crossSectionRatio[sam][8] - 1.); //Warning: nominal sum of weights has to be in the denominator!
         scaleXsecUncDown.push_back( scaleDownUnc );
 
-        double sumOfWeights_scaleUp = lheCounter->GetBinContent(5);
-        double scaleUpUnc = (sumOfWeights_scaleUp/sumOfWeights - 1.); //Warning: nominal sum of weights has to be in the denominator!
+        double scaleUpUnc = (1./crossSectionRatio[sam][4]- 1.); //Warning: nominal sum of weights has to be in the denominator!
         scaleXsecUncUp.push_back( scaleUpUnc );
 
         //filter out cross section effects from scale shape uncertainty
         if( samples[sam].getFileName().find("GluGluToContinToZZ") == std::string::npos){
             for(unsigned cr = 0; cr < nCr; ++cr){
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown["scale"][cr][dist][sam]->Scale(sumOfWeights/sumOfWeights_scaleDown);
-                    uncHistMapUp["scale"][cr][dist][sam]->Scale(sumOfWeights/sumOfWeights_scaleUp);
-                }
+                    uncHistMapDown["scale"][cr][dist][sam]->Scale(crossSectionRatio[sam][8]);
+                    uncHistMapUp["scale"][cr][dist][sam]->Scale(crossSectionRatio[sam][4]);
+                } 
             }
+            
         }
-
+    
         //pdf effect on xSec:
         double rms = 0.;
         for(unsigned pdf = 0; pdf < 100; ++pdf){
-            double sumOfWeights_pdf = lheCounter->GetBinContent(pdf + 10) ;
-            double pdfUnc = (sumOfWeights_pdf/sumOfWeights - 1.);
+            double pdfUnc = (1./crossSectionRatio[sam][pdf + 9] - 1.);
             rms += pdfUnc*pdfUnc;
         }
         rms = sqrt( 0.01 * rms);
@@ -826,7 +835,7 @@ void treeReader::Analyze(){
     //make shape datacards for each category
     const unsigned nBkg = proc.size() - 2;  //number of background processes
     const std::string bkgNames[nBkg] = {"WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH", "nonprompt"}; //rewrite bkg names not to confuse combine
-    std::vector<std::string> flatSyst = {"lumi", "id", "trigger"};
+    std::vector<std::string> flatSyst = {"lumi_2017", "id", "trigger_2017"};
     std::vector<std::string> shapeSyst = uncNames;
     std::vector<std::string> systNames; 
     for(auto& flatName : flatSyst){

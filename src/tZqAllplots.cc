@@ -275,7 +275,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         };
 
     //BDT reader for 1bJet23Jets category
-    std::vector < std::string > bdtVars1bJet23Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "maxDeltaPhijj", "mTW", "topMass", "pTMaxjj", "minDeltaPhilb", "maxDeltaPhill"}; 
+    std::vector < std::string > bdtVars1bJet23Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "mTW", "minDeltaPhilb", "maxDeltaPhill"}; 
     std::string weights;
     if( is2016() ){
         weights = "1bJet23Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
@@ -290,7 +290,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     } else if( is2017() ){
         weights = "1bJet4Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     }
-    std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "minDeltaPhilb", 
+    std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "minDeltaPhilb", 
         "deltaRTaggedbJetRecoilingJet", "deltaRWLeptonTaggedbJet", "m3l", "etaMostForward"};
     BDTReader bdtReader1bJet4Jets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet4Jets);
 
@@ -300,7 +300,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     } else if( is2017() ){
         weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     }
-    std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "etaMostForward", "m3l"};
+    std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "etaMostForward", "m3l"};
     BDTReader bdtReader2bJets("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets);
 
     //training tree writer
@@ -822,6 +822,7 @@ void treeReader::plot(const std::string& distName){
 }
 
 void treeReader::splitPlots(){
+    /*
     tools::makeFileList("tempHists_tZq", "inputList.txt");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
@@ -830,17 +831,18 @@ void treeReader::splitPlots(){
         script.close();
         tools::submitScript("printPlots.sh", "00:25:00");
     }
+    */
 
     //merge training files and clean up
     //2016
     tools::system("rm trainingTrees_tZq2016/*data*");
     tools::system("hadd trainingTrees_tZq2016/trainingTree.root trainingTrees_tZq2016/*root*");
-    tools::system("rm trainingTrees_tZq2016/*Summer16*root*");
+    //tools::system("rm trainingTrees_tZq2016/*Summer16*root*");
 
     //2017
     tools::system("rm trainingTrees_tZq2017/*data*");
     tools::system("hadd trainingTrees_tZq2017/trainingTree.root trainingTrees_tZq2017/*root*");
-    tools::system("rm trainingTrees_tZq2017/*Fall17*root* trainingTrees_tZq2017/*2017*root*");
+    //tools::system("rm trainingTrees_tZq2017/*Fall17*root* trainingTrees_tZq2017/*2017*root*");
 
     //switch back to original directory
     tools::system("cd ..");
