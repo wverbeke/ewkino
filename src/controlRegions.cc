@@ -171,21 +171,8 @@ void treeReader::Analyze(){
             const unsigned lCount = selectLepConeCorr(ind);
             if( !(lCount == 3 || lCount == 4) ) continue;
 
-            unsigned lCountTight = tightLepCount(ind, lCount);
-
-            if( !(lCountTight == lCount) ) continue; //require 3 tight leptons
-            /*
-            //WARNING  : REMOVE AFTER SYNC
-            //ask exactly 4 loose leptons for sync
-            unsigned looseCount = 0;
-            for(unsigned l = 0; l < _nLight; ++l){
-                if( closestJetDeepCSV(l) > ( is2016() ? 0.8958 : 0.8001) ) continue;
-                if( isMuon(l) && !_lPOGMedium[l]) continue;
-                if( lepIsLoose(l) ) ++looseCount;
-            }
-            if(looseCount != lCount) continue;
-            */
-
+            //unsigned lCountTight = tightLepCount(ind, lCount);
+            //if( !(lCountTight == lCount) ) continue; //require 3 tight leptons
 
             //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;
@@ -657,9 +644,9 @@ void treeReader::Analyze(){
         scaleXsecUncUp.push_back( scaleUpUnc );
 
         //filter out cross section effects from scale shape uncertainty
-        for(unsigned cr = 0; cr < nCr; ++cr){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
+        if( samples[sam].getFileName().find("GluGluToContinToZZ") == std::string::npos){
+            for(unsigned cr = 0; cr < nCr; ++cr){
+                for(unsigned dist = 0; dist < nDist; ++dist){
                     uncHistMapDown["scale"][cr][dist][sam]->Scale(sumOfWeights/sumOfWeights_scaleDown);
                     uncHistMapUp["scale"][cr][dist][sam]->Scale(sumOfWeights/sumOfWeights_scaleUp);
                 }
