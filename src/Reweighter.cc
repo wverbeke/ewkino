@@ -121,7 +121,9 @@ void Reweighter::initializeElectronWeights(){
 
 void Reweighter::initializeMuonWeights(){
 
+    //The current recommendation by the muon POG is to set muon tracking scale-factors to 1
     //read muon reco SF weights
+    /*
     if(is2016){
 
         //WARNING: not clear how ownership works for TGraph, can not set directory
@@ -131,7 +133,8 @@ void Reweighter::initializeMuonWeights(){
         muonRecoFile->Close();
     } else {
         //WARNING: 2017 muon reco SF are currently not available
-    }	
+    }
+    */    
 
     //read muon ID SF weights
     std::string year = ( is2016 ? "2016" : "2017" );
@@ -219,12 +222,15 @@ double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const d
 }
 
 double Reweighter::muonRecoWeight(const double eta) const{
+    /*
     if( is2016 ){
         return muonRecoSF->Eval(std::max(-2.4,std::min(eta, 2.4) ) );
     } else {
         //WARNING temporary, implement this later
         return 1.;
     }
+    */
+    return 1.;
 }
 
 double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
