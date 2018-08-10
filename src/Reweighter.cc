@@ -221,7 +221,7 @@ double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const d
     } 
 }
 
-double Reweighter::muonRecoWeight(const double eta) const{
+double Reweighter::muonRecoWeight() const{
     /*
     if( is2016 ){
         return muonRecoSF->Eval(std::max(-2.4,std::min(eta, 2.4) ) );

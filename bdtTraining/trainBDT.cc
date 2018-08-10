@@ -29,9 +29,9 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
         dataloader->AddVariable("asymmetryWlep", 'F');
         dataloader->AddVariable("highestDeepCSV", 'F');
         dataloader->AddVariable("ltmet", 'F');
-        dataloader->AddVariable("maxDeltaPhijj", 'F');
+        //dataloader->AddVariable("maxDeltaPhijj", 'F');
         dataloader->AddVariable("mTW", 'F');
-        dataloader->AddVariable("topMass", 'F');
+        //dataloader->AddVariable("topMass", 'F');
         dataloader->AddVariable("pTMaxjj", 'F');
         dataloader->AddVariable("minDeltaPhilb", 'F');
         dataloader->AddVariable("maxDeltaPhill", 'F');
@@ -43,11 +43,11 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
         dataloader->AddVariable("ltmet", 'F');
         dataloader->AddVariable("ht", 'F');
         dataloader->AddVariable("mTW", 'F');
-        dataloader->AddVariable("topMass", 'F');
+        //dataloader->AddVariable("topMass", 'F');
         dataloader->AddVariable("numberOfJets", 'F');
 
         dataloader->AddVariable("maxDeltaPhill", 'F');
-        dataloader->AddVariable("maxDeltaPhijj", 'F');
+        //dataloader->AddVariable("maxDeltaPhijj", 'F');
         dataloader->AddVariable("minDeltaPhilb", 'F');
 
         dataloader->AddVariable("deltaRTaggedbJetRecoilingJet", 'F');
@@ -64,11 +64,11 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
         dataloader->AddVariable("ltmet", 'F');
         dataloader->AddVariable("ht", 'F');
         dataloader->AddVariable("mTW", 'F');
-        dataloader->AddVariable("topMass", 'F');
+        //dataloader->AddVariable("topMass", 'F');
         dataloader->AddVariable("numberOfJets", 'F');
 
         dataloader->AddVariable("maxDeltaPhill", 'F');
-        dataloader->AddVariable("maxDeltaPhijj", 'F');
+        //dataloader->AddVariable("maxDeltaPhijj", 'F');
 
         dataloader->AddVariable("etaMostForward", 'F');
 
@@ -128,6 +128,7 @@ void trainMvaMethods(const std::string& jetsCat = "", const std::string& mllCat 
 
     //specify BDT to train
     factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1", "!H:!V:NTrees=1000:MinNodeSize=5%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=4:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
+    //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1", "!H:!V:NTrees=1000:MinNodeSize=5%:BoostType=Grad:Shrinkage=0.1:nCuts=200:MaxDepth=2:IgnoreNegWeightsInTraining:UseBaggedGrad=True:DoBoostMonitor=True");
 
     //train MVAs using the set of training events
     factory->TrainAllMethods();

@@ -388,7 +388,11 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     for(int b = 1; b < data->GetNbinsX() + 1; ++b){
         obsRatio->GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
         obsRatio->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), data->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
+        
+        //hack not to draw points at zero
+        /*
         if(data->GetBinContent(b) == 0) obsRatio->GetY()[b - 1] += 5;
+        */
     }
 
     //legend for uncertainties
