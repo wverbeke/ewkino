@@ -121,6 +121,8 @@ void Reweighter::initializeElectronWeights(){
 
 void Reweighter::initializeMuonWeights(){
 
+    //Muon tracking weights are no longer applied following the recommendations of the muon POG
+    /*
     //read muon reco SF weights
     if(is2016){
 
@@ -131,7 +133,8 @@ void Reweighter::initializeMuonWeights(){
         muonRecoFile->Close();
     } else {
         //WARNING: 2017 muon reco SF are currently not available
-    }	
+    }
+    */    
 
     //read muon ID SF weights
     std::string year = ( is2016 ? "2016" : "2017" );
@@ -218,13 +221,16 @@ double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const d
     } 
 }
 
-double Reweighter::muonRecoWeight(const double eta) const{
+double Reweighter::muonRecoWeight() const{
+    /*
     if( is2016 ){
         return muonRecoSF->Eval(std::max(-2.4,std::min(eta, 2.4) ) );
     } else {
         //WARNING temporary, implement this later
         return 1.;
     }
+    */
+    return 1.;
 }
 
 double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
