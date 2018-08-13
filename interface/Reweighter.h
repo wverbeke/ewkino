@@ -29,7 +29,7 @@ class Reweighter{
 
         //lepton id + reconstruction weight
         double muonTightWeight(const double pt, const double eta) const{ 
-            return muonRecoWeight(eta)*muonTightIdWeight(pt,eta);
+            return muonRecoWeight()*muonTightIdWeight(pt,eta);
         }
 
         double electronTightWeight(const double pt, const double superClusterEta) const{ 
@@ -37,7 +37,7 @@ class Reweighter{
         }
 
         double muonLooseWeight(const double pt, const double eta) const{
-            return  muonRecoWeight(eta)*muonLooseIdWeight(pt,eta);
+            return  muonRecoWeight()*muonLooseIdWeight(pt,eta);
         }
 
         double electronLooseWeight(const double pt, const double superClusterEta) const{
@@ -61,7 +61,6 @@ class Reweighter{
         std::shared_ptr<TH2D> bTagEffHist[3];
 
         //reconstruction scale factors
-        //std::shared_ptr<TGraph> muonRecoSF;
         std::shared_ptr<TH2D> electronRecoSF_pT0to20;
         std::shared_ptr<TH2D> electronRecoSF_pT20toInf;
 
@@ -87,7 +86,7 @@ class Reweighter{
         }
 
         //tracking + reconstruction weights
-        double muonRecoWeight(const double eta) const;
+        double muonRecoWeight() const;
         double electronRecoWeight(const double superClusterEta, const double pt) const;
 
         //loose id weights
