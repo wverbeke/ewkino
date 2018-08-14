@@ -35,5 +35,8 @@ namespace stringTools{
 
     //split file name and extentions
     std::pair< std::string, std::string > splitFileExtension( const std::string& );
+
+    //return fileName without extension
+    std::string fileWithoutExtension( const std::string& );
 }
 #endif

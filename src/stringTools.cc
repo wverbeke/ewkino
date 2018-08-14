@@ -3,7 +3,7 @@
 //Include c++ library classes
 #include <algorithm>
 
-std::string stringTools::removeBackSpaces(const std::string& s){
+std::string stringTools::removeBackSpaces( const std::string& s ){
     std::string formated(s);
     while(formated.find_last_of("\t") == formated.size() - 1 || formated.find_last_of(" ") == formated.size() - 1){
         formated.erase(formated.size() - 1);
@@ -12,7 +12,7 @@ std::string stringTools::removeBackSpaces(const std::string& s){
 }
 
 
-std::string stringTools::removeFrontSpaces(const std::string& s){
+std::string stringTools::removeFrontSpaces( const std::string& s ){
     std::string formated(s);
     while(formated.find("\t") == 0 || formated.find(" ") == 0){
         formated.erase(0, 1);
@@ -21,7 +21,7 @@ std::string stringTools::removeFrontSpaces(const std::string& s){
 }
 
 
-std::string stringTools::cleanSpaces(const std::string& s){
+std::string stringTools::cleanSpaces( const std::string& s ){
     std::string formated(s);
 
     //remove tabs and spaces in the front of the string
@@ -34,7 +34,7 @@ std::string stringTools::cleanSpaces(const std::string& s){
 }
 
 
-std::string stringTools::extractFirst(std::string& s){
+std::string stringTools::extractFirst( std::string& s ){
     
     //clean all spaces 
     s = cleanSpaces(s);
@@ -49,22 +49,26 @@ std::string stringTools::extractFirst(std::string& s){
 
 
 //add training / to directoryName if needed
-std::string stringTools::directoryName(const std::string& directory){
+std::string stringTools::directoryName( const std::string& directory ){
     std::string formated(directory);
     if(formated.back() != '/') formated.append("/");
     return formated;
 }
 
 
-bool stringTools::stringContains( const std::string& s, const std::string& substring){
+bool stringTools::stringContains( const std::string& s, const std::string& substring ){
     return (s.find(substring) != std::string::npos);
 }
 
-bool stringTools::stringEndsWith( const std::string& s, const std::string& ending){
+bool stringTools::stringEndsWith( const std::string& s, const std::string& ending ){
     return std::equal(ending.crbegin(), ending.crend(), s.crbegin() );
 }
 
-std::pair< std::string, std::string > stringTools::splitFileExtension(const std::string& fileName){
+std::pair< std::string, std::string > stringTools::splitFileExtension( const std::string& fileName ){
     size_t dotPosition = fileName.find_last_of(".");
     return { fileName.substr(0, dotPosition),  fileName.substr(dotPosition, fileName.size()) };
+}
+
+std::string stringTools::fileWithoutExtension( const std::string& fileName ){
+    return stringTools::splitFileExtension(fileName).first;
 }
