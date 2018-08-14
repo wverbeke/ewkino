@@ -1,35 +1,48 @@
 #include "../interface/Category.h"
 
-Category::Category(const std::vector < std::vector <std::string> >& catVec){
-    if(catVec.empty()){                          //make sure there is always one element
+//include other parts of code
+#include "../interface/stringTools.h"
+
+Category::Category( const std::vector < std::vector <std::string> >& catVec ){
+
+    //make sure there is always one element
+    if(catVec.empty()){
         cat.push_back("");                     
         ranges.push_back(1);
     } else{
-        for(auto it = catVec.cbegin(); it  != catVec.cend(); ++it){
-            pos catRange = 0;
-            std::vector<std::string> tempV;
+        
+        //build multidimensional categorization tree
+        for(const auto& splitLayer : catVec){
             if(cat.empty()){
-                cat = *it;
-                catRange = it->size();
+                cat = splitLayer;
             } else{
-                for(auto jt = it->cbegin(); jt != it->cend(); ++jt){
-                    for(auto catI = cat.cbegin(); catI != cat.cend(); ++catI){
-                        tempV.push_back(*catI + "_" + *jt);
+                std::vector<std::string> tempV;
+                for(const auto& split : splitLayer){
+                    for(const auto& category : cat){
+                        tempV.push_back( category + "_" + split );
                     }
-                    ++catRange;
                 }
                 cat = tempV;
             }
+            
+            //store range of splitting dimension that was looped over 
+            pos catRange = splitLayer.size(); 
             ranges.push_back(catRange);
         }
     }
 }
+
 
 size_t Category::getIndex(const std::vector<pos>& indices) const{
     if(indices.size() != ranges.size()){
         std::cerr << "Given vector of indices has a wrong dimension, returning index 0!" << std::endl;
         return 0;
     } else{
+
+        /*
+        flatten multidimensional indeces into single index
+        later categorizations cause greater shifts in the index value
+        */ 
         pos index = 0;
         unsigned multiplier = 1;
         for(pos i = 0; i < indices.size(); ++i){
@@ -40,14 +53,16 @@ size_t Category::getIndex(const std::vector<pos>& indices) const{
     }
 }
 
+
 std::string Category::name(const std::vector<pos>& indices) const{
     return cat[getIndex(indices)];
 }
 
-std::vector<size_t> Category::findCategoriesByName(const std::string& nameToFind) const{
-    std::vector<size_t> matchingCategories;
-    for(size_t c = 0; c < size(); ++c){
-        if( name(c).find(nameToFind) != std::string::npos ){
+
+std::vector< size_t > Category::findCategoriesByName(const std::string& nameToFind) const{
+    std::vector< pos > matchingCategories;
+    for(pos c = 0; c < size(); ++c){
+        if( stringTools::stringContains(name(c), nameToFind) ){
             matchingCategories.push_back(c);
         }
     }
