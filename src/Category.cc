@@ -46,6 +46,13 @@ size_t Category::getIndex(const std::vector<pos>& indices) const{
         pos index = 0;
         unsigned multiplier = 1;
         for(pos i = 0; i < indices.size(); ++i){
+            
+            //check that given indices are not out of range 
+            if( indices[i] >= ranges[i] ){
+                std::cerr << "Error in Category::getIndex : index " << i << " is " << indices[i] << " while the range is " << ranges[i] << ". Returning 0." << std::endl;
+                return 0;
+            }
+
             index += indices[i]*multiplier;
             multiplier*=ranges[i];
         }
