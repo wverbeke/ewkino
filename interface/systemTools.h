@@ -1,4 +1,9 @@
-//methods to interact with the system 
+/*
+methods to interact with the system 
+*/
+
+#ifndef systemTools_h
+#define systemTools_h
 
 //include c++ library classes
 #include <string>
@@ -49,3 +54,4 @@ namespace systemTools{
     //check whether there are running jobs
     bool runningJobs( const std::string& jobName = "" );
 }
+#endif

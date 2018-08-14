@@ -1,4 +1,10 @@
-//methods for std::string formatting 
+/*
+methods for std::string formatting 
+*/
+
+#ifndef stringTools_h
+#define stringTools_h
+
 
 //include c++ library classes
 #include <string>
@@ -30,3 +36,4 @@ namespace stringTools{
     //split file name and extentions
     std::pair< std::string, std::string > splitFileExtension( const std::string& );
 }
+#endif
