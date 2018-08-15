@@ -2,15 +2,14 @@
 Some simple tools which are useful in most physics analysis tasks
 */
 
-#ifndef tools_h
-#define tools_h
+#ifndef analysisTools_h
+#define analysisTools_h
 
 //include c++ library classes
-#include<tuple>
 #include<string>
+
 //include ROOT classes
 #include "TH1D.h"
-#include "TLorentzVector.h"
 
 namespace analysisTools{
 
