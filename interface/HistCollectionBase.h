@@ -31,7 +31,6 @@ class HistCollectionBase{
         std::shared_ptr< TH1D > access(const std::vector<size_t>& categoryIndices, const bool sb = false) const;
         
         std::string infoName() const { return histInfo->name(); }
-        //std::string sampleFileName() const { return sample->getFileName(); }
         std::string sampleUniqueName() const { return sample->getUniqueName(); }
         std::string sampleProcessName() const { return sample->getProcessName(); }
         std::string categoryName(size_t categoryIndex) const { return category->name(categoryIndex); }
