@@ -18,7 +18,7 @@ void analysisTools::printProgress( double progress ){
 }
 
 
-void analysisTools::setNegativeBinsToZero( const TH1D* h ){
+void analysisTools::setNegativeBinsToZero( TH1D* h ){
 
 	//check each bin of the histogram, and set its binContent to 0 if it is negative
     for(int b = 1; b < h->GetNbinsX() + 1; ++b){
@@ -33,7 +33,7 @@ void analysisTools::setNegativeBinsToZero( const std::shared_ptr< TH1D >& h){
 
 
 //Function to print dataCard to be analysed by CMS combination tool
-void tools::printDataCard(const double obsYield, const double sigYield, const std::string& sigName, const double* bkgYield, const unsigned nBkg, const std::string* bkgNames, const std::vector<std::vector<double> >& systUnc, const unsigned nSyst, const std::string* systNames, const std::string* systDist, const std::string& cardName, const bool shapeCard, const std::string& shapeFileName){
+void analysisTools::printDataCard(const double obsYield, const double sigYield, const std::string& sigName, const double* bkgYield, const unsigned nBkg, const std::string* bkgNames, const std::vector<std::vector<double> >& systUnc, const unsigned nSyst, const std::string* systNames, const std::string* systDist, const std::string& cardName, const bool shapeCard, const std::string& shapeFileName){
 
 	//stream for writing card
     std::ofstream card;

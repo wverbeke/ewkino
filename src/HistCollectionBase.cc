@@ -1,37 +1,46 @@
 #include "../interface/HistCollectionBase.h"
 
+//include other parts of code 
+#include "../interface/analysisTools.h"
+
 //include ROOT classes
 #include "TFile.h"
 #include "TROOT.h"
 
+
 HistCollectionBase::HistCollectionBase(const std::shared_ptr< HistInfo >& info, const std::shared_ptr< Sample >& sam, const std::shared_ptr< Category >& cat, const bool includeSB):
-    histInfo(info), sample(sam), category(cat){
+    histInfo(info), sample(sam), category(cat)
+{
     //make histogram for every category
     for(size_t c = 0; c < category->size(); ++c){
         collection.push_back( info->makeHist( categoryName(c) + sampleUniqueName() ) );
-        collection[c]->Sumw2();
+        collection.back()->Sumw2();
         if(includeSB){
             sideBand.push_back(  info->makeHist( categoryName(c) + sampleUniqueName() + "_sideband") );
-            sideBand[c]->Sumw2();
+            sideBand.back()->Sumw2();
         }
     }
 }
 
 
 HistCollectionBase::HistCollectionBase(const std::string& inputFileName, const std::shared_ptr< HistInfo >& info, const std::shared_ptr< Sample >& sam, const std::shared_ptr< Category >& cat, const bool includeSB):
-    histInfo(info), sample(sam), category(cat){
+    histInfo(info), sample(sam), category(cat)
+{
     //Open root file to read
-    TFile* inputFile = TFile::Open( (const TString&) inputFileName, "READ");
+    TFile* inputFile = TFile::Open( inputFileName.c_str(), "READ");
+
     //change to the correct directory (named after the distribution)
     inputFile->cd( (const TString&) infoName() );
+
     //read correct histogram for every category
     for(size_t c = 0; c < category->size(); ++c){
-        collection.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (const TString&) infoName() + "/" + name(c) ) ) );
+        collection.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (infoName() + "/" + name(c)).c_str() ) ) );
+
         //take away ownership from inputFile so root does not delete histogram
-        collection[c]->SetDirectory(gROOT);
+        collection.back()->SetDirectory(gROOT);
         if(includeSB){
-            sideBand.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (const TString&) infoName() + "/" + name(c, true) ) ) );
-            sideBand[c]->SetDirectory(gROOT);
+            sideBand.push_back(std::shared_ptr<TH1D>( (TH1D*) inputFile->Get( (infoName() + "/" + name(c, true)).c_str() ) ) );
+            sideBand.back()->SetDirectory(gROOT);
         }
     }
     inputFile->Close();
@@ -46,10 +55,12 @@ std::shared_ptr< TH1D > HistCollectionBase::access(const size_t categoryIndex, c
     }
 }
 
+
 std::shared_ptr< TH1D > HistCollectionBase::access(const std::vector<size_t>& categoryIndices, const bool sb) const{
     size_t categoryIndex = category->getIndex(categoryIndices);
     return access(categoryIndex, sb);
 }
+
 
 HistCollectionBase& HistCollectionBase::operator+=(const HistCollectionBase& rhs){
     if(size() != rhs.size()){
@@ -75,27 +86,35 @@ HistCollectionBase& HistCollectionBase::operator+=(const HistCollectionBase& rhs
     return *this;
 }
 
+/*
 void setNegativeBinsToZero(const std::shared_ptr<TH1D>& h){
+
     //check each bin of the histogram, and set its binContent to 0 if it is negative
     for(int b = 1; b < h->GetNbinsX() + 1; ++b){
         if(h->GetBinContent(b) < 0.) h->SetBinContent(b, 0.);
     }
 }
+*/
+
 
 void HistCollectionBase::negBinsToZero() const{
+
     /*
     Note that only collection is affected here since sideband is allowed to remain negative
     */
     //loop over all histograms in collection 
-    for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){ 
-        setNegativeBinsToZero(*colIt); 
+    //for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){ 
+    for(auto& hist : collection){
+        analysisTools::setNegativeBinsToZero(hist); 
     }
 }
+
 
 //rebin histograms corresponding to given categoryIndex
 void HistCollectionBase::rebin(const size_t categoryIndex, const int numberOfBinsToMerge) const{
     collection[categoryIndex]->Rebin(numberOfBinsToMerge);
 }
+
 
 //rebin histograms for all categories whose names contain given string
 void HistCollectionBase::rebin(const std::string& categoryName, const int numberOfBinsToMerge) const{
