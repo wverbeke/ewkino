@@ -80,7 +80,4 @@ class HistCollectionBase{
         //rebin all histograms of given category index
         void rebin(const size_t, const int) const;
 };
-
-//set all negative bins in histogram to zero
-void setNegativeBinsToZero(const std::shared_ptr< TH1D >&);
 #endif
