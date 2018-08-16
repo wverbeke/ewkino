@@ -121,9 +121,9 @@ void Reweighter::initializeElectronWeights(){
 
 void Reweighter::initializeMuonWeights(){
 
-    //The current recommendation by the muon POG is to set muon tracking scale-factors to 1
-    //read muon reco SF weights
+    //Muon tracking weights are no longer applied following the recommendations of the muon POG
     /*
+    //read muon reco SF weights
     if(is2016){
 
         //WARNING: not clear how ownership works for TGraph, can not set directory
