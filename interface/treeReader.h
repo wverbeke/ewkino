@@ -186,9 +186,9 @@ class treeReader {
         void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
 
         //set up tree for analysis
-        void readSamples(const std::string& list); //read sample list from file
-        void readSamples2016(const std::string&);
-        void readSamples2017(const std::string&);
+        void readSamples(const std::string& list, const std::string& directory); //read sample list from file
+        void readSamples2016(const std::string&, const std::string&);
+        void readSamples2017(const std::string&, const std::string&);
 
         void initSample();                              //event weights will be set according to is2016() ( or equally is2017() ) flag
         void initSample(const Sample&);  
@@ -358,7 +358,7 @@ class treeReader {
         void printLeptonPairing( std::ostream& os = std::cout ) const;
 
         //general function to read a list of samples
-        void readSamples(const std::string&, std::vector<Sample>&);
+        void readSamples(const std::string&, const std::string&, std::vector<Sample>&);
 
         //list of branches
         TBranch        *b__runNb;   
