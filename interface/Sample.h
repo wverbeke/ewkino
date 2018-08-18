@@ -13,15 +13,14 @@ Class used for storing the info related to a particular sample: xSec, process na
 
 //include ROOT classes
 #include "TFile.h"
-#include "TString.h"
 
 class Sample{
-    friend std::ostream& operator<<(std::ostream& os, const Sample&); 
+    friend std::ostream& operator<<( std::ostream& os, const Sample& ); 
     public:
         Sample() = default;
         //Sample(const std::string& file, const std::string& proc, double cross = 0);
-        Sample(const std::string& line); 
-        Sample(std::istream&); 
+        Sample( const std::string& line, const std::string& directory ); 
+        Sample( std::istream&, const std::string& directory ); 
 
         std::string getFileName() const { return fileName; }
 
@@ -44,7 +43,7 @@ class Sample{
 
         bool isNewPhysicsSignal() const { return newPhysicsSignal; }
 
-        std::shared_ptr<TFile> getFile(const std::string&) const;
+        std::shared_ptr<TFile> getFile() const;
 
     private:
         void setData(); 
@@ -53,18 +52,20 @@ class Sample{
 
         void setOptions(const std::string&);
 
-
         std::string fileName;
         std::string process;
         std::string uniqueName;
+        std::string directory;
 
         double xSec;
         bool isDataSample;
         bool is2017Sample;
         bool smSignal;
         bool newPhysicsSignal;
+
 };
-//remove .root from fileName to generate unique name
-std::string fileNameWithoutExtension(const std::string&);
+
+//read a txt file containing a list of samples
+std::vector< Sample > readSampleList( const std::string& list, const std::string& directory );
         
 #endif

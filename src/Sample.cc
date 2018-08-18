@@ -1,20 +1,16 @@
 #include "../interface/Sample.h"
 
-void Sample::setData(){
-    isDataSample = false;
-    static std::vector<std::string> dataNames = {"data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG"};
-    for(auto it = dataNames.cbegin(); it != dataNames.cend(); ++it){
-        if(fileName.find(*it) != std::string::npos){
-            isDataSample = true;
-        }
-    }
-}
+//include c++ library classes 
+#include <sstream>
+#include <fstream>
 
-void Sample::set2017(){
-    is2017Sample = (fileName.find("Fall17") != std::string::npos) || (fileName.find("2017") != std::string::npos);
-}
+//include other parts of code 
+#include "../interface/stringTools.h"
 
-Sample::Sample(const std::string& line){
+
+Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
+    directory( sampleDirectory)
+{
     /*
     only works if input line is formatted as:
     processName    fileName    xSec
@@ -26,6 +22,20 @@ Sample::Sample(const std::string& line){
     std::istringstream stream(line);
     stream >> process >> fileName >> xSecString;
 
+    //if not Xsection is specified it is zero
+    xSec = ( xSecString == "" ? 0 : std::stod(xSecString) );
+
+    setData();
+    set2017();
+
+    //unique name is equal to fileName without file extension
+    uniqueName = stringTools::fileWithoutExtension( fileName );
+
+    //data has no xSection
+    if(isData() && xSecString != ""){
+        std::cerr << "xSection specified for data: are you sure this was intended?" << std::endl;
+    }
+
     //extract all optional strings at the end of the line
     std::string optionString;
     std::string tempString;
@@ -34,25 +44,48 @@ Sample::Sample(const std::string& line){
         optionString.append(tempString);
     }
 
-    //if not Xsection is specified it is zero
-    xSec = (xSecString == "" ? 0 : std::stod(xSecString) );
-
-    setData();
-    set2017();
-
-    //unique name is equal to fileName without file extension
-    uniqueName = fileNameWithoutExtension(fileName);
-
-    //data has no xSection
-    if(isData() && xSecString != ""){
-        std::cerr << "xSection specified for data: are you sure this was intended?" << std::endl;
-    }
-
     //read options
+    //This might modify uniqueName. uniqueName has to be set before calling this function!
     setOptions(optionString);
 }
 
-void Sample::setOptions(const std::string& optionString){
+
+Sample::Sample( std::istream& is, const std::string& directory ){
+
+    //read sample info from txt file
+    std::string line;
+
+    //jump to next line if current line is a comment
+    bool nextLineIsComment;
+    do{
+        nextLineIsComment = false;
+        if(std::getline(is, line)){
+            nextLineIsComment =  (line[line.find_first_not_of(" \t")] == '#');
+            if(!nextLineIsComment){
+                *this = Sample(line, directory); 
+            }
+        }
+    } while(nextLineIsComment);
+}
+
+
+void Sample::setData(){
+    isDataSample = false;
+    static std::vector<std::string> dataNames = {"data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG"};
+    for(auto it = dataNames.cbegin(); it != dataNames.cend(); ++it){
+        if(fileName.find(*it) != std::string::npos){
+            isDataSample = true;
+        }
+    }
+}
+
+
+void Sample::set2017(){
+    is2017Sample = (fileName.find("Fall17") != std::string::npos) || (fileName.find("2017") != std::string::npos);
+}
+
+
+void Sample::setOptions( const std::string& optionString ){
     if(optionString == ""){
         smSignal = false;
         newPhysicsSignal = false;
@@ -84,42 +117,38 @@ void Sample::setOptions(const std::string& optionString){
     }
 }
 
-Sample::Sample(std::istream& is){
-    //read sample info from txt file
-    std::string line;
-    //jump to next line if current line is a comment
-    bool nextLineIsComment;
-    do{
-        nextLineIsComment = false;
-        if(std::getline(is, line)){
-            nextLineIsComment =  (line[line.find_first_not_of(" \t")] == '#');
-            if(!nextLineIsComment){
-                *this = Sample(line); 
-            }
-        }
-    } while(nextLineIsComment);
+
+std::shared_ptr<TFile> Sample::getFile() const{
+    return std::make_shared<TFile>( ( stringTools::directoryName(directory) + fileName).c_str() , "read");
 }
 
-std::shared_ptr<TFile> Sample::getFile(const std::string& directory) const{
-    std::string temp = directory;
-    if(*(temp.cend() - 1) == '/') temp.pop_back();
-    return std::make_shared<TFile>((const TString&) temp + "/" + fileName, "read");
-}
 
 //print Sample info
-std::ostream& operator<<(std::ostream& os, const Sample& sam){
-    os << sam.process << "\t" << sam.fileName << "\t" << sam.xSec << "\t" << ( sam.isData() ? "data" : "MC") << "\t" << ( sam.is2017() ? "Fall17" : "Summer16" ) << (sam.smSignal ? "\tSM signal" : "") << (sam.newPhysicsSignal ? "\tBSM signal" : "");
+std::ostream& operator<<( std::ostream& os, const Sample& sam ){
+    os << sam.process << "\t" << 
+        sam.fileName << "\t" << 
+        sam.xSec << "\t" << 
+        ( sam.isData() ? "data" : "MC") << "\t" << 
+        ( sam.is2017() ? "Fall17" : "Summer16" ) << 
+        (sam.smSignal ? "\tSM signal" : "") << 
+        (sam.newPhysicsSignal ? "\tBSM signal" : "");
     return os;
 }
 
-//for generating Sample name
-std::string fileNameWithoutExtension(const std::string& fileName){
-    std::string nameWithoutExt(fileName);
+//read a list of samples into a vector 
+std::vector< Sample > readSampleList( const std::string& listFile, const std::string& directory ){
+	
+	std::vector< Sample> sampleList;
 
-    //find last occurrence of . , marking the beginning of a file extension
-    auto pos = nameWithoutExt.find_last_of(".");
-    if(pos != std::string::npos){
-        nameWithoutExt.erase(pos, fileName.size());
+    //read sample info from txt file
+    std::ifstream inFile(listFile);
+    while( !inFile.eof() ){
+        sampleList.push_back( Sample( inFile, directory ) );
     }
-    return nameWithoutExt;
+    sampleList.pop_back();
+
+    //close file after usage
+    inFile.close();
+
+    return sampleList;
 }
