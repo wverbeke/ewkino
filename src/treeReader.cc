@@ -11,31 +11,30 @@ treeReader::treeReader(TTree *tree) : fChain(nullptr)
     }
 }
 
-void treeReader::readSamples(const std::string& list, std::vector<Sample>& sampleVector){
-    sampleVector.clear();    //clear current sample list
-    //read sample info (names and xSec) from txt file
-    std::ifstream file(list);
-    do {
-        sampleVector.push_back(Sample(file));
-    } while(!file.eof());
-    sampleVector.pop_back();
-    file.close();       //close file after usage
-    //display samples that have been read 
+void treeReader::readSamples(const std::string& list, const std::string& directory, std::vector<Sample>& sampleVector){
+
+    //clean current sample list 
+    sampleVector.clear();
+
+    //read list of samples from file
+    sampleVector = readSamples(list, directory);
+
+    //print sample information
     for(auto& sample : sampleVector){
         std::cout << sample << std::endl;
     }
 }
 
-void treeReader::readSamples(const std::string& list){
-    readSamples(list, this->samples);
+void treeReader::readSamples(const std::string& list, const std::string& directory){
+    readSamples(list, this->samples, directory);
 }
 
-void treeReader::readSamples2016(const std::string& list){
+void treeReader::readSamples2016(const std::string& list, const std::string& directory){
     std::cout << "########################################" << std::endl;
     std::cout << "         2016 samples                   " << std::endl;
     std::cout << "########################################" << std::endl;
 
-    readSamples(list, this->samples2016);
+    readSamples(list, directory, this->samples2016);
 
     //add the 2016 samples to the total sample list 
     this->samples.insert(samples.end(), samples2016.begin(), samples2016.end() );
@@ -45,11 +44,12 @@ void treeReader::readSamples2016(const std::string& list){
 
 }
 
-void treeReader::readSamples2017(const std::string& list){
+void treeReader::readSamples2017(const std::string& list, const std::string& directory){
     std::cout << "########################################" << std::endl;
     std::cout << "         2017 samples                   " << std::endl;
     std::cout << "########################################" << std::endl;
-    readSamples(list, this->samples2017);
+
+    readSamples(list, directory, this->samples2017);
 
     //add the 2017 samples to the total sample list
     this->samples.insert(samples.end(), samples2017.begin(), samples2017.end() );
