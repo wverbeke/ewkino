@@ -17,7 +17,7 @@ void treeReader::readSamples(const std::string& list, const std::string& directo
     sampleVector.clear();
 
     //read list of samples from file
-    sampleVector = readSamples(list, directory);
+    sampleVector = readSampleList(list, directory);
 
     //print sample information
     for(auto& sample : sampleVector){
