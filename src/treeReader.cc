@@ -26,7 +26,7 @@ void treeReader::readSamples(const std::string& list, const std::string& directo
 }
 
 void treeReader::readSamples(const std::string& list, const std::string& directory){
-    readSamples(list, this->samples, directory);
+    readSamples(list, directory, this->samples);
 }
 
 void treeReader::readSamples2016(const std::string& list, const std::string& directory){
