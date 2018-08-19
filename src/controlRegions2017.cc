@@ -39,7 +39,7 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_nonpromptDataDriven_2017.txt");
+    readSamples("sampleLists/samples_nonpromptDataDriven_2017.txt", "../../ntuples_tzq");
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
@@ -70,7 +70,7 @@ void treeReader::Analyze(){
         HistInfo("etaSubLeading", "|#eta| (subleading lepton)", 30, -2.5, 2.5),
         HistInfo("etaTrailing", "|#eta| (trailing lepton)", 30, -2.5, 2.5),
         HistInfo("nVertices", "number of vertices", 20, 0, 60),
-        HistInfo("flavors", "flavors", 5, 0, 5)
+        HistInfo("flavors", "flavors", 4, 0, 4, {"eee", "ee#mu", "e#mu#mu", "#mu#mu#mu"} )
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -152,10 +152,10 @@ void treeReader::Analyze(){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
-                tools::printProgress(progress);
+                analysisTools::printProgress(progress);
             } else if(it == nEntries -1){
                 progress = 1.;
-                tools::printProgress(progress);
+                analysisTools::printProgress(progress);
             }
 
             GetEntry(it);
@@ -562,13 +562,13 @@ void treeReader::Analyze(){
         //set histograms to 0 if negative
         for(unsigned cr = 0; cr < nCr; ++cr){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                tools::setNegativeZero( hists[cr][dist][sam].get() );
+                analysisTools::setNegativeBinsToZero( hists[cr][dist][sam].get() );
                 for(auto & key : uncNames){
-                    tools::setNegativeZero(uncHistMapDown[key][cr][dist][sam].get() );
-                    tools::setNegativeZero(uncHistMapUp[key][cr][dist][sam].get() );
+                    analysisTools::setNegativeBinsToZero(uncHistMapDown[key][cr][dist][sam].get() );
+                    analysisTools::setNegativeBinsToZero(uncHistMapUp[key][cr][dist][sam].get() );
                 } 
                 for(unsigned pdf = 0; pdf < 100; ++pdf){    
-                    tools::setNegativeZero(pdfUncHists[pdf][cr][dist][sam].get() );
+                    analysisTools::setNegativeBinsToZero(pdfUncHists[pdf][cr][dist][sam].get() );
                 }
             }	
         }
@@ -578,13 +578,13 @@ void treeReader::Analyze(){
     for(unsigned cr = 0; cr < nCr; ++cr){
        for(unsigned dist = 0; dist < nDist; ++dist){
            unsigned nonpromptIndex = samples.size();
-           tools::setNegativeZero( hists[cr][dist][nonpromptIndex].get() );
+           analysisTools::setNegativeBinsToZero( hists[cr][dist][nonpromptIndex].get() );
            for(auto & key : uncNames){
-               tools::setNegativeZero(uncHistMapDown[key][cr][dist][nonpromptIndex].get() );
-               tools::setNegativeZero(uncHistMapUp[key][cr][dist][nonpromptIndex].get() );
+               analysisTools::setNegativeBinsToZero(uncHistMapDown[key][cr][dist][nonpromptIndex].get() );
+               analysisTools::setNegativeBinsToZero(uncHistMapUp[key][cr][dist][nonpromptIndex].get() );
            } 
            for(unsigned pdf = 0; pdf < 100; ++pdf){    
-               tools::setNegativeZero(pdfUncHists[pdf][cr][dist][nonpromptIndex].get() );
+               analysisTools::setNegativeBinsToZero(pdfUncHists[pdf][cr][dist][nonpromptIndex].get() );
            }
        }
     
@@ -597,7 +597,7 @@ void treeReader::Analyze(){
         //lhe weights are not available for GluGlu->ZZ
         if( samples[sam].getFileName().find("GluGluToContinToZZ") != std::string::npos ) continue;
 
-        std::shared_ptr<TFile> sample = samples[sam].getFile("../../ntuples_tzq/");
+        std::shared_ptr<TFile> sample = samples[sam].getFile();
 
         //extract histogram containing nominal sum of weights
         std::shared_ptr<TH1D> hCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/hCounter") );
@@ -1008,7 +1008,7 @@ void treeReader::Analyze(){
         }
         shapeFile->Close();
 
-        tools::printDataCard( mergedHists[cr][0][0]->GetSumOfWeights(), mergedHists[cr][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, &systNames[0], systDist, "datacards/datacard_" + crNames[cr] + "_2017", true, "shapes/shapeFile_"  + crNames[cr] + "_2017");
+        analysisTools::printDataCard( mergedHists[cr][0][0]->GetSumOfWeights(), mergedHists[cr][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, &systNames[0], systDist, "datacards/datacard_" + crNames[cr] + "_2017", true, "shapes/shapeFile_"  + crNames[cr] + "_2017");
         
     }
     std::cout << "Printed all datacards" << std::endl;

@@ -47,7 +47,7 @@ void treeReader::Analyze(){
     histInfo = {
 
         //new BDT distribution
-        HistInfo("bdt", "BDT output", 30, -1, 1),
+        HistInfo("bdt", "BDT output", 10, -1, 1),
         HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
 
         HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
@@ -70,7 +70,7 @@ void treeReader::Analyze(){
         HistInfo("leadPt", "P_{T}^{leading} (GeV)", 20, 25, 200),
         HistInfo("subPt", "P_{T}^{subleading} (GeV)", 20, 15, 200),
         HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200),
-        HistInfo("flavors", "flavors", 4, 0, 4)
+        HistInfo("flavors", "flavors", 4, 0, 4, {"eee", "ee#mu", "e#mu#mu", "#mu#mu#mu"} )
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
