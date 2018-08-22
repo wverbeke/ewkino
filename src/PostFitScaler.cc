@@ -77,7 +77,7 @@ size_t PostFitScaler::findBinForProcess( const std::string& process, const doubl
     //find minimum difference between all stored pre fit yields for this process and the argument passed 
     double minDifference = std::numeric_limits<double>::max();
 
-    size_t bin;
+    size_t bin = 99999;
 
     const auto& yieldVector = mapIt->second;
     for( size_t b = 0; b < yieldVector.size(); ++b ){
