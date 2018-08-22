@@ -2,14 +2,15 @@
 Class that extracts post-fit normalizations from Combine's output and retrieves the scaling 
 */
 
+#ifndef PostFitScaler_H
+#define PostFitScaler_H
+
 //include c++ library classes 
 #include <map>
 #include <vector>
 #include <string>
 #include <utility>
 
-#ifndef PostFitScaler_H
-#define PostFitScaler_H
 class PostFitScaler{
     public: 
         PostFitScaler( const std::string& inputFileName );
