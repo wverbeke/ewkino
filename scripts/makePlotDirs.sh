@@ -58,6 +58,7 @@ for dir1 in 2016 2017 combined; do
     done
     for dir2 in 1bJet23Jets 1bJet4Jets 2bJets; do
         mkdir -p ${dir1}/lowBDT/${dir2}
+        mkdir -p ${dir1}/highBDT/${dir2}
         mkdir -p ${dir1}/final/${dir2}
     done
 done
