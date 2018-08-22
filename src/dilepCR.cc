@@ -19,6 +19,7 @@
 //include other parts of the code
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
+#include "../interface/systemTools.h"
 #include "../interface/ewkinoTools.h"
 #include "../interface/trilepTools.h"
 #include "../interface/HistCollectionSample.h"
@@ -35,8 +36,8 @@ void treeReader::setup(){
     gROOT->SetBatch(kTRUE);
 
     //read samples and cross sections from txt file
-    readSamples2016("sampleLists/samples_dilepCR_2016.txt");
-    readSamples2017("sampleLists/samples_dilepCR_2017.txt");
+    readSamples2016("sampleLists/samples_dilepCR_2016.txt", "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino");
+    readSamples2017("sampleLists/samples_dilepCR_2017.txt", "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino");
 
     //info on kinematic distributions to plot
     //name      xlabel    nBins,  min, max
@@ -462,7 +463,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 void treeReader::splitJobs(){
 
     //clear previous histograms
-    tools::system("rm tempHists/*");
+    systemTools::system("rm tempHists/*");
 
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample();
@@ -472,13 +473,12 @@ void treeReader::splitJobs(){
 
             //make temporary job script 
             std::ofstream script("runTuples.sh");
-            tools::initScript(script);
-            //script << "./dilepCR " << samples[currentSampleIndex].getFileName() << " " << std::to_string(begin) << " " << std::to_string(end);
+            systemTools::initScript(script);
             script << "./dilepCR " << samples[currentSampleIndex].getUniqueName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
 
             //submit job
-            tools::submitScript("runTuples.sh", "02:00:00");
+            systemTools::submitScript("runTuples.sh", "02:00:00");
          }
     }
 }
@@ -492,8 +492,8 @@ void treeReader::plot(const std::string& distName){
             std::vector<std::string> runCategorization2017 = {"all2017", "RunB", "RunC", "RunD", "RunE", "RunF"};
         
             //read collection for this distribution from files
-            HistCollectionDist col2016("inputList.txt", histInfo[d], samples2016, { runCategorization2016, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
-            HistCollectionDist col2017("inputList.txt", histInfo[d], samples2017, { runCategorization2017, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            HistCollectionDist col2016("tempHists", histInfo[d], samples2016, { runCategorization2016, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+            HistCollectionDist col2017("tempHists", histInfo[d], samples2017, { runCategorization2017, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
             //rebin same-sign category because of low statistics
             std::vector<std::string> notToRebin = {"nJets", "nForwardJets", "nBJets"};//distributions not  to rebin
             bool doNotRebin = false;
@@ -522,13 +522,13 @@ void treeReader::plot(const std::string& distName){
 }
 
 void treeReader::splitPlots(){
-    tools::makeFileList("tempHists", "inputList.txt");
+    //tools::makeFileList("tempHists", "inputList.txt");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
-        tools::initScript(script);
+        systemTools::initScript(script);
         script << "./dilepCR plot " << h.name();
         script.close();
-        tools::submitScript("printPlots.sh", "00:30:00");
+        systemTools::submitScript("printPlots.sh", "00:30:00");
     }
 }
 
@@ -547,9 +547,9 @@ int main(int argc, char* argv[]){
         std::cout << "Step 1: Distributing jobs on T2 grid" << std::endl;
         reader.splitJobs();
         std::cout << "Step 2: sleeping until jobs are finished" << std::endl;
-        if(tools::runningJobs()) std::cout << "jobs are running!" << std::endl;
-        while(tools::runningJobs("runTuples.sh")){
-            tools::sleep(60);
+        if( systemTools::runningJobs() ) std::cout << "jobs are running!" << std::endl;
+        while( systemTools::runningJobs("runTuples.sh") ){
+            systemTools::sleep(60);
         }
         std::cout << "Step 3: submitting plot jobs" << std::endl;
         reader.splitPlots();
