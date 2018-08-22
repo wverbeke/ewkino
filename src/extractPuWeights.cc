@@ -64,11 +64,8 @@ void extractPuWeights(const Sample& sample){
         return;
     }
 
-    //directory where ntuples are stored 
-    const std::string directory = "~/Work/ntuples_tzq/";
-
     //read MC pu distribution from given MC sample
-    std::shared_ptr<TFile> mcInputFile = sample.getFile( directory );
+    std::shared_ptr<TFile> mcInputFile = sample.getFile( );
     std::shared_ptr<TH1D> mcPuDist = std::shared_ptr<TH1D>( (TH1D*) mcInputFile->Get("blackJackAndHookers/nTrueInteractions") );
     mcPuDist->SetDirectory(gROOT);
     mcInputFile->Close();
@@ -140,22 +137,13 @@ void extractPuWeights(const Sample& sample){
 int main(int argc, char* argv[]){
 
     //list of samples
-    std::vector< Sample > sampleVector;
-    
-    //read sample lists from txt 
-    std::ifstream file2016("sampleLists/samples2016.txt");
-    do {
-        sampleVector.push_back(Sample(file2016));
-    } while(!file2016.eof());
-    sampleVector.pop_back();
-    file2016.close();       //close file after usage
+    std::vector< Sample > sampleVector = readSampleList( "sampleLists/samples2016.txt", "../../ntuples_tzq" );
 
-    std::ifstream file2017("sampleLists/samples2017.txt");
-    do {
-        sampleVector.push_back(Sample(file2017));
-    } while(!file2017.eof());
-    sampleVector.pop_back();
-    file2017.close();       //close file after usage
+    //read sample lists from txt 
+    std::vector< Sample > sampleVector2017 = readSampleList( "sampleLists/samples2017.txt", "../../ntuples_tzq" );
+    for( auto& samp : sampleVector2017 ){
+        sampleVector.push_back( samp );
+    }
 
     for(const auto& sample : sampleVector){
         if(sample.isData()) continue;
