@@ -45,12 +45,15 @@ void treeReader::setup(){
         HistInfo("mll", "M_{ll} (GeV)", 200, 12, 200),
         HistInfo("leadPt", "P_{T}^{leading} (GeV)", 100, 25, 200),
         HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 100, 15, 150),
+        HistInfo("muonPt", "P_{T}^{muon} (GeV)", 100, 15, 200),
+        HistInfo("electronPt", "P_{T}^{electron} (GeV)", 100, 15, 200),
         HistInfo("leadinEta", "|#eta|^{leading}", 100, 0, 2.5),
         HistInfo("trailingEta", "|#eta|^{trailing}", 100, 0, 2.5),
         HistInfo("nVertex", "number of vertices", 100, 0, 100),
         HistInfo("nJets", "number of jets", 10, 0, 10),
         HistInfo("nBJets_CSVv2", "number of b-jets (CSVv2)", 8, 0, 8),
-        HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8)
+        HistInfo("nBJets_DeepCSV", "number of b-jets (Deep CSV)", 8, 0, 8),
+        HistInfo("flavors", "flavors", 3, 0, 3, {"ee", "e#mu", "#mu#mu"} )
     };
 }
 
@@ -134,10 +137,23 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             weight *= sfWeight();
         }
 
+        //pt of leading muon and electron
+        double muonPt = 0;
+        double electronPt = 0;
+        for( unsigned l = 0; l < lCount; ++l){
+            if( isMuon(l) && muonPt == 0){
+                muonPt = _lPt[ind[l]];
+            } else if( isElectron(l) && electronPt == 0){
+                electronPt = _lPt[ind[l]];
+            }
+        }
 
-        double fill[nDist] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets() }; 
+        double fill[nDist] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], muonPt, electronPt, fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, 
+            (double) jetCount, (double) nBJets(0, false), (double) nBJets(), (double) (flav - 1)}; 
 
         for(unsigned dist = 0; dist < nDist; ++dist){
+            if( flav == 1 && dist == 4) continue;
+            if( flav == 3 && dist == 5) continue;
             histCollection.access(dist, std::vector<size_t>(1, flav) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
             histCollection.access(dist, std::vector<size_t>(1, flav) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
         }
