@@ -27,26 +27,26 @@ class HistCollectionBase{
         HistCollectionBase(const std::string&, const std::shared_ptr<HistInfo>&, const std::shared_ptr<Sample>&, const std::shared_ptr<Category>&, const bool includeSB = false);
 
         //access routines
-        std::shared_ptr< TH1D > access(const size_t categoryIndex, const bool sb = false) const;  
-        std::shared_ptr< TH1D > access(const std::vector<size_t>& categoryIndices, const bool sb = false) const;
+        std::shared_ptr< TH1D > access(const size_t categoryIndex, const bool sb = false) const;  //used 
+        std::shared_ptr< TH1D > access(const std::vector<size_t>& categoryIndices, const bool sb = false) const; //used 
         
         std::string infoName() const { return histInfo->name(); }
-        std::string sampleUniqueName() const { return sample->getUniqueName(); }
-        std::string sampleProcessName() const { return sample->getProcessName(); }
+        std::string sampleUniqueName() const { return sample->getUniqueName(); }    
+        std::string sampleProcessName() const { return sample->getProcessName(); }  //used 
         std::string categoryName(size_t categoryIndex) const { return category->name(categoryIndex); }
         std::string categoryName(const std::vector<size_t>& categoryIndices) const { return category->name(categoryIndices); }
 
         //full name of every histogram
-        std::string name(size_t categoryIndex, const bool sideband = false) const{
+        std::string name(size_t categoryIndex, const bool sideband = false) const{      //used privately
             return infoName() + categoryName(categoryIndex) + (sideband ? "sideband" : "") + sampleUniqueName(); 
         }
         size_t size() const{ return collection.size(); }
 
         //add two histcollections
-        HistCollectionBase& operator+=(const HistCollectionBase& rhs);
+        HistCollectionBase& operator+=(const HistCollectionBase& rhs); //used 
 
         //set negative bin contents to 0
-        void negBinsToZero() const;
+        void negativeBinsToZero() const;    //used 
 
         //rebin all histograms in category with certain value
         void rebin(const std::string&, const int) const;
@@ -64,10 +64,10 @@ class HistCollectionBase{
         bool isNewPhysicsSignal() const { return sample->isNewPhysicsSignal(); }
 
         //range for every categorization
-        size_t categoryRange(const size_t c) const { return category->getRange(c); }
+        size_t categoryRange(const size_t c) const { return category->getRange(c); } //used 
 
     //protected:
-        size_t getCategoryIndex(const std::vector<size_t>& categoryIndices) const { return category->getIndex(categoryIndices); }
+        size_t getCategoryIndex(const std::vector<size_t>& categoryIndices) const { return category->getIndex(categoryIndices); } //used 
 
     private:
         std::shared_ptr< HistInfo > histInfo;

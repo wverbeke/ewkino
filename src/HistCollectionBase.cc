@@ -87,7 +87,7 @@ HistCollectionBase& HistCollectionBase::operator+=(const HistCollectionBase& rhs
 }
 
 
-void HistCollectionBase::negBinsToZero() const{
+void HistCollectionBase::negativeBinsToZero() const{
 
     /*
     Note that only collection is affected here since sideband is allowed to remain negative
