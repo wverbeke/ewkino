@@ -20,7 +20,6 @@
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
 #include "../interface/systemTools.h"
-#include "../interface/ewkinoTools.h"
 #include "../interface/trilepTools.h"
 #include "../interface/HistCollectionSample.h"
 #include "../interface/HistCollectionDist.h"
@@ -72,9 +71,6 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
     HistCollectionSample histCollection(histInfo, samp, { {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"} });
 
     const unsigned nDist = histInfo.size();
-    const unsigned nRuns = histCollection.categoryRange(0);
-    const unsigned nJetCat = histCollection.categoryRange(2);
-    const unsigned nPuRew = histCollection.categoryRange(3);
 
     for(long unsigned it = begin; it < end; ++it){
         GetEntry(samp, it);
@@ -91,7 +87,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         if(lCount != 2) continue;
 
         //require leptons to be tight 
-        const unsigned tightCount = tightLepCount( ind );
+        const unsigned tightCount = tightLepCount( ind, lCount);
         if( tightCount != lCount ) continue;
 
         //require pt cuts (25, 20) to be passed
@@ -116,7 +112,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         unsigned jetCount = nJets(jetInd);
 
         //number of jets for categorization (not forward)
-        unsigned jetCountCategorization =  nJets(0, true, true )
+        unsigned jetCountCategorization =  nJets(0, true, false);
 
         //Extra category selection: for DY select onZ, for ttbar select 1 b-jet 2-jets
         if((flav == 1 || flav == 3) && hasOS){ //OSSF
@@ -142,8 +138,8 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         double fill[nDist] = {_met, (lepV[0] + lepV[1]).M(), _lPt[ind[0]], _lPt[ind[1]], fabs(_lEta[ind[0]]), fabs(_lEta[ind[1]]), (double) _nVertex, (double) jetCount, (double) nBJets(0, false), (double) nBJets() }; 
 
         for(unsigned dist = 0; dist < nDist; ++dist){
-            histCollection.access(dist, {flav})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
-            histCollection.access(dist, {0})->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
+            histCollection.access(dist, std::vector<size_t>(1, flav) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
+            histCollection.access(dist, std::vector<size_t>(1, flav) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
         }
     }
 
