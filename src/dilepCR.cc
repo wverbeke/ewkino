@@ -155,7 +155,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
             if( flav == 1 && dist == 4) continue;
             if( flav == 3 && dist == 5) continue;
             histCollection.access(dist, std::vector<size_t>(1, flav) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
-            histCollection.access(dist, std::vector<size_t>(1, flav) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
+            histCollection.access(dist, std::vector<size_t>(1, 0) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
         }
     }
 
@@ -214,11 +214,18 @@ void treeReader::plot(const std::string& distName){
             unsigned is2017 = 1;
 
             //print plots for collection
+            /*
             col2016.printPlots("plots/tZq/2016/controlR/dilepCR/", is2016, "ewkinoDilep", true, true);     //log
             col2016.printPlots("plots/tZq/2016/controlR/dilepCR/", is2016, "ewkinoDilep", false, true);    //linear
 
             col2017.printPlots("plots/tZq/2017/controlR/dilepCR/", is2017, "ewkinoDilep", true, true);     //log
             col2017.printPlots("plots/tZq/2017/controlR/dilepCR/", is2017, "ewkinoDilep", false, true);    //linear
+            */
+            col2016.printPlots("plots/tZq/2016/controlR/dilepCR/", is2016, "ewkinoDilep", true);     //log
+            col2016.printPlots("plots/tZq/2016/controlR/dilepCR/", is2016, "ewkinoDilep", false);    //linear
+
+            col2017.printPlots("plots/tZq/2017/controlR/dilepCR/", is2017, "ewkinoDilep", true);     //log
+            col2017.printPlots("plots/tZq/2017/controlR/dilepCR/", is2017, "ewkinoDilep", false);    //linear
         }
     }
 }
