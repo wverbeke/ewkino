@@ -39,24 +39,16 @@ PostFitScaler::PostFitScaler( const std::string& inputFileName ){
     
         postAndPreFitYields[process].push_back( {preFitYield, postFitYield} );
         
-        //temporary print, remove later
-        std::cout << process << " : " << preFitYield << "\t" << postFitYield << std::endl;
 	}
-    std::cout << "finished constructing" << std::endl;
-
 }
 
 std::pair< std::string, size_t > PostFitScaler::findProcessAndBin( const double preFitYield ) const{
-    
-    std::cout << "Attempting to find process and bin" << std::endl;
-
     std::string process;
     size_t bin;
 
     //find minimum difference between all stored pre fit yields and the argument passed 
     double minDifference = std::numeric_limits<double>::max();
-
-    std::cout << "start loop over map" << std::endl;
+    
     for( const auto& mapEntry : postAndPreFitYields ){
         const auto& yieldVector = mapEntry.second;
         for( size_t b = 0; b < yieldVector.size(); ++b ){
@@ -68,21 +60,60 @@ std::pair< std::string, size_t > PostFitScaler::findProcessAndBin( const double 
             }
         }
     }
-    std::cout << "process = " << process << "\tbin = " << bin << std::endl;
-    std::cout << "end loop over map" << std::endl;
-    
+
     return {process, bin};
+}
+
+size_t PostFitScaler::findBinForProcess( const std::string& process, const double preFitYield) const{
+
+    //find yields for given process 
+    const auto& mapIt = postAndPreFitYields.find( process );
+
+    //make sure the process is present in the input file
+    if( mapIt == postAndPreFitYields.cend() ){
+        std::cerr << "Error in PostFitScaler::findBinForProcess : " << process << " does not correspond to any process read from the input file!" << std::endl;
+    }
+
+    //find minimum difference between all stored pre fit yields for this process and the argument passed 
+    double minDifference = std::numeric_limits<double>::max();
+
+    size_t bin;
+
+    const auto& yieldVector = mapIt->second;
+    for( size_t b = 0; b < yieldVector.size(); ++b ){
+        double diff = fabs( preFitYield - yieldVector[b].first );
+        if( diff < minDifference ){
+            minDifference = diff;
+            bin = b;
+        }
+    }
+    return bin;
+}
+
+double PostFitScaler::postFitYield( const size_t bin, const std::string& process) const{
+    const auto& mapIt = postAndPreFitYields.find( process );
+    const auto& yieldVector = mapIt->second;
+    const auto& yieldPair = yieldVector[ bin ];
+    return yieldPair.second;
+
 }
 
 double PostFitScaler::postFitYield( const double preFitYield ) const{
     std::pair< std::string, size_t> processAndBin = findProcessAndBin( preFitYield );
-    const auto& mapIt = postAndPreFitYields.find( processAndBin.first );
-    const auto& yieldVector = mapIt->second;
-    const auto& yieldPair = yieldVector[ processAndBin.second ];
-    return yieldPair.second;
+    return postFitYield( processAndBin.second, processAndBin.first);
 }
 
 double PostFitScaler::postFitScaling( const double preFitYield ) const{
     double newYield = postFitYield( preFitYield );
+    return ( newYield / preFitYield );
+}
+
+double PostFitScaler::postFitYield( const std::string& process, const double preFitYield) const{
+    size_t bin = findBinForProcess( process, preFitYield );
+    return postFitYield( bin, process); 
+}
+
+double PostFitScaler::postFitScaling( const std::string& process, const double preFitYield) const{
+    double newYield = postFitYield( process, preFitYield );
     return ( newYield / preFitYield );
 }
