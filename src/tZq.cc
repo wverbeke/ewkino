@@ -27,6 +27,7 @@
 #include "../interface/kinematicTools.h"
 #include "../interface/TrainingTree.h"
 #include "../interface/BDTReader.h"
+#include "../interface/PostFitScaler.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -47,7 +48,7 @@ void treeReader::Analyze(){
     histInfo = {
 
         //new BDT distribution
-        HistInfo("bdt", "BDT output", 10, -1, 1),
+        HistInfo("bdt", "BDT output", 30, -1, 1),
         HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
 
         HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
@@ -1079,6 +1080,26 @@ void treeReader::Analyze(){
         }
     }
     std::cout << "Printed all datacards" << std::endl;
+
+    //initialize postFitScaler
+    PostFitScaler postFitScaler("postFitTable_2016_10bins_noZZ.txt");
+
+    //plot all distributions
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                
+                //scale histograms to post fit plots
+                for(unsigned p = 1; p < proc.size(); ++p){
+                    mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
+                }
+
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2016_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
+
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2016_postFit" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
+            }
+        }
+    }
 }
 int main(){
     treeReader reader;

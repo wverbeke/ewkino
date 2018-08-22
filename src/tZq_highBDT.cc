@@ -27,6 +27,7 @@
 #include "../interface/kinematicTools.h"
 #include "../interface/TrainingTree.h"
 #include "../interface/BDTReader.h"
+#include "../interface/PostFitScaler.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -848,6 +849,27 @@ void treeReader::Analyze(){
             }
         }
     }
+
+    //plot all postFit distributions
+    //initialize postFitScaler
+    PostFitScaler postFitScaler("postFitTable_2016_10bins_noZZ.txt");
+
+    //plot all distributions
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+
+                //scale histograms to post fit plots
+                for(unsigned p = 1; p < proc.size(); ++p){
+                    mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
+                }
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/highBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "highBDT_2016_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
+
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/highBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "highBDT_2016_postFit" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
+            }
+        }
+    }
+
 }
 int main(){
     treeReader reader;
