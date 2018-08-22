@@ -55,6 +55,11 @@ for dir1 in 2016 2017 combined; do
                 mkdir -p ${dir1}/${dir2}/${dir3}/${dir4}
             done
         done
+        for dir3 in dilepCR; do
+            for dir4 in inclusive ee em mm same-sign-ee same-sign-em same-sign-mm; do
+                mkdir -p ${dir1}/${dir2}/${dir3}/${dir4}
+            done
+        done
     done
     for dir2 in 1bJet23Jets 1bJet4Jets 2bJets; do
         mkdir -p ${dir1}/lowBDT/${dir2}

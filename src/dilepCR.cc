@@ -198,11 +198,11 @@ void treeReader::plot(const std::string& distName){
             unsigned is2017 = 1;
 
             //print plots for collection
-            col2016.printPlots("plots/tZq/dilepCR/2016", is2016, "ewkinoDilep", true, true);     //log
-            col2016.printPlots("plots/tZq/dilepCR/2016", is2016, "ewkinoDilep", false, true);    //linear
+            col2016.printPlots("plots/tZq/2016/controlR/dilepCR/", is2016, "ewkinoDilep", true, true);     //log
+            col2016.printPlots("plots/tZq/2016/controlR/dilepCR/", is2016, "ewkinoDilep", false, true);    //linear
 
-            col2017.printPlots("plots/tZq/dilepCR/2017", is2017, "ewkinoDilep", true, true);     //log
-            col2017.printPlots("plots/tZq/dilepCR/2017", is2017, "ewkinoDilep", false, true);    //linear
+            col2017.printPlots("plots/tZq/2017/controlR/dilepCR/", is2017, "ewkinoDilep", true, true);     //log
+            col2017.printPlots("plots/tZq/2017/controlR/dilepCR/", is2017, "ewkinoDilep", false, true);    //linear
         }
     }
 }
