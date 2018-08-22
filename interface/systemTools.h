@@ -33,6 +33,9 @@ namespace systemTools{
     //convert a txt file to a vector of lines 
     std::vector< std::string > readLines( const std::string& fileName, const std::string& mustContain = "", const std::string& mustEndWith = "");
 
+    //check number of columns in tabular txt file
+    unsigned numberOfColumnsInFile( const std::string& fileName );
+
 	//get first line of file
 	std::string readFirstLine( const std::string& textFile);
 

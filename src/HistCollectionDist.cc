@@ -5,49 +5,59 @@
 #include <set>
 #include <algorithm>
 
-/*
-HistCollectionDist::HistCollectionDist(const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, const std::shared_ptr < Category >& category){
-    for(auto samIt = samples.cbegin(); samIt != samples.cend(); ++samIt){
-        collection.push_back(HistCollectionBase(histInfo, *samIt, category) );
-    }
-}
-*/
+//include other parts of code 
+#include "../interface/systemTools.h"
+#include "../interface/stringTools.h"
+#include "../interface/analysisTools.h"
 
-HistCollectionDist::HistCollectionDist(const std::string& fileList, const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, 
-    const std::shared_ptr < Category >& category, const bool sideBand)
+HistCollectionDist::HistCollectionDist( const std::string& directory, const std::shared_ptr < HistInfo >& histInfo, const std::vector < std::shared_ptr < Sample > >& samples, 
+    const std::shared_ptr < Category >& category, const bool sideBand )
 {
-    std::vector<std::string> fileNameList = getFileNames(fileList);
-    for(size_t s = 0; s < samples.size(); ++s){
-        bool firstFile = true; //check whether file is first for given sample
+    //retrieve list of all root files in directory 
+    std::vector< std::string > fileNameList = systemTools::listFiles( directory, "", ".root" );
+
+    for(const auto& sampPtr : samples ){
+
+        //make new histogram collection for first file in sample
+        bool firstFile= true; 
+        
         for(const auto& file : fileNameList){
-            if(file.find(samples[s]->getUniqueName() + ".root") != std::string::npos){
-                if(firstFile){
-                    collection.push_back(HistCollectionBase(file, histInfo, samples[s], category, sideBand) );
+        
+            //check whether file corresponds to sample 
+            //WARNING: the file names are assumed here to have the Sample's uniqueName DIRECTLY followed by .root
+            //the naming convntion should automatically be taken into account in files written by the HistCollectionSample class
+            if( stringTools::stringContains( file, sampPtr->getUniqueName() + ".root") ){
+
+                //make new collection for first file in sample
+                if( firstFile ){
+                    collection.push_back( HistCollectionBase(file, histInfo, sampPtr, category, sideBand) );
                     firstFile = false;
-                }
-                else{
-                    collection[s] += HistCollectionBase(file, histInfo, samples[s], category, sideBand);
+
+                //otherwise add the file contents to the existing collection
+                } else {
+                    collection.back() += HistCollectionBase(file, histInfo, sampPtr, category, sideBand);
                 }
             }
-        }        
+        }
+
     }
 }
 
 
-HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const Category& category, const bool sideBand){
+HistCollectionDist::HistCollectionDist( const std::string& directory, const HistInfo& histInfo, const std::vector< Sample >& samples, const Category& category, const bool sideBand ){
     std::shared_ptr<HistInfo> infoPointer = std::make_shared<HistInfo>(histInfo);
     std::shared_ptr<Category> categoryPointer = std::make_shared<Category>(category);
     std::vector < std::shared_ptr< Sample > > samplePointerList;
     for(const auto& sam: samples){
         samplePointerList.push_back(std::make_shared< Sample >( sam ) );        
     }
-    *this = HistCollectionDist(fileList, infoPointer, samplePointerList, categoryPointer, sideBand);
+    *this = HistCollectionDist( directory, infoPointer, samplePointerList, categoryPointer, sideBand);
 }
 
-HistCollectionDist::HistCollectionDist(const std::string& fileList, const HistInfo& histInfo, const std::vector< Sample >& samples, const std::vector< std::vector < std::string > >& categoryVec, const bool sideBand): 
-    HistCollectionDist(fileList, histInfo, samples, Category(categoryVec) , sideBand) {}
+HistCollectionDist::HistCollectionDist( const std::string& directory, const HistInfo& histInfo, const std::vector< Sample >& samples, const std::vector< std::vector < std::string > >& categoryVec, const bool sideBand ): 
+    HistCollectionDist(directory, histInfo, samples, Category(categoryVec) , sideBand) {}
 
-
+/*
 std::vector<std::string> HistCollectionDist::getFileNames(const std::string& fileName){
     std::vector<std::string> fileList;
     std::ifstream listStream(fileName);
@@ -60,20 +70,23 @@ std::vector<std::string> HistCollectionDist::getFileNames(const std::string& fil
     listStream.close();
     return fileList;
 }
+*/
 
-void HistCollectionDist::negBinsToZero() const{
-    for(auto& baseCollection : collection){
-        baseCollection.negBinsToZero();
+void HistCollectionDist::negativeBinsToZero() const{
+    for(const auto& baseCollection : collection){
+        baseCollection.negativeBinsToZero();
     }
 }
 
 void HistCollectionDist::mergeProcesses(){
+
     //make sure to only megre once for efficiency
     if( merged ){
         return;
     }
+
     //set negative bins to 0 before merging
-    negBinsToZero();
+    negativeBinsToZero();
 
     //new merged collection
     std::vector< HistCollectionBase > mergedCollection;
@@ -84,7 +97,7 @@ void HistCollectionDist::mergeProcesses(){
     for(auto colIt = collection.cbegin(); colIt != collection.cend(); ++colIt){
 
         //check if this process is used 
-        if(usedProcesses.find( colIt->sampleProcessName() ) != usedProcesses.end() ) continue;
+        if( usedProcesses.find( colIt->sampleProcessName() ) != usedProcesses.end() ) continue;
 
         //add process to merged collection
         mergedCollection.push_back(*colIt);
@@ -107,10 +120,12 @@ void HistCollectionDist::mergeProcesses(){
     merged = true;
 }
 
+//EVALUATE NECESSITY
 std::string HistCollectionDist::name(const size_t categoryIndex) const{
     return distributionName() + "_" + categoryName(categoryIndex);
 }
 
+//EVALUATE NECESSITY
 std::string HistCollectionDist::plotPath(const size_t categoryIndex) const{
     std::string path = categoryName(categoryIndex);
     std::replace(path.begin(), path.end(), '_', '/');
@@ -133,7 +148,7 @@ std::shared_ptr<TH1D> HistCollectionDist::getTotalSideBand(const size_t category
     }
 
     //set negative bins to zero
-    setNegativeBinsToZero(totalSideBand);
+    analysisTools::setNegativeBinsToZero(totalSideBand);
     return totalSideBand;
 }
 
@@ -265,8 +280,8 @@ void HistCollectionDist::printPlots(const std::string& outputDirectory, const un
 
 unsigned HistCollectionDist::numberOfDataCollections() const{
     unsigned numDataCol = 0;
-    for(auto& collection : collection){
-        if(collection.isData()){
+    for(auto& baseCollection : collection){
+        if(baseCollection.isData()){
             ++numDataCol;
         }
     }

@@ -1,8 +1,8 @@
 #include "../interface/HistCollectionSample.h"
 
 HistCollectionSample::HistCollectionSample(const std::vector< std::shared_ptr< HistInfo > >& infoList, const std::shared_ptr<Sample>& sam, const std::shared_ptr<Category>& cat, const bool includeSB){
-    for(auto it = infoList.cbegin(); it != infoList.cend(); ++it){
-        collection.push_back(HistCollectionBase(*it, sam, cat, includeSB));
+    for(const auto& infoPtr : infoList){
+        collection.push_back( HistCollectionBase( infoPtr, sam, cat, includeSB ) );
     }
 }
 
@@ -10,7 +10,7 @@ HistCollectionSample::HistCollectionSample(const std::vector< HistInfo>& infoLis
     std::shared_ptr< Category > categoryPointer = std::make_shared<Category>(cat);
     std::shared_ptr< Sample > samplePointer = std::make_shared<Sample>(sam);
     std::vector < std::shared_ptr< HistInfo > > infoPointerList;
-    for(auto& info: infoList){
+    for(const auto& info: infoList){
         infoPointerList.push_back(std::make_shared< HistInfo >(info) );
     }
     *this = HistCollectionSample(infoPointerList, samplePointer, categoryPointer, includeSB);

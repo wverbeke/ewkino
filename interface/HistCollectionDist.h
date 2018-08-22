@@ -12,9 +12,8 @@
 
 class HistCollectionDist{
     public:
-        //direct initialization
-        //HistCollectionDist(const std::shared_ptr<HistInfo>&, const std::vector< std::shared_ptr< Sample > >&, const std::shared_ptr< Category >&);
-        //initialize by reading histograms from directory (given as string) :
+
+        //initialize by reading histograms from files in directory (directory name given as string)
         HistCollectionDist(const std::string&, const std::shared_ptr< HistInfo >&, const std::vector< std::shared_ptr< Sample > >&, const std::shared_ptr< Category >&, const bool sideBand = false);
         HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const Category&, const bool sideBand = false);
         HistCollectionDist(const std::string&, const HistInfo&, const std::vector< Sample >&, const std::vector< std::vector < std::string > >& categoryVec = std::vector< std::vector< std::string > >(), 
@@ -46,12 +45,12 @@ class HistCollectionDist{
     private:
         std::vector< HistCollectionBase > collection;
         
+        //set negative bin contents to 0
+        void negativeBinsToZero() const;
+
         //merge histograms of same process
         bool merged = false;
         void mergeProcesses();
-
-        //set negative bin contents to 0
-        void negBinsToZero() const;
 
         //make file path for plot depending on category
         std::string plotPath(const size_t categoryIndex) const;
