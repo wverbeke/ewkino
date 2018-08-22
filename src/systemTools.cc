@@ -3,6 +3,7 @@
 //Include c++ library classes
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <chrono>
 #include <thread>
@@ -65,6 +66,38 @@ std::vector < std::string > systemTools::readLines( const std::string& textFile,
     }
     textStream.close();
     return lines;
+}
+
+//check number of columns in tabular txt file
+unsigned systemTools::numberOfColumnsInFile( const std::string& textFile ){
+    
+    //read file 
+    std::ifstream fileStream( textFile );
+
+    //read first line, and second if possible since the first line tends to be some header 
+    std::string line;
+    std::string lineToCheck;
+    if( std::getline( fileStream, line ) ){
+        lineToCheck = line;
+        if( std::getline( fileStream, line ) ){
+            lineToCheck = line; 
+        }
+    } else {
+        return 0;
+    }
+
+    //compute number of columns in line
+    std::istringstream lineStream( lineToCheck );
+    unsigned numberOfColumns = 0;
+    do{
+        std::string entry;
+        lineStream >> entry;
+        if ( !( entry.empty() ) ){
+            ++numberOfColumns;
+        }
+    } while( lineStream );
+    
+    return numberOfColumns;
 }
 
 //read first line of a file 

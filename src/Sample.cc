@@ -128,10 +128,10 @@ std::ostream& operator<<( std::ostream& os, const Sample& sam ){
     os << sam.process << "\t" << 
         sam.fileName << "\t" << 
         sam.xSec << "\t" << 
-        ( sam.isData() ? "data" : "MC") << "\t" << 
+        ( sam.isData() ? "data" : "MC" ) << "\t" << 
         ( sam.is2017() ? "Fall17" : "Summer16" ) << 
-        (sam.smSignal ? "\tSM signal" : "") << 
-        (sam.newPhysicsSignal ? "\tBSM signal" : "");
+        ( sam.smSignal ? "\tSM signal" : "" ) << 
+        ( sam.newPhysicsSignal ? "\tBSM signal" : "" );
     return os;
 }
 
