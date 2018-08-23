@@ -27,7 +27,6 @@
 #include "../interface/kinematicTools.h"
 #include "../interface/TrainingTree.h"
 #include "../interface/BDTReader.h"
-#include "../interface/PostFitScaler.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -40,33 +39,33 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_nonpromptDataDriven_2016.txt", "../../ntuples_tzq");
+    readSamples("sampleLists/samples_nonpromptDataDriven_2017.txt", "../../ntuples_tzq");
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
         HistInfo("bdt", "BDT output", 30, -1, 1),
         HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
 
-        HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 5, 0, 5),
-        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 5, 0, 1200),
-        HistInfo("asymmetryWLep", "asymmetry (lepton from W)",5, -2.5, 2.5),
-        HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 5, 0, 1),
-        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 5, 0, 800),
-        HistInfo("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 5, 0, 3.15),
-        HistInfo("mt", "M_{T} (GeV)", 5, 0, 300),
-        HistInfo("mtop", "M_{(W + b)} (GeV)", 5, 0, 400),
-        HistInfo("maxpTJetJet", "P_{T}^{max}(jet + jet) (GeV)", 5, 0, 300), 
-        HistInfo("minDeltaPhiLeptonBJet", "min(#Delta#Phi(l, bjet))", 5, 0, 3.15),
-        HistInfo("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 5, 0, 3.15),
-        HistInfo("HT", "H_{T} (GeV)", 5, 0, 800), 
-        HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 5, 0, 10),
-        HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 5, 0, 7),
-        HistInfo("m3l", "M_{3l} (GeV)", 5, 0, 600),
-        HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 5, 0, 5),
+        HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
+        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 20, 0, 1200),
+        HistInfo("asymmetryWLep", "asymmetry (lepton from W)",20, -2.5, 2.5),
+        HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 20, 0, 1),
+        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 20, 0, 800),
+        HistInfo("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 20, 0, 3.15),
+        HistInfo("mt", "M_{T} (GeV)", 20, 0, 300),
+        HistInfo("mtop", "M_{(W + b)} (GeV)", 20, 0, 400),
+        HistInfo("maxpTJetJet", "P_{T}^{max}(jet + jet) (GeV)", 20, 0, 300), 
+        HistInfo("minDeltaPhiLeptonBJet", "min(#Delta#Phi(l, bjet))", 20, 0, 3.15),
+        HistInfo("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 20, 0, 3.15),
+        HistInfo("HT", "H_{T} (GeV)", 20, 0, 800), 
+        HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 20, 0, 10),
+        HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 20, 0, 7),
+        HistInfo("m3l", "M_{3l} (GeV)", 20, 0, 600),
+        HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 20, 0, 5),
         HistInfo("nJets", "number of jets", 10, 0, 10),
-        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 5, 25, 200),
-        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 5, 15, 200),
-        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 5, 10, 200),
+        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 20, 25, 200),
+        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 20, 15, 200),
+        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200),
         HistInfo("flavors", "flavors", 4, 0, 4, {"eee", "ee#mu", "e#mu#mu", "#mu#mu#mu"} ),
         HistInfo("ZPt", "flavors", 5, 0, 200)
     };
@@ -95,7 +94,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "pdf", "scaleXsec", "pdfXsec"};
+    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "pdf", "scaleXsec", "pdfXsec"};
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
     for( auto& key : uncNames ){
@@ -186,7 +185,6 @@ void treeReader::Analyze(){
     for(size_t sam = 0; sam < samples.size(); ++sam){
 
         initSample();          //2 = combined luminosity
-
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
@@ -200,11 +198,6 @@ void treeReader::Analyze(){
             }
 
             GetEntry(it);
-        
-            //poor man's post-fit
-            if(currentSample.getProcessName() == "tZq") {
-                weight *= 1.35;
-            }
 
             //apply triggers and MET filters
             if( !passTriggerCocktail() ) continue;
@@ -344,7 +337,7 @@ void treeReader::Analyze(){
                         };
  
                     for(unsigned dist = 0; dist < nDist; ++dist){
-                        uncHistMapDown["JEC_2016"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                        uncHistMapDown["JEC_2017"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                     }
                 }
             }
@@ -380,7 +373,7 @@ void treeReader::Analyze(){
                         };
 
                     for(unsigned dist = 0; dist < nDist; ++dist){
-                        uncHistMapUp["JEC_2016"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                        uncHistMapUp["JEC_2017"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                     }
                 }
             }
@@ -494,7 +487,7 @@ void treeReader::Analyze(){
                     _lheWeight[lhe] = 1.;
                 }
             }
- 
+
             //vary scale down
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapDown["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[8]);
@@ -517,22 +510,22 @@ void treeReader::Analyze(){
 
             //vary b-tag down for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
+                uncHistMapDown["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
             }
 
             //vary b-tag up for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_udsg_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
+                uncHistMapUp["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
             }
 
             //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapDown["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
             //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
             //100 pdf variations
@@ -659,11 +652,6 @@ void treeReader::Analyze(){
         }
         rms = sqrt( 0.01 * rms);
 
-        //catch CRAZY pdf uncertainty of TTZ-M1to10 in 2016 and set to zero
-        if( samples[sam].getFileName() == "TTZToLL_M-1to10_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root"){
-            rms = 0.;
-        }
-
         pdfXsecUncDown.push_back( -rms );
         pdfXsecUncUp.push_back( rms );
 
@@ -771,7 +759,7 @@ void treeReader::Analyze(){
             {"ZZ/H", 1.1},
             {"TTZ", 1.15}
         };
-    
+
     std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
 
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > totalSystUnc = mergedHists; //copy pointers to fix dimensionality of vector
@@ -843,33 +831,12 @@ void treeReader::Analyze(){
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/highBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "highBDT_2016", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/highBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "highBDT_2017", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/highBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "highBDT_2016" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/highBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "highBDT_2017" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
             }
         }
     }
-
-    //plot all postFit distributions
-    //initialize postFitScaler
-    PostFitScaler postFitScaler("postFitTable_2016_10bins_noZZ.txt");
-
-    //plot all distributions
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-
-                //scale histograms to post fit plots
-                for(unsigned p = 1; p < proc.size(); ++p){
-                    mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
-                }
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/highBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "highBDT_2016_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
-
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/highBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "highBDT_2016_postFit" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
-            }
-        }
-    }
-
 }
 int main(){
     treeReader reader;
