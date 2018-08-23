@@ -197,7 +197,7 @@ void treeReader::Analyze(){
         initSample();          //2 = combined luminosity
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -901,14 +901,38 @@ void treeReader::Analyze(){
     //make shape datacards for each category
     const unsigned nBkg = proc.size() - 2;  //number of background processes
     const std::string bkgNames[nBkg] = {"WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH", "nonprompt"}; //rewrite bkg names not to confuse combine
+    std::vector<std::string> processNames = {"tZq", "WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH", "nonprompt"};
     std::vector<std::string> flatSyst = {"lumi_2016", "id", "trigger_2016"};
     std::vector<std::string> shapeSyst = uncNames;
     std::vector<std::string> systNames; 
+    std::vector<std::string> uncorrelatedBetweenProc = {"pdf", "scale"};    
+    std::map< std::string, bool> isCorrelatedBetweenProc;
+    for(auto& shapeName : shapeSyst ){
+        bool correlated = true;
+        for( auto& uncorrelatedUnc : uncorrelatedBetweenProc ){
+            if( shapeName.find( uncorrelatedUnc ) != std::string::npos ){
+                correlated = false;
+                break;
+            }
+        }
+        isCorrelatedBetweenProc[shapeName] = correlated;
+    }
+
     for(auto& flatName : flatSyst){
         systNames.push_back( flatName );
     }
+
+    unsigned nShapes = 0;
     for(auto& shapeName : shapeSyst){
-        systNames.push_back( shapeName );
+        if( isCorrelatedBetweenProc[shapeName] ){
+            systNames.push_back( shapeName );
+            ++nShapes;
+        } else{
+            for(auto& process : processNames){
+               systNames.push_back( process + "_" + shapeName);
+               ++nShapes;
+            }
+        }
     }
 
     std::map< std::string, double > bkgSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
@@ -918,12 +942,14 @@ void treeReader::Analyze(){
             {"Xgamma", 1.1},
             {"ZZH", 1.1},
             {"TTZ", 1.15}
+            //{"TTZ", 1.3}
         };
 
     const unsigned nBinsFit = mergedHists[0][0][0][0]->GetNbinsX(); //number of bins used in the final fit
     const unsigned nStatUnc = (1 + nBkg)*nBinsFit; 
     const unsigned nFlatSyst = flatSyst.size();
-    const unsigned nShapeSyst = uncNames.size();
+    //const unsigned nShapeSyst = uncNames.size();
+    const unsigned nShapeSyst = nShapes;
     const unsigned nGeneralSystematics = nFlatSyst + nShapeSyst;
     const unsigned nBackGroundSpecificUnc = backgroundSpecificUnc.size();
     const unsigned nSyst = nGeneralSystematics + nStatUnc + nBackGroundSpecificUnc; //general uncertainties + stat signal (for every bin) + stat bkg (for every bin) + extra unc per bkg
@@ -946,12 +972,17 @@ void treeReader::Analyze(){
 
             //skip xsec uncertainties for nonprompt
             //skip xsec uncertainties for other processes that are measured directly 
-            bool uncIsXsec = ( shape >= nShapeSyst - 2 );
+            std::string shapeName = systNames[nFlatSyst + shape];
+            bool uncIsXsec = ( shapeName.find("Xsec") != std::string::npos );
             bool processWithoutTheoryUnc = ( std::find(ignoreTheoryUncForIndices.cbegin(), ignoreTheoryUncForIndices.cend(), p) != ignoreTheoryUncForIndices.cend() );
             processWithoutTheoryUnc = processWithoutTheoryUnc || (p == nBkg); //make sure nonprompt is always skipped here
             if( uncIsXsec && processWithoutTheoryUnc) continue;
 
-            systUnc[nFlatSyst + shape][p] = 1.00;
+            if( isCorrelatedBetweenProc[shapeName] ){
+                systUnc[nFlatSyst + shape][p] = 1.00;
+            } else if( shapeName.find( processNames[p] ) != std::string::npos ){
+                systUnc[nFlatSyst + shape][p] = 1.00;
+            }
         }
     }
 
@@ -964,11 +995,7 @@ void treeReader::Analyze(){
             systUnc[nGeneralSystematics + p*nBinsFit + bin][p] = 1.00;
 
             //name 
-            if(p == 0){
-                systNames.push_back( "tZq_stat_bin_" + std::to_string(bin + 1) );
-            } else{
-                systNames.push_back( bkgNames[p - 1] + "_stat_bin_" + std::to_string(bin + 1) );
-            }
+            systNames.push_back( processNames[p] + "_stat_bin_" + std::to_string(bin + 1) );
         }
     }
 
@@ -987,7 +1014,7 @@ void treeReader::Analyze(){
 
     std::string systDist[nSyst]; //probability distribution of nuisances
     for(unsigned syst = 0; syst < nSyst; ++syst){
-        if(syst < 3 || syst  >= nGeneralSystematics + nStatUnc) systDist[syst] = "lnN"; //flat unc 
+        if(syst < nFlatSyst || syst  >= nGeneralSystematics + nStatUnc) systDist[syst] = "lnN"; //flat unc 
         else systDist[syst] = "shape";                                                 //stat and all other shapes are shape unc 
     }
 
@@ -1029,12 +1056,8 @@ void treeReader::Analyze(){
             //set statical shape names ( to be sure they are independent for every category )
             for(unsigned p = 0; p < nBkg + 1; ++p){
                 for(unsigned bin = 0; bin < nBinsFit; ++bin){
-                    if(p == 0){
-                        systNames[nGeneralSystematics + p*nBinsFit + bin] = "tZq_stat_" + catNames[cat] + "_2016_bin_" + std::to_string(bin + 1);
-                    } else{
-                        systNames[nGeneralSystematics + p*nBinsFit + bin] =  bkgNames[p - 1] + "_stat_" + catNames[cat] + "_2016_bin_" + std::to_string(bin + 1);
-                    }
- 
+
+                    systNames[nGeneralSystematics + p*nBinsFit + bin]  = processNames[p] + "_stat_" + catNames[cat] + "_2016_bin_" + std::to_string(bin + 1);
                 }
             }
 
@@ -1063,8 +1086,13 @@ void treeReader::Analyze(){
 
                     //write general shape nuisances 
                     for( auto& key : uncNames ){
-                        mergedUncMapDown[key][m][cat][0][p]->Write( (const TString&) procName + "_" + key + "Down");
-                        mergedUncMapUp[key][m][cat][0][p]->Write( (const TString&) procName + "_" + key + "Up");
+                        if( isCorrelatedBetweenProc[key] ){
+                            mergedUncMapDown[key][m][cat][0][p]->Write( (const TString&) procName + "_" + key + "Down");
+                            mergedUncMapUp[key][m][cat][0][p]->Write( (const TString&) procName + "_" + key + "Up");
+                        } else {
+                           mergedUncMapDown[key][m][cat][0][p]->Write( (const TString&) procName + "_" + procName + "_" + key + "Down");
+                           mergedUncMapUp[key][m][cat][0][p]->Write( (const TString&) procName + "_" + procName + "_" + key + "Up");
+                        }
                     }
 
                     //write statistical shape nuisances 
