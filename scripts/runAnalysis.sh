@@ -1,6 +1,6 @@
 source setCMSSW.sh
 years=("" 2017)
-for process in tZq controlRegions tZq_lowBDT tZq_highBDT nonpromptControlRegions; do
+for process in tZq controlRegions tZq_lowBDT tZq_highBDT tZq_splitChannels nonpromptControlRegions; do
     for year in "${years[@]}"; do
         script=${process}${year}.sh
         makeSubmit $script ${PWD}/..
