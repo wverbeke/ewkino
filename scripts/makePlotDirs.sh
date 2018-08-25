@@ -65,6 +65,9 @@ for dir1 in 2016 2017 combined; do
         mkdir -p ${dir1}/lowBDT/${dir2}
         mkdir -p ${dir1}/highBDT/${dir2}
         mkdir -p ${dir1}/final/${dir2}
+        for dir3 in eee eem emm mmm; do
+            mkdir -p ${dir1}/final/${dir2}/${dir3}
+        done
     done
 done
 
