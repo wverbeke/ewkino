@@ -1,0 +1,2 @@
+#obs		        data_combined_trilepton_2017.root
+tZq	            tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17_withPsUnc.root						    0.0942                  SMSignal

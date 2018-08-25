@@ -135,7 +135,7 @@ double treeReader::jetPrefiringWeight() const{
     double sf = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
         if( jetIsGood(j) ){
-            double prefiringProbability = jetPrefiringProbability( _jetPt[j], _jetEta[j] );
+            double prefiringProbability = reweighter->jetPrefiringProbability( _jetPt[j], _jetEta[j] );
             sf *= ( 1. - prefiringProbability );
         }
     }

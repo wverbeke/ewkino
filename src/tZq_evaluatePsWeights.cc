@@ -44,30 +44,8 @@ void treeReader::Analyze(){
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
-        HistInfo("bdt", "BDT output", 20, -1, 1),
         HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
-
-        HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
-        HistInfo("maxMJetJet", "M_{jet + jet}^{max} (GeV)", 20, 0, 1200),
-        HistInfo("asymmetryWLep", "asymmetry (lepton from W)",20, -2.5, 2.5),
-        HistInfo("highestDeepCSV", "highest deepCSV (b + bb)", 20, 0, 1),
-        HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 20, 0, 800),
-        HistInfo("maxDeltaPhiJetJet", "max(#Delta#Phi(jet, jet))", 20, 0, 3.15),
-        HistInfo("mt", "M_{T} (GeV)", 20, 0, 300),
-        HistInfo("mtop", "M_{(W + b)} (GeV)", 20, 0, 400),
-        HistInfo("maxpTJetJet", "P_{T}^{max}(jet + jet) (GeV)", 20, 0, 300), 
-        HistInfo("minDeltaPhiLeptonBJet", "min(#Delta#Phi(l, bjet))", 20, 0, 3.15),
-        HistInfo("maxDeltaPhiLeptonLepton", "max(#Delta#Phi(l, l))", 20, 0, 3.15),
-        HistInfo("HT", "H_{T} (GeV)", 20, 0, 800), 
-        HistInfo("deltaRTaggedBJetRecoilingJet", "#DeltaR(tagged b-jet, recoiling jet)", 20, 0, 10),
-        HistInfo("deltaRWlepTaggedbJet", "#DeltaR(lepton from W, tagged b-jet)", 20, 0, 7),
-        HistInfo("m3l", "M_{3l} (GeV)", 20, 0, 600),
-        HistInfo("jetEta_highestEta", "|#eta| (most forward jet)", 20, 0, 5),
-        HistInfo("nJets", "number of jets", 10, 0, 10),
-        HistInfo("leadPt", "P_{T}^{leading} (GeV)", 20, 25, 200),
-        HistInfo("subPt", "P_{T}^{subleading} (GeV)", 20, 15, 200),
-        HistInfo("trailPt", "P_{T}^{trailing} (GeV)", 20, 10, 200),
-        HistInfo("flavors", "flavors", 4, 0, 4, {"eee", "ee#mu", "e#mu#mu", "#mu#mu#mu"} )
+        HistInfo("bdt_10bins_preFiringWeights", "BDT output", 10, -1, 1),
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -260,45 +238,27 @@ void treeReader::Analyze(){
                 }
             }
 
+            //jet prefiring weight 
+            double preFiringWeight = jetPrefiringWeight();
+
             //compute nominal bdt value
             double bdtNominal = 999.;
             if(tzqCat > 2 && tzqCat < 6){
                 bdtNominal = bdtOutput( tzqCat );
                 double fill[nDist] = {bdtNominal, bdtNominal,
-                    bdtVariableMap["etaRecoilingJet"],
-                    bdtVariableMap["maxMjj"],
-                    bdtVariableMap["asymmetryWlep"],
-                    bdtVariableMap["highestDeepCSV"],
-                    bdtVariableMap["ltmet"],
-                    bdtVariableMap["maxDeltaPhijj"],
-                    bdtVariableMap["mTW"],
-                    bdtVariableMap["topMass"],
-                    bdtVariableMap["pTMaxjj"],
-                    bdtVariableMap["minDeltaPhilb"],
-                    bdtVariableMap["maxDeltaPhill"],
-                    bdtVariableMap["ht"],
-                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                    bdtVariableMap["m3l"],
-                    bdtVariableMap["etaMostForward"],
-                    bdtVariableMap["numberOfJets"],
-                    _lPt[ind[0]],
-                    _lPt[ind[1]],
-                    _lPt[ind[2]],
-                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
                     };
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ) );
                 }
                 //in case of data fakes fill all uncertainties for nonprompt with nominal values
                 if( isData() && !passTightCut){
                     for(unsigned dist = 0; dist < nDist; ++dist){
                         for(auto& key: uncNames){
-                            uncHistMapDown[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                            uncHistMapUp[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                            uncHistMapDown[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ) );
+                            uncHistMapUp[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
                         }
                         for(unsigned pdf = 0; pdf < 100; ++pdf){
-                             pdfUncHists[pdf][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                             pdfUncHists[pdf][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
                         }
                     }
                 }
@@ -312,32 +272,11 @@ void treeReader::Analyze(){
             unsigned tzqCatJECDown = setSearchVariablestZq("JECDown", ind, bestZ);
             if(tzqCatJECDown > 2 && tzqCatJECDown < 6){
                 double bdtJECDown = bdtOutput( tzqCatJECDown );
-                double fill[nDist] = {bdtJECDown, bdtJECDown,
-                    bdtVariableMap["etaRecoilingJet"],
-                    bdtVariableMap["maxMjj"],
-                    bdtVariableMap["asymmetryWlep"],
-                    bdtVariableMap["highestDeepCSV"],
-                    bdtVariableMap["ltmet"],
-                    bdtVariableMap["maxDeltaPhijj"],
-                    bdtVariableMap["mTW"],
-                    bdtVariableMap["topMass"],
-                    bdtVariableMap["pTMaxjj"],
-                    bdtVariableMap["minDeltaPhilb"],
-                    bdtVariableMap["maxDeltaPhill"],
-                    bdtVariableMap["ht"],
-                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                    bdtVariableMap["m3l"],
-                    bdtVariableMap["etaMostForward"],
-                    bdtVariableMap["numberOfJets"],
-                    _lPt[ind[0]],
-                    _lPt[ind[1]],
-                    _lPt[ind[2]],
-                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                double fill[nDist] = {bdtJECDown, bdtJECDown
                     };
  
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown["JEC_2017"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapDown["JEC_2017"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
                 }
                 
             }
@@ -346,32 +285,11 @@ void treeReader::Analyze(){
             unsigned tzqCatJECUp = setSearchVariablestZq("JECUp", ind, bestZ);
             if(tzqCatJECUp > 2 && tzqCatJECUp < 6){
                 double bdtJECUp = bdtOutput( tzqCatJECUp );
-                double fill[nDist] = {bdtJECUp, bdtJECUp,
-                    bdtVariableMap["etaRecoilingJet"],
-                    bdtVariableMap["maxMjj"],
-                    bdtVariableMap["asymmetryWlep"],
-                    bdtVariableMap["highestDeepCSV"],
-                    bdtVariableMap["ltmet"],
-                    bdtVariableMap["maxDeltaPhijj"],
-                    bdtVariableMap["mTW"],
-                    bdtVariableMap["topMass"],
-                    bdtVariableMap["pTMaxjj"],
-                    bdtVariableMap["minDeltaPhilb"],
-                    bdtVariableMap["maxDeltaPhill"],
-                    bdtVariableMap["ht"],
-                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                    bdtVariableMap["m3l"],
-                    bdtVariableMap["etaMostForward"],
-                    bdtVariableMap["numberOfJets"],
-                    _lPt[ind[0]],
-                    _lPt[ind[1]],
-                    _lPt[ind[2]],
-                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                double fill[nDist] = {bdtJECUp, bdtJECUp
                     };
 
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapUp["JEC_2017"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapUp["JEC_2017"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
                 }
             }
 
@@ -379,32 +297,11 @@ void treeReader::Analyze(){
             unsigned tzqCatUnclDown = setSearchVariablestZq("unclDown", ind, bestZ);
             if(tzqCatUnclDown > 2 && tzqCatUnclDown < 6){
                 double bdtUnclDown = bdtOutput( tzqCatUnclDown );
-                double fill[nDist] = {bdtUnclDown, bdtUnclDown,
-                    bdtVariableMap["etaRecoilingJet"],
-                    bdtVariableMap["maxMjj"],
-                    bdtVariableMap["asymmetryWlep"],
-                    bdtVariableMap["highestDeepCSV"],
-                    bdtVariableMap["ltmet"],
-                    bdtVariableMap["maxDeltaPhijj"],
-                    bdtVariableMap["mTW"],
-                    bdtVariableMap["topMass"],
-                    bdtVariableMap["pTMaxjj"],
-                    bdtVariableMap["minDeltaPhilb"],
-                    bdtVariableMap["maxDeltaPhill"],
-                    bdtVariableMap["ht"],
-                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                    bdtVariableMap["m3l"],
-                    bdtVariableMap["etaMostForward"],
-                    bdtVariableMap["numberOfJets"],
-                    _lPt[ind[0]],
-                    _lPt[ind[1]],
-                    _lPt[ind[2]],
-                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                double fill[nDist] = {bdtUnclDown, bdtUnclDown
                     };
 
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown["uncl"][mllCat][tzqCatUnclDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapDown["uncl"][mllCat][tzqCatUnclDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
                 }
             }
 
@@ -412,32 +309,11 @@ void treeReader::Analyze(){
             unsigned tzqCatUnclUp = setSearchVariablestZq("unclUp", ind, bestZ);
             if(tzqCatUnclUp  > 2 && tzqCatUnclUp < 6){
                 double bdtUnclUp = bdtOutput( tzqCatUnclUp );
-                double fill[nDist] = {bdtUnclUp, bdtUnclUp,
-                    bdtVariableMap["etaRecoilingJet"],
-                    bdtVariableMap["maxMjj"],
-                    bdtVariableMap["asymmetryWlep"],
-                    bdtVariableMap["highestDeepCSV"],
-                    bdtVariableMap["ltmet"],
-                    bdtVariableMap["maxDeltaPhijj"],
-                    bdtVariableMap["mTW"],
-                    bdtVariableMap["topMass"],
-                    bdtVariableMap["pTMaxjj"],
-                    bdtVariableMap["minDeltaPhilb"],
-                    bdtVariableMap["maxDeltaPhill"],
-                    bdtVariableMap["ht"],
-                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                    bdtVariableMap["m3l"],
-                    bdtVariableMap["etaMostForward"],
-                    bdtVariableMap["numberOfJets"],
-                    _lPt[ind[0]],
-                    _lPt[ind[1]],
-                    _lPt[ind[2]],
-                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                double fill[nDist] = {bdtUnclUp, bdtUnclUp
                     };
 
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapUp["uncl"][mllCat][tzqCatUnclUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                    uncHistMapUp["uncl"][mllCat][tzqCatUnclUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
                 }
             }
 
@@ -446,28 +322,7 @@ void treeReader::Analyze(){
             
             //reset nominal values 
             setSearchVariablestZq("nominal", ind, bestZ);
-            double fill[nDist] = {bdtNominal, bdtNominal,
-                    bdtVariableMap["etaRecoilingJet"],
-                    bdtVariableMap["maxMjj"],
-                    bdtVariableMap["asymmetryWlep"],
-                    bdtVariableMap["highestDeepCSV"],
-                    bdtVariableMap["ltmet"],
-                    bdtVariableMap["maxDeltaPhijj"],
-                    bdtVariableMap["mTW"],
-                    bdtVariableMap["topMass"],
-                    bdtVariableMap["pTMaxjj"],
-                    bdtVariableMap["minDeltaPhilb"],
-                    bdtVariableMap["maxDeltaPhill"],
-                    bdtVariableMap["ht"],
-                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                    bdtVariableMap["m3l"],
-                    bdtVariableMap["etaMostForward"],
-                    bdtVariableMap["numberOfJets"],
-                    _lPt[ind[0]],
-                    _lPt[ind[1]],
-                    _lPt[ind[2]],
-                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+            double fill[nDist] = {bdtNominal, bdtNominal
                     };
 
             //set pdf and scale weight for GluGluToContinToZZ samples which do not include lhe weights
@@ -479,68 +334,68 @@ void treeReader::Analyze(){
 
             //vary scale down
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[8]);
+                uncHistMapDown["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[8]*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary scale up
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[4]);
+                uncHistMapUp["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[4]*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary pu down
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["pileup"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(1)/puWeight(0));
+                uncHistMapDown["pileup"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(1)/puWeight(0)*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary pu up            
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["pileup"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(2)/puWeight(0));
+                uncHistMapUp["pileup"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(2)/puWeight(0)*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary b-tag down for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
+                uncHistMapDown["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0)*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary b-tag up for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
+                uncHistMapUp["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0)*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapDown["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)*( (dist == 1) ? preFiringWeight : 1. )) );
             }
 
             //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)*( (dist == 1) ? preFiringWeight : 1. )) );
             }
 
             //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[6] );
+                uncHistMapDown["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[6]*( (dist == 1) ? preFiringWeight : 1. ) );
             }
 
             //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[8]);
+                uncHistMapUp["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[8]*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[7] );
+                uncHistMapDown["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[7]*( (dist == 1) ? preFiringWeight : 1. ) );
             }
 
             //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[9]);
+                uncHistMapUp["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[9]*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    pdfUncHists[pdf][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[pdf + 9]);
+                    pdfUncHists[pdf][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[pdf + 9]*( (dist == 1) ? preFiringWeight : 1. ));
                 }
             }
         }
@@ -560,6 +415,25 @@ void treeReader::Analyze(){
             }
         }
     }
+
+
+    //plot bdt before and after prefiring weights 
+    TCanvas* c = new TCanvas("", "", 500, 500 );
+    TH1D* nominal = (TH1D*) hists[0][0][0][0]->Clone();
+    TH1D* prefire = (TH1D*) hists[0][0][1][0]->Clone();
+    nominal->SetFillColor(kBlue);
+    nominal->SetLineColor(kBlue);
+    prefire->SetFillColor(kBlue);
+    prefire->SetLineColor(kBlue);
+    TLegend legend(0.2,0.8,0.95,0.9,NULL,"brNDC");
+    legend.SetNColumns(2);
+    legend.SetFillStyle(0); //avoid legend box
+    legend.AddEntry( nominal, "nominal", "f");
+    legend.AddEntry( prefire, "with prefire weights", "f");
+    nominal->Draw("histE");
+    prefire->Draw("histEsame");
+    legend.Draw("same");
+    c->SaveAs("prefiringPlot.pdf");
 
     //set nonprompt bins to 0 if negative
     for(unsigned m = 0; m < nMll; ++m){
@@ -774,6 +648,7 @@ void treeReader::Analyze(){
     //print the effect of systematic uncertainty
     //compute minimum and maximum impact on each bin
     for(unsigned bdt = 0; bdt < 2; ++bdt){
+        if(bdt == 1) continue;
         std::cout << "##################################################" << std::endl;
         if(bdt == 0){
             std::cout << "uncetainty ranges for 30 BDT bins: " << std::endl;
@@ -798,7 +673,7 @@ void treeReader::Analyze(){
                             binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
                         }
                         double fractionalUnc = binUnc/binContent;
-                        if(bdt == 1){
+                        if(bdt == 0){
                             std::cout << "fractional uncertainty in " << catNames[cat] << " bin " << bin << "  =  " << fractionalUnc*100 << "%" << std::endl;
                         }
                         if( fractionalUnc > maxUnc){
