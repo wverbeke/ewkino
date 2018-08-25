@@ -29,6 +29,9 @@ void Reweighter::initializeAllWeights(const std::vector<Sample>& samples){
 
     //initialize fake-rate
     initializeFakeRate();
+
+    //initialize prefiring probabilities
+    initializePrefiringProbabilities();
 }
 
 void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
@@ -161,6 +164,14 @@ void Reweighter::initializeFakeRate(){
         }
         frFile->Close();
     }
+}
+
+void Reweighter::initializePrefiringProbabilities(){
+    std::string year = ( is2016 ? "2016" : "2017" );
+    TFile* prefiringFile = TFile::Open( (const TString&) "weights/L1prefiring_eff_jet_" + year + ".root");
+    prefiringMap = std::shared_ptr<TH2D>( (TH2D*) prefiringFile->Get( is2016? "prefireEfficiencyMap" : "L1prefiring_jet_2017BtoF" ) );
+    prefiringMap->SetDirectory(gROOT);
+    prefiringFile->Close();
 }
 
 Reweighter::~Reweighter(){}
@@ -308,4 +319,17 @@ double Reweighter::electronFakeRate(const double pt, const double eta, const uns
         std::cerr << "Error: invalid electron fake-rate uncertainty requested: returning fake-rate 99" << std::endl;
         return 99;
     }
+}
+
+double Reweighter::jetPrefiringProbability(const double pt, const double eta) const{
+
+    //consider probabilities outside of map to be zero
+    //this is implicitly implemented by not requiring the pt and eta values to fall in the map
+
+    //abseta binning for 2016, eta binning for 2017
+    double croppedEta = eta;
+    if( is2016 ){
+        croppedEta = fabs(eta);
+    }
+    return prefiringMap->GetBinContent( croppedEta, pt );
 }

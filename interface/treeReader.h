@@ -289,6 +289,7 @@ class treeReader {
         double leptonWeight() const;
         double sfWeight();
         double fakeRateWeight(const unsigned unc = 0);
+        double jetPrefiringWeight() const;
 
     private:
         TTree* fChain;                                                          //current Tree
