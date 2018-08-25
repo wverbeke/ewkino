@@ -95,7 +95,7 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
         //require pt cuts (25, 20) to be passed
         if( _lPt[ind[0]] < 40 ) continue;
-        if( _lPt[ind[1]] < 15 ) continue;
+        if( _lPt[ind[1]] < 20 ) continue;
 
         //make lorentzvectors for leptons
         TLorentzVector lepV[lCount];
@@ -141,9 +141,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         double muonPt = 0;
         double electronPt = 0;
         for( unsigned l = 0; l < lCount; ++l){
-            if( isMuon(l) && muonPt == 0){
+            if( isMuon(ind[l]) && muonPt == 0){
                 muonPt = _lPt[ind[l]];
-            } else if( isElectron(l) && electronPt == 0){
+            } else if( isElectron(ind[l]) && electronPt == 0){
                 electronPt = _lPt[ind[l]];
             }
         }
@@ -154,6 +154,9 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         for(unsigned dist = 0; dist < nDist; ++dist){
             if( flav == 1 && dist == 4) continue;
             if( flav == 3 && dist == 5) continue;
+            if(dist == 0){
+                std::cout << "filling met, weight = " << weight << std::endl;
+            }
             histCollection.access(dist, std::vector<size_t>(1, flav) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
             histCollection.access(dist, std::vector<size_t>(1, 0) )->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter()), weight);
         }

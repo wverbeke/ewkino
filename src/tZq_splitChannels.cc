@@ -858,7 +858,7 @@ void treeReader::Analyze(){
         }
     }
     
-    PostFitScaler postFitScaler("postFitTable_2016_10bins_noZZ.txt");
+    PostFitScaler postFitScaler("total_postFit_yields.txt");
 
     //compute scaling for each category 
     double scaling[nCat][ (const size_t) proc.size()];
