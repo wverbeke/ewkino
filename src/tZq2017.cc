@@ -27,6 +27,7 @@
 #include "../interface/kinematicTools.h"
 #include "../interface/TrainingTree.h"
 #include "../interface/BDTReader.h"
+#include "../interface/PostFitScaler.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -43,7 +44,7 @@ void treeReader::Analyze(){
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
-        HistInfo("bdt", "BDT output", 30, -1, 1),
+        HistInfo("bdt", "BDT output", 20, -1, 1),
         HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
 
         HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
@@ -676,7 +677,7 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"total bkg.", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
+    std::vector<std::string> proc = {"Obs.", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
@@ -1085,6 +1086,26 @@ void treeReader::Analyze(){
         }
     }   
     std::cout << "Printed all datacards" << std::endl;
+
+     //initialize postFitScaler
+    PostFitScaler postFitScaler("total_postFit_yields.txt");
+
+    //plot all distributions
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                
+                //scale histograms to post fit plots
+                for(unsigned p = 1; p < proc.size(); ++p){
+                    mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
+                }
+
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
+      
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017_postFit" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
+            }
+        }
+    }
 }
 
 int main(){
