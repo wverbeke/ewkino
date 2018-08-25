@@ -48,6 +48,9 @@ class Reweighter{
         double muonFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
         double electronFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
 
+        //jet prefering probabilities
+        double jetPrefiringProbability(const double pt, const double eta) const;
+
     private:
         //boolean flagging weights as 2016 or 2017
         bool is2016;
@@ -75,6 +78,9 @@ class Reweighter{
         //fake rate maps
         std::shared_ptr<TH2D> frMapEle[3];
         std::shared_ptr<TH2D> frMapMu[3];
+
+        //jet prefiring probabilities
+        std::shared_ptr<TH2D> prefiringMap;
 
         //initialize all weight histograms
         void initialize2016Weights();
@@ -111,6 +117,9 @@ class Reweighter{
 
         //initialize fake-rate
         void initializeFakeRate();
+
+        //initialize jet prefiring probabilities
+        void initializePrefiringProbabilities();
 
         //initialize all weights 
         void initializeAllWeights(const std::vector< Sample>&);
