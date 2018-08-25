@@ -40,7 +40,7 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_evaluatePsUnc.txt", "../../ntuples_tzq/");
+    readSamples("sampleLists/samples_evaluate2016Prefiring.txt", "../../ntuples_tzq/");
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
@@ -72,7 +72,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "isr", "fsr", "pdf", "scaleXsec", "pdfXsec"};
+    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "isr", "fsr", "pdf", "scaleXsec", "pdfXsec"};
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
     for( auto& key : uncNames ){
@@ -276,7 +276,7 @@ void treeReader::Analyze(){
                     };
  
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown["JEC_2017"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
+                    uncHistMapDown["JEC_2016"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
                 }
                 
             }
@@ -289,7 +289,7 @@ void treeReader::Analyze(){
                     };
 
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapUp["JEC_2017"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
+                    uncHistMapUp["JEC_2016"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( (dist == 1) ? preFiringWeight : 1. ));
                 }
             }
 
@@ -354,22 +354,22 @@ void treeReader::Analyze(){
 
             //vary b-tag down for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0)*( (dist == 1) ? preFiringWeight : 1. ));
+                uncHistMapDown["bTag_udsg_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0)*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary b-tag up for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0)*( (dist == 1) ? preFiringWeight : 1. ));
+                uncHistMapUp["bTag_udsg_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0)*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)*( (dist == 1) ? preFiringWeight : 1. )) );
+                uncHistMapDown["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)*( (dist == 1) ? preFiringWeight : 1. )) );
             }
 
             //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)*( (dist == 1) ? preFiringWeight : 1. )) );
+                uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)*( (dist == 1) ? preFiringWeight : 1. )) );
             }
 
             //vary b-tag down for b and c (correlated)
@@ -439,7 +439,7 @@ void treeReader::Analyze(){
     nominal->Draw("histE");
     prefire->Draw("histEsame");
     legend.Draw("same");
-    c->SaveAs("prefiringPlot_2017.pdf");
+    c->SaveAs("prefiringPlot_2016.pdf");
 
     TCanvas* c_log = new TCanvas("", "", 500, 500 );
     TLegend legend2(0.2,0.8,0.8,0.9,NULL,"brNDC");
@@ -451,263 +451,8 @@ void treeReader::Analyze(){
     prefire->Draw("histEsame");
     legend.Draw("same");
     c_log->SetLogy();
-    c_log->SaveAs("prefiringPlot_2017_log.pdf");
+    c_log->SaveAs("prefiringPlot_2016_log.pdf");
 
-
-
-    //set nonprompt bins to 0 if negative
-    for(unsigned m = 0; m < nMll; ++m){
-        for( unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                unsigned nonpromptIndex = samples.size();
-                analysisTools::setNegativeBinsToZero( hists[m][cat][dist][nonpromptIndex].get() );
-                for(auto & key : uncNames){
-                    analysisTools::setNegativeBinsToZero(uncHistMapDown[key][m][cat][dist][nonpromptIndex].get() );
-                    analysisTools::setNegativeBinsToZero(uncHistMapUp[key][m][cat][dist][nonpromptIndex].get() );
-                } 
-                for(unsigned pdf = 0; pdf < 100; ++pdf){    
-                    analysisTools::setNegativeBinsToZero(pdfUncHists[pdf][m][cat][dist][nonpromptIndex].get() );
-                }
-            }
-        }
-    }
-
-    //compute lhe cross section ratio for every sample and variation
-    std::vector< std::vector< double> > crossSectionRatio(samples.size(), std::vector<double>(110, 1.) );
-    std::vector< std::vector< double> > psCrossSectionRatio(samples.size(), std::vector<double>(14, 1.) );
-    for(unsigned sam = 1; sam < samples.size(); ++sam){
-
-        //lhe weights are not available for GluGlu->ZZ
-        if( samples[sam].getFileName().find("GluGluToContinToZZ") != std::string::npos ) continue;
-
-        std::shared_ptr<TFile> sample = samples[sam].getFile();
-
-        //extract histogram containing nominal sum of weights
-        std::shared_ptr<TH1D> hCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/hCounter") );
-        double sumOfWeights = hCounter->GetBinContent(1);
-
-        //extract histogram containing sum of weights for all possible pdf variations
-        std::shared_ptr<TH1D> lheCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/lheCounter"));
-        for(unsigned lhe = 0; lhe < 110; ++lhe){
-            double variedSumOfWeights = lheCounter->GetBinContent(lhe + 1);
-            crossSectionRatio[sam][lhe] = sumOfWeights/( variedSumOfWeights );
-        }
-
-        std::shared_ptr<TH1D> psCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/psCounter"));
-        for(unsigned ps = 0; ps < 14; ++ps){
-            double variedSumOfWeights = psCounter->GetBinContent(ps + 1);
-            psCrossSectionRatio[sam][ps] = sumOfWeights/( variedSumOfWeights );
-        }
-    }
-
-    //compute final pdf uncertainties
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
-                    if(sam == 0 ) continue;
-
-                    for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["pdf"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
-                        double pdfVarRms = 0.;
-                        for(unsigned pdf = 0; pdf < 100; ++pdf){
-
-                            double variedBin = pdfUncHists[pdf][m][cat][dist][sam]->GetBinContent(bin);
-                            if( sam != samples.size() ){
-                                variedBin *= crossSectionRatio[sam][pdf + 9];
-                            }
-                            double diff = (  variedBin - hists[m][cat][dist][sam]->GetBinContent(bin) );
-                            pdfVarRms += diff * diff;
-                        }
-                        pdfVarRms = sqrt( 0.01 * pdfVarRms );
-                        uncHistMapDown["pdf"][m][cat][dist][sam]->SetBinContent( bin, hists[m][cat][dist][sam]->GetBinContent(bin) - pdfVarRms);
-                        uncHistMapUp["pdf"][m][cat][dist][sam]->SetBinContent( bin, hists[m][cat][dist][sam]->GetBinContent(bin) + pdfVarRms);
-                    }
-                }
-            }
-        }
-    }
-
-    //add pdf and scale variation uncertainties of the cross-section
-    std::vector< double > scaleXsecUncDown = {0.};  //first dummy entry for data
-    std::vector< double > scaleXsecUncUp = {0.};
-    std::vector< double > pdfXsecUncDown = {0.};
-    std::vector< double > pdfXsecUncUp = {0.};
-    
-    for( unsigned sam = 1; sam < samples.size(); ++sam){
-
-        //scale effect on xSec :
-        double scaleDownUnc = (1./crossSectionRatio[sam][8] - 1.); //Warning: nominal sum of weights has to be in the denominator!
-        scaleXsecUncDown.push_back( scaleDownUnc );
-
-        double scaleUpUnc = (1./crossSectionRatio[sam][4]- 1.); //Warning: nominal sum of weights has to be in the denominator!
-        scaleXsecUncUp.push_back( scaleUpUnc );
-
-        //filter out cross section effects from scale, is and fsr shape uncertainty
-        if( samples[sam].getFileName().find("GluGluToContinToZZ") == std::string::npos){
-            for(unsigned m = 0; m < nMll; ++m){
-                for(unsigned cat = 0; cat < nCat; ++cat){
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        uncHistMapDown["scale"][m][cat][dist][sam]->Scale(crossSectionRatio[sam][8]);
-                        uncHistMapUp["scale"][m][cat][dist][sam]->Scale(crossSectionRatio[sam][4]);
-
-                        uncHistMapDown["isr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][6]);
-                        uncHistMapUp["isr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][8]);
-
-                        uncHistMapDown["fsr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][7]);
-                        uncHistMapUp["fsr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][9]);
-                    }
-                }
-            }
-        }
-
-        //pdf effect on xSec:
-        double rms = 0.;
-        for(unsigned pdf = 0; pdf < 100; ++pdf){
-            double pdfUnc = (1./crossSectionRatio[sam][pdf + 9] - 1.);
-            rms += pdfUnc*pdfUnc;
-        }
-        rms = sqrt( 0.01 * rms);
-
-        pdfXsecUncDown.push_back( -rms );
-        pdfXsecUncUp.push_back( rms );
-
-        //set pdf and scale uncertainties to zero for GluGluToContinToZZ samples which do not include the necessary weights
-        if( samples[sam].getFileName().find("GluGluToContinToZZ") != std::string::npos){
-            scaleXsecUncDown[sam] = 0.;
-            scaleXsecUncUp[sam] = 0.;
-            pdfXsecUncDown[sam] = 0.;
-            pdfXsecUncUp[sam] = 0.;
-        }
-    }
-
-    //add pdf and scale effects to shape uncertainties to automatically take into account the fractional effects from every sample that is merged
-    for(unsigned m = 0; m < nMll; ++m){
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
-                    if(sam < samples.size() ){
-                        for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["scaleXsec"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
-                            uncHistMapDown["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + scaleXsecUncDown[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
-                            uncHistMapUp["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + scaleXsecUncUp[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
-                            uncHistMapDown["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + pdfXsecUncDown[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
-                            uncHistMapUp["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + pdfXsecUncUp[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
-                        }
-                    //WARNING: CURRENTLY THE SCALE AND PDF XSEC UNCERTAINTIES ON DATA-DRIVEN FAKES ARE SET TO ZERO
-                    } else {
-                        for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["scaleXsec"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
-                            uncHistMapDown["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, hists[m][cat][dist][sam]->GetBinContent(bin) );
-                            uncHistMapUp["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, hists[m][cat][dist][sam]->GetBinContent(bin) );
-                            uncHistMapDown["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, hists[m][cat][dist][sam]->GetBinContent(bin) );
-                            uncHistMapUp["pdfXsec"][m][cat][dist][sam]->SetBinContent(bin, hists[m][cat][dist][sam]->GetBinContent(bin) );
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //merge histograms with the same physical background
-    std::vector<std::string> proc = {"tZq", "nonprompt"};
-    std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
-    for(unsigned mll = 0; mll < nMll; ++mll){
-        mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                mergedHists[mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
-
-                //cut off loop before nonprompt contribution
-                for(size_t m = 0, sam = 0; m < proc.size() - 1; ++m){
-                    mergedHists[mll][cat][dist][m] = (TH1D*) hists[mll][cat][dist][sam]->Clone();
-                    while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
-                        mergedHists[mll][cat][dist][m]->Add(hists[mll][cat][dist][sam + 1].get());
-                        ++sam;
-                    }
-                    ++sam;
-                }
-
-                //add nonprompt histogram
-                mergedHists[mll][cat][dist][proc.size() - 1] = (TH1D*) hists[mll][cat][dist][samples.size()].get()->Clone();
-            }
-        }
-    }
-
-    //merging for uncertainties
-    std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapDown;
-    std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapUp;
-    for( auto& key : uncNames ){
-        mergedUncMapDown[key] = std::vector< std::vector< std::vector< std::vector< TH1D* > > > >(nMll);
-        mergedUncMapUp[key] = std::vector< std::vector< std::vector< std::vector< TH1D* > > > >(nMll);
-        for(unsigned mll = 0; mll < nMll; ++mll){
-            mergedUncMapDown[key][mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
-            mergedUncMapUp[key][mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
-            for(unsigned cat = 0; cat < nCat; ++cat){
-                for(unsigned dist = 0; dist < nDist; ++dist){
-                    mergedUncMapDown[key][mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
-                    mergedUncMapUp[key][mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
-
-                    //cut off loop before nonprompt contribution
-                    for(size_t m = 0, sam = 0; m < proc.size() - 1; ++m){
-                        mergedUncMapDown[key][mll][cat][dist][m] = (TH1D*) uncHistMapDown[key][mll][cat][dist][sam]->Clone();
-                        mergedUncMapUp[key][mll][cat][dist][m] = (TH1D*) uncHistMapUp[key][mll][cat][dist][sam]->Clone();
-                        while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
-                            mergedUncMapDown[key][mll][cat][dist][m]->Add( uncHistMapDown[key][mll][cat][dist][sam + 1].get());
-                            mergedUncMapUp[key][mll][cat][dist][m]->Add( uncHistMapUp[key][mll][cat][dist][sam + 1].get());
-                            ++sam;
-                        }
-                        ++sam;
-                    }
-
-                    //add nonprompt histograms 
-                    mergedUncMapDown[key][mll][cat][dist][proc.size() - 1] = (TH1D*) uncHistMapDown[key][mll][cat][dist][samples.size()]->Clone();
-                    mergedUncMapUp[key][mll][cat][dist][proc.size() - 1] = (TH1D*) uncHistMapUp[key][mll][cat][dist][samples.size()]->Clone();
-                }
-            }
-        }
-    }   
-
-    //print the effect of systematic uncertainty
-    //compute minimum and maximum impact on each bin
-    for(unsigned bdt = 0; bdt < 2; ++bdt){
-        if(bdt == 1) continue;
-        std::cout << "##################################################" << std::endl;
-        if(bdt == 0){
-            std::cout << "uncetainty ranges for 30 BDT bins: " << std::endl;
-        } else{
-            std::cout << "uncetainty ranges for 10 BDT bins: " << std::endl;
-        }
-        for(auto& key : uncNames ){
-            double maxUnc = 0.;
-            double minUnc = 999.;
-            for(unsigned mll = 0; mll < nMll; ++mll){
-                for(unsigned cat = 0; cat < nCat; ++cat){
-                    for(unsigned bin = 1; bin < ( unsigned) mergedHists[mll][cat][0][0]->GetNbinsX() + 1; ++bin){
-                        double binUnc = 0.;
-                        double binContent = 0.;
-                        for(unsigned p = 0; p < proc.size(); ++p){
-                            if( (key.find("XSec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
-                                continue;
-                            }
-                            double binUncDown = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapDown[key][mll][cat][bdt][p]->GetBinContent(bin) );
-                            double binUncUp = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapUp[key][mll][cat][bdt][p]->GetBinContent(bin) );
-                            binUnc += std::max(binUncDown, binUncUp);
-                            binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
-                        }
-                        double fractionalUnc = binUnc/binContent;
-                        if(bdt == 0 && ( key == "isr" || key == "fsr") ){
-                            std::cout << "fractional uncertainty in " << catNames[cat] << " bin " << bin << "  =  " << fractionalUnc*100 << "%" << std::endl;
-                        }
-                        if( fractionalUnc > maxUnc){
-                            maxUnc = fractionalUnc;
-                        }
-                        if( fractionalUnc < minUnc){
-                            minUnc = fractionalUnc;
-                        }
-                    }
-                }
-            }
-            std::cout << "Uncertainty : " << key << "\t" << std::setprecision(2) << minUnc*100 << "% - " << maxUnc*100 << "%" << std::endl;
-        }
-    }
 }
 
 int main(){

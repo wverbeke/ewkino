@@ -1,0 +1,2 @@
+#obs		        data_combined_trilepton_2016.root
+tZq	            tZq_ll_4f_13TeV-amcatnlo-pythia8_Summer16.root								                            0.0942                      SMSignal
