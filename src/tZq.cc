@@ -48,7 +48,7 @@ void treeReader::Analyze(){
     histInfo = {
 
         //new BDT distribution
-        HistInfo("bdt", "BDT output", 20, -1, 1),
+        HistInfo("bdt", "BDT output", 30, -1, 1),
         HistInfo("bdt_10bins", "BDT output", 10, -1, 1),
 
         HistInfo("taggedRecoilJetEta", "|#eta| (recoiling jet) (GeV)", 20, 0, 5),
