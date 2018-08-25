@@ -72,7 +72,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "isr", "fsr", "pdf", "scaleXsec", "pdfXsec"};
+    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "pdf", "scaleXsec", "pdfXsec"};
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
     for( auto& key : uncNames ){
@@ -370,26 +370,6 @@ void treeReader::Analyze(){
             //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)*( (dist == 1) ? preFiringWeight : 1. )) );
-            }
-
-            //vary b-tag down for b and c (correlated)
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[6]*( (dist == 1) ? preFiringWeight : 1. ) );
-            }
-
-            //vary b-tag up for b and c (correlated)
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[8]*( (dist == 1) ? preFiringWeight : 1. ));
-            }
-
-            //vary b-tag down for b and c (correlated)
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[7]*( (dist == 1) ? preFiringWeight : 1. ) );
-            }
-
-            //vary b-tag up for b and c (correlated)
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[9]*( (dist == 1) ? preFiringWeight : 1. ));
             }
 
             //100 pdf variations
