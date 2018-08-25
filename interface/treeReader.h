@@ -30,6 +30,9 @@ class treeReader {
         Double_t        _weight;
         UChar_t         _nLheWeights;
         Double_t        _lheWeight[110];
+        //Comment out later
+        UChar_t         _nPsWeights;
+        Double_t        _psWeight[14];
         Float_t         _nTrueInt;
         Double_t        _gen_met;
         Double_t        _gen_metPhi;
@@ -422,6 +425,9 @@ class treeReader {
         TBranch        *b__weight;   
         TBranch        *b__nLheWeights;   
         TBranch        *b__lheWeight;   
+        //Comment out later
+        TBranch        *b__nPsWeights;
+        TBranch        *b__psWeight;
         TBranch        *b__nTrueInt;   
         TBranch        *b__gen_met;   
         TBranch        *b__gen_metPhi;   

@@ -243,6 +243,8 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_weight", &_weight, &b__weight);
         fChain->SetBranchAddress("_nLheWeights", &_nLheWeights, &b__nLheWeights);
         fChain->SetBranchAddress("_lheWeight", _lheWeight, &b__lheWeight);
+        fChain->SetBranchAddress("_nPsWeights", &_nPsWeights, &b__nPsWeights);
+        fChain->SetBranchAddress("_psWeight", _psWeight, &b__psWeight);
         fChain->SetBranchAddress("_nTrueInt", &_nTrueInt, &b__nTrueInt);
         fChain->SetBranchAddress("_gen_met", &_gen_met, &b__gen_met);
         fChain->SetBranchAddress("_gen_metPhi", &_gen_metPhi, &b__gen_metPhi);
@@ -400,10 +402,12 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     if(!isData){
         outputTree->Branch("_nLheWeights",               &_nLheWeights,               "_nLheWeights/b");
         outputTree->Branch("_lheWeight",                 &_lheWeight,                 "_lheWeight[_nLheWeights]/D");
+        outputTree->Branch("_nPsWeights",                &_nPsWeights,                "_nPsWeights/b");
+        outputTree->Branch("_psWeight",                  &_psWeight,                  "_psWeight[_nPsWeights]/D");
         outputTree->Branch("_weight",                    &_weight,                    "_weight/D");
         outputTree->Branch("_lIsPrompt",                 &_lIsPrompt,                 "_lIsPrompt[_nL]/O");
         outputTree->Branch("_lMatchPdgId",               &_lMatchPdgId,               "_lMatchPdgId[_nL]/I");
-        outputTree->Branch("_lMomPdgId",                  &_lMomPdgId,                "_lMomPdgId[_nL]/I");
+        outputTree->Branch("_lMomPdgId",                 &_lMomPdgId,                 "_lMomPdgId[_nL]/I");
         outputTree->Branch("_lProvenance",               &_lProvenance,               "_lProvenance[_nL]/i");
         outputTree->Branch("_lProvenanceCompressed",     &_lProvenanceCompressed,     "_lProvenanceCompressed[_nL]/i");
         outputTree->Branch("_lProvenanceConversion",     &_lProvenanceConversion,     "_lProvenanceConversion[_nL]/i");

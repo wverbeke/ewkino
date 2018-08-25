@@ -29,11 +29,13 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     //Determine hcounter and lheCounter for MC cross section scaling and uncertainties
     TH1D* hCounter;
     TH1D* lheCounter;
+    TH1D* psCounter;
     TH1D* nTrueInt;
     TH1D* nVertices;
     if(!isData){
         hCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/hCounter");
         lheCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/lheCounter");
+        psCounter = (TH1D*) sampleFile->Get("blackJackAndHookers/psCounter");
         nTrueInt = (TH1D*) sampleFile->Get("blackJackAndHookers/nTrueInteractions");
     }
     nVertices = (TH1D*) sampleFile->Get("blackJackAndHookers/nVertices");
@@ -104,10 +106,10 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     for (long it=0; it <nEntries; ++it) {
         if(it%100 == 0 && it != 0){
             progress += (double) (100./ (double) nEntries);
-            tools::printProgress(progress);
+            analysisTools::printProgress(progress);
         } else if(it == nEntries -1){
             progress = 1.;
-            tools::printProgress(progress);
+            analysisTools::printProgress(progress);
         }
         sampleTree->GetEntry(it);
 
@@ -161,6 +163,7 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         hCounter->Write();
         lheCounter->Write();
         nTrueInt->Write();
+        psCounter->Write();
     }
     nVertices->Write();
     outputTree->Write("",  BIT(2));
