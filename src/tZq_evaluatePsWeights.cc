@@ -435,6 +435,19 @@ void treeReader::Analyze(){
     legend.Draw("same");
     c->SaveAs("prefiringPlot.pdf");
 
+    TCanvas* c_log = new TCanvas("", "", 500, 500 );
+    TLegend legend2(0.2,0.8,0.95,0.9,NULL,"brNDC");
+    legend2.SetNColumns(2);
+    legend2.SetFillStyle(0); //avoid legend box
+    legend2.AddEntry( nominal, "nominal", "f");
+    legend2.AddEntry( prefire, "with prefire weights", "f");
+    nominal->Draw("histE");
+    prefire->Draw("histEsame");
+    legend.Draw("same");
+    c_log->SaveAs("prefiringPlot_log.pdf");
+
+
+
     //set nonprompt bins to 0 if negative
     for(unsigned m = 0; m < nMll; ++m){
         for( unsigned cat = 0; cat < nCat; ++cat){
