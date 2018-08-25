@@ -331,5 +331,5 @@ double Reweighter::jetPrefiringProbability(const double pt, const double eta) co
     if( is2016 ){
         croppedEta = fabs(eta);
     }
-    return prefiringMap->GetBinContent( croppedEta, pt );
+    return prefiringMap->GetBinContent( prefiringMap->FindBin(croppedEta, pt ) );
 }
