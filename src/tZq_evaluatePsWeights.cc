@@ -40,7 +40,7 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/evaluatePsUnc.txt", "../../ntuples_tzq/");
+    readSamples("sampleLists/samples_evaluatePsUnc.txt", "../../ntuples_tzq/");
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
