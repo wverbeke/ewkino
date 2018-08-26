@@ -205,7 +205,7 @@ void treeReader::Analyze(){
         initSample();          //2 = combined luminosity
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries/100; ++it){
+        for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
