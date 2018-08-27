@@ -198,7 +198,6 @@ void treeReader::Analyze(){
     std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "etaMostForward", "m3l"}; 
     bdtReader2bJets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets) );
 
-
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
 
@@ -276,7 +275,7 @@ void treeReader::Analyze(){
                     continue;
                 }
             }
-
+            
             //compute nominal bdt value
             double bdtNominal = 999.;
             if(tzqCat > 2 && tzqCat < 6){
@@ -537,6 +536,7 @@ void treeReader::Analyze(){
                 }
             }
         }
+
         //set histograms to 0 if negative
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned cat = 0; cat < nCat; ++cat){
@@ -878,9 +878,9 @@ void treeReader::Analyze(){
                         mergedHists[m][cat][flav][dist][p]->Scale( scaling[cat][p] );
                     }
 
-                    plotDataVSMC(mergedHists[m][cat][flav][dist][0], &mergedHists[m][cat][flav][dist][1], &proc[0], mergedHists[m][cat][flav][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + flavNames[flav] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + flavNames[flav] + "_2017" + "_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][flav][dist][1], isSMSignal);             //linear plots
+                    plotDataVSMC(mergedHists[m][cat][flav][dist][0], &mergedHists[m][cat][flav][dist][1], &proc[0], mergedHists[m][cat][flav][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + flavNames[flav] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] +  "_" + flavNames[flav] + "_2017" + "_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][flav][dist][1], isSMSignal);             //linear plots
 
-                    plotDataVSMC(mergedHists[m][cat][flav][dist][0], &mergedHists[m][cat][flav][dist][1], &proc[0], mergedHists[m][cat][flav][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + flavNames[flav] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + flavNames[flav] + "_2017" + "_log" + "_postFit", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][flav][dist][1], isSMSignal);     //log plots
+                    plotDataVSMC(mergedHists[m][cat][flav][dist][0], &mergedHists[m][cat][flav][dist][1], &proc[0], mergedHists[m][cat][flav][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + flavNames[flav] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_" + flavNames[flav] + "_2017" + "_log" + "_postFit", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][flav][dist][1], isSMSignal);     //log plots
                 }
             }
         }

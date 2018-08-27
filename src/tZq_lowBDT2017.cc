@@ -185,6 +185,7 @@ void treeReader::Analyze(){
 
         initSample();          //2 = combined luminosity
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
+
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar	
@@ -528,6 +529,7 @@ void treeReader::Analyze(){
                 }
             }
         }
+
         //set histograms to 0 if negative
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned cat = 0; cat < nCat; ++cat){
@@ -544,7 +546,6 @@ void treeReader::Analyze(){
             }
         }
     }
-
     //set nonprompt bins to 0 if negative
     for(unsigned m = 0; m < nMll; ++m){
         for( unsigned cat = 0; cat < nCat; ++cat){
@@ -609,7 +610,7 @@ void treeReader::Analyze(){
             }
         }
     }
-
+    
     //add pdf and scale variation uncertainties of the cross-section
     std::vector< double > scaleXsecUncDown = {0.};  //first dummy entry for data
     std::vector< double > scaleXsecUncUp = {0.};
@@ -682,7 +683,6 @@ void treeReader::Analyze(){
             }
         }
     }
-
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"Obs.", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -707,7 +707,9 @@ void treeReader::Analyze(){
             }
         }
     }
+    std::cout << "merged Counter = " << mergedHists[0][2].back()[0]->GetBinContent(1) << std::endl;
 
+    /*
     //merging for uncertainties
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapDown;
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapUp;
@@ -830,6 +832,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    */
 }
 int main(){
     treeReader reader;
