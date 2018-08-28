@@ -13,22 +13,22 @@ double treeReader::puWeight(const unsigned unc) const{
 
 //extract the weight for a single jet 
 //WARNING: This function should be refactored!
-double treeReader::bTagWeight_cut_singleJet(const unsigned jetIndex, const unsigned unc){
-    double sf = reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], deepCSV(j), unc);
-    if(bTagged(j, 1, true)){
+double treeReader::bTagWeight_cut_singleJet(const unsigned jetIndex, const unsigned unc) const{
+    double sf = reweighter->bTagWeight(_jetHadronFlavor[jetIndex], _jetPt[jetIndex], _jetEta[jetIndex], deepCSV(jetIndex), unc);
+    if(bTagged(jetIndex, 1, true)){
         return sf;
     } else {
-        double eff = reweighter->bTagEff(_jetHadronFlavor[j], _jetPt[j], _jetEta[j]);
+        double eff = reweighter->bTagEff(_jetHadronFlavor[jetIndex], _jetPt[jetIndex], _jetEta[jetIndex]);
         return (1 - eff*sf)/(1 - eff);
     }
 }
 
-double treeReader::bTagWeight_reshaping_singleJet(const unsigned jetIndex, const unsigned unc){
-    return reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], deepCSV(j), unc);
+double treeReader::bTagWeight_reshaping_singleJet(const unsigned jetIndex, const unsigned unc) const{
+    return reweighter->bTagWeight(_jetHadronFlavor[jetIndex], _jetPt[jetIndex], _jetEta[jetIndex], deepCSV(jetIndex), unc);
 }
 
 //b-tagging SF for given flavor
-double treeReader::bTagWeight_base(const unsigned jetFlavor, const unsigned unc, bool (treeReader::*jetWeight)(const unsigned, const unsigned) ) const{
+double treeReader::bTagWeight_base(const unsigned jetFlavor, const unsigned unc, double (treeReader::*jetWeight)(const unsigned, const unsigned) const ) const{
     double sf = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
         if(_jetHadronFlavor[j] == jetFlavor){
@@ -42,15 +42,15 @@ double treeReader::bTagWeight_base(const unsigned jetFlavor, const unsigned unc,
 }
 
 //WARNING: This function should be refactored!
-double treeReader::bTagWeight_cut(const unsigned jetFlavor, const unsigned unc, const unsigned wp){
-    return bTagWeight_cut( jetFlavor, unc, wp, &treeReader::bTagWeight_cut_singleJet );
+double treeReader::bTagWeight_cut(const unsigned jetFlavor, const unsigned unc) const{
+    return bTagWeight_base( jetFlavor, unc, &treeReader::bTagWeight_cut_singleJet );
 }
 
-double treeReader::bTagWeight_reshaping(const unsigned jetFlavor, const unsigned unc){   
-    return bTagWeight_base( jetFlavor, unc, 1, &treeReader::bTagWeight_reshaping_singleJet );
+double treeReader::bTagWeight_reshaping(const unsigned jetFlavor, const unsigned unc) const{   
+    return bTagWeight_base( jetFlavor, unc, &treeReader::bTagWeight_reshaping_singleJet );
 }
 
-double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc){
+double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) const{
     
     //currently we will always use b-tag reshaping
     return bTagWeight_reshaping( jetFlavor, unc );

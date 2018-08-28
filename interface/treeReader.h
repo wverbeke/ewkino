@@ -264,6 +264,7 @@ class treeReader {
         //b-tag reweighting
         double bTagWeight_cut_singleJet(const unsigned jetIndex, const unsigned unc = 0) const;
         double bTagWeight_reshaping_singleJet(const unsigned jetIndex, const unsigned unc = 0) const;
+        double bTagWeight_base(const unsigned jetFlavor, const unsigned unc, double (treeReader::*jetWeight)(const unsigned, const unsigned) const ) const;
         double bTagWeight_cut( const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight_reshaping( const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0) const;
