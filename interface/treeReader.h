@@ -185,7 +185,9 @@ class treeReader {
 
         //set up tree for reading and writing
         void initTree(TTree *tree, const bool isData = false);
+        void initTree(TTree *tree, const Sample& samp);
         void setOutputTree(TTree*, const bool isData = false);
+        void setOutputTree(TTree*, const Sample& samp);
 
         //skim tree
         void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);

@@ -65,7 +65,7 @@ void treeReader::initSample(const Sample& samp){
     sampleFile = samp.getFile();
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
-    initTree(fChain, samp.isData());
+    initTree(fChain, samp);
     nEntries = fChain->GetEntries();
     if(!samp.isData()){
 
@@ -103,6 +103,7 @@ void treeReader::GetEntry(const Sample& samp, long unsigned entry)
 void treeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
     GetEntry(samples[currentSampleIndex], entry);
 }
+
 
 void treeReader::initTree(TTree *tree, const bool isData)
 {
@@ -271,6 +272,10 @@ void treeReader::initTree(TTree *tree, const bool isData)
     }
 }
 
+void treeReader::initTree(TTree* tree, const Sample& samp){
+    initTree( tree, samp.isData() );
+}
+
 void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
@@ -431,4 +436,8 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
         outputTree->Branch("_gen_HT",                    &_gen_HT,                    "_gen_HT/D");
     }
+}
+
+void treeReader::setOutputTree(TTree* outputTree, const Sample& samp){
+    setOutputTree(outputTree, samp.isData() );
 }
