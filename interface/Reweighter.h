@@ -15,7 +15,7 @@
 //Class storing scale-factor weights to be used in events
 class Reweighter{
     public:
-        Reweighter(const std::vector<Sample>&, const bool is2016);
+        Reweighter(const std::vector<Sample>&, const bool is2016, const std::string& bTagWorkingPoint = "reshaping");
         ~Reweighter();
 
         //pileup weight
@@ -59,6 +59,7 @@ class Reweighter{
         std::map< std::string, std::vector< std::shared_ptr<TH1D> > > puWeights;
 
         //btag scale factors and efficiencies
+        std::string bTagWP;
         std::shared_ptr<BTagCalibration> bTagCalib;
         std::shared_ptr<BTagCalibrationReader> bTagCalibReader;
         std::shared_ptr<TH2D> bTagEffHist[3];

@@ -9,7 +9,7 @@
 //include other parts of code 
 #include "../interface/analysisTools.h"
 
-Reweighter::Reweighter(const std::vector<Sample>& samples, const bool sampleIs2016) : is2016(sampleIs2016) {
+Reweighter::Reweighter(const std::vector<Sample>& samples, const bool sampleIs2016, const std::string& bTagWorkingPoint) : is2016(sampleIs2016), bTagWP( bTagWorkingPoint ) {
     initializeAllWeights(samples);
 }
 
@@ -59,9 +59,10 @@ void Reweighter::initializePuWeights(const std::vector< Sample >& sampleList){
     }
 }
 
+
 void Reweighter::initializeBTagWeights(){
 
-    //assuming medium WP of deepCSV tagger 
+    //assuming deepCSV tagger is used!
     std::string sfFileName;
     if(is2016){
         sfFileName = "DeepCSV_Moriond17_B_H.csv";
@@ -70,29 +71,49 @@ void Reweighter::initializeBTagWeights(){
     }
     bTagCalib = std::shared_ptr<BTagCalibration>( new BTagCalibration("deepCsv", "weights/" + sfFileName) );
 
-    //WARNING: b-tagging efficiencies currently assume medium deepCSV tagger!
-    bTagCalibReader = std::shared_ptr<BTagCalibrationReader>( new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up", "down"}) );
-    bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_B, "comb");
-    bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_C, "comb");
-    bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_UDSG, "incl");    
+    BTagEntry::OperatingPoint wp;
+    if( bTagWP == "loose"){
+        wp = BTagEntry::OP_LOOSE;
+    } else if(bTagWP == "medium"){
+        wp = BTagEntry::OP_MEDIUM;
+    } else if(bTagWP == "tight"){
+        wp = BTagEntry::OP_TIGHT;
+    } else if(bTagWP == "reshaping"){
+        wp = BTagEntry::OP_RESHAPING;
+    } else{
+        std::cerr << "Error in Reweighter::initializeBTagWeights : unknown b-tagging working point given. Leaving weights uninitialized" << std::endl;
+        return;
+    }
+
+    bTagCalibReader = std::shared_ptr<BTagCalibrationReader>( new BTagCalibrationReader( wp, "central", {"up", "down"}) );
+
+    std::string methodHeavy = (bTagWP == "reshaping") ? "iterativefit" : "comb";
+    std::string methodLight = (bTagWP == "reshaping") ? "iterativefit" : "incl";
+
+    bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_B, methodHeavy);
+    bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_C, methodHeavy);
+    bTagCalibReader->load(*bTagCalib, BTagEntry::FLAV_UDSG, methodLight);    
 
     //initialize b-tag efficiencies
-    std::string effFileName;
-    if(is2016){
-        effFileName = "bTagEff_deepCSV_cleaned_tZq_2016.root";
-    } else {
-        effFileName = "bTagEff_deepCSV_cleaned_tZq_2017.root";
-    }
+    //efficiency files are not needed when reshaping the full csv distribution
+    if( bTagWP != "reshaping"){
+        std::string effFileName;
+        if(is2016){
+            effFileName = "bTagEff_deepCSV_cleaned_tZq_2016.root";
+        } else {
+            effFileName = "bTagEff_deepCSV_cleaned_tZq_2017.root";
+        }
 
-    TFile* bTagFile = TFile::Open( (const TString&) "weights/" + effFileName);
-    const std::string quarkFlavors[3] = {"udsg", "charm", "beauty"};
-    for(unsigned flav = 0; flav < 3; ++flav){
-        
-        //WARNING: b-tagging efficiencies currently assume medium deepCSV tagger!
-        bTagEffHist[flav] = std::shared_ptr<TH2D>( (TH2D*) bTagFile->Get( (const TString&) "bTagEff_medium" + quarkFlavors[flav]) );
-        bTagEffHist[flav]->SetDirectory(gROOT);
+        TFile* bTagFile = TFile::Open( (const TString&) "weights/" + effFileName);
+        const std::string quarkFlavors[3] = {"udsg", "charm", "beauty"};
+        for(unsigned flav = 0; flav < 3; ++flav){
+            
+            //WARNING: b-tagging efficiencies currently assume medium deepCSV tagger!
+            bTagEffHist[flav] = std::shared_ptr<TH2D>( (TH2D*) bTagFile->Get( (const TString&) "bTagEff_" + bTagWP + quarkFlavors[flav]) );
+            bTagEffHist[flav]->SetDirectory(gROOT);
+        }
+        bTagFile->Close();
     }
-    bTagFile->Close();
 }
 
 void Reweighter::initializeElectronWeights(){	
@@ -222,10 +243,20 @@ double Reweighter::bTagWeight(const unsigned jetFlavor, const double jetPt, cons
 }
 
 double Reweighter::bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const{
+    
+    //map jet flavor to efficiecy index map 
+    unsigned index = flavorInd(jetFlavor);
+
+    //check whether bTagEffHist was initialized, which is not the case when Reweighter was initialized with the reshaping option
+    if( bTagEffHist[index].use_count() == 0 ){
+        std::cerr << "Error in Reweighter::bTagEff, b-tag efficiencies were not initialized. Perhaps you have initialized Reweighter to use b-tag reshaping? Returning 999." << std::endl;
+        return 9999.;
+    }
+
     if(jetPt > 25){
         double croppedPt = std::min( std::max(jetPt, 25.), 599.);
         double croppedAbsEta = std::min( fabs(jetEta), 2.39 ); 
-        return bTagEffHist[flavorInd(jetFlavor)]->GetBinContent(bTagEffHist[flavorInd(jetFlavor)]->FindBin(croppedPt, croppedAbsEta) );
+        return bTagEffHist[index]->GetBinContent(bTagEffHist[index]->FindBin(croppedPt, croppedAbsEta) );
     } else {
         std::cerr << "Error: requesting b-tag efficiency for jet with pT below 25 GeV, this jet should not enter the selection! Returning efficiency 0." << std::endl;
         return 0.;

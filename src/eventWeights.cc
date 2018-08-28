@@ -9,27 +9,51 @@ double treeReader::puWeight(const unsigned unc) const{
     return reweighter->puWeight(_nTrueInt, currentSample, unc);
 }
 
+//b-tag reweighting
+
+//extract the weight for a single jet 
+//WARNING: This function should be refactored!
+double treeReader::bTagWeight_cut_singleJet(const unsigned jetIndex, const unsigned unc){
+    double sf = reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], deepCSV(j), unc);
+    if(bTagged(j, 1, true)){
+        return sf;
+    } else {
+        double eff = reweighter->bTagEff(_jetHadronFlavor[j], _jetPt[j], _jetEta[j]);
+        return (1 - eff*sf)/(1 - eff);
+    }
+}
+
+double treeReader::bTagWeight_reshaping_singleJet(const unsigned jetIndex, const unsigned unc){
+    return reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], deepCSV(j), unc);
+}
+
 //b-tagging SF for given flavor
-double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) const{
-    double pMC = 1.;
-    double pData = 1.;
+double treeReader::bTagWeight_base(const unsigned jetFlavor, const unsigned unc, bool (treeReader::*jetWeight)(const unsigned, const unsigned) ) const{
+    double sf = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
         if(_jetHadronFlavor[j] == jetFlavor){
             //QUESTION: should JEC and b-tag weights also be varied up and down at the same time when computing systematics?
             if(jetIsGood(j, 25., 0, true) && fabs(_jetEta[j]) < 2.4){
-                double sf = reweighter->bTagWeight(_jetHadronFlavor[j], _jetPt[j], _jetEta[j], deepCSV(j), unc);
-                double eff = reweighter->bTagEff(_jetHadronFlavor[j], _jetPt[j], _jetEta[j]);
-                if(bTagged(j, 1, true)){
-                    pMC *= eff;
-                    pData *= eff*sf;
-                } else {
-                    pMC *= (1 - eff);
-                    pData *= (1 - eff*sf);
-                }
+                sf *= (this->*jetWeight)(j, unc);
             }
         }
     }
-    return pData/pMC;
+    return sf;
+}
+
+//WARNING: This function should be refactored!
+double treeReader::bTagWeight_cut(const unsigned jetFlavor, const unsigned unc, const unsigned wp){
+    return bTagWeight_cut( jetFlavor, unc, wp, &treeReader::bTagWeight_cut_singleJet );
+}
+
+double treeReader::bTagWeight_reshaping(const unsigned jetFlavor, const unsigned unc){   
+    return bTagWeight_base( jetFlavor, unc, 1, &treeReader::bTagWeight_reshaping_singleJet );
+}
+
+double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc){
+    
+    //currently we will always use b-tag reshaping
+    return bTagWeight_reshaping( jetFlavor, unc );
 }
 
 //light flavor b-tagging SF
@@ -80,7 +104,9 @@ void treeReader::initializeWeights(){
     bool changedEra = ( weightsAre2016 != is2016() );
     if( firstTime || changedEra){
         weightsAre2016 = is2016();
-        reweighter.reset(new Reweighter(samples, is2016() ) );
+
+        //automatically use b-tag reshaping for now
+        reweighter.reset(new Reweighter(samples, is2016(), "reshaping") );
     } 
 }
     
