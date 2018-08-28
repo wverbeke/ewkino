@@ -279,16 +279,28 @@ class treeReader {
         void computeBTagEff(const std::string& analysis, const bool clean, const bool deepCSV, const bool is2016);
 
         //event weights
+        //pileup reweighting
         double puWeight(const unsigned unc = 0) const;
+
+        //b-tag reweighting
+        double bTagWeight_cut_singleJet(const unsigned jetIndex, const unsigned unc = 0) const;
+        double bTagWeight_reshaping_singleJet(const unsigned jetIndex, const unsigned unc = 0) const;
+        double bTagWeight_base(const unsigned jetFlavor, const unsigned unc, double (treeReader::*jetWeight)(const unsigned, const unsigned) const ) const;
+        double bTagWeight_cut( const unsigned jetFlavor, const unsigned unc = 0) const;
+        double bTagWeight_reshaping( const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight(const std::vector<unsigned>& jetInd, const unsigned jetFlavor, const unsigned unc = 0) const; //more efficient version if jets were already selected 
         double bTagWeight_udsg(const unsigned unc = 0) const;
         double bTagWeight_c(const unsigned unc = 0) const;
         double bTagWeight_b(const unsigned unc = 0) const;
         double bTagWeight(const unsigned unc = 0) const;
+
+        //lepton reweighting
         double leptonWeight() const;
-        double sfWeight();
+
+        //fake-rate
         double fakeRateWeight(const unsigned unc = 0);
+        double sfWeight();
         double jetPrefiringWeight() const;
 
     private:
