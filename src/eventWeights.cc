@@ -52,8 +52,9 @@ double treeReader::bTagWeight_reshaping(const unsigned jetFlavor, const unsigned
 
 double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) const{
     
-    //currently we will always use b-tag reshaping
-    return bTagWeight_reshaping( jetFlavor, unc );
+    //b-tag reshaping weights seem unavailable for 2016, so we will not use it for now 
+    //return bTagWeight_reshaping( jetFlavor, unc );
+    return bTagWeight_cut(jetFlavor, unc);
 }
 
 //light flavor b-tagging SF
@@ -106,7 +107,7 @@ void treeReader::initializeWeights(){
         weightsAre2016 = is2016();
 
         //automatically use b-tag reshaping for now
-        reweighter.reset(new Reweighter(samples, is2016(), "reshaping") );
+        reweighter.reset(new Reweighter(samples, is2016(), "medium") );
     } 
 }
     
