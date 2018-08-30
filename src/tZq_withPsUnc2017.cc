@@ -1079,7 +1079,7 @@ void treeReader::Analyze(){
             }
 
             //set BDT shape histogram
-            TFile* shapeFile =TFile::Open((const TString&) "./datacards/shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  "_2017.root", "recreate");
+            TFile* shapeFile =TFile::Open((const TString&) "./datacards/shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  "_2017_withPsUnc.root", "recreate");
 
             //loop over all processes 
             for(unsigned p = 0; p < proc.size(); ++p){
@@ -1121,7 +1121,7 @@ void treeReader::Analyze(){
             }
             shapeFile->Close();
 
-            analysisTools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, &systNames[0], systDist, "datacards/datacard_" + mllNames[m] + "_" + catNames[cat] + "_2017", true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m] + "_2017");
+            analysisTools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, &systNames[0], systDist, "datacards/datacard_" + mllNames[m] + "_" + catNames[cat] + "_2017_withPsUnc", true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m] + "_2017_withPsUnc");
         }
     }   
     std::cout << "Printed all datacards" << std::endl;
