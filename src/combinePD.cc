@@ -17,13 +17,14 @@
 
 //include other parts of the code
 #include "../interface/treeReader.h"
+#include "../interface/stringTools.h"
+#include "../interface/systemTools.h"
 #include "../interface/analysisTools.h"
-
 
 void treeReader::combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory){
 
     //directory to write merged file
-    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_tzq/" : tools::formattedDirectoryName(outputDirectory);
+    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_tzq/" : stringTools::directoryName(outputDirectory);
 
     //name of merged file
     std::string outputFileName;
@@ -71,10 +72,10 @@ void treeReader::combinePD(std::vector<std::string>& datasets, const bool is2017
             sampleTree->GetEntry(it);
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./ (double) nEntries);
-                tools::printProgress(progress);
+                analysisTools::printProgress(progress);
             } else if(it == nEntries -1){
                 progress = 1.;
-                tools::printProgress(progress);
+                analysisTools::printProgress(progress);
             }
             if(usedEvents.find(std::make_tuple(_runNb, _lumiBlock, _eventNb) ) == usedEvents.end()){
                 usedEvents.insert(std::make_tuple(_runNb, _lumiBlock, _eventNb) );
@@ -124,16 +125,16 @@ int main(int argc, char* argv[]){
 
             //make submission script
             std::ofstream script("combinePD.sh");
-            tools::initScript(script);
+            systemTools::initScript(script);
             script << "./combinePD " << ( (i == 0) ? "2016" : "2017" );
             script.close();
 
             //submit job
-            tools::submitScript("combinePD.sh", "40:00:00");
+            systemTools::submitScript("combinePD.sh", "40:00:00");
         }
 
         //clean up temporary script
-        tools::deleteFile("combinePD.sh");
+        systemTools::deleteFile("combinePD.sh");
     } else{
         std::cerr << "Error: Wrong number of options given!" << std::endl;
         return -1;
