@@ -56,7 +56,7 @@ foldersData=*/*2016LeptonicDataList_v22p2
 foldersMC=*/*ewkino2016MCList-v22p2
 foldersData17=*/*2017LeptonicDataList_v22p3
 foldersMC17=*/*ewkino2017MCList-v22p2
-#for d in $foldersMC $foldersMC17 $foldersData $foldersData17                        #skim all samples 
-for d in *TTZToLLNuNu_M-10_TuneCP5_PSweights_13TeV-amcatnlo-pythia8*/*ewkino2017MCList-v25 *tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8*/*ewkino2017MCList-v25
+for d in $foldersMC $foldersMC17 $foldersData $foldersData17                        #skim all samples 
+#for d in *TTZToLLNuNu_M-10_TuneCP5_PSweights_13TeV-amcatnlo-pythia8*/*ewkino2017MCList-v25 *tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8*/*ewkino2017MCList-v25
     do skimSample $d $baseFolder
 done
