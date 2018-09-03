@@ -28,19 +28,19 @@ class Reweighter{
         double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
 
         //lepton id + reconstruction weight
-        double muonTightWeight(const double pt, const double eta) const{ 
+        double muonTightWeight(const double pt, const double eta, const unsigned unc = 0) const{ 
             return muonRecoWeight()*muonTightIdWeight(pt,eta);
         }
 
-        double electronTightWeight(const double pt, const double superClusterEta) const{ 
+        double electronTightWeight(const double pt, const double superClusterEta, const unsigned unc = 0) const{ 
             return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,superClusterEta);
         }
 
-        double muonLooseWeight(const double pt, const double eta) const{
+        double muonLooseWeight(const double pt, const double eta, const unsigned unc = 0) const{
             return  muonRecoWeight()*muonLooseIdWeight(pt,eta);
         }
 
-        double electronLooseWeight(const double pt, const double superClusterEta) const{
+        double electronLooseWeight(const double pt, const double superClusterEta, const unsigned unc = 0) const{
             return electronRecoWeight(superClusterEta, pt)*electronLooseIdWeight(pt,superClusterEta);
         }
 
@@ -49,7 +49,7 @@ class Reweighter{
         double electronFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
 
         //jet prefering probabilities
-        double jetPrefiringProbability(const double pt, const double eta) const;
+        double jetPrefiringProbability(const double pt, const double eta, const unsigned unc = 0) const;
 
     private:
         //boolean flagging weights as 2016 or 2017
@@ -70,11 +70,19 @@ class Reweighter{
 
         //muon id scale factors
         std::shared_ptr<TH2D> muonLooseToRecoSF;
-        std::shared_ptr<TH2D> muonTightToLooseSF;
+        std::shared_ptr<TH2D> muonLooseToRecoSF_statUnc;
+        std::shared_ptr<TH2D> muonLooseToRecoSF_systUnc;
+        std::shared_ptr<TH2D> muonTightToRecoSF;
+        std::shared_ptr<TH2D> muonTightToRecoSF_statUnc;
+        std::shared_ptr<TH2D> muonTightToRecoSF_systUnc;
 
         //electron id scale factors
         std::shared_ptr<TH2D> electronLooseToRecoSF;
-        std::shared_ptr<TH2D> electronTightToLooseSF;
+        std::shared_ptr<TH2D> electronLooseToRecoSF_statUnc;
+        std::shared_ptr<TH2D> electronLooseToRecoSF_systUnc;
+        std::shared_ptr<TH2D> electronTightToRecoSF;
+        std::shared_ptr<TH2D> electronTightToRecoSF_statUnc;
+        std::shared_ptr<TH2D> electronTightToRecoSF_systUnc;
 
         //fake rate maps
         std::shared_ptr<TH2D> frMapEle[3];
@@ -94,15 +102,15 @@ class Reweighter{
 
         //tracking + reconstruction weights
         double muonRecoWeight() const;
-        double electronRecoWeight(const double superClusterEta, const double pt) const;
+        double electronRecoWeight(const double superClusterEta, const double pt, const unsigned unc = 0) const;
 
         //loose id weights
-        double muonLooseIdWeight(const double pt, const double eta) const;
-        double electronLooseIdWeight(const double pt, const double superClusterEta) const;
+        double muonLooseIdWeight(const double pt, const double eta, const unsigned unc = 0) const;
+        double electronLooseIdWeight(const double pt, const double superClusterEta, const unsigned unc = 0) const;
 
         //tight id weights
-        double muonTightIdWeight(const double pt, const double eta) const;
-        double electronTightIdWeight(const double pt, const double superClusterEta) const;
+        double muonTightIdWeight(const double pt, const double eta, const unsigned unc = 0) const;
+        double electronTightIdWeight(const double pt, const double superClusterEta, const unsigned unc = 0) const;
 
         //read pu weights for a given list of samples
         void initializePuWeights(const std::vector< Sample >&); 
@@ -124,5 +132,8 @@ class Reweighter{
 
         //initialize all weights 
         void initializeAllWeights(const std::vector< Sample>&);
+
+        //check whether uncertainty argument is in allowed range
+        bool checkUncertainty(const unsigned unc, const std::string& functionName) const;
 };
 #endif

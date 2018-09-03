@@ -121,13 +121,13 @@ void Reweighter::initializeElectronWeights(){
     //read electron reco SF weights
     std::string year = ( is2016 ? "2016" : "2017" );
 
-    //low pT SF
+    //low pT reco SF
     TFile* electronRecoFile_pT0to20 = TFile::Open( (const TString&) "weights/electronRecoSF_" + year + "_pT0to20.root");
     electronRecoSF_pT0to20 = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT0to20->Get("EGamma_SF2D") );
     electronRecoSF_pT0to20->SetDirectory(gROOT);
     electronRecoFile_pT0to20->Close();
 
-    //high pT SF
+    //high pT reco SF
     TFile* electronRecoFile_pT20toInf = TFile::Open( (const TString&) "weights/electronRecoSF_" + year + "_pT20toInf.root");
     electronRecoSF_pT20toInf = std::shared_ptr<TH2D>( (TH2D*) electronRecoFile_pT20toInf->Get("EGamma_SF2D") );
     electronRecoSF_pT20toInf->SetDirectory(gROOT);
@@ -137,8 +137,16 @@ void Reweighter::initializeElectronWeights(){
     TFile* electronIdFile = TFile::Open( (const TString&) "weights/electronIDScaleFactors_" + year + ".root");
     electronLooseToRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose") );
     electronLooseToRecoSF->SetDirectory(gROOT);
-    electronTightToLooseSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("TTVLooseToTTVLeptonMvatZq") );
-    electronTightToLooseSF->SetDirectory(gROOT);
+    electronLooseToRecoSF_statUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose_stat") );
+    electronLooseToRecoSF_statUnc->SetDirectory(gROOT);
+    electronLooseToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose_syst") );
+    electronLooseToRecoSF_systUnc->SetDirectory(gROOT);
+    electronTightToRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLeptonMvatZq") );
+    electronTightToRecoSF->SetDirectory(gROOT);
+    electronTightToRecoSF_statUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLeptonMvatZq_stat") );
+    electronTightToRecoSF_statUnc->SetDirectory(gROOT);
+    electronTightToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLeptonMvatZq_syst") );
+    electronTightToRecoSF_systUnc->SetDirectory(gROOT);
     electronIdFile->Close();
 }
 
@@ -275,30 +283,42 @@ double Reweighter::muonRecoWeight() const{
     return 1.;
 }
 
-double Reweighter::electronRecoWeight(const double superClusterEta, const double pt) const{
+double Reweighter::electronRecoWeight(const double superClusterEta, const double pt, const unsigned unc) const{
+
     double croppedSuperClusterEta = std::max(-2.49, std::min(superClusterEta, 2.49) );
+    double croppedPt = std::max(10.01, std::min(pt, 499.) );
+    TH1D* sfMapToUse;
     if( pt <= 20 ){
-        double croppedPt = std::max(10.01, pt);
-        return electronRecoSF_pT0to20->GetBinContent( electronRecoSF_pT0to20->FindBin( croppedSuperClusterEta, croppedPt ) );
+        //return electronRecoSF_pT0to20->GetBinContent( electronRecoSF_pT0to20->FindBin( croppedSuperClusterEta, croppedPt ) );
+        sfMapToUse = electronRecoSF_pT0to20.get();
     } else {
-        double croppedPt = std::min(pt, 499.); 
-        return electronRecoSF_pT20toInf->GetBinContent( electronRecoSF_pT20toInf->FindBin( croppedSuperClusterEta, croppedPt ) );
+        //return electronRecoSF_pT20toInf->GetBinContent( electronRecoSF_pT20toInf->FindBin( croppedSuperClusterEta, croppedPt ) );
+        sfMapToUse electronRecoSF_pT20toInf.get();
+    }
+    checkUncertainty(unc, "Reweighter::electronRecoWeight");
+    int binToUse = sfMapToUse->FindBin( croppedSuperClusterEta, croppedPt );
+    if( unc == 0 ){
+        sfMapToUse->GetBinContent( binToUse );
+    } else if( unc == 1 ){
+        sfMapToUse->GetBinContent( binToUse ) - sfMapToUse->GetBinError( binToUse );
+    } else{
+        sfMapToUse->GetBinContent( binToUse ) + sfMapToUse->GetBinError( binToUse );
     }
 }
 
-double Reweighter::muonLooseIdWeight(const double pt, const double eta) const{
+double Reweighter::muonLooseIdWeight(const double pt, const double eta, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( fabs(eta), 2.39 ); 
     return muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
 }
 
-double Reweighter::electronLooseIdWeight(const double pt, const double superClusterEta) const{
+double Reweighter::electronLooseIdWeight(const double pt, const double superClusterEta, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( std::max( -2.49, superClusterEta ), 2.49 ); 
     return electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
 }
 
-double Reweighter::muonTightIdWeight(const double pt, const double eta) const{
+double Reweighter::muonTightIdWeight(const double pt, const double eta, const unsigned unc, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( fabs(eta), 2.39);
     double sf = muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
@@ -306,7 +326,7 @@ double Reweighter::muonTightIdWeight(const double pt, const double eta) const{
     return sf;
 }
 
-double Reweighter::electronTightIdWeight(const double pt, const double superClusterEta) const{
+double Reweighter::electronTightIdWeight(const double pt, const double superClusterEta, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( std::max( -2.49, superClusterEta ), 2.49 ); 
     double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
@@ -352,15 +372,37 @@ double Reweighter::electronFakeRate(const double pt, const double eta, const uns
     }
 }
 
-double Reweighter::jetPrefiringProbability(const double pt, const double eta) const{
+double Reweighter::jetPrefiringProbability(const double pt, const double eta, const unsigned unc) const{
 
     //consider probabilities outside of map to be zero
     //this is implicitly implemented by not requiring the pt and eta values to fall in the map
-
+    if( !checkUncertainty(unc, "Reweighter::jetPrefiringProbability") ){
+        return 9999.;
+    }    
     //abseta binning for 2016, eta binning for 2017
     double croppedEta = eta;
     if( is2016 ){
         croppedEta = fabs(eta);
     }
-    return prefiringMap->GetBinContent( prefiringMap->FindBin(croppedEta, pt ) );
+    double prefiringProb =prefiringMap->GetBinContent( prefiringMap->FindBin(croppedEta, pt ) );
+    if(unc == 0){
+        return prefiringProb;
+
+    //vary prefiring probability up and down by 20% for uncertainty computation
+    } else if( unc == 1 ){
+        return prefiringProb*0.8;
+    } else {
+        return prefiringProb*1.2;
+    }
 }
+
+//make sure uncertainty argument is smaller than 3 
+bool Reweighter::checkUncertainty(const unsigned unc, const std::string& functionName) const{
+    if( unc < 3){
+        return true;
+    } else{
+        std::cerr << "Error in " << functionName << ", invalid uncertainty requested, uncertainty argument should be smaller than 3" << std::endl;
+        return false;
+    }
+}
+
