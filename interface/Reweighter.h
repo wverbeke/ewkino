@@ -28,25 +28,13 @@ class Reweighter{
         double bTagEff(const unsigned jetFlavor, const double jetPt, const double jetEta) const;
 
         //lepton id + reconstruction weight
-        double muonTightWeight(const double pt, const double eta, const unsigned unc = 0) const; 
         double muonTightWeight(const double pt, const double eta, const std::string& unc = "") const; 
-        //    return muonRecoWeight()*muonTightIdWeight(pt,eta);
-        //}
 
-        double electronTightWeight(const double pt, const double superClusterEta, const unsigned unc = 0) const;
         double electronTightWeight(const double pt, const double superClusterEta, const std::string& unc = "") const;
-        //    return electronRecoWeight(superClusterEta, pt)*electronTightIdWeight(pt,superClusterEta);
-        //}
 
-        double muonLooseWeight(const double pt, const double eta, const unsigned unc = 0) const;
-        double muonLooseWeight(const double pt, const double eta, const std::string& unc) const;
-        //    return  muonRecoWeight()*muonLooseIdWeight(pt,eta);
-        //}
+        double muonLooseWeight(const double pt, const double eta, const std::string& unc = "") const;
 
-        double electronLooseWeight(const double pt, const double superClusterEta, const unsigned unc = 0) const;
-        double electronLooseWeight(const double pt, const double superClusterEta, const std::string& unc) const;
-        //    return electronRecoWeight(superClusterEta, pt)*electronLooseIdWeight(pt,superClusterEta);
-        //}
+        double electronLooseWeight(const double pt, const double superClusterEta, const std::string& unc = "") const;
 
         //fakerates 
         double muonFakeRate(const double pt, const double eta, const unsigned unc = 0) const;
@@ -125,7 +113,12 @@ class Reweighter{
         double electronWeight(const double pt, const double eta, const unsigned unc, double (Reweighter::*electronIDWeight)(const double, const double , const unsigned, const unsigned) const ) const;
         double electronWeight(const double pt, const double eta, const std::string& unc, double (Reweighter::*electronIDWeight)(const double, const double , const unsigned, const unsigned) const ) const;
         unsigned convertUncertaintyString(const std::string& );
-        
+       
+        //functions taking unsigned argument 
+        double muonTightWeight(const double pt, const double eta, const unsigned unc) const; 
+        double electronTightWeight(const double pt, const double superClusterEta, const unsigned unc) const;
+        double muonLooseWeight(const double pt, const double eta, const unsigned unc) const;
+        double electronLooseWeight(const double pt, const double superClusterEta, const unsigned unc) const;
 
         //read pu weights for a given list of samples
         void initializePuWeights(const std::vector< Sample >&); 
@@ -155,6 +148,6 @@ class Reweighter{
         bool checkStatAndSystUncertainties(const unsigned statUnc, const unsigned systUnc, const std::string& functionName) const;
 
         //convert string uncertainty argument to unsigned 
-        unsigned convertUncertaintyString(const std::string& ) const;
+        unsigned convertUncertaintyString(const std::string&, const bool muonFunction) const;
 };
 #endif

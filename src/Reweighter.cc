@@ -449,23 +449,35 @@ bool Reweighter::checkStatAndSystUncertainties( const unsigned statUnc, const un
     }
 }
 
-unsigned Reweighter::convertUncertaintyString(const std::string& uncertaintyOption) const{
+unsigned Reweighter::convertUncertaintyString(const std::string& uncertaintyOption, const bool muonFunction) const{
+
+
     const static std::map<std::string, unsigned> optionMapping = {
         {"", 0},
         {"nominal",  0},
         {"recoDown", 1},
         {"recoUp", 2},
-        {"idStatDown", 3},
-        {"idStatUp", 4},
+        {"muon_idStatDown", 3},
+        {"muon_idStatUp", 4},
+        {"electron_idStatDown", 3},
+        {"electron_idStatUp", 4},
         {"idSystDown", 5},
         {"idSystUp", 6}
     };
-        
+    
     auto optionIt = optionMapping.find(uncertaintyOption);
     if( optionIt == optionMapping.cend() ){
         std::cerr << "Error in Reweighter::convertUncertaintyString, uncertainty argument " << uncertaintyOption << " is not recognized." << std::endl;
         return 9999;
     }
+    
+    //vary electrons and muons independently when considering statistical uncertainties on the scale factors 
+    if(muonFunction && ( uncertaintyOption.find("electron") != std::string::npos ) ){
+        return 0;
+    } else if( (!muonFunction) && ( uncertaintyOption.find("muon") != std::string::npos ) ){
+        return 0;
+    }
+
     return optionIt->second;
 }
 
@@ -515,7 +527,7 @@ double Reweighter::muonWeight(const double pt, const double eta, const unsigned 
 } 
 
 double Reweighter::muonWeight(const double pt, const double eta, const std::string& unc, double (Reweighter::*muonIdWeight)(const double, const double , const unsigned, const unsigned) const ) const{
-    unsigned uncOpt = convertUncertaintyString(unc);
+    unsigned uncOpt = convertUncertaintyString(unc, true);
     return muonWeight(pt, eta, uncOpt, muonIdWeight);
 }
 
@@ -565,7 +577,7 @@ double Reweighter::electronWeight(const double pt, const double superClusterEta,
 }
 
 double Reweighter::electronWeight(const double pt, const double superClusterEta, const std::string& unc, double (Reweighter::*electronIdWeight)(const double, const double , const unsigned, const unsigned) const ) const{
-    unsigned uncOpt = convertUncertaintyString(unc);
+    unsigned uncOpt = convertUncertaintyString(unc, false);
     return electronWeight(pt, superClusterEta, uncOpt, electronIdWeight);
 }
 
