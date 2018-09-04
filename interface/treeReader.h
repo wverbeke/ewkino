@@ -296,7 +296,7 @@ class treeReader {
         double bTagWeight(const unsigned unc = 0) const;
 
         //lepton reweighting
-        double leptonWeight() const;
+        double leptonWeight(const unsigned unc = 0) const;
 
         //fake-rate
         double fakeRateWeight(const unsigned unc = 0);

@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= src/combinePD.cc src/treeReader.cc src/analysisTools.cc src/Sample.cc src/treeReaderErrors.cc src/objectSelection.cc src/kinematicTools.cc
+SOURCES= src/combinePD.cc src/treeReader.cc src/analysisTools.cc src/Sample.cc src/treeReaderErrors.cc src/objectSelection.cc src/kinematicTools.cc src/stringTools.cc src/systemTools.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= combinePD
 

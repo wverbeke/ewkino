@@ -52,8 +52,9 @@ double treeReader::bTagWeight_reshaping(const unsigned jetFlavor, const unsigned
 
 double treeReader::bTagWeight(const unsigned jetFlavor, const unsigned unc) const{
     
-    //currently we will always use b-tag reshaping
-    return bTagWeight_reshaping( jetFlavor, unc );
+    //b-tag reshaping weights seem unavailable for 2016, so we will not use it for now 
+    //return bTagWeight_reshaping( jetFlavor, unc );
+    return bTagWeight_cut(jetFlavor, unc);
 }
 
 //light flavor b-tagging SF
@@ -77,20 +78,20 @@ double treeReader::bTagWeight(const unsigned unc) const{
 }
 
 //total lepton SF
-double treeReader::leptonWeight() const{
+double treeReader::leptonWeight(const unsigned unc) const{
     double sf = 1.;
     for(unsigned l = 0; l < _nLight; ++l){
         if( lepIsTight(l) ){
             if( isMuon(l) ){
-                sf *= reweighter->muonTightWeight(_lPt[l], _lEta[l]);
+                sf *= reweighter->muonTightWeight(_lPt[l], _lEta[l], unc);
             } else if( isElectron(l) ){
-                sf *= reweighter->electronTightWeight(_lPt[l], _lEtaSC[l]);
+                sf *= reweighter->electronTightWeight(_lPt[l], _lEtaSC[l], unc);
             }
         } else if( lepIsLoose(l) ){
             if( isMuon(l) ){
-                sf *= reweighter->muonLooseWeight(_lPt[l], _lEta[l]);
+                sf *= reweighter->muonLooseWeight(_lPt[l], _lEta[l], unc);
             } else if( isElectron(l) ){
-                sf *= reweighter->electronLooseWeight(_lPt[l], _lEtaSC[l]);
+                sf *= reweighter->electronLooseWeight(_lPt[l], _lEtaSC[l], unc);
             }
         } 
     }
@@ -106,7 +107,7 @@ void treeReader::initializeWeights(){
         weightsAre2016 = is2016();
 
         //automatically use b-tag reshaping for now
-        reweighter.reset(new Reweighter(samples, is2016(), "reshaping") );
+        reweighter.reset(new Reweighter(samples, is2016(), "medium") );
     } 
 }
     
