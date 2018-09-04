@@ -173,8 +173,16 @@ void Reweighter::initializeMuonWeights(){
     TFile* muonIdFile = TFile::Open( (const TString&) "weights/muonIDScaleFactors_" + year + ".root");
     muonLooseToRecoSF = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLoose") );
     muonLooseToRecoSF->SetDirectory(gROOT);
-    muonTightToLooseSF = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("TTVLooseToTTVLeptonMvatZq") );
-    muonTightToLooseSF->SetDirectory(gROOT);
+    muonLooseToRecoSF_statUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLoose_stat") );
+    muonLooseToRecoSF_statUnc->SetDirectory(gROOT);
+    muonLooseToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLoose_syst") );
+    muonLooseToRecoSF_systUnc->SetDirectory(gROOT);
+    muonTightToRecoSF = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLeptonMvatZq") );
+    muonTightToRecoSF->SetDirectory(gROOT);
+    muonTightToRecoSF_statUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLeptonMvatZq_stat") );
+    muonTightToRecoSF_statUnc->SetDirectory(gROOT);
+    muonTightToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLeptonMvatZq_syst") );
+    muonTightToRecoSF_systUnc->SetDirectory(gROOT);
     muonIdFile->Close();	
 }
 
@@ -287,51 +295,75 @@ double Reweighter::electronRecoWeight(const double superClusterEta, const double
 
     double croppedSuperClusterEta = std::max(-2.49, std::min(superClusterEta, 2.49) );
     double croppedPt = std::max(10.01, std::min(pt, 499.) );
-    TH1D* sfMapToUse;
+    TH2D* sfMapToUse;
     if( pt <= 20 ){
         //return electronRecoSF_pT0to20->GetBinContent( electronRecoSF_pT0to20->FindBin( croppedSuperClusterEta, croppedPt ) );
         sfMapToUse = electronRecoSF_pT0to20.get();
     } else {
         //return electronRecoSF_pT20toInf->GetBinContent( electronRecoSF_pT20toInf->FindBin( croppedSuperClusterEta, croppedPt ) );
-        sfMapToUse electronRecoSF_pT20toInf.get();
+        sfMapToUse = electronRecoSF_pT20toInf.get();
     }
-    checkUncertainty(unc, "Reweighter::electronRecoWeight");
+    if( !checkUncertainty(unc, 3, "Reweighter::electronRecoWeight") ){
+        return 9999.;
+    }
     int binToUse = sfMapToUse->FindBin( croppedSuperClusterEta, croppedPt );
     if( unc == 0 ){
-        sfMapToUse->GetBinContent( binToUse );
+        return sfMapToUse->GetBinContent( binToUse );
     } else if( unc == 1 ){
-        sfMapToUse->GetBinContent( binToUse ) - sfMapToUse->GetBinError( binToUse );
+        return sfMapToUse->GetBinContent( binToUse ) - sfMapToUse->GetBinError( binToUse );
     } else{
-        sfMapToUse->GetBinContent( binToUse ) + sfMapToUse->GetBinError( binToUse );
+        return sfMapToUse->GetBinContent( binToUse ) + sfMapToUse->GetBinError( binToUse );
     }
+}
+
+double Reweighter::leptonIDWeight(const std::shared_ptr<TH2D>& sfMap, const std::shared_ptr<TH2D>& statUncMap, const std::shared_ptr<TH2D>& systUncMap,
+    const double croppedPt, const double croppedEtaVariable, const unsigned statUnc, const unsigned systUnc) const{
+    if( !checkStatAndSystUncertainties(statUnc, systUnc, "Reweighter::leptonIDWeight") ){
+        return 9999.;
+    }
+
+    //index of bin 
+    int bin = sfMap->FindBin( croppedPt, croppedEtaVariable );
+    
+    //possible variation of scale factor for systematics
+    double variation = 0.;
+    if( statUnc > 0 ){
+        variation = statUncMap->GetBinContent(bin);
+        if( statUnc == 1){
+            variation *= -1.;
+        }
+    } else if( systUnc > 0 ){
+        variation = systUncMap->GetBinContent(bin);
+        if( systUnc == 1){
+            variation *= -1.;
+        }
+    }
+    double sf = sfMap->GetBinContent( bin );
+    return (sf + variation);
 }
 
 double Reweighter::muonLooseIdWeight(const double pt, const double eta, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( fabs(eta), 2.39 ); 
-    return muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+    return leptonIDWeight( muonLooseToRecoSF, muonLooseToRecoSF_statUnc, muonLooseToRecoSF_systUnc, croppedPt, croppedEta, statUnc, systUnc);
 }
 
 double Reweighter::electronLooseIdWeight(const double pt, const double superClusterEta, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( std::max( -2.49, superClusterEta ), 2.49 ); 
-    return electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
+    return leptonIDWeight( electronLooseToRecoSF, electronLooseToRecoSF_statUnc, electronLooseToRecoSF_systUnc, croppedPt, croppedEta, statUnc, systUnc );
 }
 
-double Reweighter::muonTightIdWeight(const double pt, const double eta, const unsigned unc, const unsigned statUnc, const unsigned systUnc) const{
+double Reweighter::muonTightIdWeight(const double pt, const double eta, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( fabs(eta), 2.39);
-    double sf = muonLooseToRecoSF->GetBinContent( muonLooseToRecoSF->FindBin( croppedPt, croppedEta) );
-    sf*= muonTightToLooseSF->GetBinContent( muonTightToLooseSF->FindBin( croppedPt, croppedEta) );
-    return sf;
+    return leptonIDWeight( muonTightToRecoSF, muonTightToRecoSF_statUnc, muonTightToRecoSF_systUnc, croppedPt, croppedEta, statUnc, systUnc);
 }
 
 double Reweighter::electronTightIdWeight(const double pt, const double superClusterEta, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( std::max( -2.49, superClusterEta ), 2.49 ); 
-    double sf = electronLooseToRecoSF->GetBinContent( electronLooseToRecoSF->FindBin( croppedPt, croppedEta) );
-    sf*= electronTightToLooseSF->GetBinContent( electronTightToLooseSF->FindBin( croppedPt, croppedEta) );
-    return sf;
+    return leptonIDWeight( electronLooseToRecoSF, electronLooseToRecoSF_statUnc, electronLooseToRecoSF_systUnc, croppedPt, croppedEta, statUnc, systUnc);
 }
 
 double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
@@ -376,7 +408,7 @@ double Reweighter::jetPrefiringProbability(const double pt, const double eta, co
 
     //consider probabilities outside of map to be zero
     //this is implicitly implemented by not requiring the pt and eta values to fall in the map
-    if( !checkUncertainty(unc, "Reweighter::jetPrefiringProbability") ){
+    if( !checkUncertainty(unc, 3, "Reweighter::jetPrefiringProbability") ){
         return 9999.;
     }    
     //abseta binning for 2016, eta binning for 2017
@@ -397,12 +429,176 @@ double Reweighter::jetPrefiringProbability(const double pt, const double eta, co
 }
 
 //make sure uncertainty argument is smaller than 3 
-bool Reweighter::checkUncertainty(const unsigned unc, const std::string& functionName) const{
-    if( unc < 3){
+bool Reweighter::checkUncertainty(const unsigned unc, const unsigned maxVal, const std::string& functionName) const{
+    if( unc < maxVal){
         return true;
     } else{
-        std::cerr << "Error in " << functionName << ", invalid uncertainty requested, uncertainty argument should be smaller than 3" << std::endl;
+        std::cerr << "Error in " << functionName << ", invalid uncertainty requested, uncertainty argument should be smaller than 3!" << std::endl;
         return false;
     }
 }
 
+//make sure statistical and systematic uncertainties are not simultaneously varied
+bool Reweighter::checkStatAndSystUncertainties( const unsigned statUnc, const unsigned systUnc, const std::string& functionName) const{
+    if(statUnc > 0 && systUnc > 0){
+        std::cerr << "Error in " << functionName << ", statiscal and systematic uncertainties are varied simultaneously!" << std::endl;
+        return false;
+    } else{
+        bool uncertaintiesAreFine = ( checkUncertainty(statUnc, 3, functionName) && checkUncertainty(systUnc, 3, functionName) );
+        return uncertaintiesAreFine;
+    }
+}
+
+unsigned Reweighter::convertUncertaintyString(const std::string& uncertaintyOption) const{
+    const static std::map<std::string, unsigned> optionMapping = {
+        {"", 0},
+        {"nominal",  0},
+        {"recoDown", 1},
+        {"recoUp", 2},
+        {"idStatDown", 3},
+        {"idStatUp", 4},
+        {"idSystDown", 5},
+        {"idSystUp", 6}
+    };
+        
+    auto optionIt = optionMapping.find(uncertaintyOption);
+    if( optionIt == optionMapping.cend() ){
+        std::cerr << "Error in Reweighter::convertUncertaintyString, uncertainty argument " << uncertaintyOption << " is not recognized." << std::endl;
+        return 9999;
+    }
+    return optionIt->second;
+}
+
+double Reweighter::muonWeight(const double pt, const double eta, const unsigned unc, double (Reweighter::*muonIdWeight)(const double, const double , const unsigned, const unsigned) const ) const{
+    switch(unc){
+
+        //nominal 
+        case 0 : {
+            return muonRecoWeight()* (this->*muonIdWeight)(pt, eta, 0, 0);
+        }
+
+        //reco down (no variation for muons)
+        case 1 : {
+            return muonRecoWeight()*(this->*muonIdWeight)(pt, eta, 0, 0);
+        }
+
+        //reco up (no variation for muons)
+        case 2 : {
+            return muonRecoWeight()*(this->*muonIdWeight)(pt, eta, 0, 0);
+        }
+        
+        //id stat down
+        case 3 : {
+            return muonRecoWeight()*(this->*muonIdWeight)(pt, eta, 1, 0);
+        }
+        
+        //id stat up
+        case 4 : {
+            return muonRecoWeight()*(this->*muonIdWeight)(pt, eta, 2, 0);
+        }
+        
+        //id syst down
+        case 5 : {
+            return muonRecoWeight()*(this->*muonIdWeight)(pt, eta, 0, 1);
+        }
+        
+        //id syst up
+        case 6 : {
+            return muonRecoWeight()*(this->*muonIdWeight)(pt, eta, 0, 2);
+        }
+
+        default : {
+            std::cerr << "Error in Reweighter::muonWeight, unknown uncertainty option given!" << std::endl;
+            return 9999.;    
+        }
+    }
+} 
+
+double Reweighter::muonWeight(const double pt, const double eta, const std::string& unc, double (Reweighter::*muonIdWeight)(const double, const double , const unsigned, const unsigned) const ) const{
+    unsigned uncOpt = convertUncertaintyString(unc);
+    return muonWeight(pt, eta, uncOpt, muonIdWeight);
+}
+
+double Reweighter::electronWeight(const double pt, const double superClusterEta, const unsigned unc, double (Reweighter::*electronIdWeight)(const double, const double , const unsigned, const unsigned) const ) const{
+    switch(unc){
+
+        //nominal 
+        case 0 : {
+            return electronRecoWeight(pt, superClusterEta, 0)* (this->*electronIdWeight)(pt, superClusterEta, 0, 0);
+        }
+
+        //reco down
+        case 1 : {
+            return electronRecoWeight(pt, superClusterEta, 1)*(this->*electronIdWeight)(pt, superClusterEta, 0, 0);
+        }
+
+        //reco up
+        case 2 : {
+            return electronRecoWeight(pt, superClusterEta, 2)*(this->*electronIdWeight)(pt, superClusterEta, 0, 0);
+        }
+        
+        //id stat down
+        case 3 : {
+            return electronRecoWeight(pt, superClusterEta, 0)*(this->*electronIdWeight)(pt, superClusterEta, 1, 0);
+        }
+        
+        //id stat up
+        case 4 : {
+            return electronRecoWeight(pt, superClusterEta, 0)*(this->*electronIdWeight)(pt, superClusterEta, 2, 0);
+        }
+        
+        //id syst down
+        case 5 : {
+            return electronRecoWeight(pt, superClusterEta, 0)*(this->*electronIdWeight)(pt, superClusterEta, 0, 1);
+        }
+        
+        //id syst up
+        case 6 : {
+            return electronRecoWeight(pt, superClusterEta, 0)*(this->*electronIdWeight)(pt, superClusterEta, 0, 2);
+        }
+
+        default : {
+            std::cerr << "Error in Reweighter::muonWeight, unknown uncertainty option given!" << std::endl;
+            return 9999.;    
+        }
+    }
+}
+
+double Reweighter::electronWeight(const double pt, const double superClusterEta, const std::string& unc, double (Reweighter::*electronIdWeight)(const double, const double , const unsigned, const unsigned) const ) const{
+    unsigned uncOpt = convertUncertaintyString(unc);
+    return electronWeight(pt, superClusterEta, uncOpt, electronIdWeight);
+}
+
+
+//public fuctions to compute final scale factors
+double Reweighter::muonTightWeight(const double pt, const double eta, const unsigned unc) const{
+    return muonWeight(pt, eta, unc, &Reweighter::muonTightIdWeight);
+}
+
+double Reweighter::muonTightWeight(const double pt, const double eta, const std::string& unc) const{
+    return muonWeight(pt, eta, unc, &Reweighter::muonTightIdWeight);
+}
+
+double Reweighter::muonLooseWeight(const double pt, const double eta, const unsigned unc) const{
+    return muonWeight(pt, eta, unc, &Reweighter::muonLooseIdWeight);
+}
+
+double Reweighter::muonLooseWeight(const double pt, const double eta, const std::string& unc) const{
+    return muonWeight(pt, eta, unc, &Reweighter::muonLooseIdWeight);
+}
+
+double Reweighter::electronTightWeight(const double pt, const double superClusterEta, const unsigned unc) const{
+    return electronWeight(pt, superClusterEta, unc, &Reweighter::electronTightIdWeight);
+}
+
+double Reweighter::electronTightWeight(const double pt, const double superClusterEta, const std::string& unc) const{
+    return electronWeight(pt, superClusterEta, unc, &Reweighter::electronTightIdWeight);
+}
+
+double Reweighter::electronLooseWeight(const double pt, const double superClusterEta, const unsigned unc) const{
+    return electronWeight(pt, superClusterEta, unc, &Reweighter::electronLooseIdWeight);
+}
+
+double Reweighter::electronLooseWeight(const double pt, const double superClusterEta, const std::string& unc) const{
+    return electronWeight(pt, superClusterEta, unc, &Reweighter::electronLooseIdWeight);
+}
