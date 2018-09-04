@@ -78,7 +78,7 @@ double treeReader::bTagWeight(const unsigned unc) const{
 }
 
 //total lepton SF
-double treeReader::leptonWeight(const unsigned unc) const{
+double treeReader::leptonWeight(const std::string& unc) const{
     double sf = 1.;
     for(unsigned l = 0; l < _nLight; ++l){
         if( lepIsTight(l) ){
