@@ -150,29 +150,17 @@ void treeReader::Analyze(){
     //BDT reader for 1bJet23Jets category
     std::vector < std::string > bdtVars1bJet23Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "mTW", "pTMaxjj", "minDeltaPhilb", "maxDeltaPhill"};
     std::string weights;
-    if( is2016() ){
-        weights = "1bJet23Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    } else if( is2017() ){
-        weights = "1bJet23Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    }
+    weights = "1bJet23Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     bdtReader1bJet23Jets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet23Jets) );
 
     //BDT reader for 1bJet4Jets category
-    if( is2016() ){
-        weights = "1bJet4Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    } else if( is2017() ){
-        weights = "1bJet4Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    }
+    weights = "1bJet4Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "minDeltaPhilb",
         "deltaRTaggedbJetRecoilingJet", "deltaRWLeptonTaggedbJet", "m3l", "etaMostForward"};
     bdtReader1bJet4Jets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet4Jets) );
 
     //BDT reader for 2bJets category
-    if( is2016() ){
-        weights = "2bJets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    } else if( is2017() ){
-        weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    }
+    weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "etaMostForward", "m3l"}; 
     bdtReader2bJets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets) );
 
@@ -185,6 +173,7 @@ void treeReader::Analyze(){
 
         initSample();          //2 = combined luminosity
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
+
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar	
@@ -528,6 +517,7 @@ void treeReader::Analyze(){
                 }
             }
         }
+
         //set histograms to 0 if negative
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned cat = 0; cat < nCat; ++cat){
@@ -544,7 +534,6 @@ void treeReader::Analyze(){
             }
         }
     }
-
     //set nonprompt bins to 0 if negative
     for(unsigned m = 0; m < nMll; ++m){
         for( unsigned cat = 0; cat < nCat; ++cat){
@@ -609,7 +598,7 @@ void treeReader::Analyze(){
             }
         }
     }
-
+    
     //add pdf and scale variation uncertainties of the cross-section
     std::vector< double > scaleXsecUncDown = {0.};  //first dummy entry for data
     std::vector< double > scaleXsecUncUp = {0.};
@@ -682,7 +671,6 @@ void treeReader::Analyze(){
             }
         }
     }
-
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"Obs.", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -707,7 +695,9 @@ void treeReader::Analyze(){
             }
         }
     }
+    std::cout << "merged Counter = " << mergedHists[0][2].back()[0]->GetBinContent(1) << std::endl;
 
+    /*
     //merging for uncertainties
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapDown;
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapUp;
@@ -830,6 +820,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    */
 }
 int main(){
     treeReader reader;

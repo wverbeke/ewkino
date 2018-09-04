@@ -65,7 +65,7 @@ void treeReader::initSample(const Sample& samp){
     sampleFile = samp.getFile();
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
-    initTree(fChain, samp.isData());
+    initTree(fChain, samp);
     nEntries = fChain->GetEntries();
     if(!samp.isData()){
 
@@ -103,6 +103,7 @@ void treeReader::GetEntry(const Sample& samp, long unsigned entry)
 void treeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
     GetEntry(samples[currentSampleIndex], entry);
 }
+
 
 void treeReader::initTree(TTree *tree, const bool isData)
 {
@@ -243,8 +244,10 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_weight", &_weight, &b__weight);
         fChain->SetBranchAddress("_nLheWeights", &_nLheWeights, &b__nLheWeights);
         fChain->SetBranchAddress("_lheWeight", _lheWeight, &b__lheWeight);
+        /*
         fChain->SetBranchAddress("_nPsWeights", &_nPsWeights, &b__nPsWeights);
         fChain->SetBranchAddress("_psWeight", _psWeight, &b__psWeight);
+        */
         fChain->SetBranchAddress("_nTrueInt", &_nTrueInt, &b__nTrueInt);
         fChain->SetBranchAddress("_gen_met", &_gen_met, &b__gen_met);
         fChain->SetBranchAddress("_gen_metPhi", &_gen_metPhi, &b__gen_metPhi);
@@ -266,6 +269,18 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
         fChain->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
         fChain->SetBranchAddress("_gen_HT", &_gen_HT, &b__gen_HT);
+    }
+}
+
+void treeReader::initTree(TTree* tree, const Sample& samp){
+    initTree( tree, samp.isData() );
+     if( samp.isMC() &&
+        ( (samp.getFileName() == "tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root") ||
+          (samp.getFileName() == "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root") )
+      )
+    {
+        fChain->SetBranchAddress("_nPsWeights", &_nPsWeights, &b__nPsWeights);
+        fChain->SetBranchAddress("_psWeight", _psWeight, &b__psWeight);
     }
 }
 
@@ -402,8 +417,10 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
     if(!isData){
         outputTree->Branch("_nLheWeights",               &_nLheWeights,               "_nLheWeights/b");
         outputTree->Branch("_lheWeight",                 &_lheWeight,                 "_lheWeight[_nLheWeights]/D");
+        /*
         outputTree->Branch("_nPsWeights",                &_nPsWeights,                "_nPsWeights/b");
         outputTree->Branch("_psWeight",                  &_psWeight,                  "_psWeight[_nPsWeights]/D");
+        */
         outputTree->Branch("_weight",                    &_weight,                    "_weight/D");
         outputTree->Branch("_lIsPrompt",                 &_lIsPrompt,                 "_lIsPrompt[_nL]/O");
         outputTree->Branch("_lMatchPdgId",               &_lMatchPdgId,               "_lMatchPdgId[_nL]/I");
@@ -426,5 +443,17 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/b");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
         outputTree->Branch("_gen_HT",                    &_gen_HT,                    "_gen_HT/D");
+    }
+}
+
+void treeReader::setOutputTree(TTree* outputTree, const Sample& samp){
+    setOutputTree(outputTree, samp.isData() );
+    if( samp.isMC() && 
+        ( (samp.getFileName() == "tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root") ||
+          (samp.getFileName() == "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root") ) 
+      )
+    {
+        outputTree->Branch("_nPsWeights",                &_nPsWeights,                "_nPsWeights/b");
+        outputTree->Branch("_psWeight",                  &_psWeight,                  "_psWeight[_nPsWeights]/D");
     }
 }

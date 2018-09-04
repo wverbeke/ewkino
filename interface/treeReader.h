@@ -33,6 +33,7 @@ class treeReader {
         //Comment out later
         UChar_t         _nPsWeights;
         Double_t        _psWeight[14];
+        ///////////////////
         Float_t         _nTrueInt;
         Double_t        _gen_met;
         Double_t        _gen_metPhi;
@@ -183,7 +184,9 @@ class treeReader {
 
         //set up tree for reading and writing
         void initTree(TTree *tree, const bool isData = false);
+        void initTree(TTree *tree, const Sample& samp);
         void setOutputTree(TTree*, const bool isData = false);
+        void setOutputTree(TTree*, const Sample& samp);
 
         //skim tree
         void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
@@ -441,6 +444,7 @@ class treeReader {
         //Comment out later
         TBranch        *b__nPsWeights;
         TBranch        *b__psWeight;
+        ///////////////////
         TBranch        *b__nTrueInt;   
         TBranch        *b__gen_met;   
         TBranch        *b__gen_metPhi;   

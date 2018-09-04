@@ -24,7 +24,7 @@
 void treeReader::combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory){
 
     //directory to write merged file
-    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_tzq/" : tools::formattedDirectoryName(outputDirectory);
+    outputDirectory = (outputDirectory == "") ? "~/Work/ntuples_tzq/" : stringTools::directoryName(outputDirectory);
 
     //name of merged file
     std::string outputFileName;

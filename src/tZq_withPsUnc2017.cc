@@ -27,6 +27,7 @@
 #include "../interface/kinematicTools.h"
 #include "../interface/TrainingTree.h"
 #include "../interface/BDTReader.h"
+#include "../interface/PostFitScaler.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -39,7 +40,7 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_nonpromptDataDriven_2016.txt", "../../ntuples_tzq");
+    readSamples("sampleLists/samples_nonpromptDataDriven_2017_withPsWeights.txt", "../../ntuples_tzq/");
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
@@ -93,7 +94,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "pdf", "scaleXsec", "pdfXsec"};
+    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "isr", "fsr", "pdf", "scaleXsec", "pdfXsec"};
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
     for( auto& key : uncNames ){
@@ -150,17 +151,17 @@ void treeReader::Analyze(){
     //BDT reader for 1bJet23Jets category
     std::vector < std::string > bdtVars1bJet23Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "mTW", "pTMaxjj", "minDeltaPhilb", "maxDeltaPhill"};
     std::string weights;
-    weights = "1bJet23Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    weights = "1bJet23Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     bdtReader1bJet23Jets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet23Jets) );
 
     //BDT reader for 1bJet4Jets category
-    weights = "1bJet4Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    weights = "1bJet4Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "minDeltaPhilb",
         "deltaRTaggedbJetRecoilingJet", "deltaRWLeptonTaggedbJet", "m3l", "etaMostForward"};
     bdtReader1bJet4Jets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet4Jets) );
 
     //BDT reader for 2bJets category
-    weights = "2bJets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
+    weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "etaMostForward", "m3l"}; 
     bdtReader2bJets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets) );
 
@@ -222,6 +223,7 @@ void treeReader::Analyze(){
             //remove overlap between samples
             if(photonOverlap(currentSample, false)) continue;
 
+
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
             for(unsigned l = 0; l < lCount; ++l) lepV[l].SetPtEtaPhiE(_lPt[ind[l]], _lEta[ind[l]], _lPhi[ind[l]], _lE[ind[l]]);
@@ -247,47 +249,46 @@ void treeReader::Analyze(){
             double bdtNominal = 999.;
             if(tzqCat > 2 && tzqCat < 6){
                 bdtNominal = bdtOutput( tzqCat );
-                if(bdtNominal < 0.){
-                    double fill[nDist] = {bdtNominal, bdtNominal,
-                        bdtVariableMap["etaRecoilingJet"],
-                        bdtVariableMap["maxMjj"],
-                        bdtVariableMap["asymmetryWlep"],
-                        bdtVariableMap["highestDeepCSV"],
-                        bdtVariableMap["ltmet"],
-                        bdtVariableMap["maxDeltaPhijj"],
-                        bdtVariableMap["mTW"],
-                        bdtVariableMap["topMass"],
-                        bdtVariableMap["pTMaxjj"],
-                        bdtVariableMap["minDeltaPhilb"],
-                        bdtVariableMap["maxDeltaPhill"],
-                        bdtVariableMap["ht"],
-                        bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                        bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                        bdtVariableMap["m3l"],
-                        bdtVariableMap["etaMostForward"],
-                        bdtVariableMap["numberOfJets"],
-                        _lPt[ind[0]],
-                        _lPt[ind[1]],
-                        _lPt[ind[2]],
-                        (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
-                        };
+                double fill[nDist] = {bdtNominal, bdtNominal,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                    };
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                }
+                //in case of data fakes fill all uncertainties for nonprompt with nominal values
+                if( isData() && !passTightCut){
                     for(unsigned dist = 0; dist < nDist; ++dist){
-                        hists[mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                    }
-                    //in case of data fakes fill all uncertainties for nonprompt with nominal values
-                    if( isData() && !passTightCut){
-                        for(unsigned dist = 0; dist < nDist; ++dist){
-                            for(auto& key: uncNames){
-                                uncHistMapDown[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                                uncHistMapUp[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                            }
-                            for(unsigned pdf = 0; pdf < 100; ++pdf){
-                                 pdfUncHists[pdf][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                            }
+                        for(auto& key: uncNames){
+                            uncHistMapDown[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                            uncHistMapUp[key][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+                        }
+                        for(unsigned pdf = 0; pdf < 100; ++pdf){
+                             pdfUncHists[pdf][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                         }
                     }
                 }
             }
+
 
             //no nuisances for data
             if( isData() ) continue;
@@ -296,69 +297,66 @@ void treeReader::Analyze(){
             unsigned tzqCatJECDown = setSearchVariablestZq("JECDown", ind, bestZ);
             if(tzqCatJECDown > 2 && tzqCatJECDown < 6){
                 double bdtJECDown = bdtOutput( tzqCatJECDown );
-                if( bdtJECDown < 0.){
-                    double fill[nDist] = {bdtJECDown, bdtJECDown,
-                        bdtVariableMap["etaRecoilingJet"],
-                        bdtVariableMap["maxMjj"],
-                        bdtVariableMap["asymmetryWlep"],
-                        bdtVariableMap["highestDeepCSV"],
-                        bdtVariableMap["ltmet"],
-                        bdtVariableMap["maxDeltaPhijj"],
-                        bdtVariableMap["mTW"],
-                        bdtVariableMap["topMass"],
-                        bdtVariableMap["pTMaxjj"],
-                        bdtVariableMap["minDeltaPhilb"],
-                        bdtVariableMap["maxDeltaPhill"],
-                        bdtVariableMap["ht"],
-                        bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                        bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                        bdtVariableMap["m3l"],
-                        bdtVariableMap["etaMostForward"],
-                        bdtVariableMap["numberOfJets"],
-                        _lPt[ind[0]],
-                        _lPt[ind[1]],
-                        _lPt[ind[2]],
-                        (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
-                        };
+                double fill[nDist] = {bdtJECDown, bdtJECDown,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                    };
  
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        uncHistMapDown["JEC_2016"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                    }
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    uncHistMapDown["JEC_2017"][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
+                
             }
 
             //vary JEC up
             unsigned tzqCatJECUp = setSearchVariablestZq("JECUp", ind, bestZ);
             if(tzqCatJECUp > 2 && tzqCatJECUp < 6){
                 double bdtJECUp = bdtOutput( tzqCatJECUp );
-                if(bdtJECUp < 0.){
-                    double fill[nDist] = {bdtJECUp, bdtJECUp,
-                        bdtVariableMap["etaRecoilingJet"],
-                        bdtVariableMap["maxMjj"],
-                        bdtVariableMap["asymmetryWlep"],
-                        bdtVariableMap["highestDeepCSV"],
-                        bdtVariableMap["ltmet"],
-                        bdtVariableMap["maxDeltaPhijj"],
-                        bdtVariableMap["mTW"],
-                        bdtVariableMap["topMass"],
-                        bdtVariableMap["pTMaxjj"],
-                        bdtVariableMap["minDeltaPhilb"],
-                        bdtVariableMap["maxDeltaPhill"],
-                        bdtVariableMap["ht"],
-                        bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                        bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                        bdtVariableMap["m3l"],
-                        bdtVariableMap["etaMostForward"],
-                        bdtVariableMap["numberOfJets"],
-                        _lPt[ind[0]],
-                        _lPt[ind[1]],
-                        _lPt[ind[2]],
-                        (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
-                        };
+                double fill[nDist] = {bdtJECUp, bdtJECUp,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                    };
 
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        uncHistMapUp["JEC_2016"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                    }
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    uncHistMapUp["JEC_2017"][mllCat][tzqCatJECUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
@@ -366,34 +364,32 @@ void treeReader::Analyze(){
             unsigned tzqCatUnclDown = setSearchVariablestZq("unclDown", ind, bestZ);
             if(tzqCatUnclDown > 2 && tzqCatUnclDown < 6){
                 double bdtUnclDown = bdtOutput( tzqCatUnclDown );
-                if( bdtUnclDown < 0.){
-                    double fill[nDist] = {bdtUnclDown, bdtUnclDown,
-                        bdtVariableMap["etaRecoilingJet"],
-                        bdtVariableMap["maxMjj"],
-                        bdtVariableMap["asymmetryWlep"],
-                        bdtVariableMap["highestDeepCSV"],
-                        bdtVariableMap["ltmet"],
-                        bdtVariableMap["maxDeltaPhijj"],
-                        bdtVariableMap["mTW"],
-                        bdtVariableMap["topMass"],
-                        bdtVariableMap["pTMaxjj"],
-                        bdtVariableMap["minDeltaPhilb"],
-                        bdtVariableMap["maxDeltaPhill"],
-                        bdtVariableMap["ht"],
-                        bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                        bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                        bdtVariableMap["m3l"],
-                        bdtVariableMap["etaMostForward"],
-                        bdtVariableMap["numberOfJets"],
-                        _lPt[ind[0]],
-                        _lPt[ind[1]],
-                        _lPt[ind[2]],
-                        (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
-                        };
+                double fill[nDist] = {bdtUnclDown, bdtUnclDown,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                    };
 
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        uncHistMapDown["uncl"][mllCat][tzqCatUnclDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                    }
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    uncHistMapDown["uncl"][mllCat][tzqCatUnclDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
@@ -401,40 +397,37 @@ void treeReader::Analyze(){
             unsigned tzqCatUnclUp = setSearchVariablestZq("unclUp", ind, bestZ);
             if(tzqCatUnclUp  > 2 && tzqCatUnclUp < 6){
                 double bdtUnclUp = bdtOutput( tzqCatUnclUp );
-                if( bdtUnclUp < 0.){
-                    double fill[nDist] = {bdtUnclUp, bdtUnclUp,
-                        bdtVariableMap["etaRecoilingJet"],
-                        bdtVariableMap["maxMjj"],
-                        bdtVariableMap["asymmetryWlep"],
-                        bdtVariableMap["highestDeepCSV"],
-                        bdtVariableMap["ltmet"],
-                        bdtVariableMap["maxDeltaPhijj"],
-                        bdtVariableMap["mTW"],
-                        bdtVariableMap["topMass"],
-                        bdtVariableMap["pTMaxjj"],
-                        bdtVariableMap["minDeltaPhilb"],
-                        bdtVariableMap["maxDeltaPhill"],
-                        bdtVariableMap["ht"],
-                        bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
-                        bdtVariableMap["deltaRWLeptonTaggedbJet"],
-                        bdtVariableMap["m3l"],
-                        bdtVariableMap["etaMostForward"],
-                        bdtVariableMap["numberOfJets"],
-                        _lPt[ind[0]],
-                        _lPt[ind[1]],
-                        _lPt[ind[2]],
-                        (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
-                        };
+                double fill[nDist] = {bdtUnclUp, bdtUnclUp,
+                    bdtVariableMap["etaRecoilingJet"],
+                    bdtVariableMap["maxMjj"],
+                    bdtVariableMap["asymmetryWlep"],
+                    bdtVariableMap["highestDeepCSV"],
+                    bdtVariableMap["ltmet"],
+                    bdtVariableMap["maxDeltaPhijj"],
+                    bdtVariableMap["mTW"],
+                    bdtVariableMap["topMass"],
+                    bdtVariableMap["pTMaxjj"],
+                    bdtVariableMap["minDeltaPhilb"],
+                    bdtVariableMap["maxDeltaPhill"],
+                    bdtVariableMap["ht"],
+                    bdtVariableMap["deltaRTaggedbJetRecoilingJet"],
+                    bdtVariableMap["deltaRWLeptonTaggedbJet"],
+                    bdtVariableMap["m3l"],
+                    bdtVariableMap["etaMostForward"],
+                    bdtVariableMap["numberOfJets"],
+                    _lPt[ind[0]],
+                    _lPt[ind[1]],
+                    _lPt[ind[2]],
+                    (double) trilep::flavorCompositionFourlepton(ind, _lFlavor, lCount) + 0.5
+                    };
 
-                    for(unsigned dist = 0; dist < nDist; ++dist){
-                        uncHistMapUp["uncl"][mllCat][tzqCatUnclUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-                    }
+                for(unsigned dist = 0; dist < nDist; ++dist){
+                    uncHistMapUp["uncl"][mllCat][tzqCatUnclUp - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
             }
 
             //now nominal cuts can be safely used
             if(tzqCat < 3 || tzqCat > 5) continue;
-            if( bdtNominal >= 0.) continue;
             
             //reset nominal values 
             setSearchVariablestZq("nominal", ind, bestZ);
@@ -468,7 +461,7 @@ void treeReader::Analyze(){
                     _lheWeight[lhe] = 1.;
                 }
             }
- 
+
             //vary scale down
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapDown["scale"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_lheWeight[8]);
@@ -491,23 +484,52 @@ void treeReader::Analyze(){
 
             //vary b-tag down for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
+                uncHistMapDown["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
             }
 
             //vary b-tag up for udsg
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_udsg_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
+                uncHistMapUp["bTag_udsg_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
             }
 
             //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapDown["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
             //vary b-tag up for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
+
+            if( currentSample.getFileName() != "tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root" && 
+                currentSample.getFileName() != "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root")
+            {
+                for(unsigned ps = 0; ps < 14; ++ps){
+                    _psWeight[ps] = 1.;
+                }
+            }
+
+            //vary b-tag down for b and c (correlated)
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[6] );
+            }
+
+            //vary b-tag up for b and c (correlated)
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[8] );
+            }
+
+            //vary b-tag down for b and c (correlated)
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[7] );
+            }
+
+            //vary b-tag up for b and c (correlated)
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[9] );
+            }
+
 
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
@@ -552,6 +574,7 @@ void treeReader::Analyze(){
 
     //compute lhe cross section ratio for every sample and variation
     std::vector< std::vector< double> > crossSectionRatio(samples.size(), std::vector<double>(110, 1.) );
+    std::vector< std::vector< double> > psCrossSectionRatio(samples.size(), std::vector<double>(14, 1.) );
     for(unsigned sam = 1; sam < samples.size(); ++sam){
 
         //lhe weights are not available for GluGlu->ZZ
@@ -568,6 +591,21 @@ void treeReader::Analyze(){
         for(unsigned lhe = 0; lhe < 110; ++lhe){
             double variedSumOfWeights = lheCounter->GetBinContent(lhe + 1);
             crossSectionRatio[sam][lhe] = sumOfWeights/( variedSumOfWeights );
+        }
+
+        //extract histogram containing sum of weights for all possible ps variations
+        if( samples[sam].getFileName() == "tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root" ||
+            samples[sam].getFileName() == "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root")
+        {  
+            std::shared_ptr<TH1D> psCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/psCounter"));
+            for(unsigned ps = 0; ps < 14; ++ps){
+                double variedSumOfWeights = psCounter->GetBinContent(ps + 1);
+                psCrossSectionRatio[sam][ps] = sumOfWeights/( variedSumOfWeights );
+            }
+        } else{
+            for(unsigned ps = 0; ps < 14; ++ps){
+                psCrossSectionRatio[sam][ps] = 1.;
+            }
         }
     }
 
@@ -603,7 +641,7 @@ void treeReader::Analyze(){
     std::vector< double > scaleXsecUncUp = {0.};
     std::vector< double > pdfXsecUncDown = {0.};
     std::vector< double > pdfXsecUncUp = {0.};
-
+    
     for( unsigned sam = 1; sam < samples.size(); ++sam){
 
         //scale effect on xSec :
@@ -620,11 +658,17 @@ void treeReader::Analyze(){
                     for(unsigned dist = 0; dist < nDist; ++dist){
                         uncHistMapDown["scale"][m][cat][dist][sam]->Scale(crossSectionRatio[sam][8]);
                         uncHistMapUp["scale"][m][cat][dist][sam]->Scale(crossSectionRatio[sam][4]);
-                    } 
+
+                        uncHistMapDown["isr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][6]);
+                        uncHistMapUp["isr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][8]);
+
+                        uncHistMapDown["fsr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][7]);
+                        uncHistMapUp["fsr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][9]);
+                    }
                 }
             }
         }
-    
+
         //pdf effect on xSec:
         double rms = 0.;
         for(unsigned pdf = 0; pdf < 100; ++pdf){
@@ -632,11 +676,6 @@ void treeReader::Analyze(){
             rms += pdfUnc*pdfUnc;
         }
         rms = sqrt( 0.01 * rms);
-
-        //catch CRAZY pdf uncertainty of TTZ-M1to10 in 2016 and set to zero
-        if( samples[sam].getFileName() == "TTZToLL_M-1to10_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root"){
-            rms = 0.;
-        }
 
         pdfXsecUncDown.push_back( -rms );
         pdfXsecUncUp.push_back( rms );
@@ -735,6 +774,46 @@ void treeReader::Analyze(){
         }
     } 
 
+    //print the effect of systematic uncertainty
+    //compute minimum and maximum impact on each bin
+    for(unsigned bdt = 0; bdt < 2; ++bdt){
+        std::cout << "##################################################" << std::endl;
+        if(bdt == 0){
+            std::cout << "uncetainty ranges for 30 BDT bins: " << std::endl;
+        } else{
+            std::cout << "uncetainty ranges for 10 BDT bins: " << std::endl;
+        }
+        for(auto& key : uncNames ){
+            double maxUnc = 0.;
+            double minUnc = 999.;
+            for(unsigned mll = 0; mll < nMll; ++mll){
+                for(unsigned cat = 0; cat < nCat; ++cat){
+                    for(unsigned bin = 1; bin < ( unsigned) mergedHists[mll][cat][0][0]->GetNbinsX() + 1; ++bin){
+                        double binUnc = 0.;
+                        double binContent = 0.;
+                        for(unsigned p = 1; p < proc.size(); ++p){
+                            if( (key.find("XSec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
+                                continue;
+                            }
+                            double binUncDown = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapDown[key][mll][cat][bdt][p]->GetBinContent(bin) );
+                            double binUncUp = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapUp[key][mll][cat][bdt][p]->GetBinContent(bin) );
+                            binUnc += std::max(binUncDown, binUncUp);
+                            binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
+                        }
+                        double fractionalUnc = binUnc/binContent;
+                        if( fractionalUnc > maxUnc){
+                            maxUnc = fractionalUnc;
+                        }
+                        if( fractionalUnc < minUnc){
+                            minUnc = fractionalUnc;
+                        }
+                    }
+                }
+            }
+            std::cout << "Uncertainty : " << key << "\t" << std::setprecision(2) << minUnc*100 << "% - " << maxUnc*100 << "%" << std::endl;
+        }
+    }
+
     //make final uncertainty histogram for plots 
     std::vector<double> flatUnc = {1.025, 1.06, 1.02}; //lumi, leptonID, trigger , pdf and scale effects on cross section
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
@@ -745,7 +824,7 @@ void treeReader::Analyze(){
             {"ZZ/H", 1.1},
             {"TTZ", 1.15}
         };
-    
+
     std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
 
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > totalSystUnc = mergedHists; //copy pointers to fix dimensionality of vector
@@ -799,7 +878,21 @@ void treeReader::Analyze(){
             }
         }
     }
-
+    /*
+    //TEMPORARY//////
+    //replace data with sum of all backgrounds
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                mergedHists[m][cat][dist][0] = (TH1D*) mergedHists[m][cat][dist][1]->Clone(); 
+                for(unsigned p = 2; p < proc.size(); ++p){
+                    mergedHists[m][cat][dist][0]->Add(mergedHists[m][cat][dist][p]);
+                }
+            }
+        }
+    }
+    ////////////////
+    */
     const std::string sigNames[1] = {"tZq"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
     for(unsigned m = 0; m < nMll; ++m){
@@ -817,13 +910,243 @@ void treeReader::Analyze(){
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/lowBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "lowBDT_2016", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/lowBDT/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "lowBDT_2016" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
+            }
+        }
+    }
+ 
+    //make shape datacards for each category
+    const unsigned nBkg = proc.size() - 2;  //number of background processes
+    const std::string bkgNames[nBkg] = {"WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH", "nonprompt"}; //rewrite bkg names not to confuse combine
+    std::vector<std::string> processNames = {"tZq", "WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH", "nonprompt"};
+    std::vector<std::string> flatSyst = {"lumi_2017", "id", "trigger_2017"};
+    std::vector<std::string> shapeSyst = uncNames;
+    std::vector<std::string> systNames;
+    std::vector<std::string> uncorrelatedBetweenProc = {"pdf", "scale"};
+    std::map< std::string, bool> isCorrelatedBetweenProc;
+    for(auto& shapeName : shapeSyst ){
+        bool correlated = true;
+        for( auto& uncorrelatedUnc : uncorrelatedBetweenProc ){
+            if( shapeName.find( uncorrelatedUnc ) != std::string::npos ){
+                correlated = false;
+                break;
+            }
+        }
+        isCorrelatedBetweenProc[shapeName] = correlated;
+    }
+
+    for(auto& flatName : flatSyst){
+        systNames.push_back( flatName );
+    }
+
+    unsigned nShapes = 0;
+    for(auto& shapeName : shapeSyst){
+        if( isCorrelatedBetweenProc[shapeName] ){
+            systNames.push_back( shapeName );
+            ++nShapes;
+        } else{
+            for(auto& process : processNames){
+               systNames.push_back( process + "_" + shapeName);
+               ++nShapes;
+            }
+        }
+    }
+
+    std::map< std::string, double > bkgSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
+        {
+            {"nonprompt", 1.3},
+            {"WZ", 1.1},
+            {"Xgamma", 1.1},
+            {"ZZH", 1.1},
+            {"TTZ", 1.15}
+            //{"TTZ", 1.3}
+        };
+
+    const unsigned nBinsFit = mergedHists[0][0][0][0]->GetNbinsX(); //number of bins used in the final fit
+    const unsigned nStatUnc = (1 + nBkg)*nBinsFit;
+    const unsigned nFlatSyst = flatSyst.size();
+    //const unsigned nShapeSyst = uncNames.size();
+    const unsigned nShapeSyst = nShapes;
+    const unsigned nGeneralSystematics = nFlatSyst + nShapeSyst;
+    const unsigned nBackGroundSpecificUnc = backgroundSpecificUnc.size();
+    const unsigned nSyst = nGeneralSystematics + nStatUnc + nBackGroundSpecificUnc; //general uncertainties + stat signal (for every bin) + stat bkg (for every bin) + extra unc per bkg
+
+    std::vector<std::vector<double>> systUnc(nSyst, std::vector<double>(nBkg + 1, 0)); //2D array containing all uncertainty sizes
+
+    //initialize flat systematics
+    for(unsigned p = 0; p < nBkg; ++p){ //signal and bkg  but ignore last background which is data-driven
+        systUnc[0][p] = 1.025;   //lumi
+        systUnc[1][p] = 1.06;    //id eff
+        systUnc[2][p] = 1.02;   //trig eff  
+    }
+
+    //ignore theory xsec uncertainties for some processes
+    std::vector<unsigned> ignoreTheoryUncForIndices = {0, 1, 3, 5, 6, 7};
+
+    //initialize general shape uncertainties
+    for(unsigned p = 0; p < nBkg + 1; ++p){
+        for(unsigned shape = 0; shape < nShapeSyst; ++shape){
+
+            //skip xsec uncertainties for nonprompt
+            //skip xsec uncertainties for other processes that are measured directly 
+            std::string shapeName = systNames[nFlatSyst + shape];
+            bool uncIsXsec = ( shapeName.find("Xsec") != std::string::npos );
+            bool processWithoutTheoryUnc = ( std::find(ignoreTheoryUncForIndices.cbegin(), ignoreTheoryUncForIndices.cend(), p) != ignoreTheoryUncForIndices.cend() );
+            processWithoutTheoryUnc = processWithoutTheoryUnc || (p == nBkg); //make sure nonprompt is always skipped here
+            if( uncIsXsec && processWithoutTheoryUnc) continue;
+
+            if( isCorrelatedBetweenProc[shapeName] ){
+                systUnc[nFlatSyst + shape][p] = 1.00;
+            } else if( shapeName.find( processNames[p] ) != std::string::npos ){
+                systUnc[nFlatSyst + shape][p] = 1.00;
+            }
+        }
+    }
+
+    //set statistical uncertainties
+    for(unsigned p = 0; p < nBkg + 1; ++p){
+
+        for(unsigned bin = 0; bin < nBinsFit; ++bin){
+
+            //size 
+            systUnc[nGeneralSystematics + p*nBinsFit + bin][p] = 1.00;
+
+            //name 
+            systNames.push_back( processNames[p] + "_stat_bin_" + std::to_string(bin + 1) );
+        }
+    }
+
+    //set background specific uncertainties
+    unsigned specCount = 0;
+    for(auto& entry : bkgSpecificUnc){
+        systNames.push_back( entry.first + "_norm");
+        unsigned process = 999;
+        for(unsigned bkg = 0; bkg < nBkg; ++bkg){
+            if( bkgNames[bkg] == entry.first) process = bkg + 1;
+        }
+        systUnc[nGeneralSystematics + nStatUnc + specCount][process] = entry.second;
+        ++specCount;
+    }
+
+    std::string systDist[nSyst]; //probability distribution of nuisances
+    for(unsigned syst = 0; syst < nSyst; ++syst){
+        if(syst < nFlatSyst || syst  >= nGeneralSystematics + nStatUnc) systDist[syst] = "lnN"; //flat unc 
+        else systDist[syst] = "shape";                                                 //stat and all other shapes are shape unc 
+    }
+
+    //statistic shape uncertainties 
+    TH1D* bdtShape[nMll][nCat][(const size_t) proc.size()] ; //shape histograms of bdt
+    TH1D* bdtShapeStatDown[nMll][nCat][(const size_t) proc.size()][nBinsFit]; //statistical shape uncertainty on bdt
+    TH1D* bdtShapeStatUp[nMll][nCat][(const size_t) proc.size()][nBinsFit]; //statistical shape uncertainty on bdt
+
+    //set up statistical shape uncertainties 
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned p = 0; p < proc.size(); ++p){
+                for(unsigned bin = 0; bin < nBinsFit; ++bin){
+
+                    //stat shape nuisances are clones of the nominal histogram, with one bin varied up and down
+                    double variedBinContent = mergedHists[m][cat][0][p]->GetBinContent(bin + 1);
+                    double variedBinUnc = mergedHists[m][cat][0][p]->GetBinError(bin + 1);
+
+                    double binContentStatDown = std::max( variedBinContent - variedBinUnc, std::numeric_limits< double >::min() );
+                    bdtShapeStatDown[m][cat][p][bin] = (TH1D*)  mergedHists[m][cat][0][p]->Clone();
+                    bdtShapeStatDown[m][cat][p][bin]->SetBinContent(bin + 1, binContentStatDown );
+
+                    double binContentStatUp = std::max( variedBinContent + variedBinUnc, std::numeric_limits< double >::min() );
+                    bdtShapeStatUp[m][cat][p][bin] = (TH1D*)  mergedHists[m][cat][0][p]->Clone();
+                    bdtShapeStatUp[m][cat][p][bin]->SetBinContent(bin + 1, binContentStatUp );
+                }
+            }
+        }
+    }
+
+    //make datacard for each category
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+
+            //Set bkg yields 
+            double bkgYields[(const size_t) proc.size() - 2];
+            for(unsigned bkg = 0; bkg < proc.size() - 2; ++bkg) bkgYields[bkg] = mergedHists[m][cat][0][2 + bkg]->GetSumOfWeights();
+
+            //set statical shape names ( to be sure they are independent for every category )
+            for(unsigned p = 0; p < nBkg + 1; ++p){
+                for(unsigned bin = 0; bin < nBinsFit; ++bin){
+                    systNames[nGeneralSystematics + p*nBinsFit + bin]  = processNames[p] + "_stat_" + catNames[cat] + "_2017_bin_" + std::to_string(bin + 1);
+                }
+            }
+
+            //set BDT shape histogram
+            TFile* shapeFile =TFile::Open((const TString&) "./datacards/shapes/shapeFile_"  + catNames[cat] + mllNames[m] +  "_2017_withPsUnc.root", "recreate");
+
+            //loop over all processes 
+            for(unsigned p = 0; p < proc.size(); ++p){
+
+                //write nominal histograms 
+                bdtShape[m][cat][p] = (TH1D*) mergedHists[m][cat][0][p]->Clone();
+                if(p == 0) bdtShape[m][cat][p]->Write("data_obs");
+                else if (p == 1) bdtShape[m][cat][p]->Write("tZq");
+                else bdtShape[m][cat][p]->Write((const TString&) bkgNames[p -2]);
+
+
+                if( p != 0 ){
+
+                    //name of the current process
+                    std::string procName;
+                    if( p == 1){
+                        procName = "tZq";
+                    } else {
+                        procName = bkgNames[p - 2];
+                    }
+
+                    //write general shape nuisances 
+                    for( auto& key : uncNames ){
+                        if( isCorrelatedBetweenProc[key] ){
+                            mergedUncMapDown[key][m][cat][0][p]->Write( (const TString&) procName + "_" + key + "Down");
+                            mergedUncMapUp[key][m][cat][0][p]->Write( (const TString&) procName + "_" + key + "Up");
+                        } else {
+                           mergedUncMapDown[key][m][cat][0][p]->Write( (const TString&) procName + "_" + procName + "_" + key + "Down");
+                           mergedUncMapUp[key][m][cat][0][p]->Write( (const TString&) procName + "_" + procName + "_" + key + "Up");
+                        }
+                    }
+
+                    //write statistical shape nuisances 
+                    for(unsigned bin = 0; bin < nBinsFit; ++bin){
+                        bdtShapeStatDown[m][cat][p][bin]->Write( (const TString&) procName + "_" + systNames[nGeneralSystematics + (p - 1)*nBinsFit + bin] + "Down");
+                        bdtShapeStatUp[m][cat][p][bin]->Write( (const TString&) procName + "_" + systNames[nGeneralSystematics + (p - 1)*nBinsFit + bin] + "Up");
+                    }
+                }
+            }
+            shapeFile->Close();
+
+            analysisTools::printDataCard( mergedHists[m][cat][0][0]->GetSumOfWeights(), mergedHists[m][cat][0][1]->GetSumOfWeights(), "tZq", bkgYields, proc.size() - 2, bkgNames, systUnc, nSyst, &systNames[0], systDist, "datacards/datacard_" + mllNames[m] + "_" + catNames[cat] + "_2017_withPsUnc", true, "shapes/shapeFile_"  + catNames[cat] + mllNames[m] + "_2017_withPsUnc");
+        }
+    }   
+    std::cout << "Printed all datacards" << std::endl;
+
+     //initialize postFitScaler
+    PostFitScaler postFitScaler("total_postFit_yields.txt");
+
+    //plot all distributions
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                
+                //scale histograms to post fit plots
+                for(unsigned p = 1; p < proc.size(); ++p){
+                    mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
+                }
+
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
+      
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017_postFit" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
             }
         }
     }
 }
+
 int main(){
     treeReader reader;
     reader.Analyze();

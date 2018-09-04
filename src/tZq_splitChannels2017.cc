@@ -169,19 +169,11 @@ void treeReader::Analyze(){
     //std::vector < std::string > bdtVars1bJet23Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "maxDeltaPhijj", "mTW", "topMass", "pTMaxjj", "minDeltaPhilb", "maxDeltaPhill"};
     std::vector < std::string > bdtVars1bJet23Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "mTW", "pTMaxjj", "minDeltaPhilb", "maxDeltaPhill"};
     std::string weights;
-    if( is2016() ){
-        weights = "1bJet23Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    } else if( is2017() ){
-        weights = "1bJet23Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    }
+    weights = "1bJet23Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     bdtReader1bJet23Jets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet23Jets) );
 
     //BDT reader for 1bJet4Jets category
-    if( is2016() ){
-        weights = "1bJet4Jets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    } else if( is2017() ){
-        weights = "1bJet4Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    }
+    weights = "1bJet4Jets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     //std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "minDeltaPhilb",
     //    "deltaRTaggedbJetRecoilingJet", "deltaRWLeptonTaggedbJet", "m3l", "etaMostForward"};
     std::vector < std::string > bdtVars1bJet4Jets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "minDeltaPhilb",
@@ -189,15 +181,10 @@ void treeReader::Analyze(){
     bdtReader1bJet4Jets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars1bJet4Jets) );
 
     //BDT reader for 2bJets category
-    if( is2016() ){
-        weights = "2bJets_onZ_2016_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    } else if( is2017() ){
-        weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
-    }
+    weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     //std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "etaMostForward", "m3l"}; 
     std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "etaMostForward", "m3l"}; 
     bdtReader2bJets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets) );
-
 
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
@@ -276,7 +263,7 @@ void treeReader::Analyze(){
                     continue;
                 }
             }
-
+            
             //compute nominal bdt value
             double bdtNominal = 999.;
             if(tzqCat > 2 && tzqCat < 6){
@@ -537,6 +524,7 @@ void treeReader::Analyze(){
                 }
             }
         }
+
         //set histograms to 0 if negative
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned cat = 0; cat < nCat; ++cat){
@@ -878,9 +866,9 @@ void treeReader::Analyze(){
                         mergedHists[m][cat][flav][dist][p]->Scale( scaling[cat][p] );
                     }
 
-                    plotDataVSMC(mergedHists[m][cat][flav][dist][0], &mergedHists[m][cat][flav][dist][1], &proc[0], mergedHists[m][cat][flav][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + flavNames[flav] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + flavNames[flav] + "_2017" + "_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][flav][dist][1], isSMSignal);             //linear plots
+                    plotDataVSMC(mergedHists[m][cat][flav][dist][0], &mergedHists[m][cat][flav][dist][1], &proc[0], mergedHists[m][cat][flav][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + flavNames[flav] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] +  "_" + flavNames[flav] + "_2017" + "_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][flav][dist][1], isSMSignal);             //linear plots
 
-                    plotDataVSMC(mergedHists[m][cat][flav][dist][0], &mergedHists[m][cat][flav][dist][1], &proc[0], mergedHists[m][cat][flav][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + flavNames[flav] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + flavNames[flav] + "_2017" + "_log" + "_postFit", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][flav][dist][1], isSMSignal);     //log plots
+                    plotDataVSMC(mergedHists[m][cat][flav][dist][0], &mergedHists[m][cat][flav][dist][1], &proc[0], mergedHists[m][cat][flav][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + flavNames[flav] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_" + flavNames[flav] + "_2017" + "_log" + "_postFit", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][flav][dist][1], isSMSignal);     //log plots
                 }
             }
         }
