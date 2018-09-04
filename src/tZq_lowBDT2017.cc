@@ -93,7 +93,9 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "pdf", "scaleXsec", "pdfXsec"};
+    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017",
+        "lepton_reco", "muon_id_stat_2017", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
+
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
     for( auto& key : uncNames ){
