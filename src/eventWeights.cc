@@ -78,20 +78,20 @@ double treeReader::bTagWeight(const unsigned unc) const{
 }
 
 //total lepton SF
-double treeReader::leptonWeight() const{
+double treeReader::leptonWeight(const unsigned unc) const{
     double sf = 1.;
     for(unsigned l = 0; l < _nLight; ++l){
         if( lepIsTight(l) ){
             if( isMuon(l) ){
-                sf *= reweighter->muonTightWeight(_lPt[l], _lEta[l]);
+                sf *= reweighter->muonTightWeight(_lPt[l], _lEta[l], unc);
             } else if( isElectron(l) ){
-                sf *= reweighter->electronTightWeight(_lPt[l], _lEtaSC[l]);
+                sf *= reweighter->electronTightWeight(_lPt[l], _lEtaSC[l], unc);
             }
         } else if( lepIsLoose(l) ){
             if( isMuon(l) ){
-                sf *= reweighter->muonLooseWeight(_lPt[l], _lEta[l]);
+                sf *= reweighter->muonLooseWeight(_lPt[l], _lEta[l], unc);
             } else if( isElectron(l) ){
-                sf *= reweighter->electronLooseWeight(_lPt[l], _lEtaSC[l]);
+                sf *= reweighter->electronLooseWeight(_lPt[l], _lEtaSC[l], unc);
             }
         } 
     }
