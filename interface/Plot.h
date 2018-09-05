@@ -26,7 +26,7 @@ class Plot{
             fileName(file), data(obs), bkg(back), syst(unc), signal(sig) {}
 
         //draw the plot to canvas and save 
-        void draw(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, const std::string& header = "", TH1D** bkgSyst = nullptr, const bool sigNorm = true, const bool drawSMSignalShape = false) const;
+        void draw(const std::string& outputDirectory, const std::string& analysis = "", bool log = false, bool normToData = false, const std::string& header = "", TH1D* bkgSyst = nullptr, const bool sigNorm = true, const bool drawSMSignalShape = false) const;
 
     private:
         std::pair< std::string, std::shared_ptr<TH1D> > data;

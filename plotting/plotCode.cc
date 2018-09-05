@@ -123,7 +123,7 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
     }
 }
 
-void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D** bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D* bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
     
     //do not make empty plots
     bool isEmpty = true;
@@ -193,21 +193,11 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         }
     }
 
-    //background histograms with full uncertainty
-    TH1D* bkgE[nBkg]; //clone histograms so that the function does not affect its arguments!
-    for(unsigned h = 0; h < nBkg; ++h){
-        bkgE[h] = (TH1D*) bkg[h]->Clone(); //CHECK WHETHER THIS IS MEMORY SAFE
-        if(bkgSyst != nullptr){
-            for(int bin = 1; bin < bkgE[h]->GetNbinsX() + 1; ++bin){
-                bkgE[h]->SetBinError(bin, sqrt(bkgE[h]->GetBinError(bin)*bkgE[h]->GetBinError(bin) + bkgSyst[h]->GetBinContent(bin)*bkgSyst[h]->GetBinContent(bin)) );
-            }
-        }
-    }
-
-    //compute total background
-    TH1D* bkgTotE = (TH1D*) bkgE[0]->Clone(); //CHECK WHETHER THIS IS MEMORY SAFE
-    for(unsigned h = 1; h < nBkg; ++h){
-        bkgTotE->Add(bkgE[h]);
+    TH1D* bkgTotE = (TH1D*) bkgTot->Clone();
+    for(int bin = 1; bin < bkgTotE->GetNbinsX() + 1; ++bin){
+        double statError = bkgTot->GetBinError(bin);
+        double systError = bkgSyst->GetBinContent(bin);
+        bkgTotE->SetBinError(bin, sqrt( statError*statError + systError*systError) );
     }
 
     //make the total background uncertainty visible as a grey band
@@ -221,7 +211,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     legend.SetFillStyle(0); //avoid legend box
     legend.AddEntry(dataGraph, (const TString&) names[0], "pe1"); //add data to legend
     for(unsigned h = 0; h < nBkg; ++h){
-        legend.AddEntry(bkgE[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
+        legend.AddEntry(bkg[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
     }
     legend.AddEntry(bkgTotE, "Total bkg. unc.", "f"); //add total background uncertainty to legend
 
@@ -233,12 +223,12 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     }
     
     //order background histograms by yield
-    yieldOrder(bkgE, nBkg, isSMSignal);
+    yieldOrder(bkg, nBkg, isSMSignal);
 
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");
     for(unsigned h = 0; h < nBkg; ++h){
-        bkgStack.Add(bkgE[nBkg - h - 1]); //Put highest yield on top -> good for log scale plots
+        bkgStack.Add(bkg[nBkg - h - 1]); //Put highest yield on top -> good for log scale plots
     }
     
     //canvas dimenstions

@@ -268,7 +268,7 @@ std::string HistCollectionDist::plotHeader(const size_t categoryIndex, const uns
 }
 
 
-void HistCollectionDist::printPlots(const std::string& outputDirectory, const unsigned era, const std::string& analysis, bool log, bool normToData, TH1D** bkgSyst, const bool sigNorm, const bool drawSMSignalShape){
+void HistCollectionDist::printPlots(const std::string& outputDirectory, const unsigned era, const std::string& analysis, bool log, bool normToData, TH1D* bkgSyst, const bool sigNorm, const bool drawSMSignalShape){
 
     //loop over all categories and output a plot for each one
     for(size_t c = 0; c < categorySize(); ++c){
