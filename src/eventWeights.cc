@@ -171,7 +171,7 @@ double treeReader::fakeRateWeight(const unsigned unc){
 }
 
 //jet prefiring probability 
-double treeReader::jetPrefiringWeight(const unsigned unc = 0) const{
+double treeReader::jetPrefiringWeight(const unsigned unc) const{
     double sf = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
         if( jetIsGood(j) ){
