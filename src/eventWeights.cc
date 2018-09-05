@@ -129,6 +129,9 @@ double treeReader::sfWeight(){
     //apply lepton scale factors 
     sf *= leptonWeight();
 
+    //correct for jet prefiring inefficiency in data
+    sf *= jetPrefiringWeight();
+
     //check for potential errors 
     if( sf == 0){
         std::cerr << "Error: event sf is zero! This has to be debugged!" << std::endl;
