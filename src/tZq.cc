@@ -100,7 +100,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", 
+    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "prefiring",
         "lepton_reco", "muon_id_stat_2016", "electron_id_stat_2016", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
 
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
@@ -520,6 +520,18 @@ void treeReader::Analyze(){
             double bTag_bc_upWeight = bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0) );
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
+            }
+
+            //vary jet prefiring probabilities down
+            double prefiringDownWeight = jetPrefiringWeight(1)/jetPrefiringWeight(0);
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["prefiring"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringDownWeight );
+            }
+
+            //vary jet prefiring probabilities up
+            double prefiringUpWeight = jetPrefiringWeight(2)/jetPrefiringWeight(0);
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["prefiring"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringUpWeight );
             }
 
             //vary lepton reco SF down
