@@ -112,14 +112,24 @@ void treeReader::initializeWeights(){
 }
     
 double treeReader::sfWeight(){
+
+    //check if weights are initialized, and initialize if needed 
     initializeWeights();
+
+    //pileup reweighting
     double sf = puWeight();
     if( _nTrueInt < 0){
         std::cerr << "Error: event with negative pileup, returning SF weight 0." << std::endl;
         return 0.;
     }
+
+    //apply b tag scale factors 
     sf *= bTagWeight();
+
+    //apply lepton scale factors 
     sf *= leptonWeight();
+
+    //check for potential errors 
     if( sf == 0){
         std::cerr << "Error: event sf is zero! This has to be debugged!" << std::endl;
     } else if( std::isnan(sf) ){
@@ -158,11 +168,11 @@ double treeReader::fakeRateWeight(const unsigned unc){
 }
 
 //jet prefiring probability 
-double treeReader::jetPrefiringWeight() const{
+double treeReader::jetPrefiringWeight(const unsigned unc = 0) const{
     double sf = 1.;
     for(unsigned j = 0; j < _nJets; ++j){
         if( jetIsGood(j) ){
-            double prefiringProbability = reweighter->jetPrefiringProbability( _jetPt[j], _jetEta[j] );
+            double prefiringProbability = reweighter->jetPrefiringProbability( _jetPt[j], _jetEta[j], unc);
             sf *= ( 1. - prefiringProbability );
         }
     }
