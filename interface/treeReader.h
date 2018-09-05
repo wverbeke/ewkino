@@ -304,7 +304,7 @@ class treeReader {
         //fake-rate
         double fakeRateWeight(const unsigned unc = 0);
         double sfWeight();
-        double jetPrefiringWeight() const;
+        double jetPrefiringWeight(const unsigned unc = 0) const;
 
     private:
         TTree* fChain;                                                          //current Tree
