@@ -15,7 +15,7 @@
 //Class storing scale-factor weights to be used in events
 class Reweighter{
     public:
-        Reweighter(const std::vector<Sample>&, const bool is2016, const std::string& bTagWorkingPoint = "reshaping");
+        Reweighter(const std::vector<Sample>&, const bool is2016, const std::string& bTagWorkingPoint = "medium");
         ~Reweighter();
 
         //pileup weight
