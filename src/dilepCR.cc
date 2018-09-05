@@ -494,6 +494,45 @@ void treeReader::plot(const std::string& distName){
             //read collection for this distribution from files
             HistCollectionDist col2016("tempHists", histInfo[d], samples2016, { runCategorization2016, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
             HistCollectionDist col2017("tempHists", histInfo[d], samples2017, { runCategorization2017, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
+
+            if(distName == "closestJetDeepCsv"){
+                //plot bdt before and after prefiring weights 
+                TCanvas* c = new TCanvas("", "", 500, 500 );
+                TH1D* DY = (TH1D*) col2016.access(2, {0, 3, 0, 1})->Clone();
+                TH1D* ttbar = (TH1D*) col2016.access(3, {0, 2, 0, 1})->Clone();
+                DY->SetFillColor(kBlue);
+                DY->SetLineColor(kBlue);
+                DY->SetMarkerColor(kBlue);
+                DY->SetMarkerStyle(0);
+                DY->SetFillStyle(0);
+                ttbar->SetFillColor(kRed);
+                ttbar->SetLineColor(kRed);
+                ttbar->SetFillStyle(0);
+                ttbar->SetMarkerColor(kRed);
+                ttbar->SetMarkerStyle(0);
+                TLegend legend(0.2,0.8,0.8,0.9,NULL,"brNDC");
+                legend.SetNColumns(2);
+                legend.SetFillStyle(0); //avoid legend box
+                legend.AddEntry( DY, "nominal", "l");
+                legend.AddEntry( ttbar, "with prefire weights", "l");
+                DY->Draw("histE");
+                ttbar->Draw("histEsame");
+                legend.Draw("same");
+                c->SaveAs("closestDeepCSVComparison.pdf");
+
+                TCanvas* c_log = new TCanvas("", "", 500, 500 );
+                TLegend legend2(0.2,0.8,0.8,0.9,NULL,"brNDC");
+                legend2.SetNColumns(2);
+                legend2.SetFillStyle(0); //avoid legend box
+                legend2.AddEntry( DY, "nominal", "l");
+                legend2.AddEntry( ttbar, "with prefire weights", "l");
+                DY->Draw("histE");
+                ttbar->Draw("histEsame");
+                legend.Draw("same");
+                c_log->SetLogy();
+                c_log->SaveAs("closestDeepCSVComparison.pdf");
+       
+            }
             //rebin same-sign category because of low statistics
             std::vector<std::string> notToRebin = {"nJets", "nForwardJets", "nBJets"};//distributions not  to rebin
             bool doNotRebin = false;
