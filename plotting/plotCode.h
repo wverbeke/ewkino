@@ -23,5 +23,5 @@ void yieldOrder(TH1D**);
 //return color corresponding to bkg
 Color_t bkgColor(const std::string&, const std::string& analysis = ""); 
 //Plot background stack and compare to observed yields
-void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis = "", const bool ylog = false, const bool normToData = false, const std::string& header = "", TH1D** bkgSyst = nullptr, const bool* isSMSignal = nullptr, TH1D** signal = nullptr, const std::string* sigNames = nullptr, const unsigned nSig = 0, const bool sigNorm = true);
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis = "", const bool ylog = false, const bool normToData = false, const std::string& header = "", TH1D* bkgSyst = nullptr, const bool* isSMSignal = nullptr, TH1D** signal = nullptr, const std::string* sigNames = nullptr, const unsigned nSig = 0, const bool sigNorm = true);
 #endif

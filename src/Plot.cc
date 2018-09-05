@@ -5,7 +5,7 @@
 
 #include "TCanvas.h"
 
-void Plot::draw(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, const std::string& header, TH1D** bkgSyst, const bool sigNorm, const bool drawSMSignalShape) const{
+void Plot::draw(const std::string& outputDirectory, const std::string& analysis, bool log, bool normToData, const std::string& header, TH1D* bkgSyst, const bool sigNorm, const bool drawSMSignalShape) const{
     //first name given to plotting function is that of the data (or pseudodata)
     std::vector< std::string> names = { data.first };
     std::vector< TH1D*> bkgHist;
