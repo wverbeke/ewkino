@@ -36,7 +36,7 @@ void treeReader::Analyze(){
     gROOT->SetBatch(kTRUE);
 
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_nonpromptDataDriven_2016.txt", "../../ntuples_tzq");
+    readSamples("sampleLists/samples_dilepCR_2016.txt", "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/");
 
     //name      xlabel    nBins,  min, max
     histInfo = {
