@@ -26,7 +26,7 @@
 #include "../interface/HistCollectionDist.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
-#include "../interface/Reweighter.h"
+#include "../interface/Reweighter_old.h"
 
 
 void treeReader::setup(){
@@ -227,6 +227,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         //select leptons
         const unsigned lCount = selectLep(ind);
         if(lCount != 2) continue;
+
+        //temporary for comparison of shapes
+        if( isMC() ){
+            if( !promptLeptons() ){
+                continue;
+            }
+        }
 
         //require pt cuts (25, 20) to be passed
         if(!passPtCuts(ind)) continue;
@@ -495,11 +502,13 @@ void treeReader::plot(const std::string& distName){
             HistCollectionDist col2016("tempHists", histInfo[d], samples2016, { runCategorization2016, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
             HistCollectionDist col2017("tempHists", histInfo[d], samples2017, { runCategorization2017, {"inclusive", "ee", "em", "mm", "same-sign-ee", "same-sign-em", "same-sign-mm"}, {"nJetsInclusive", "1pt40Jet"}, {"noPuW", "PuW"} });
 
-            if(distName == "closestJetDeepCsv"){
+            //if(distName == "closestJetDeepCsv"){
+            if(distName == "leptonMvatZqTTV17"){
                 //plot bdt before and after prefiring weights 
                 TCanvas* c = new TCanvas("", "", 500, 500 );
-                TH1D* DY = (TH1D*) col2016.access(2, {0, 3, 0, 1})->Clone();
-                TH1D* ttbar = (TH1D*) col2016.access(3, {0, 2, 0, 1})->Clone();
+                TH1D* DY = (TH1D*) col2017.access(2, {0, 3, 0, 1})->Clone();
+                //TH1D* ttbar = (TH1D*) col2016.access(3, {0, 2, 0, 1})->Clone();
+                TH1D* ttbar = (TH1D*) col2017.access(3, {0, 3, 0, 1})->Clone();
                 DY->SetFillColor(kBlue);
                 DY->SetLineColor(kBlue);
                 DY->SetMarkerColor(kBlue);
@@ -513,24 +522,26 @@ void treeReader::plot(const std::string& distName){
                 TLegend legend(0.2,0.8,0.8,0.9,NULL,"brNDC");
                 legend.SetNColumns(2);
                 legend.SetFillStyle(0); //avoid legend box
-                legend.AddEntry( DY, "nominal", "l");
-                legend.AddEntry( ttbar, "with prefire weights", "l");
-                DY->Draw("histE");
-                ttbar->Draw("histEsame");
+                legend.AddEntry( DY, "DY", "l");
+                legend.AddEntry( ttbar, "TT", "l");
+                DY->DrawNormalized("histE");
+                ttbar->DrawNormalized("histEsame");
                 legend.Draw("same");
-                c->SaveAs("closestDeepCSVComparison.pdf");
+                //c->SaveAs("closestDeepCSVComparison.pdf");
+                c->SaveAs("leptonMVAComparison.pdf");
 
                 TCanvas* c_log = new TCanvas("", "", 500, 500 );
                 TLegend legend2(0.2,0.8,0.8,0.9,NULL,"brNDC");
                 legend2.SetNColumns(2);
                 legend2.SetFillStyle(0); //avoid legend box
-                legend2.AddEntry( DY, "nominal", "l");
-                legend2.AddEntry( ttbar, "with prefire weights", "l");
-                DY->Draw("histE");
-                ttbar->Draw("histEsame");
+                legend2.AddEntry( DY, "DY", "l");
+                legend2.AddEntry( ttbar, "TT", "l");
+                DY->DrawNormalized("histE");
+                ttbar->DrawNormalized("histEsame");
                 legend.Draw("same");
                 c_log->SetLogy();
-                c_log->SaveAs("closestDeepCSVComparison.pdf");
+                //c_log->SaveAs("closestDeepCSVComparison_log.pdf");
+                c_log->SaveAs("leptonMVAComparison_log.pdf");
        
             }
             //rebin same-sign category because of low statistics
