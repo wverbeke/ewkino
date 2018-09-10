@@ -229,11 +229,13 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         if(lCount != 2) continue;
 
         //temporary for comparison of shapes
+        /*
         if( isMC() ){
             if( !promptLeptons() ){
                 continue;
             }
         }
+        */
 
         //require pt cuts (25, 20) to be passed
         if(!passPtCuts(ind)) continue;
