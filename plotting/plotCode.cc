@@ -194,10 +194,12 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     }
 
     TH1D* bkgTotE = (TH1D*) bkgTot->Clone();
-    for(int bin = 1; bin < bkgTotE->GetNbinsX() + 1; ++bin){
-        double statError = bkgTot->GetBinError(bin);
-        double systError = bkgSyst->GetBinContent(bin);
-        bkgTotE->SetBinError(bin, sqrt( statError*statError + systError*systError) );
+    if( bkgSyst != nullptr ){
+        for(int bin = 1; bin < bkgTotE->GetNbinsX() + 1; ++bin){
+            double statError = bkgTot->GetBinError(bin);
+            double systError = bkgSyst->GetBinContent(bin);
+            bkgTotE->SetBinError(bin, sqrt( statError*statError + systError*systError) );
+        }
     }
 
     //make the total background uncertainty visible as a grey band
