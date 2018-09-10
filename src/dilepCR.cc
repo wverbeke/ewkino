@@ -25,7 +25,7 @@
 #include "../interface/HistCollectionDist.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
-#include "../interface/Reweighter_old.h"
+#include "../interface/Reweighter.h"
 
 
 void treeReader::setup(){
@@ -77,6 +77,17 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 
     for(long unsigned it = begin; it < end; ++it){
         GetEntry(samp, it);
+
+        //TEMPORARILY ONLY CONSIDER RUNS E AND F for check
+        if( isData() ){
+            bool isRunF = (_runNb >= 304911 && _runNb <= 306462);
+            bool isRunE = (_runNb >= 303435 && _runNb <= 304826);
+            if( !( isRunF || isRunE ) ) continue;
+        } else {
+            double newLumi = 13.54 + 9.278;
+            weight *= (newLumi/lumi2017);
+        }
+
 
         //vector containing good lepton indices
         std::vector<unsigned> ind;

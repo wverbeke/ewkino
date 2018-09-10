@@ -11,7 +11,7 @@
 #include "TLorentzVector.h"
 
 //include other parts of code
-#include "Reweighter_old.h"
+#include "Reweighter.h"
 #include "Sample.h"
 #include "HistInfo.h"
 #include "BDTReader.h"
