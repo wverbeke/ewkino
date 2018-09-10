@@ -25,7 +25,7 @@
 #include "../interface/HistCollectionDist.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
-#include "../interface/Reweighter.h"
+#include "../interface/Reweighter_old.h"
 
 
 void treeReader::setup(){
@@ -89,9 +89,18 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
         const unsigned lCount = selectLep(ind);
         if(lCount != 2) continue;
 
+<<<<<<< HEAD
         //require leptons to be tight 
         const unsigned tightCount = tightLepCount( ind, lCount);
         if( tightCount != lCount ) continue;
+=======
+        //temporary for comparison of shapes
+        if( isMC() ){
+            if( !promptLeptons() ){
+                continue;
+            }
+        }
+>>>>>>> master
 
         //require pt cuts (25, 20) to be passed
         if( _lPt[ind[0]] < 40 ) continue;

@@ -193,12 +193,19 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         bkgTot->Add(bkg[h]);
     }
 
+    //clone bkg histograms so they can be reordered and rescaled safely
+    TH1D* bkgClones[nBkg];
+    for(unsigned b = 0; b < nBkg; ++b){
+        bkgClones[b] = (TH1D*) bkg[b]->Clone();
+    }
+
     //normalize background to data if option is chosen
     if(normToData){
         double SF = data->GetSumOfWeights()/bkgTot->GetSumOfWeights();
         for(unsigned h = 0; h < nBkg; ++h){
-            bkg[h]->Scale(SF);
+            bkgClones[h]->Scale(SF);
         }
+
         //Remcompute total background after scaling
         bkgTot = (TH1D*) bkg[0]->Clone();
         for(unsigned h = 1; h < nBkg; ++h){
@@ -215,10 +222,12 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     }
 
     TH1D* bkgTotE = (TH1D*) bkgTot->Clone();
-    for(int bin = 1; bin < bkgTotE->GetNbinsX() + 1; ++bin){
-        double statError = bkgTot->GetBinError(bin);
-        double systError = bkgSyst->GetBinContent(bin);
-        bkgTotE->SetBinError(bin, sqrt( statError*statError + systError*systError) );
+    if( bkgSyst != nullptr ){
+        for(int bin = 1; bin < bkgTotE->GetNbinsX() + 1; ++bin){
+            double statError = bkgTot->GetBinError(bin);
+            double systError = bkgSyst->GetBinContent(bin);
+            bkgTotE->SetBinError(bin, sqrt( statError*statError + systError*systError) );
+        }
     }
 
     //make the total background uncertainty visible as a grey band
@@ -232,7 +241,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     legend.SetFillStyle(0); //avoid legend box
     legend.AddEntry(dataGraph, (const TString&) names[0], "pe1"); //add data to legend
     for(unsigned h = 0; h < nBkg; ++h){
-        legend.AddEntry(bkg[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
+        legend.AddEntry(bkgClones[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
     }
     legend.AddEntry(bkgTotE, "Total bkg. unc.", "f"); //add total background uncertainty to legend
 
@@ -244,12 +253,12 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     }
     
     //order background histograms by yield
-    yieldOrder(bkg, nBkg, isSMSignal);
+    yieldOrder(bkgClones, nBkg, isSMSignal);
 
     //add background histograms to stack
     THStack bkgStack = THStack("bkgStack", "bkgStack");
     for(unsigned h = 0; h < nBkg; ++h){
-        bkgStack.Add(bkg[nBkg - h - 1]); //Put highest yield on top -> good for log scale plots
+        bkgStack.Add(bkgClones[nBkg - h - 1]); //Put highest yield on top -> good for log scale plots
     }
     
     //canvas dimenstions
