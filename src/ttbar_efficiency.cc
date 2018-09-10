@@ -76,7 +76,7 @@ void treeReader::Analyze(){
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
 
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/1000; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -99,7 +99,7 @@ void treeReader::Analyze(){
             unsigned nLooseLeptons = 0;
             for(unsigned l = 0; l < _nLight; ++l){
                 if( lepIsLoose(l) ){
-                    ind[nLooseLeptons] = l;
+                    ind.push_back(l);
                     ++nLooseLeptons;
                 }
             }
@@ -195,9 +195,8 @@ void treeReader::Analyze(){
         MC_efficiencies[dist] = std::shared_ptr<TH1D>( (TH1D*) numerator_prompt[1][dist]->Clone() );
         MC_efficiencies[dist]->Divide( denominator_prompt[1][dist].get() );
     }
-    
-
 }
+
 int main(){
     treeReader reader;
     reader.Analyze();
