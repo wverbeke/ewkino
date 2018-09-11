@@ -537,38 +537,38 @@ void treeReader::Analyze(){
             //vary muon stat down
             double muonStatDownWeight = leptonWeight("muon_idStatDown")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["muon_id_stat_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatDownWeight);
+                uncHistMapDown["muon_id_stat_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatDownWeight);
             }
 
             //vary muon stat up
             double muonStatUpWeight = leptonWeight("muon_idStatUp")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["muon_id_stat_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatUpWeight );
+                uncHistMapUp["muon_id_stat_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatUpWeight );
             }
 
             //vary electron stat down
             double electronStatDownWeight = leptonWeight("electron_idStatDown")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["electron_id_stat_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatDownWeight );
+                uncHistMapDown["electron_id_stat_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatDownWeight );
             }
 
             //vary electron stat up
             double electronStatUpWeight = leptonWeight("electron_idStatUp")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["electron_id_stat_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatUpWeight );
+                uncHistMapUp["electron_id_stat_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatUpWeight );
             }
 
             //vary lepton syst down
-            double leptonIdSystDownWeight = leptonWeight("idSystDown")/leptonWeight(0);
+            double leptonIdSystDownWeight = leptonWeight("idSystDown")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapDown["lepton_id_syst"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystDownWeight );
             }
 
             //vary lepton syst up
-            double leptonIdSystUpWeight = leptonWeight("idSystUp")/leptonWeight(0);
+            double leptonIdSystUpWeight = leptonWeight("idSystUp")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["lepton_id_syst"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystUpWeight);
-            }
+                uncHistMapUp["lepton_id_syst"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystUpWeight);
+            }            
 
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
@@ -845,11 +845,15 @@ void treeReader::Analyze(){
     std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
     const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf"};
 
-    std::vector< std::vector< std::vector< TH1D* > > > totalSystUnc = mergedHists[0]; //copy pointers to fix dimensionality of vector
+    std::vector< std::vector< std::vector< TH1D* > > > totalSystUnc(nMll); //copy pointers to fix dimensionality of vector
+
     for( unsigned mll = 0; mll < nMll; ++mll){
+        totalSystUnc[mll] = std::vector< std::vector< TH1D* > >(nCat);
         for(unsigned cat = 0; cat < nCat; ++cat){
+            totalSystUnc[mll][cat] = std::vector< TH1D* >(nDist);
             for(unsigned dist = 0; dist < nDist; ++dist){
                 totalSystUnc[mll][cat][dist] = (TH1D*) mergedHists[mll][cat][dist][0]->Clone();
+
                 for(unsigned bin = 1; bin < (unsigned) totalSystUnc[mll][cat][dist]->GetNbinsX() + 1; ++bin){
                     double binUnc = 0;
 
@@ -933,6 +937,7 @@ void treeReader::Analyze(){
             }
         }
     }
+
 
     const std::string sigNames[1] = {"tZq"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
