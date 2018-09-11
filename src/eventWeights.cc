@@ -135,6 +135,10 @@ double treeReader::sfWeight(){
     //check for potential errors 
     if( sf == 0){
         std::cerr << "Error: event sf is zero! This has to be debugged!" << std::endl;
+        std::cerr << "puWeight() = " << puWeight() << std::endl;
+        std::cerr << "bTagWeight() = " << bTagWeight() << std::endl;
+        std::cerr << "leptonWeight() = " << leptonWeight() << std::endl;
+        std::cerr << "jetPrefiringWeight() = " << jetPrefiringWeight() << std::endl;
     } else if( std::isnan(sf) ){
         std::cerr << "Error: event sf is nan! This has to be debugged!" << std::endl;
     } else if( std::isinf(sf) ){
