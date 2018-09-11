@@ -328,12 +328,12 @@ double Reweighter::leptonIDWeight(const std::shared_ptr<TH2D>& sfMap, const std:
     //possible variation of scale factor for systematics
     double variation = 0.;
     if( statUnc > 0 ){
-        variation = statUncMap->GetBinContent(bin);
+        variation = statUncMap->GetBinError(bin);
         if( statUnc == 1){
             variation *= -1.;
         }
     } else if( systUnc > 0 ){
-        variation = systUncMap->GetBinContent(bin);
+        variation = systUncMap->GetBinError(bin);
         if( systUnc == 1){
             variation *= -1.;
         }
