@@ -537,25 +537,25 @@ void treeReader::Analyze(){
             //vary muon stat down
             double muonStatDownWeight = leptonWeight("muon_idStatDown")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["muon_id_stat_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatDownWeight);
+                uncHistMapDown["muon_id_stat_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatDownWeight);
             }
 
             //vary muon stat up
             double muonStatUpWeight = leptonWeight("muon_idStatUp")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["muon_id_stat_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatUpWeight );
+                uncHistMapUp["muon_id_stat_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatUpWeight );
             }
 
             //vary electron stat down
             double electronStatDownWeight = leptonWeight("electron_idStatDown")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["electron_id_stat_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatDownWeight );
+                uncHistMapDown["electron_id_stat_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatDownWeight );
             }
 
             //vary electron stat up
             double electronStatUpWeight = leptonWeight("electron_idStatUp")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["electron_id_stat_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatUpWeight );
+                uncHistMapUp["electron_id_stat_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatUpWeight );
             }
 
             //vary lepton syst down
