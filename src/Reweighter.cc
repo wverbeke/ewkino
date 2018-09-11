@@ -139,13 +139,13 @@ void Reweighter::initializeElectronWeights(){
     electronLooseToRecoSF->SetDirectory(gROOT);
     electronLooseToRecoSF_statUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose_stat") );
     electronLooseToRecoSF_statUnc->SetDirectory(gROOT);
-    electronLooseToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose_syst") );
+    electronLooseToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLoose_sys") );
     electronLooseToRecoSF_systUnc->SetDirectory(gROOT);
     electronTightToRecoSF = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLeptonMvatZq") );
     electronTightToRecoSF->SetDirectory(gROOT);
     electronTightToRecoSF_statUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLeptonMvatZq_stat") );
     electronTightToRecoSF_statUnc->SetDirectory(gROOT);
-    electronTightToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLeptonMvatZq_syst") );
+    electronTightToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) electronIdFile->Get("EleToTTVLeptonMvatZq_sys") );
     electronTightToRecoSF_systUnc->SetDirectory(gROOT);
     electronIdFile->Close();
 }
@@ -175,13 +175,13 @@ void Reweighter::initializeMuonWeights(){
     muonLooseToRecoSF->SetDirectory(gROOT);
     muonLooseToRecoSF_statUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLoose_stat") );
     muonLooseToRecoSF_statUnc->SetDirectory(gROOT);
-    muonLooseToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLoose_syst") );
+    muonLooseToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLoose_sys") );
     muonLooseToRecoSF_systUnc->SetDirectory(gROOT);
     muonTightToRecoSF = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLeptonMvatZq") );
     muonTightToRecoSF->SetDirectory(gROOT);
     muonTightToRecoSF_statUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLeptonMvatZq_stat") );
     muonTightToRecoSF_statUnc->SetDirectory(gROOT);
-    muonTightToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLeptonMvatZq_syst") );
+    muonTightToRecoSF_systUnc = std::shared_ptr<TH2D>( (TH2D*) muonIdFile->Get("MuonToTTVLeptonMvatZq_sys") );
     muonTightToRecoSF_systUnc->SetDirectory(gROOT);
     muonIdFile->Close();	
 }
