@@ -92,7 +92,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017",
+	const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "prefiring",
         "lepton_reco", "muon_id_stat_2017", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
 
     std::map < std::string, std::vector< std::vector< std::vector< std::shared_ptr< TH1D > > > > > uncHistMapDown;
@@ -554,6 +554,66 @@ void treeReader::Analyze(){
                 uncHistMapUp["bTag_bc_2017"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
+			//vary jet prefiring probabilities down
+            double prefiringDownWeight = jetPrefiringWeight(1)/jetPrefiringWeight(0);
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["prefiring"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringDownWeight );
+            }
+
+            //vary jet prefiring probabilities up
+            double prefiringUpWeight = jetPrefiringWeight(2)/jetPrefiringWeight(0);
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["prefiring"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringUpWeight );
+            }
+
+            //vary lepton reco SF down
+            double leptonRecoDownWeight = leptonWeight("recoDown")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["lepton_reco"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonRecoDownWeight );
+            }
+
+            //vary lepton reco SF up
+            double leptonRecoUpWeight = leptonWeight("recoUp")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["lepton_reco"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonRecoUpWeight);
+            }
+
+            //vary muon stat down
+            double muonStatDownWeight = leptonWeight("muon_idStatDown")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["muon_id_stat_2016"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatDownWeight);
+            }
+
+            //vary muon stat up
+            double muonStatUpWeight = leptonWeight("muon_idStatUp")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["muon_id_stat_2016"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatUpWeight );
+            }
+
+            //vary electron stat down
+            double electronStatDownWeight = leptonWeight("electron_idStatDown")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["electron_id_stat_2016"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatDownWeight );
+            }
+
+            //vary electron stat up
+            double electronStatUpWeight = leptonWeight("electron_idStatUp")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["electron_id_stat_2016"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatUpWeight );
+            }
+
+            //vary lepton syst down
+            double leptonIdSystDownWeight = leptonWeight("idSystDown")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["lepton_id_syst"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystDownWeight );
+            }
+
+            //vary lepton syst up
+            double leptonIdSystUpWeight = leptonWeight("idSystUp")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["lepton_id_syst"][controlRegion][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystUpWeight);
+            }
+
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -772,64 +832,108 @@ void treeReader::Analyze(){
 
     std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
 
+	const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf"};
+    std::vector< std::vector< TH1D* > > totalSystUnc(nCr); //copy pointers to fix dimensionality of vector
 
-    std::vector< std::vector< std::vector< TH1D* > > > totalSystUnc = mergedHists; //copy pointers to fix dimensionality of vector
-    for(unsigned cr = 0; cr < nCr; ++cr){
+    for( unsigned cr = 0; cr < nCr; ++cr){
+        totalSystUnc[cr] = std::vector< TH1D* >(nDist);
         for(unsigned dist = 0; dist < nDist; ++dist){
-            for(unsigned p = 0; p < proc.size(); ++p){
-                if(p == 0) continue;
-                totalSystUnc[cr][dist][p] = (TH1D*) mergedHists[cr][dist][p]->Clone();
-                for(unsigned bin = 1; bin < (unsigned)  totalSystUnc[cr][dist][p]->GetNbinsX() + 1; ++bin){
-                    double binUnc = 0;
+            totalSystUnc[cr][dist] = (TH1D*) mergedHists[cr][dist][0]->Clone();
 
-                    //add all shape uncertainties 
-                    for( auto& key : uncNames ){
+            for(unsigned bin = 1; bin < (unsigned) totalSystUnc[cr][dist]->GetNbinsX() + 1; ++bin){
+                double binUnc = 0;
 
-                        //ignore theory uncertainty for certain processes
+                //add all shape uncertainties 
+                for(auto& key: uncNames ){
+
+                    bool nuisanceIsUnCorrelated = ( std::find( uncorrelatedBetweenProcesses.cbegin(), uncorrelatedBetweenProcesses.cend(), key ) != uncorrelatedBetweenProcesses.cend() );
+
+                    double var = 0.;
+
+                    //for the correlated case
+                    double varDown = 0.;
+                    double varUp = 0.;
+
+                    //linearly add the variations for each process 
+                    for(unsigned p = 1; p < proc.size(); ++p){
+
+                        //ignore theoretical uncertainties on the normalization of certain processes 
                         if( key.find("Xsec") != std::string::npos ){
                             bool processWithoutTheoryUnc =  ( std::find( ignoreTheoryUncInPlot.cbegin(), ignoreTheoryUncInPlot.cend(), proc[p] ) != ignoreTheoryUncInPlot.cend() );
                             if( processWithoutTheoryUnc){
-                                    continue;
+                                continue;
                             }
                         }
 
-                        double down = fabs(mergedUncMapDown[key][cr][dist][p]->GetBinContent(bin) - mergedHists[cr][dist][p]->GetBinContent(bin) );
-                        double up = fabs(mergedUncMapUp[key][cr][dist][p]->GetBinContent(bin) - mergedHists[cr][dist][p]->GetBinContent(bin) );
-                        double var = std::max(down, up);
+                        double nominalContent = mergedHists[cr][dist][p]->GetBinContent(bin);
+                        double downVariedContent = mergedUncMapDown[key][cr][dist][p]->GetBinContent(bin);
+                        double upVariedContent = mergedUncMapDown[key][cr][dist][p]->GetBinContent(bin);
+                        double down = fabs(downVariedContent - nominalContent);
+                        double up = fabs(upVariedContent - nominalContent);
 
-                        //consider maximum variation between up and down for plotting
-                        binUnc += var*var;
-                    }
-                    
-                    //add flat uncertainties
-                    if( proc[p] != "Nonprompt e/#mu"){
-                        for( double unc : flatUnc ){
-                            double binContent = mergedHists[cr][dist][p]->GetBinContent(bin);
-                            double var = binContent*(unc - 1.); 
-                            binUnc += var*var;
+                        //uncorrelated case : 
+                        if( nuisanceIsUnCorrelated ){
+                            double variation = std::max(down, up);
+                            var += variation*variation;
+
+                        //correlated case :     
+                        } else {
+                            varDown += down;
+                            varUp += up;
                         }
                     }
 
-                    //add background specific uncertainties
-                    for(auto& uncPair : backgroundSpecificUnc){
+					//correlated case : 
+                    if( !nuisanceIsUnCorrelated ){
+                        var = std::max( varDown, varUp );
+                        var = var*var;
+                    }
+
+                    //add (already quadratic) uncertainties 
+                    binUnc += var;
+                }
+
+                //add general flat uncertainties (considered correlated among all processes)
+                for( double unc : flatUnc ){
+                    double var = 0;
+                    for(unsigned p = 1; p < proc.size(); ++p){
+                        if( proc[p] == "Nonprompt e/#mu" ){
+                            continue;
+                        }
+                        double binContent = mergedHists[cr][dist][p]->GetBinContent(bin);
+                        double variation = binContent*(unc - 1.);
+                        var += variation;
+                    }
+                    binUnc += var*var;
+                }
+
+                //add background specific uncertainties (uncorrelated between processes)
+                for(auto& uncPair : backgroundSpecificUnc){
+                    for(unsigned p = 1; p < proc.size(); ++p){
                         if(proc[p] == uncPair.first){
                             double var = mergedHists[cr][dist][p]->GetBinContent(bin)*(uncPair.second - 1.);
                             binUnc += var*var;
                         }
                     }
-                    totalSystUnc[cr][dist][p]->SetBinContent(bin, sqrt(binUnc) );
                 }
+
+                //square root of quadratic sum is total uncertainty
+                totalSystUnc[cr][dist]->SetBinContent(bin, sqrt(binUnc) );
             }
         }
     }
+
+
+
+
 
     //plot all distributions
     const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     for(unsigned cr = 0; cr < nCr; ++cr){
        for(unsigned dist = 0; dist < nDist; ++dist){
-           plotDataVSMC(mergedHists[cr][dist][0], &mergedHists[cr][dist][1], &proc[0], mergedHists[cr][dist].size() - 1, "plots/tZq/2017/controlR/" + crNames[cr] + "/" + histInfo[dist].name() + "_" + crNames[cr] + "_2017", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[cr][dist][1], isSMSignal);             //linear plots
+           plotDataVSMC(mergedHists[cr][dist][0], &mergedHists[cr][dist][1], &proc[0], mergedHists[cr][dist].size() - 1, "plots/tZq/2017/controlR/" + crNames[cr] + "/" + histInfo[dist].name() + "_" + crNames[cr] + "_2017", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[cr][dist], isSMSignal);             //linear plots
 
-           plotDataVSMC(mergedHists[cr][dist][0], &mergedHists[cr][dist][1], &proc[0], mergedHists[cr][dist].size() - 1, "plots/tZq/2017/controlR/" + crNames[cr] + "/" + histInfo[dist].name() + "_"  + crNames[cr] + "_2017" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", &totalSystUnc[cr][dist][1], isSMSignal);    //log plots
+           plotDataVSMC(mergedHists[cr][dist][0], &mergedHists[cr][dist][1], &proc[0], mergedHists[cr][dist].size() - 1, "plots/tZq/2017/controlR/" + crNames[cr] + "/" + histInfo[dist].name() + "_"  + crNames[cr] + "_2017" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[cr][dist], isSMSignal);    //log plots
        }
     
     }
