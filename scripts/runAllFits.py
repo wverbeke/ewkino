@@ -21,7 +21,18 @@ def readSignalStrength( fileName ):
                     subline = subline.replace('  (68% CL)', '')
                     return subline
     return 'Invalid output file'
-    
+
+def signalStrengthToFloats( signalStrength_string ):
+    central = float(signalStrength_string.split()[0])
+    uncDown = abs( float(signalStrength_string.split()[-1].split('/')[0]) )
+    uncUp = abs( float(signalStrength_string.split()[-1].split('/')[1]) )
+    return [central, uncDown, uncUp]
+
+
+def systUnc( totalUnc, statUnc ):
+    syst_unc = totalUnc*totalUnc - statUnc*statUnc
+    syst_unc = syst_unc**0.5
+    return syst_unc
 
 
 def makeScript( fileName ):
@@ -34,8 +45,10 @@ def makeScript( fileName ):
     script.write('cd ' + currentDir + '\n')
     return script
 
+
 def submitScript( scriptName, wallTime ):
     os.system( 'qsub ' + scriptName + ' -l walltime=' + wallTime)
+
 
 def evaluateResults( card, script): 
 
@@ -61,6 +74,13 @@ def evaluateResults( card, script):
     command_signal_strength = 'combine -M FitDiagnostics --saveNormalizations --cminDefaultMinimizerStrategy 0 '
     script.write( command_signal_strength + workspace + ' > ' + outputFile + ' 2> ' + outputFile + '\n')
 
+    #compute stat only signal strength
+    outputFile = 'output_' + card + 'sigStrength_statOnly'
+    #command_signal_strength_statOnly = 'combine -M FitDiagnostics --saveNormalizations --cminDefaultMinimizerStrategy 0 --profilingMode=none '
+    command_signal_strength_statOnly = 'combine -M FitDiagnostics --saveNormalizations --profilingMode=none '
+    script.write( command_signal_strength_statOnly + workspace + ' > ' + outputFile + ' 2> ' + outputFile + '\n')
+    
+
 
 def combineCardsCommand(cardList, combinationName):
     combineCommand = 'combineCards.py'
@@ -69,14 +89,17 @@ def combineCardsCommand(cardList, combinationName):
     combineCommand += (' > ' +combinationName) 
     return combineCommand
 
+
 def combineCards(cardList, name):
     combineCommand = combineCardsCommand(cardList, name)
     os.system(combineCommand)
+
 
 def evaluateCombinedCard( cardList, name, script):
     combineCommand = combineCardsCommand(cardList, name) 
     script.write(combineCommand + '\n')
     evaluateResults(name, script )
+
 
 def newFileWithoutLines(oldFileName, newFileName, stringToRemove):
     lines = []
@@ -88,6 +111,7 @@ def newFileWithoutLines(oldFileName, newFileName, stringToRemove):
     with open(newFileName, 'w') as f:
         f.writelines(lines)
 
+
 def countOccurrences(fileName, stringToCount):
     count = 0 
     with open(fileName) as f:
@@ -96,8 +120,10 @@ def countOccurrences(fileName, stringToCount):
                 count += 1
     return count
 
+
 def countStatNuisances(fileName):
     return countOccurrences(fileName, '_stat_')
+
 
 def replaceNumberOfNuisances(fileName):
     content = []
@@ -115,9 +141,11 @@ def replaceNumberOfNuisances(fileName):
     with open(fileName, 'w') as f:
         f.writelines( new_content )
 
+
 def addAutoMCStats(fileName):
     with open(fileName, 'a') as file:
         file.write('* autoMCStats 0\n')
+
 
 def makeAutoMCDataCard(datacardName):
     newCardName = datacardName.split('.')[0] + '_noStat.txt'
@@ -128,7 +156,16 @@ def makeAutoMCDataCard(datacardName):
 
 
 def jobsAreRunning():
-    os.system('qstat -u$USER > check_running_jobs.txt')
+    #first make sure qstat worked
+    qstatWorked = False
+    while not qstatWorked:
+        os.system('qstat -u$USER > check_running_jobs.txt')
+        with open('check_running_jobs.txt') as f :
+            qstatWorked = True
+            for line in f:
+                if 'qstat:' in line:
+                    qstatWorked = False
+
     with open('check_running_jobs.txt') as f :
         for line in f:
             if 'combine' in line :
@@ -192,11 +229,29 @@ def runAllFits():
         for card in cards_SR_total + combination_names: 
             card = card.split('.')[0] + '_noStat.txt'
             observed_significance = readSignificance( 'output_' + card + 'obsSig')
+            observed_significance = float( observed_significance )
             expected_significance = readSignificance( 'output_' + card + 'expSig' )
+            expected_significance = float( expected_significance )
+
             signal_strength = readSignalStrength( 'output_' + card + 'sigStrength' )
+            signal_strength_withUnc = signalStrengthToFloats( signal_strength )
+            signal_strength = signal_strength_withUnc[0]
+            signal_strength_uncDown = signal_strength_withUnc[1]            
+            signal_strength_uncUp = signal_strength_withUnc[2]
+
+            signal_strength_statOnly = readSignalStrength( 'output_' + card + 'sigStrength_statOnly' )
+            signal_strength_statOnly_withUnc = signalStrengthToFloats( signal_strength_statOnly )
+            signal_strength_statOnly = signal_strength_statOnly_withUnc[0]
+            signal_strength_statOnly_uncDown = signal_strength_statOnly_withUnc[1]
+            signal_strength_statOnly_uncUp = signal_strength_statOnly_withUnc[2]
+            signal_strength_systOnly_uncUp = systUnc( signal_strength_uncUp, signal_strength_statOnly_uncUp)
+            signal_strength_systOnly_uncDown = systUnc( signal_strength_uncDown, signal_strength_statOnly_uncDown)
     
-            print( "Observed (expected) significance for {} is {} ({})".format(card, observed_significance, expected_significance)  )
-            print( "observed signal strength for {} is {}".format(card, signal_strength)  )
+            print( 'Observed (expected) significance for {0} is {1:1.3f} ({2:1.3f})'.format(card, observed_significance, expected_significance)  )
+            print( 'Observed signal strength for {0} is {1:1.3f} -{2:1.2f} +{3:1.2f}'.format(card, signal_strength, signal_strength_uncDown, signal_strength_uncUp)  )
+            print( 'Observed signal strength for {0} is {1:1.3f} -{2:1.2f} +{3:1.2f}(stat) -{4:1.2f} +{5:1.2f}(syst)'.format(card, signal_strength_statOnly, 
+                signal_strength_statOnly_uncDown, signal_strength_statOnly_uncUp, signal_strength_systOnly_uncDown, signal_strength_systOnly_uncUp) )
+            print( '\n' )
     
         os.system('rm ' + 'combine_' + '*')
         os.system('rm ' + 'output_' + '*')
