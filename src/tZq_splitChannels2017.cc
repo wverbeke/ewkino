@@ -104,7 +104,9 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "pdf", "scaleXsec", "pdfXsec"};
+	const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "prefiring",
+        "lepton_reco", "muon_id_stat_2017", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
+ 
     std::map < std::string, std::vector< std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > > >  > uncHistMapUp;
     for( auto& key : uncNames ){
@@ -517,6 +519,66 @@ void treeReader::Analyze(){
                 uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
             }
 
+			//vary jet prefiring probabilities down
+            double prefiringDownWeight = jetPrefiringWeight(1)/jetPrefiringWeight(0);
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["prefiring"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringDownWeight );
+            }
+
+            //vary jet prefiring probabilities up
+            double prefiringUpWeight = jetPrefiringWeight(2)/jetPrefiringWeight(0);
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["prefiring"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringUpWeight );
+            }
+
+            //vary lepton reco SF down
+            double leptonRecoDownWeight = leptonWeight("recoDown")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["lepton_reco"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonRecoDownWeight );
+            }
+
+            //vary lepton reco SF up
+            double leptonRecoUpWeight = leptonWeight("recoUp")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["lepton_reco"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonRecoUpWeight);
+            }
+
+            //vary muon stat down
+            double muonStatDownWeight = leptonWeight("muon_idStatDown")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["muon_id_stat_2017"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatDownWeight);
+            }
+
+            //vary muon stat up
+            double muonStatUpWeight = leptonWeight("muon_idStatUp")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["muon_id_stat_2017"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*muonStatUpWeight );
+            }
+
+            //vary electron stat down
+            double electronStatDownWeight = leptonWeight("electron_idStatDown")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["electron_id_stat_2017"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatDownWeight );
+            }
+
+            //vary electron stat up
+            double electronStatUpWeight = leptonWeight("electron_idStatUp")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["electron_id_stat_2017"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*electronStatUpWeight );
+            }
+
+            //vary lepton syst down
+            double leptonIdSystDownWeight = leptonWeight("idSystDown")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["lepton_id_syst"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystDownWeight );
+            }
+
+            //vary lepton syst up
+            double leptonIdSystUpWeight = leptonWeight("idSystUp")/leptonWeight("");
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["lepton_id_syst"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystUpWeight);
+            }
+	
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -772,55 +834,98 @@ void treeReader::Analyze(){
         };
 
     std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
+	const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf"};
 
-    std::vector< std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > totalSystUnc = mergedHists; //copy pointers to fix dimensionality of vector
-    for(unsigned mll = 0; mll < nMll; ++mll){
+    std::vector< std::vector< std::vector< std::vector< TH1D* > > > > totalSystUnc(nMll); //copy pointers to fix dimensionality of vector
+
+    for( unsigned mll = 0; mll < nMll; ++mll){
+        totalSystUnc[mll] = std::vector< std::vector< std::vector< TH1D* > > >(nCat);
         for(unsigned cat = 0; cat < nCat; ++cat){
+            totalSystUnc[mll][cat] = std::vector< std::vector< TH1D* > >(nFlav);
             for(unsigned flav = 0; flav < nFlav; ++flav){
+                totalSystUnc[mll][cat][flav] = std::vector< TH1D* >(nDist);
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    for(unsigned p = 0; p < proc.size(); ++p){
-                        if(p == 0) continue;
-                        totalSystUnc[mll][cat][flav][dist][p] = (TH1D*) mergedHists[mll][cat][flav][dist][p]->Clone();
-                        for(unsigned bin = 1; bin < (unsigned)  totalSystUnc[mll][cat][flav][dist][p]->GetNbinsX() + 1; ++bin){
-                            double binUnc = 0;
+                    totalSystUnc[mll][cat][flav][dist] = (TH1D*) mergedHists[mll][cat][flav][dist][0]->Clone();
 
-                            //add all shape uncertainties 
-                            for( auto& key : uncNames ){
-    
-                                //ignore theory uncertainty for certain processes
+                    for(unsigned bin = 1; bin < (unsigned) totalSystUnc[mll][cat][flav][dist]->GetNbinsX() + 1; ++bin){
+                        double binUnc = 0;
+
+                        //add all shape uncertainties 
+                        for(auto& key: uncNames ){
+
+                            bool nuisanceIsUnCorrelated = ( std::find( uncorrelatedBetweenProcesses.cbegin(), uncorrelatedBetweenProcesses.cend(), key ) != uncorrelatedBetweenProcesses.cend() );
+
+                            double var = 0.;
+
+                            //for the correlated case
+                            double varDown = 0.;
+                            double varUp = 0.;
+
+                            //linearly add the variations for each process 
+                            for(unsigned p = 1; p < proc.size(); ++p){
+
+                                //ignore theoretical uncertainties on the normalization of certain processes 
                                 if( key.find("Xsec") != std::string::npos ){
                                     bool processWithoutTheoryUnc =  ( std::find( ignoreTheoryUncInPlot.cbegin(), ignoreTheoryUncInPlot.cend(), proc[p] ) != ignoreTheoryUncInPlot.cend() );
                                     if( processWithoutTheoryUnc){
-                                            continue;
+                                        continue;
                                     }
                                 }
 
-                                double down = fabs(mergedUncMapDown[key][mll][cat][flav][dist][p]->GetBinContent(bin) - mergedHists[mll][cat][flav][dist][p]->GetBinContent(bin) );
-                                double up = fabs(mergedUncMapUp[key][mll][cat][flav][dist][p]->GetBinContent(bin) - mergedHists[mll][cat][flav][dist][p]->GetBinContent(bin) );
-                                double var = std::max(down, up);
+                                double nominalContent = mergedHists[mll][cat][flav][dist][p]->GetBinContent(bin);
+                                double downVariedContent = mergedUncMapDown[key][mll][cat][flav][dist][p]->GetBinContent(bin);
+                                double upVariedContent = mergedUncMapDown[key][mll][cat][flav][dist][p]->GetBinContent(bin);
+                                double down = fabs(downVariedContent - nominalContent);
+                                double up = fabs(upVariedContent - nominalContent);
 
-                                //consider maximum variation between up and down for plotting
-                                binUnc += var*var;
-                            }
-                            
-                            //add flat uncertainties
-                            if( proc[p] != "Nonprompt e/#mu"){
-                                for( double unc : flatUnc ){
-                                    double binContent = mergedHists[mll][cat][flav][dist][p]->GetBinContent(bin);
-                                    double var = binContent*(unc - 1.); 
-                                    binUnc += var*var;
+                                //uncorrelated case : 
+                                if( nuisanceIsUnCorrelated ){
+                                    double variation = std::max(down, up);
+                                    var += variation*variation;
+
+                                //correlated case :     
+                                } else {
+                                    varDown += down;
+                                    varUp += up;
                                 }
                             }
 
-                            //add background specific uncertainties
-                            for(auto& uncPair : backgroundSpecificUnc){
+							//correlated case : 
+                            if( !nuisanceIsUnCorrelated ){
+                                var = std::max( varDown, varUp );
+                                var = var*var;
+                            }
+
+                            //add (already quadratic) uncertainties 
+                            binUnc += var;
+                        }
+
+                        //add general flat uncertainties (considered correlated among all processes)
+                        for( double unc : flatUnc ){
+                            double var = 0;
+                            for(unsigned p = 1; p < proc.size(); ++p){
+                                if( proc[p] == "Nonprompt e/#mu" ){
+                                    continue;
+                                }
+                                double binContent = mergedHists[mll][cat][flav][dist][p]->GetBinContent(bin);
+                                double variation = binContent*(unc - 1.);
+                                var += variation;
+                            }
+                            binUnc += var*var;
+                        }
+
+                        //add background specific uncertainties (uncorrelated between processes)
+                        for(auto& uncPair : backgroundSpecificUnc){
+                            for(unsigned p = 1; p < proc.size(); ++p){
                                 if(proc[p] == uncPair.first){
                                     double var = mergedHists[mll][cat][flav][dist][p]->GetBinContent(bin)*(uncPair.second - 1.);
                                     binUnc += var*var;
                                 }
                             }
-                            totalSystUnc[mll][cat][flav][dist][p]->SetBinContent(bin, sqrt(binUnc) );
                         }
+
+                        //square root of quadratic sum is total uncertainty
+                        totalSystUnc[mll][cat][flav][dist]->SetBinContent(bin, sqrt(binUnc) );
                     }
                 }
             }
