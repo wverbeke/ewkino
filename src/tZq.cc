@@ -100,7 +100,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "prefiring",
+    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "prefiring", "WZ_extrapolation",
         "lepton_reco", "muon_id_stat_2016", "electron_id_stat_2016", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
 
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
@@ -534,6 +534,18 @@ void treeReader::Analyze(){
                 uncHistMapUp["prefiring"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringUpWeight );
             }
 
+            //extrapolation uncertainty for WZ to CR 
+            double WZExtrapolationUnc;
+            if( (currentSample.getProcessName() == "WZ") && ( bdtVariableMap["numberOfbJets"] > 0 ) ){
+                WZExtrapolationUnc = 0.08;
+            } else {
+                WZExtrapolationUnc = 0.;
+            }
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["WZ_extrapolation"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. - WZExtrapolationUnc) );
+                uncHistMapUp["WZ_extrapolation"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. + WZExtrapolationUnc) );
+            }
+
             //vary lepton reco SF down
             double leptonRecoDownWeight = leptonWeight("recoDown")/leptonWeight("");
             for(unsigned dist = 0; dist < nDist; ++dist){
@@ -836,13 +848,16 @@ void treeReader::Analyze(){
                         double binUnc = 0.;
                         double binContent = 0.;
                         for(unsigned p = 1; p < proc.size(); ++p){
+                            binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
                             if( (key.find("XSec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
+                                continue;
+                            }
+                            if( (key == "WZ_extrapolation") && (proc[p] != "WZ") ){
                                 continue;
                             }
                             double binUncDown = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapDown[key][mll][cat][bdt][p]->GetBinContent(bin) );
                             double binUncUp = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapUp[key][mll][cat][bdt][p]->GetBinContent(bin) );
                             binUnc += std::max(binUncDown, binUncUp);
-                            binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
                         }
                         double fractionalUnc = binUnc/binContent;
                         if( fractionalUnc > maxUnc){
@@ -1068,6 +1083,9 @@ void treeReader::Analyze(){
             bool processWithoutTheoryUnc = ( std::find(ignoreTheoryUncForIndices.cbegin(), ignoreTheoryUncForIndices.cend(), p) != ignoreTheoryUncForIndices.cend() );
             processWithoutTheoryUnc = processWithoutTheoryUnc || (p == nBkg); //make sure nonprompt is always skipped here
             if( uncIsXsec && processWithoutTheoryUnc) continue;
+
+            //only consider WZ extrapolation uncertainty for WZ 
+            if( (processNames[p] != "WZ") && shapeName == "WZ_extrapolation" ) continue;
 
             if( isCorrelatedBetweenProc[shapeName] ){
                 systUnc[nFlatSyst + shape][p] = 1.00;
