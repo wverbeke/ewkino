@@ -363,7 +363,7 @@ double Reweighter::muonTightIdWeight(const double pt, const double eta, const un
 double Reweighter::electronTightIdWeight(const double pt, const double superClusterEta, const unsigned statUnc, const unsigned systUnc) const{
     double croppedPt = std::min(pt, 199.);
     double croppedEta = std::min( std::max( -2.49, superClusterEta ), 2.49 ); 
-    return leptonIDWeight( electronLooseToRecoSF, electronLooseToRecoSF_statUnc, electronLooseToRecoSF_systUnc, croppedPt, croppedEta, statUnc, systUnc);
+    return leptonIDWeight( electronTightToRecoSF, electronTightToRecoSF_statUnc, electronTightToRecoSF_systUnc, croppedPt, croppedEta, statUnc, systUnc);
 }
 
 double Reweighter::muonFakeRate(const double pt, const double eta, const unsigned unc) const{
