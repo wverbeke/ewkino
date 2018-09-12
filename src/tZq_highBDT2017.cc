@@ -94,7 +94,7 @@ void treeReader::Analyze(){
         }
     }
 
-   	const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "prefiring",
+   	const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "prefiring", "WZ_extrapolation",
         "lepton_reco", "muon_id_stat_2017", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
  
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
@@ -528,6 +528,18 @@ void treeReader::Analyze(){
             double prefiringUpWeight = jetPrefiringWeight(2)/jetPrefiringWeight(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapUp["prefiring"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringUpWeight );
+            }
+
+            //extrapolation uncertainty for WZ from CR to SR
+            double WZExtrapolationUnc;
+            if( (currentSample.getProcessName() == "WZ") && ( bdtVariableMap["numberOfbJets"] > 0 ) ){
+                WZExtrapolationUnc = 0.08;
+            } else {
+                WZExtrapolationUnc = 0.;
+            }
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["WZ_extrapolation"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. - WZExtrapolationUnc) );
+                uncHistMapUp["WZ_extrapolation"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. + WZExtrapolationUnc) );
             }
 
             //vary lepton reco SF down

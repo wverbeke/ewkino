@@ -534,7 +534,7 @@ void treeReader::Analyze(){
                 uncHistMapUp["prefiring"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringUpWeight );
             }
 
-            //extrapolation uncertainty for WZ to CR 
+            //extrapolation uncertainty for WZ from CR to SR
             double WZExtrapolationUnc;
             if( (currentSample.getProcessName() == "WZ") && ( bdtVariableMap["numberOfbJets"] > 0 ) ){
                 WZExtrapolationUnc = 0.08;
@@ -593,14 +593,6 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapUp["lepton_id_syst"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystUpWeight);
             }
-
-            /*
-            if( leptonIdSystDownWeight < 0.3 || leptonIdSystUpWeight > 2){
-                std::cout << "leptonIdSystDownWeight = " << leptonIdSystDownWeight << std::endl;
-                std::cout << "leptonIdSystUpWeight = " << leptonIdSystUpWeight << std::endl;
-                std::cout << "###################################################" << std::endl;
-            }
-            */
 
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
