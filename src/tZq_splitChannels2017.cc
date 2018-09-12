@@ -545,8 +545,8 @@ void treeReader::Analyze(){
                 WZExtrapolationUnc = 0.;
             }
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["WZ_extrapolation"][mllCat][tzqCat - 3][dist][flavCat][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. - WZExtrapolationUnc) );
-                uncHistMapUp["WZ_extrapolation"][mllCat][tzqCat - 3][dist][flavCat][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. + WZExtrapolationUnc) );
+                uncHistMapDown["WZ_extrapolation"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. - WZExtrapolationUnc) );
+                uncHistMapUp["WZ_extrapolation"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. + WZExtrapolationUnc) );
             }  
 
             //vary lepton reco SF down

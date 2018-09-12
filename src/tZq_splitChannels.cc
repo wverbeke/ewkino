@@ -505,25 +505,25 @@ void treeReader::Analyze(){
             //vary b-tag down for udsg
             double bTag_udsg_downWeight = bTagWeight_udsg(1)/bTagWeight_udsg(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg_2016"][mllCat][flavCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_udsg_downWeight);
+                uncHistMapDown["bTag_udsg_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_udsg_downWeight);
             }
 
             //vary b-tag up for udsg
             double bTag_udsg_upWeight = bTagWeight_udsg(2)/bTagWeight_udsg(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_udsg_2016"][mllCat][flavCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_udsg_upWeight);
+                uncHistMapUp["bTag_udsg_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_udsg_upWeight);
             }
 
             //vary b-tag down for b and c (correlated)
             double bTag_bc_downWeight = bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0) );
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_bc_2016"][mllCat][flavCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_downWeight );
+                uncHistMapDown["bTag_bc_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_downWeight );
             }
 
             //vary b-tag up for b and c (correlated)
             double bTag_bc_upWeight = bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0) );
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_bc_2016"][mllCat][flavCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
+                uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
             }
    
 			//vary jet prefiring probabilities down
@@ -546,8 +546,8 @@ void treeReader::Analyze(){
                 WZExtrapolationUnc = 0.;
             }
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["WZ_extrapolation"][mllCat][tzqCat - 3][dist][flavCat][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. - WZExtrapolationUnc) );
-                uncHistMapUp["WZ_extrapolation"][mllCat][tzqCat - 3][dist][flavCat][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. + WZExtrapolationUnc) );
+                uncHistMapDown["WZ_extrapolation"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. - WZExtrapolationUnc) );
+                uncHistMapUp["WZ_extrapolation"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. + WZExtrapolationUnc) );
             } 
 
             //vary lepton reco SF down
