@@ -104,7 +104,7 @@ void treeReader::Analyze(){
         }
     }
 
-   	const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "prefiring",
+   	const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "prefiring", "WZ_extrapolation",
         "lepton_reco", "muon_id_stat_2016", "electron_id_stat_2016", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
  
     std::map < std::string, std::vector< std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > > >  > uncHistMapDown;
@@ -491,35 +491,41 @@ void treeReader::Analyze(){
             }
 
             //vary pu down
+            double puDownWeight = puWeight(1)/puWeight(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["pileup"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(1)/puWeight(0));
+                uncHistMapDown["pileup"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puDownWeight);
             }
 
             //vary pu up            
+            double puUpWeight = puWeight(2)/puWeight(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["pileup"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puWeight(2)/puWeight(0));
+                uncHistMapUp["pileup"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*puUpWeight);
             }
 
             //vary b-tag down for udsg
+            double bTag_udsg_downWeight = bTagWeight_udsg(1)/bTagWeight_udsg(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_udsg_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(1)/bTagWeight_udsg(0));
+                uncHistMapDown["bTag_udsg_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_udsg_downWeight);
             }
 
             //vary b-tag up for udsg
+            double bTag_udsg_upWeight = bTagWeight_udsg(2)/bTagWeight_udsg(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_udsg_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_udsg(2)/bTagWeight_udsg(0));
+                uncHistMapUp["bTag_udsg_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_udsg_upWeight);
             }
 
             //vary b-tag down for b and c (correlated)
+            double bTag_bc_downWeight = bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0) );
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapDown["bTag_bc_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(1)*bTagWeight_b(1)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapDown["bTag_bc_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_downWeight );
             }
 
             //vary b-tag up for b and c (correlated)
+            double bTag_bc_upWeight = bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0) );
             for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
+                uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
             }
-
+   
 			//vary jet prefiring probabilities down
             double prefiringDownWeight = jetPrefiringWeight(1)/jetPrefiringWeight(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
@@ -531,6 +537,18 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapUp["prefiring"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*prefiringUpWeight );
             }
+
+            //extrapolation uncertainty for WZ from CR to SR
+            double WZExtrapolationUnc;
+            if( (currentSample.getProcessName() == "WZ") && ( bdtVariableMap["numberOfbJets"] > 0 ) ){
+                WZExtrapolationUnc = 0.08;
+            } else {
+                WZExtrapolationUnc = 0.;
+            }
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["WZ_extrapolation"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. - WZExtrapolationUnc) );
+                uncHistMapUp["WZ_extrapolation"][mllCat][tzqCat - 3][flavCat][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1. + WZExtrapolationUnc) );
+            } 
 
             //vary lepton reco SF down
             double leptonRecoDownWeight = leptonWeight("recoDown")/leptonWeight("");
