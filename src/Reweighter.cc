@@ -291,7 +291,7 @@ double Reweighter::muonRecoWeight() const{
     return 1.;
 }
 
-double Reweighter::electronRecoWeight(const double superClusterEta, const double pt, const unsigned unc) const{
+double Reweighter::electronRecoWeight(const double pt, const double superClusterEta, const unsigned unc) const{
 
     double croppedSuperClusterEta = std::max(-2.49, std::min(superClusterEta, 2.49) );
     double croppedPt = std::max(10.01, std::min(pt, 499.) );

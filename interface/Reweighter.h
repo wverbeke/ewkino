@@ -94,7 +94,7 @@ class Reweighter{
 
         //tracking + reconstruction weights
         double muonRecoWeight() const;
-        double electronRecoWeight(const double superClusterEta, const double pt, const unsigned unc = 0) const;
+        double electronRecoWeight(const double pt, const double superClusterEta, const unsigned unc = 0) const;
 
         //loose id weights
         double muonLooseIdWeight(const double pt, const double eta, const unsigned statUnc = 0, const unsigned systUnc = 0) const;
