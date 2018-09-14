@@ -347,8 +347,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     gPad->RedrawAxis();
 
     //draw CMS header
-    if(header == "") drawLumi(p1);
-    else drawLumi(p1, "Preliminary", (const TString&) header);
+    if(header == "") drawLumi(p1, "");
+    else drawLumi(p1, "", (const TString&) header);
 
     //make ratio plot in second pad
     c->cd(); 
