@@ -847,7 +847,7 @@ void treeReader::Analyze(){
     } 
 
     //make final uncertainty histogram for plots 
-    std::vector<double> flatUnc = {1.025, 1.06, 1.02}; //lumi, leptonID, trigger , pdf and scale effects on cross section
+    std::vector<double> flatUnc = {1.025, 1.02}; //lumi, leptonID
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
             {"Nonprompt e/#mu", 1.3},
@@ -966,7 +966,7 @@ void treeReader::Analyze(){
     const unsigned nBkg = proc.size() - 2;  //number of background processes
     const std::string bkgNames[nBkg] = {"WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH", "nonprompt"}; //rewrite bkg names not to confuse combine
     std::vector<std::string> processNames = {"tZq", "WZ", "multiboson", "TTZ", "TTX", "Xgamma", "ZZH", "nonprompt"};
-    std::vector<std::string> flatSyst = {"lumi_2016", "id", "trigger_2016"};
+    std::vector<std::string> flatSyst = {"lumi_2016", "trigger_2016"};
     std::vector<std::string> shapeSyst = uncNames;
     std::vector<std::string> systNames; 
    
@@ -1023,8 +1023,7 @@ void treeReader::Analyze(){
     //initialize flat systematics
     for(unsigned p = 0; p < nBkg; ++p){ //signal and bkg  but ignore last background which is data-driven
         systUnc[0][p] = 1.025;   //lumi
-        systUnc[1][p] = 1.06;    //id eff
-        systUnc[2][p] = 1.02;   //trig eff  
+        systUnc[1][p] = 1.02;   //trig eff  
     }
 
     //ignore theory xsec uncertainties for some processes

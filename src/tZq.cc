@@ -1057,7 +1057,7 @@ void treeReader::Analyze(){
     //initialize flat systematics
     for(unsigned p = 0; p < nBkg; ++p){ //signal and bkg  but ignore last background which is data-driven
         systUnc[0][p] = 1.025;   //lumi
-        systUnc[2][p] = 1.02;   //trig eff  
+        systUnc[1][p] = 1.02;   //trig eff  
     }
 
     //ignore theory xsec uncertainties for some processes
