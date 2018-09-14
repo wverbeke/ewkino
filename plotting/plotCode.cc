@@ -12,8 +12,8 @@
 #include "plotCode.h"
 #include "drawLumi.h"
 
-extern const double xPad;
-extern const Color_t colors[];
+//fraction of height of canvas allocated to the ratio plot
+const double xPad = 0.25;
 
 //set color of histogram to be plotted separately
 void histcol(TH1D* h, const Color_t color){
@@ -123,6 +123,65 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
     }
 }
 
+
+//helper function that finds the extremal binContent + binError in a histogram
+double binContentPlusErrorExtremum(TH1D* h, const bool max){
+    double extremalValue;
+	if(max){
+		extremalValue = std::numeric_limits<double>::min();
+	} else {
+		extremalValue = std::numeric_limits<double>::max();
+	}
+
+    for(int b = 1; b < h->GetNbinsX() + 1; ++b){
+        double binContent = h->GetBinContent(b);
+        double binError = h->GetBinError(b);
+		if( max ){
+			double total = binContent + binError;
+			extremalValue = std::max( total, extremalValue );
+		} else{
+			double total = binContent - binError;
+			extremalValue = std::min( total, extremalValue );
+		}
+    }
+    return extremalValue;
+}
+
+
+//helper fucntion that finds the extremal binContent + binError for an array of histograms
+double binContentPlusErrorExtremum(TH1D** histos, const unsigned nHistos, const bool max){
+	if(nHistos < 1){
+		std::cerr << "Error in function maxBinContentPlusError : number of histograms specified to be less than 1! Returning control." << std::endl;
+		return 0.;
+	}
+	double extremalValue = binContentPlusErrorExtremum(histos[0], max);
+	if( nHistos > 1 ){
+    	for(unsigned h = 1; h < nHistos; ++h){
+			double histExtremum = binContentPlusErrorExtremum(histos[h], max);
+			if( max ){
+				extremalValue = std::max( extremalValue, histExtremum);
+			} else{
+				extremalValue = std::min( extremalValue, histExtremum);
+			}
+    	}
+	}
+    return extremalValue;
+}
+
+
+//helper fucntion that finds the maximum binContent + binError for an array of histograms
+double maxBinContentPlusError(TH1D** histos, const unsigned nHistos){
+	return binContentPlusErrorExtremum(histos, nHistos, true);
+}
+
+
+//helper fucntion that finds the minimum binContent + binError for an array of histograms
+double minBinContentPlusError(TH1D** histos, const unsigned nHistos){
+	return binContentPlusErrorExtremum(histos, nHistos, false);
+}
+
+
+//plot a stack of backgrounds and compare it to data
 void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D* bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
     
     //do not make empty plots
@@ -420,3 +479,81 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     delete p2;
     delete c;
 }
+
+void plot(TH1D** histos, const unsigned nHistos, const std::string& file, const bool normalized, const bool log){
+
+	if( nHistos < 1){
+		std::cerr << "Error in plot function : argument smaller than 1 given for number of histograms! Returning control." << std::endl;
+		return;
+	}
+	
+    //make clone of histograms so they don't get altered when rescaling 
+    TH1D* histoClones[nHistos];
+    for(unsigned h = 0; h < nHistos; ++h){
+        histoClones[h] = (TH1D*) histos[h]->Clone();
+    }
+
+	//set the colors for each histogram
+	for( unsigned h = 0; h < nHistos; ++h){
+		histcol( histoClones[h], bkgColorGeneral() );
+	}
+
+	//make sure to reset color counter for every plot 
+	bkgColorGeneral(true);
+
+    //normalize all histograms to 1 if normalization is asked
+    if( normalized ){
+        for(unsigned h = 0; h < nHistos; ++h){
+            histoClones[h]->Scale( 1./histoClones[h]->GetSumOfWeights() );
+        }
+    }
+
+	//find minimum and maximum bins among all histograms
+	double maxBinValue = maxBinContentPlusError( histoClones, nHistos );
+    double minBinValue = minBinContentPlusError( histoClones, nHistos );
+
+	//make canvas
+	static const double width = 500;
+	static const double height = 500;
+	TCanvas* c = new TCanvas( file.c_str() ,"" , width, height);
+
+	//set range on first histogram
+	//this histogram will be drawn first and fixes the range of the plot
+
+    //logarithmic y axis
+    if( log ){
+        c->SetLogy();
+	    histoClones[0]->GetYaxis()->SetRangeUser(0.3*minBinValue, 30*maxBinValue);
+    //linear y axis
+    } else {
+	    histoClones[0]->GetYaxis()->SetRangeUser(0.7*minBinValue, 1.3*maxBinValue);
+    }
+
+	//draw all histograms
+    histoClones[0]->Draw("histe");
+    if( nHistos > 1 ){
+        for(unsigned h = 1; h < nHistos; ++h){
+            histoClones[h]->Draw("histesame");
+        }
+    }
+	
+	//save canvas
+    c->SaveAs( std::string(file + ".pdf").c_str() );
+    c->SaveAs( std::string(file + ".png").c_str() );
+
+    for(unsigned h = 0; h < nHistos; ++h){
+        delete histoClones[h];
+    }
+	delete c;
+}
+
+
+void plot(TH1D* hist, const std::string& file, const bool log){
+    return plot(&hist, 1, file, false, log);
+}
+
+    
+void plot(std::vector<TH1D*>& histos, const std::string& file, const bool normalized, const bool log){
+    return plot( &histos[0], histos.size(), file, normalized, log);
+}
+
