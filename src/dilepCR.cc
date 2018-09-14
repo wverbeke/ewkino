@@ -245,7 +245,6 @@ void treeReader::plot(const std::string& distName){
 }
 
 void treeReader::splitPlots(){
-    //tools::makeFileList("tempHists", "inputList.txt");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
         systemTools::initScript(script);
