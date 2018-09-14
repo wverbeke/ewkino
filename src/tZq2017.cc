@@ -1058,6 +1058,9 @@ void treeReader::Analyze(){
             processWithoutTheoryUnc = processWithoutTheoryUnc || (p == nBkg); //make sure nonprompt is always skipped here
             if( uncIsXsec && processWithoutTheoryUnc) continue;
 
+            //only consider WZ extrapolation uncertainty for WZ 
+            if( (processNames[p] != "WZ") && shapeName == "WZ_extrapolation" ) continue;
+
             if( isCorrelatedBetweenProc[shapeName] ){
                 systUnc[nFlatSyst + shape][p] = 1.00;
             } else if( shapeName.find( processNames[p] ) != std::string::npos ){
