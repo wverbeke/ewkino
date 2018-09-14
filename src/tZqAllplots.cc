@@ -19,7 +19,8 @@
 
 //include other parts of the code
 #include "../interface/treeReader.h"
-#include "../interface/analysisTools.h"
+//#include "../interface/analysisTools.h"
+#include "../interface/systemTools.h"
 #include "../interface/tZqTools.h"
 #include "../interface/trilepTools.h"
 #include "../interface/Reweighter.h"
@@ -43,8 +44,8 @@ void treeReader::setup(){
     gROOT->SetBatch(kTRUE);
 
     //read samples and cross sections from txt file
-    readSamples2016("sampleLists/samples2016.txt");
-    readSamples2017("sampleLists/samples2017.txt");
+    readSamples2016("sampleLists/samples2016.txt", "../../ntuples_tzq/");
+    readSamples2017("sampleLists/samples2017.txt", "../../ntuples_tzq/");
 
     //info on kinematic distributions to plot
     //name      xlabel    nBins,  min, max
@@ -744,10 +745,10 @@ void treeReader::Analyze(const Sample& samp, const long unsigned begin, const lo
 void treeReader::splitJobs(){
 
     //clear previous histograms
-    tools::system("rm tempHists_tZq/*");
+    systemTools::system("rm tempHists_tZq/*");
 
     //clear previous training trees 
-    tools::system("rm trainingTrees*/*");
+    systemTools::system("rm trainingTrees*/*");
 
     for(unsigned sam = 0; sam < samples.size(); ++sam){
         initSample();
@@ -759,12 +760,12 @@ void treeReader::splitJobs(){
 
             //make temporary job script 
             std::ofstream script("runTuples.sh");
-            tools::initScript(script);
+            systemTools::initScript(script);
             script << "./tZqAllPlots " << currentSample.getUniqueName() << " " << std::to_string(begin) << " " << std::to_string(end);
             script.close();
 
             //submit job
-            tools::submitScript("runTuples.sh", "00:20:00");
+            systemTools::submitScript("runTuples.sh", "00:20:00");
          }
     }
 }
@@ -780,9 +781,9 @@ void treeReader::plot(const std::string& distName){
                 {"flavorInclusive", "eee", "eem", "emm", "mmm"} });
 
             //read collections for this distribution from files
-            HistCollectionDist col2016("inputList.txt", histInfo[d], samples2016, categorization);
-            HistCollectionDist col2017("inputList.txt", histInfo[d], samples2017, categorization);
-            HistCollectionDist colCombined("inputList.txt", histInfo[d], samples, categorization);
+            HistCollectionDist col2016("tempHists_tZq", histInfo[d], samples2016, categorization);
+            HistCollectionDist col2017("tempHists_tZq", histInfo[d], samples2017, categorization);
+            HistCollectionDist colCombined("tempHists_tZq", histInfo[d], samples, categorization);
 
             std::vector<HistCollectionDist*> colPointers = {&col2016, &col2017, &colCombined};
             
@@ -823,29 +824,28 @@ void treeReader::plot(const std::string& distName){
 
 void treeReader::splitPlots(){
     /*
-    tools::makeFileList("tempHists_tZq", "inputList.txt");
     for(auto& h: histInfo){
         std::ofstream script("printPlots.sh");
-        tools::initScript(script);
+        systemTools::initScript(script);
         script << "./tZqAllPlots plot " << h.name();
         script.close();
-        tools::submitScript("printPlots.sh", "00:25:00");
+        systemTools::submitScript("printPlots.sh", "00:25:00");
     }
     */
 
     //merge training files and clean up
     //2016
-    tools::system("rm trainingTrees_tZq2016/*data*");
-    tools::system("hadd trainingTrees_tZq2016/trainingTree.root trainingTrees_tZq2016/*root*");
+    systemTools::system("rm trainingTrees_tZq2016/*data*");
+    systemTools::system("hadd trainingTrees_tZq2016/trainingTree.root trainingTrees_tZq2016/*root*");
     //tools::system("rm trainingTrees_tZq2016/*Summer16*root*");
 
     //2017
-    tools::system("rm trainingTrees_tZq2017/*data*");
-    tools::system("hadd trainingTrees_tZq2017/trainingTree.root trainingTrees_tZq2017/*root*");
+    systemTools::system("rm trainingTrees_tZq2017/*data*");
+    systemTools::system("hadd trainingTrees_tZq2017/trainingTree.root trainingTrees_tZq2017/*root*");
     //tools::system("rm trainingTrees_tZq2017/*Fall17*root* trainingTrees_tZq2017/*2017*root*");
 
     //switch back to original directory
-    tools::system("cd ..");
+    systemTools::system("cd ..");
 }
 
 int main(int argc, char* argv[]){
@@ -863,9 +863,9 @@ int main(int argc, char* argv[]){
         std::cout << "Step 1: Distributing jobs on T2 grid" << std::endl;
         reader.splitJobs();
         std::cout << "Step 2: sleeping until jobs are finished" << std::endl;
-        if(tools::runningJobs()) std::cout << "jobs are running!" << std::endl;
-        while(tools::runningJobs("runTuples.sh")){
-            tools::sleep(60);
+        if(systemTools::runningJobs()) std::cout << "jobs are running!" << std::endl;
+        while(systemTools::runningJobs("runTuples.sh")){
+            systemTools::sleep(60);
         }
         std::cout << "Step 3: submitting plot jobs" << std::endl;
         reader.splitPlots();
