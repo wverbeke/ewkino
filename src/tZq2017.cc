@@ -822,7 +822,7 @@ void treeReader::Analyze(){
                         double binContent = 0.;
                         for(unsigned p = 1; p < proc.size(); ++p){
                             binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
-                            if( (key.find("XSec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
+                            if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
                                 continue;
                             }
                             if( (key == "WZ_extrapolation") && (proc[p] != "WZ") ){
