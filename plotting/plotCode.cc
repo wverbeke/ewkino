@@ -505,7 +505,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     delete c;
 }
 
-void plot(TH1D** histos, const unsigned nHistos, const std::string& file, const bool normalized, const bool log){
+void plot(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized, const bool log){
 
 	if( nHistos < 1){
 		std::cerr << "Error in plot function : argument smaller than 1 given for number of histograms! Returning control." << std::endl;
@@ -561,7 +561,16 @@ void plot(TH1D** histos, const unsigned nHistos, const std::string& file, const 
             histoClones[h]->Draw("histesame");
         }
     }
-	
+
+    //make and draw legend
+	TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
+    legend.SetNColumns(4);
+    legend.SetFillStyle(0); //avoid legend box
+	for(unsigned h = 0; h < nHistos; ++h){
+		legend.AddEntry(histoClones[h], names[h].c_str(), "f");
+	}
+	legend.Draw("same");
+
 	//save canvas
     c->SaveAs( std::string(file + ".pdf").c_str() );
     c->SaveAs( std::string(file + ".png").c_str() );
@@ -573,12 +582,12 @@ void plot(TH1D** histos, const unsigned nHistos, const std::string& file, const 
 }
 
 
-void plot(TH1D* hist, const std::string& file, const bool log){
-    return plot(&hist, 1, file, false, log);
+void plot(TH1D* hist, const std::string& name, const std::string& file, const bool log){
+    return plot(&hist, 1, &name, file, false, log);
 }
 
     
-void plot(std::vector<TH1D*>& histos, const std::string& file, const bool normalized, const bool log){
-    return plot( &histos[0], histos.size(), file, normalized, log);
+void plot(std::vector<TH1D*>& histos, const std::string* names, const std::string& file, const bool normalized, const bool log){
+    return plot( &histos[0], histos.size(), names, file, normalized, log);
 }
 
