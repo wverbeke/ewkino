@@ -117,7 +117,7 @@ Color_t bkgColortZq(const std::string& bkgName){
 //FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
 Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
-    static const Color_t colors[9] = {kBlue + 1, kAzure + 1, kGreen - 7, kMagenta -7, kRed - 7, kOrange + 6, kCyan + 1, kMagenta +3, kBlue -3};
+    static const Color_t colors[9] = {kBlue + 1, kRed - 7, kGreen - 7, kMagenta -7, kAzure + 1, kOrange + 6, kCyan + 1, kMagenta +3, kBlue -3};
     if(!reset){
         Color_t output = colors[counter];
         ++counter;
@@ -567,7 +567,7 @@ void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* na
     legend.SetNColumns(4);
     legend.SetFillStyle(0); //avoid legend box
 	for(unsigned h = 0; h < nHistos; ++h){
-		legend.AddEntry(histoClones[h], names[h].c_str(), "f");
+		legend.AddEntry(histoClones[h], names[h].c_str());
 	}
 	legend.Draw("same");
 
