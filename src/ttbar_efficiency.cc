@@ -60,9 +60,13 @@ void treeReader::Analyze(){
     for(unsigned p = 0; p < 2; ++p){
         for(unsigned dist = 0; dist < nDist; ++dist){
             numerator_prompt[p][dist] = histInfo[dist].makeHist("numerator_prompt_" + processNames[p] );
+            numerator_prompt[p][dist]->Sumw2();
             numerator_nonprompt[p][dist] = histInfo[dist].makeHist("numerator_nonprompt_" + processNames[p] );
+            numerator_nonprompt[p][dist]->Sumw2();
             denominator_prompt[p][dist] = histInfo[dist].makeHist("denominator_prompt_" + processNames[p] );
+            denominator_prompt[p][dist]->Sumw2();
             denominator_nonprompt[p][dist] = histInfo[dist].makeHist("denominator_nonprompt_" + processNames[p] );
+            denominator_nonprompt[p][dist]->Sumw2();
         }
     }
 
@@ -199,7 +203,6 @@ void treeReader::Analyze(){
         std::string names[2] = {"data efficiency", "MC efficiency"};
 
         plotHistograms(efficiencies, 2, names, "ttbar_efficiency" + histInfo[dist].name() );
-
     }
 }
 
