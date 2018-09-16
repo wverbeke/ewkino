@@ -542,7 +542,7 @@ void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* na
     legend.SetNColumns(4);
     legend.SetFillStyle(0); //avoid legend box
 	for(unsigned h = 0; h < nHistos; ++h){
-		legend.AddEntry(histoClones[h], names[h].c_str(), "f");
+		legend.AddEntry(histoClones[h], names[h].c_str());
 	}
 	legend.Draw("same");
 
