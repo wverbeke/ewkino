@@ -505,7 +505,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     delete c;
 }
 
-void plot(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized, const bool log){
+void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized, const bool log){
 
 	if( nHistos < 1){
 		std::cerr << "Error in plot function : argument smaller than 1 given for number of histograms! Returning control." << std::endl;
@@ -582,12 +582,12 @@ void plot(TH1D** histos, const unsigned nHistos, const std::string* names, const
 }
 
 
-void plot(TH1D* hist, const std::string& name, const std::string& file, const bool log){
-    return plot(&hist, 1, &name, file, false, log);
+void plotHistograms(TH1D* hist, const std::string& name, const std::string& file, const bool log){
+    return plotHistograms(&hist, 1, &name, file, false, log);
 }
 
     
-void plot(std::vector<TH1D*>& histos, const std::string* names, const std::string& file, const bool normalized, const bool log){
-    return plot( &histos[0], histos.size(), names, file, normalized, log);
+void plotHistograms(std::vector<TH1D*>& histos, const std::string* names, const std::string& file, const bool normalized, const bool log){
+    return plotHistograms( &histos[0], histos.size(), names, file, normalized, log);
 }
 
