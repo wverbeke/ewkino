@@ -194,6 +194,12 @@ void treeReader::Analyze(){
 
         MC_efficiencies[dist] = std::shared_ptr<TH1D>( (TH1D*) numerator_prompt[1][dist]->Clone() );
         MC_efficiencies[dist]->Divide( denominator_prompt[1][dist].get() );
+
+        TH1D* efficiencies[2] = {data_efficiencies[dist].get(),  MC_efficiencies[dist].get()};
+        std::string names[2] = {"data efficiency", "MC efficiency"};
+
+        plot(efficiencies, 2, names, "ttbar_efficiency" + histInfo[dist].name() );
+
     }
 }
 
