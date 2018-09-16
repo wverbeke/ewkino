@@ -80,7 +80,7 @@ void treeReader::Analyze(){
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
 
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries/1000; ++it){
+        for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -178,7 +178,6 @@ void treeReader::Analyze(){
                     }
                     denominator_nonprompt[dataIndex][dist]->Fill(fill[dist], weight);
                 }    
-                //prompt_denominator[dist]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
             }
         }
     }
