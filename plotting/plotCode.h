@@ -29,8 +29,8 @@ Color_t bkgColor(const std::string&, const std::string& analysis = "");
 void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis = "", const bool ylog = false, const bool normToData = false, const std::string& header = "", TH1D* bkgSyst = nullptr, const bool* isSMSignal = nullptr, TH1D** signal = nullptr, const std::string* sigNames = nullptr, const unsigned nSig = 0, const bool sigNorm = true);
 
 //Plot and compare multiple distributions or single distribution
-void plot(TH1D** histos, const unsigned nHistos, const std::string& file, const bool normalized = false, const bool log = false);
-void plot(TH1D* hist, const std::string& file, const bool log = false);
-void plot(std::vector<TH1D*>& histos, const std::string& file, const bool normalized = false, const bool log = false);
+void plot(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized = false, const bool log = false);
+void plot(TH1D* hist, const std::string& name, const std::string& file, const bool log = false);
+void plot(std::vector<TH1D*>& histos, const std::string* names, const std::string& file, const bool normalized = false, const bool log = false);
 
 #endif
