@@ -23,12 +23,12 @@ class EfficiencyUnc : public Efficiency{
         std::shared_ptr< TH1D > getNumeratorUnc();
         std::shared_ptr< TH1D > getDenominatorUnc();
 
-
     private:
         std::map< std::string, Efficiency > efficiencyVariationsDown;
         std::map< std::string, Efficiency > efficiencyVariationsUp;
 
         void fillVariation(std::map< std::string, Efficiency>&, const std::string& variation, const double entry, const double weight, const bool isNumerator, const bool isSideband = false);
+        std::shared_ptr<TH1D> getUncertainty( std::shared_ptr<TH1D> (Efficiency::*getHistogram)() );
 
         std::shared_ptr<TH1D> getNumeratorDown(const std::string&);
         std::shared_ptr<TH1D> getNumeratorUp(const std::string&);
