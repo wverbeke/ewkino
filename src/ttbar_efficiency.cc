@@ -153,8 +153,31 @@ void treeReader::Analyze(){
                 bool isSideband = !(probeIsPrompt);
                 if(isSideband || isData() ){
                     efficiencies_data[dist].fill( fill[dist], weight, probeIsTight, isSideband);
+
+                    double npUnc = 0.;
+                    if( isSideband ){
+                        npUnc = 0.3;
+                    }
+                    efficiencies_data[dist].fillVariationDown("nonprompt_norm", fill[dist], weight*( 1 - npUnc), probeIsTight, isSideband );
+                    efficiencies_data[dist].fillVariationUp("nonprompt_norm", fill[dist], weight*( 1 + npUnc), probeIsTight, isSideband );
                 } else {
                     efficiencies_MC[dist].fill( fill[dist], weight, probeIsTight, isSideband);
+
+                    //reco variation
+                    efficiencies_MC[dist].fillVariationDown( "lepton_reco", fill[dist], weight*leptonWeight("recoDown")/leptonWeight(""), probeIsTight, isSideband );
+                    efficiencies_MC[dist].fillVariationUp( "lepton_reco", fill[dist], weight*leptonWeight("recoUp")/leptonWeight(""), probeIsTight, isSideband );
+
+                    //muon stat variation
+                    efficiencies_MC[dist].fillVariationDown("muon_id_stat_2016", fill[dist], weight*leptonWeight("muon_idStatDown")/leptonWeight(""), probeIsTight, isSideband );
+                    efficiencies_MC[dist].fillVariationUp("muon_id_stat_2016", fill[dist], weight*leptonWeight("muon_idStatUp")/leptonWeight(""), probeIsTight, isSideband );
+
+                    //electron stat variation
+                    efficiencies_MC[dist].fillVariationDown( "electron_id_stat_2016", fill[dist], weight*leptonWeight("electron_idStatDown")/leptonWeight(""), probeIsTight, isSideband );
+                    efficiencies_MC[dist].fillVariationUp( "electron_id_stat_2016", fill[dist], weight*leptonWeight("electron_idStatUp")/leptonWeight(""), probeIsTight, isSideband );
+
+                    //id syst variation
+                    efficiencies_MC[dist].fillVariationDown( "lepton_id_syst", fill[dist], weight*leptonWeight("idSystDown")/leptonWeight(""), probeIsTight, isSideband );
+                    efficiencies_MC[dist].fillVariationUp( "lepton_id_syst", fill[dist], weight*leptonWeight("idSystUp")/leptonWeight(""), probeIsTight, isSideband );
                 }
             }
         }
