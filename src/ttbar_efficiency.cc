@@ -74,7 +74,7 @@ void treeReader::Analyze(){
     std::vector< Efficiency > efficiencies_data;
     std::vector< Efficiency > efficiencies_MC;
     for(unsigned dist = 0; dist < nDist; ++dist){
-        efficiencies_data.push_back(Efficiency("data_eff", histInfo[dist]) );
+        efficiencies_data.push_back(Efficiency("data_eff", histInfo[dist], true) );
         efficiencies_MC.push_back(Efficiency("MC_eff", histInfo[dist]) );
     }
 
