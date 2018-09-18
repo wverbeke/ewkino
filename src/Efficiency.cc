@@ -22,6 +22,7 @@ Efficiency::Efficiency(const std::string& name, const HistInfo& info, const bool
 
 void Efficiency::fill_numerator(const double entry, const double weight) const{
     numerator->Fill( entryToFill(entry), weight ); 
+    denominator->Fill( entryToFill(entry), weight ); 
 }
 
 
@@ -35,6 +36,7 @@ void Efficiency::fill_numerator_sideband(const double entry, const double weight
     //make sure sideband will be re-subtracted when it gets new entries
     sidebandWasSubtracted = false;
     numerator_sideband->Fill( entryToFill(entry), weight );
+    denominator_sideband->Fill( entryToFill(entry), weight );
 }
 
 
