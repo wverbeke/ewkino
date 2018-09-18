@@ -195,7 +195,23 @@ void treeReader::Analyze(){
 
         plotHistograms(efficiencies, 2, names, "ttbar_efficiency" + histInfo[dist].name() );
 
-        //TH1D* uncertainties[2] ={efficiencies_MC[dist]
+        std::shared_ptr<TH1D> numerator_data_var =  efficiencies_data[dist].getNumeratorUnc();
+        numerator_data_var->Add(efficiencies_data[dist].getNumerator().get());
+        std::shared_ptr<TH1D> denominator_data_var = efficiencies_data[dist].getDenominatorUnc();
+        denominator_data_var->Add(efficiencies_data[dist].getDenominator().get());
+        numerator_data_var->Divide(denominator_data_var.get() );
+        numerator_data_var->Add( data_efficiency.get(), -1. );
+
+        std::shared_ptr<TH1D> numerator_MC_var =  efficiencies_MC[dist].getNumeratorUnc();
+        numerator_MC_var->Add(efficiencies_MC[dist].getNumerator().get());
+        std::shared_ptr<TH1D> denominator_MC_var = efficiencies_MC[dist].getDenominatorUnc();
+        denominator_MC_var->Add(efficiencies_MC[dist].getDenominator().get());
+        numerator_MC_var->Divide(denominator_MC_var.get() );
+        numerator_MC_var->Add( MC_efficiency.get(), -1. );
+
+        TH1D* uncertainties[2] ={numerator_data_var.get(), numerator_MC_var.get()};
+        names[2] = {"data syst unc", "MC syst unc"};    
+        plotHistograms(uncertainties, 2, names, "ttbar_unc" + histInfo[dist].name() );
     }
 }
 
