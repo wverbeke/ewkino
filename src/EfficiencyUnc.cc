@@ -52,27 +52,36 @@ void EfficiencyUnc::fillVariationUp(const std::string& variation, const double e
     fillVariation( efficiencyVariationsUp, variation, entry, weight, isNumerator, isSideband);
 }
 
+std::shared_ptr<TH1D> EfficiencyUnc::getUncertainty( std::shared_ptr<TH1D> (Efficiency::*getHistogram)() ){
+    std::shared_ptr< TH1D > uncertaintyHist = (this->*getHistogram)();
 
-std::shared_ptr<TH1D> EfficiencyUnc::getNumeratorUnc(){
-    std::shared_ptr< TH1D > numerator_unc = getNumerator();
-
-    for(int bin = 1; bin < numerator_unc->GetNbinsX() + 1; ++bin){
-        double binUnc = 0;
+    for(int bin = 1; bin < uncertaintyHist->GetNbinsX() + 1; ++bin){
+    	double binUnc = 0;
         for(auto& pair : efficiencyVariationsDown ){
             auto& key = pair.first;
-            double binContent = numerator_unc->GetBinContent( bin );
-    
-            std::shared_ptr< TH1D > numerator_down = ( findEntryDown(key)->second ).getNumerator();
-            double varDown = numerator_down->GetBinContent( bin );
+            double binContent = uncertaintyHist->GetBinContent( bin );
 
-            std::shared_ptr< TH1D > numerator_up = ( findEntryUp(key)->second ).getNumerator();
-            double varUp = numerator_up->GetBinContent( bin );
+            std::shared_ptr< TH1D > variation_down = ( ( findEntryDown(key)->second ).*getHistogram)();
+            double varDown = variation_down->GetBinContent( bin );
+
+            std::shared_ptr< TH1D > variation_up = ( ( findEntryUp(key)->second ).*getHistogram)();
+            double varUp = variation_up->GetBinContent( bin );
 
             double maxVar = std::max( fabs(binContent - varDown), fabs(binContent - varUp) );
             binUnc += (maxVar * maxVar);
         }
-        numerator_unc->SetBinContent(bin, sqrt( binUnc ) );
-        numerator_unc->SetBinError(bin, 0.);
+        uncertaintyHist->SetBinContent(bin, sqrt( binUnc ) );
+       	uncertaintyHist->SetBinError(bin, 0.);
     }
-    return numerator_unc;
+	return uncertaintyHist;
+}
+
+
+std::shared_ptr<TH1D> EfficiencyUnc::getNumeratorUnc(){
+	return getUncertainty(&Efficiency::getNumerator);
+}
+
+
+std::shared_ptr<TH1D> EfficiencyUnc::getDenominatorUnc(){
+	return getUncertainty(&Efficiency::getDenominator);
 }
