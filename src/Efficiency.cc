@@ -69,6 +69,9 @@ void Efficiency::fill( const double entry, const double weight, const bool isNum
 
 
 void Efficiency::subtractSideband(){
+    if( !hasSideband() ){
+        return;
+    }
     if( !sidebandWasSubtracted ){
         numerator->Add( numerator_sideband.get(), -1. );
         numerator_sideband->Reset();
