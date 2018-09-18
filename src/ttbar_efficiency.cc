@@ -18,10 +18,9 @@
 //include other parts of the code
 #include "../interface/treeReader.h"
 #include "../interface/analysisTools.h"
-//#include "../interface/trilepTools.h"
 #include "../interface/Reweighter.h"
 #include "../interface/HistInfo.h"
-//#include "../interface/kinematicTools.h"
+#include "../interface/Efficiency.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -49,6 +48,7 @@ void treeReader::Analyze(){
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
 
+    /*
     //initialize vector holding all histograms
     std::vector< std::vector< std::shared_ptr< TH1D > > > numerator_prompt( 2, std::vector< std::shared_ptr< TH1D > >(nDist) );
     std::vector< std::vector< std::shared_ptr< TH1D > > > numerator_nonprompt( 2, std::vector< std::shared_ptr< TH1D > >(nDist) );
@@ -68,6 +68,14 @@ void treeReader::Analyze(){
             denominator_nonprompt[p][dist] = histInfo[dist].makeHist("denominator_nonprompt_" + processNames[p] );
             denominator_nonprompt[p][dist]->Sumw2();
         }
+    }
+    */
+
+    std::vector< Efficiency > efficiencies_data;
+    std::vector< Efficiency > efficiencies_MC;
+    for(unsigned dist = 0; dist < nDist; ++dist){
+        efficiencies_data.push_back(Efficiency("data_eff", histInfo[dist]) );
+        efficiencies_MC.push_back(Efficiency("MC_eff", histInfo[dist]) );
     }
 
     //tweakable options
@@ -160,13 +168,23 @@ void treeReader::Analyze(){
             bool probeIsTight = lepIsTight( probeIndex );
 
             //fill different histograms for data and MC
+            /*
             unsigned dataIndex = 0;
             if( isMC() ){
                 dataIndex = 1;
             }
-
+            */
+            
             double fill[nDist] = { _lPt[probeIndex], _lEta[probeIndex] };
             for(unsigned dist = 0; dist < nDist; ++dist){
+                
+                bool isSideband = !(probeIsPrompt);
+                if(isSideband || isData() ){
+                    efficiencies_data[dist].fill( fill[dist], weight, probeIsTight, isSideband);
+                } else {
+                    efficiencies_MC[dist].fill( fill[dist], weight, probeIsTight, isSideband);
+                }
+                /*
                 if(probeIsPrompt){
                     if(probeIsTight){
                         numerator_prompt[dataIndex][dist]->Fill(fill[dist], weight);
@@ -177,16 +195,18 @@ void treeReader::Analyze(){
                         numerator_nonprompt[dataIndex][dist]->Fill(fill[dist], weight);
                     }
                     denominator_nonprompt[dataIndex][dist]->Fill(fill[dist], weight);
-                }    
+                } 
+                */   
             }
         }
     }
-
+    /*
     //make efficiency histograms for data and mc 
     std::vector< std::shared_ptr < TH1D > > data_efficiencies( nDist );
     std::vector< std::shared_ptr < TH1D > > MC_efficiencies( nDist );
-
+    */
     for(unsigned dist = 0; dist < nDist; ++dist){
+        /*
         data_efficiencies[dist] = std::shared_ptr<TH1D>( (TH1D*) numerator_prompt[0][dist]->Clone() );
         data_efficiencies[dist]->Add( numerator_nonprompt[1][dist].get(), -1. );
         
@@ -197,8 +217,15 @@ void treeReader::Analyze(){
 
         MC_efficiencies[dist] = std::shared_ptr<TH1D>( (TH1D*) numerator_prompt[1][dist]->Clone() );
         MC_efficiencies[dist]->Divide( denominator_prompt[1][dist].get() );
+        */
+        std::shared_ptr<TH1D> data_efficiency = efficiencies_data[dist].getNumerator();
+        data_efficiency->Divide( efficiencies_data[dist].getDenominator().get() );
 
-        TH1D* efficiencies[2] = {data_efficiencies[dist].get(),  MC_efficiencies[dist].get()};
+        std::shared_ptr<TH1D> MC_efficiency = efficiencies_MC[dist].getNumerator();
+        MC_efficiency->Divide( efficiencies_MC[dist].getDenominator().get() );
+
+        //TH1D* efficiencies[2] = {data_efficiencies[dist].get(),  MC_efficiencies[dist].get()};
+        TH1D* efficiencies[2] = {data_efficiency.get(), MC_efficiency.get()};
         std::string names[2] = {"data efficiency", "MC efficiency"};
 
         plotHistograms(efficiencies, 2, names, "ttbar_efficiency" + histInfo[dist].name() );

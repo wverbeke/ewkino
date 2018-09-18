@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wno-reorder -Wextra 
 CFLAGS= -Wl,--no-as-needed,-lTMVA
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= src/treeReader.cc src/ttbar_efficiency.cc src/analysisTools.cc src/eventSelection.cc bTagSFCode/BTagCalibrationStandalone.cc src/Reweighter.cc src/eventWeights.cc plotting/plotCode.cc plotting/tdrStyle.cc src/kinematicTools.cc src/objectSelection.cc src/treeReaderErrors.cc plotting/drawLumi.cc src/Sample.cc src/stringTools.cc src/systemTools.cc 
+SOURCES= src/treeReader.cc src/ttbar_efficiency.cc src/analysisTools.cc src/eventSelection.cc bTagSFCode/BTagCalibrationStandalone.cc src/Reweighter.cc src/eventWeights.cc plotting/plotCode.cc plotting/tdrStyle.cc src/kinematicTools.cc src/objectSelection.cc src/treeReaderErrors.cc plotting/drawLumi.cc src/Sample.cc src/stringTools.cc src/systemTools.cc src/Efficiency.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= ttbar_efficiency
 
