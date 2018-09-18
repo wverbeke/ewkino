@@ -12,10 +12,10 @@ Class representing an efficiency and uncertainties on this efficiency. The uncer
 //include other parts of code 
 #include "Efficiency.h"
 
-class EfficiencyUnc : Efficiency{
+class EfficiencyUnc : public Efficiency{
 
     public:
-        EfficiencyUnc(const std::string& name, const HistInfo& info, const std::vector<std::string>& uncNames, const bool sideband);
+        EfficiencyUnc(const std::string& name, const HistInfo& info, const std::vector<std::string>& uncNames, const bool sideband = false);
 
         void fillVariationDown(const std::string& variation, const double entry, const double weight, const bool isNumerator, const bool isSideband = false);
         void fillVariationUp(const std::string& variation, const double entry, const double weight, const bool isNumerator, const bool isSideband = false);
