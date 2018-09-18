@@ -194,6 +194,8 @@ void treeReader::Analyze(){
         std::string names[2] = {"data efficiency", "MC efficiency"};
 
         plotHistograms(efficiencies, 2, names, "ttbar_efficiency" + histInfo[dist].name() );
+
+        //TH1D* uncertainties[2] ={efficiencies_MC[dist]
     }
 }
 
