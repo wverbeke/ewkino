@@ -88,14 +88,14 @@ std::shared_ptr<TH1D> Efficiency::getNumerator(){
     if( !sidebandWasSubtracted ){
         subtractSideband();
     }
-    return numerator;
+    return std::shared_ptr<TH1D>( (TH1D*) numerator->Clone() );
 } 
 
 std::shared_ptr<TH1D> Efficiency::getDenominator(){
     if( !sidebandWasSubtracted ){
         subtractSideband();
     } 
-    return denominator;
+    return std::shared_ptr<TH1D>( (TH1D*) denominator->Clone() );
 }
 
 
