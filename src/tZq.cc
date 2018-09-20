@@ -915,7 +915,7 @@ void treeReader::Analyze(){
 
                             double nominalContent = mergedHists[mll][cat][dist][p]->GetBinContent(bin);
                             double downVariedContent = mergedUncMapDown[key][mll][cat][dist][p]->GetBinContent(bin);
-                            double upVariedContent = mergedUncMapDown[key][mll][cat][dist][p]->GetBinContent(bin);
+                            double upVariedContent = mergedUncMapUp[key][mll][cat][dist][p]->GetBinContent(bin);
                             double down = fabs(downVariedContent - nominalContent);
                             double up = fabs(upVariedContent - nominalContent);
                         
