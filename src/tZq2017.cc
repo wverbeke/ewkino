@@ -803,6 +803,8 @@ void treeReader::Analyze(){
         }
     } 
 
+   	const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf", "scaleXsec", "pdfXsec"};
+
     //print the effect of systematic uncertainty
     //compute minimum and maximum impact on each bin
     for(unsigned bdt = 0; bdt < 2; ++bdt){
@@ -813,12 +815,23 @@ void treeReader::Analyze(){
             std::cout << "uncetainty ranges for 10 BDT bins: " << std::endl;
         }
         for(auto& key : uncNames ){
+
+            //check if nuisance is correlated or uncorrelated among processes 
+            bool nuisanceIsUnCorrelated = ( std::find( uncorrelatedBetweenProcesses.cbegin(), uncorrelatedBetweenProcesses.cend(), key ) != uncorrelatedBetweenProcesses.cend() );
+
             double maxUnc = 0.;
             double minUnc = 999.;
             for(unsigned mll = 0; mll < nMll; ++mll){
                 for(unsigned cat = 0; cat < nCat; ++cat){
-                    for(unsigned bin = 1; bin < ( unsigned) mergedHists[mll][cat][0][0]->GetNbinsX() + 1; ++bin){
+                    for(unsigned bin = 1; bin < ( unsigned) mergedHists[mll][cat][bdt][0]->GetNbinsX() + 1; ++bin){
+
+                        //for uncorrelated case
                         double binUnc = 0.;
+
+                        //for correlated case
+                        double binUncDown = 0.;
+                        double binUncUp = 0.;
+
                         double binContent = 0.;
                         for(unsigned p = 1; p < proc.size(); ++p){
                             binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
@@ -828,15 +841,28 @@ void treeReader::Analyze(){
                             if( (key == "WZ_extrapolation") && (proc[p] != "WZ") ){
                                 continue;
                             }
-                            double binUncDown = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapDown[key][mll][cat][bdt][p]->GetBinContent(bin) );
-                            double binUncUp = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapUp[key][mll][cat][bdt][p]->GetBinContent(bin) );
-                            binUnc += std::max(binUncDown, binUncUp);
+                            double varDown = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapDown[key][mll][cat][bdt][p]->GetBinContent(bin) );
+                            double varUp = fabs( mergedHists[mll][cat][bdt][p]->GetBinContent(bin) - mergedUncMapUp[key][mll][cat][bdt][p]->GetBinContent(bin) );
+
+                            if(nuisanceIsUnCorrelated){
+                                double maxVar = std::max(varDown, varUp);
+                                binUnc += maxVar*maxVar;
+                            } else {
+                                binUncDown += varDown;
+                                binUncUp += varUp;
+                            }
                         }
+                        if( nuisanceIsUnCorrelated ){
+                            binUnc = sqrt(binUnc);
+                        } else {
+                            binUnc = std::max( binUncDown, binUncUp );
+                        }
+
                         double fractionalUnc = binUnc/binContent;
                         if( fractionalUnc > maxUnc){
                             maxUnc = fractionalUnc;
                         }
-                        if( fractionalUnc < minUnc){
+ 						if( fractionalUnc < minUnc){
                             minUnc = fractionalUnc;
                         }
                     }
@@ -858,7 +884,6 @@ void treeReader::Analyze(){
         };
 
     std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
-    const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf"};
 
     std::vector< std::vector< std::vector< TH1D* > > > totalSystUnc(nMll); //copy pointers to fix dimensionality of vector
 
