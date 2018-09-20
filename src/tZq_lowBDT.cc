@@ -827,7 +827,7 @@ void treeReader::Analyze(){
         };
     
     std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
-   	const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf"};
+    const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf", "scaleXsec", "pdfXsec"};
 
     std::vector< std::vector< std::vector< TH1D* > > > totalSystUnc(nMll); //copy pointers to fix dimensionality of vector
 
