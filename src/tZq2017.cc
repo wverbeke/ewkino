@@ -1056,7 +1056,7 @@ void treeReader::Analyze(){
     //const unsigned nShapeSyst = uncNames.size();
     const unsigned nShapeSyst = nShapes;
     const unsigned nGeneralSystematics = nFlatSyst + nShapeSyst;
-    const unsigned nBackGroundSpecificUnc = backgroundSpecificUnc.size();
+    const unsigned nBackGroundSpecificUnc = bkgSpecificUnc.size();
     const unsigned nSyst = nGeneralSystematics + nStatUnc + nBackGroundSpecificUnc; //general uncertainties + stat signal (for every bin) + stat bkg (for every bin) + extra unc per bkg
 
     std::vector<std::vector<double>> systUnc(nSyst, std::vector<double>(nBkg + 1, 0)); //2D array containing all uncertainty sizes
