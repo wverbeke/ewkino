@@ -6,7 +6,7 @@ for process in tZq controlRegions tZq_lowBDT tZq_highBDT tZq_splitChannels nonpr
         makeSubmit $script ${PWD}/..
         echo "make -f makeFiles/make${process}${year}" >> $script
         echo "./${process}${year}" >> $script
-        submitJob $script "12:00:00"
+        submitJob $script "24:00:00"
         #cat $script
     done
 done
