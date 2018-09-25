@@ -345,7 +345,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
     //determine upper limit of plot
     if(!ylog){
-        bkgTotE->SetMaximum(totalMax*1.3);
+        bkgTotE->SetMaximum(totalMax*1.5);
         //hack not to draw 0 observed event points
         for(int b = 1; b < data->GetNbinsX() + 1; ++b){
             if(dataGraph->GetY()[b - 1] == 0)  dataGraph->GetY()[b - 1] += totalMax*10;
