@@ -274,16 +274,11 @@ void treeReader::initTree(TTree *tree, const bool isData)
 
 void treeReader::initTree(TTree* tree, const Sample& samp){
     initTree( tree, samp.isData() );
-    /*
-     if( samp.isMC() &&
-        ( (samp.getFileName() == "tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root") ||
-          (samp.getFileName() == "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root") )
-      )
+    if( samp.isMC() && (samp.getFileName().find("_withPsWeights") != std::string::npos) )
     {
         fChain->SetBranchAddress("_nPsWeights", &_nPsWeights, &b__nPsWeights);
         fChain->SetBranchAddress("_psWeight", _psWeight, &b__psWeight);
     }
-    */
 }
 
 void treeReader::setOutputTree(TTree* outputTree, const bool isData){

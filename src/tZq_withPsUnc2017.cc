@@ -178,6 +178,7 @@ void treeReader::Analyze(){
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
         double progress = 0; 	//for printing progress bar
         for(long unsigned it = 0; it < nEntries; ++it){
+
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -515,8 +516,7 @@ void treeReader::Analyze(){
                 uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
             }
 	
-            if( currentSample.getFileName() != "tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root" && 
-                currentSample.getFileName() != "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root")
+            if( currentSample.getFileName().find("_withPsWeights") == std::string::npos )
             {
                 for(unsigned ps = 0; ps < 14; ++ps){
                     _psWeight[ps] = 1.;
