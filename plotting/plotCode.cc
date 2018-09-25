@@ -331,7 +331,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgTotE->GetXaxis()->SetLabelSize(0);
 
     //determine the maximum range of data and the backgrounds
-    double totalMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinError(data->GetMaximumBin());
+    double totalMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinErrorUp(data->GetMaximumBin());
     totalMax = std::max(totalMax, bkgTotE->GetBinContent(bkgTotE->GetMaximumBin()) + bkgTotE->GetBinError(bkgTotE->GetMaximumBin()) );
     
     //take signal into account when determining plotting range
