@@ -188,7 +188,7 @@ void treeReader::Analyze(){
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
 
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -1237,32 +1237,15 @@ void treeReader::Analyze(){
     //initialize postFitScaler
     PostFitScaler postFitScaler("total_postFit_yields.txt");
 
-    //initialize root file to store all histograms 
-    TFile* histogramFile = TFile::Open("histograms_2016.root");
-
     //plot all distributions
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
 
-                //write prefit plots to file 
-                for(unsigned p = 0; p < proc.size(); ++p){
-                    TH1D* tempHist = (TH1D*) mergedHists[m][cat][dist][p]->Clone();
-                    tempHist->Write( std::string( proc[p] + "_" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_preFit").c_str() );
-                }
-                totalSystUnc[m][cat][dist]->Write( std::string("totalUnc_" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_preFit").c_str() );
-                
                 //scale histograms to post fit plots
                 for(unsigned p = 1; p < proc.size(); ++p){
                     mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
                 }
-
-                //write postfit plots to file 
-                for(unsigned p = 0; p < proc.size(); ++p){
-                	TH1D* tempHist =  (TH1D*) mergedHists[m][cat][dist][p]->Clone();
-                    tempHist->Write( std::string( proc[p] + "_" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_postFit").c_str() );
-                }
-                totalSystUnc[m][cat][dist]->Write( std::string("totalUnc_" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_postFit").c_str() );
 
                 plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2016_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
 
