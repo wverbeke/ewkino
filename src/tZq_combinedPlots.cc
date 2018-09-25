@@ -198,7 +198,7 @@ void treeReader::Analyze(){
         bdtReader2bJets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets) );
 
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries/100; ++it){
+        for(long unsigned it = 0; it < nEntries; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
