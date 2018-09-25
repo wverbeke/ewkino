@@ -38,7 +38,7 @@ void treeReader::Analyze(){
     gROOT->SetBatch(kTRUE);
 
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_dilepCR_2017.txt", "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/");
+    readSamples("sampleLists/samples_dilepCR_2016.txt", "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/");
 
     //name      xlabel    nBins,  min, max
     histInfo = {
@@ -284,7 +284,8 @@ void treeReader::Analyze(){
         //
         TH1D* efficiencies[2] = {data_efficiency_clone.get(), MC_efficiency_clone.get()};
         std::string names[2] = {"data efficiency", "MC efficiency"};
-        plotHistograms(efficiencies, 2, names, "ttbar_efficiency" + histInfo[dist].name() + "_2017" );
+        //plotHistograms(efficiencies, 2, names, "ttbar_efficiency" + histInfo[dist].name() + "_2017" );
+        plotHistograms(efficiencies, 2, names, "ttbar_efficiency" + histInfo[dist].name() );
 
         TCanvas* c = new TCanvas("", "", 500, 500);
         
