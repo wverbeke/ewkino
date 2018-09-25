@@ -429,7 +429,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     }
 
     //legend for uncertainties
-    TLegend legend2 = TLegend(0.18,0.85,0.8,0.98,NULL,"brNDC");
+    TLegend legend2 = TLegend(0.18, 0.85, 0.94, 0.98, NULL, "brNDC");
     legend2.SetNColumns(3); 
     legend2.SetFillStyle(0); //avoid legend box 
     legend2.AddEntry(bkgStatErrors, "Stat. pred. unc.", "f");
