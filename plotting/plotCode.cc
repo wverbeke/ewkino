@@ -274,8 +274,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgTotE->SetMarkerStyle(0); //1
 
     //make legend and add all histograms
-    TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
-    legend.SetNColumns(4);
+    TLegend legend = TLegend(0.25, 0.73, 0.87, 0.92, NULL, "brNDC");
+    legend.SetNColumns(2);
     legend.SetFillStyle(0); //avoid legend box
     legend.AddEntry(dataGraph, (const TString&) names[0], "pe1"); //add data to legend
     for(unsigned h = 0; h < nBkg; ++h){
