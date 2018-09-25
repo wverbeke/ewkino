@@ -798,7 +798,6 @@ void treeReader::Analyze(){
         }
     }
 
-    /*
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -811,11 +810,21 @@ void treeReader::Analyze(){
                 //cut off loop before nonprompt contribution
                 for(size_t m = 0, sam = 0; m < proc.size() - 1; ++m){
                     mergedHists[mll][cat][dist][m] = (TH1D*) hists[mll][cat][dist][sam]->Clone();
-                    while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
-                        mergedHists[mll][cat][dist][m]->Add(hists[mll][cat][dist][sam + 1].get());
-                        ++sam;
+                
+                    //look for each sample with the same name 
+                    std::string currentName = samples[sam].getProcessName();
+
+                    //check how far to jump to next process 
+                    int nextProcessIndex = -1;
+                    for(size_t match = sam + 1; match < samples.size(); ++match){
+                        std::string nameToCompare = samples[match].getProcessName();
+                        if(currentName == nameToCompare){
+                            mergedHists[mll][cat][dist][m]->Add( hists[mll][cat][dist][match].get() );
+                        } else if( nextProcessIndex == -1 ){
+                            nextProcessIndex = match;
+                        }
                     }
-                    ++sam;
+                    sam = nextProcessIndex;
                 }
 
                 //add nonprompt histogram
@@ -842,12 +851,22 @@ void treeReader::Analyze(){
                     for(size_t m = 0, sam = 0; m < proc.size() - 1; ++m){
                         mergedUncMapDown[key][mll][cat][dist][m] = (TH1D*) uncHistMapDown[key][mll][cat][dist][sam]->Clone();
                         mergedUncMapUp[key][mll][cat][dist][m] = (TH1D*) uncHistMapUp[key][mll][cat][dist][sam]->Clone();
-                        while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
-                            mergedUncMapDown[key][mll][cat][dist][m]->Add( uncHistMapDown[key][mll][cat][dist][sam + 1].get());
-                            mergedUncMapUp[key][mll][cat][dist][m]->Add( uncHistMapUp[key][mll][cat][dist][sam + 1].get());
-                            ++sam;
+
+                        //look for each sample with the same name 
+                        std::string currentName = samples[sam].getProcessName();
+
+                        //check how far to jump to next process 
+                        int nextProcessIndex = -1;
+                        for(size_t match = sam + 1; match < samples.size(); ++match){
+                            std::string nameToCompare = samples[match].getProcessName();
+                            if(currentName == nameToCompare){
+                                mergedUncMapDown[key][mll][cat][dist][m]->Add( uncHistMapDown[key][mll][cat][dist][match].get() );
+                                mergedUncMapUp[key][mll][cat][dist][m]->Add( uncHistMapUp[key][mll][cat][dist][match].get() );
+                            } else if( nextProcessIndex == -1 ){
+                                nextProcessIndex = match;
+                            }
                         }
-                        ++sam;
+                        sam = nextProcessIndex;
                     }
 
                     //add nonprompt histograms 
@@ -1050,9 +1069,9 @@ void treeReader::Analyze(){
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2016", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combination/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_combination", "tzq", false, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2016" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combination/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_combination" + "_log", "tzq", true, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
             }
         }
     }
@@ -1070,14 +1089,12 @@ void treeReader::Analyze(){
                     mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
                 }
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2016_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combination/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_combination_postFit", "tzq", false, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2016/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2016_postFit" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combination/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_combination_postFit" + "_log", "tzq", true, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
             }
         }
     }
-	histogramFile->Close();
-    */
 }
 
 int main(){
