@@ -295,8 +295,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgTotE->SetMarkerStyle(0); //1
 
     //make legend and add all histograms
-    TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
-    legend.SetNColumns(4);
+    TLegend legend = TLegend(0.25, 0.73, 0.87, 0.92, NULL, "brNDC");
+    legend.SetNColumns(2);
     legend.SetFillStyle(0); //avoid legend box
     legend.AddEntry(dataGraph, (const TString&) names[0], "pe1"); //add data to legend
     for(unsigned h = 0; h < nBkg; ++h){
@@ -352,7 +352,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgTotE->GetXaxis()->SetLabelSize(0);
 
     //determine the maximum range of data and the backgrounds
-    double totalMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinError(data->GetMaximumBin());
+    double totalMax = data->GetBinContent(data->GetMaximumBin()) + data->GetBinErrorUp(data->GetMaximumBin());
     totalMax = std::max(totalMax, bkgTotE->GetBinContent(bkgTotE->GetMaximumBin()) + bkgTotE->GetBinError(bkgTotE->GetMaximumBin()) );
     
     //take signal into account when determining plotting range
@@ -366,7 +366,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
     //determine upper limit of plot
     if(!ylog){
-        bkgTotE->SetMaximum(totalMax*1.3);
+        bkgTotE->SetMaximum(totalMax*1.5);
         //hack not to draw 0 observed event points
         for(int b = 1; b < data->GetNbinsX() + 1; ++b){
             if(dataGraph->GetY()[b - 1] == 0)  dataGraph->GetY()[b - 1] += totalMax*10;
@@ -454,7 +454,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     }
 
     //legend for uncertainties
-    TLegend legend2 = TLegend(0.18,0.85,0.8,0.98,NULL,"brNDC");
+    TLegend legend2 = TLegend(0.18, 0.85, 0.94, 0.98, NULL, "brNDC");
     legend2.SetNColumns(3); 
     legend2.SetFillStyle(0); //avoid legend box 
     legend2.AddEntry(bkgStatErrors, "Stat. pred. unc.", "f");
