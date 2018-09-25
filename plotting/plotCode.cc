@@ -245,6 +245,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         }
 
         //Remcompute total background after scaling
+		delete bkgTot;
         bkgTot = (TH1D*) bkg[0]->Clone();
         for(unsigned h = 1; h < nBkg; ++h){
             bkgTot->Add(bkg[h]);
@@ -475,9 +476,14 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     delete dataGraph;
     delete obsRatio;
     delete bkgStatErrors;
+    delete bkgTot;
+	delete bkgTotE;
     delete p1;
     delete p2;
     delete c;
+    for(unsigned bkg = 0; bkg < nBkg; ++bkg){
+        delete bkgClones[bkg];
+    }
 }
 
 void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized, const bool log){
