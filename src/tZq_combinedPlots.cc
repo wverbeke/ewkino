@@ -198,7 +198,7 @@ void treeReader::Analyze(){
         bdtReader2bJets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets) );
 
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -674,6 +674,8 @@ void treeReader::Analyze(){
     //compute lhe cross section ratio for every sample and variation
     std::vector< std::vector< double> > crossSectionRatio(samples.size(), std::vector<double>(110, 1.) );
     for(unsigned sam = 1; sam < samples.size(); ++sam){
+
+        if(samples[sam].isData() ) continue;
         
         //lhe weights are not available for GluGlu->ZZ
         if( samples[sam].getFileName().find("GluGluToContinToZZ") != std::string::npos ) continue;
@@ -698,7 +700,9 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
 
-                    if(sam == 0 ) continue; 
+                    if(sam < samples.size() ){
+                        if( samples[sam].isData() ) continue; 
+                    }
 
                     for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["pdf"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
                         double pdfVarRms = 0.;
@@ -727,6 +731,8 @@ void treeReader::Analyze(){
     std::vector< double > pdfXsecUncUp = {0.};
 
     for( unsigned sam = 1; sam < samples.size(); ++sam){ 
+
+        if( samples[sam].isData() ) continue;
 
         //scale effect on xSec :
         double scaleDownUnc = (1./crossSectionRatio[sam][8] - 1.); //Warning: nominal sum of weights has to be in the denominator!
@@ -1069,9 +1075,9 @@ void treeReader::Analyze(){
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combination/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_combination", "tzq", false, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combined/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_combined", "tzq", false, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combination/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_combination" + "_log", "tzq", true, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combined/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_combined" + "_log", "tzq", true, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
             }
         }
     }
@@ -1089,9 +1095,9 @@ void treeReader::Analyze(){
                     mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
                 }
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combination/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_combination_postFit", "tzq", false, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combined/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_combined_postFit", "tzq", false, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combination/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_combination_postFit" + "_log", "tzq", true, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combined/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_combined_postFit" + "_log", "tzq", true, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
             }
         }
     }
