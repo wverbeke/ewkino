@@ -4,11 +4,13 @@
 //include c++ library classes
 #include <string>
 #include <memory>
+#include <iomanip>
 
 //include ROOT classes
 #include "TH1D.h"
 
 //include other parts of code 
+#include "stringTools.h"
 
 class HistInfo{
     public:
@@ -19,11 +21,25 @@ class HistInfo{
             fileName(name), xLabel(x), nBins(bins), xMin(min), xMax(max), binLabels(binLabelList)
         { 
             setMaxBinCenter();
+            setBinWidth();
         }
 
 
         std::shared_ptr<TH1D> makeHist( const std::string& histName ) const{
-            std::shared_ptr<TH1D> hist = std::make_shared<TH1D>( (fileName + histName).c_str(), (fileName + histName + ";" + xLabel + ";Events").c_str(),  nBins, xMin, xMax);
+            
+            //make ylabel
+            std::string yLabel = "Events";
+            
+            if( nBins > 1 ){
+                yLabel += (" / " + stringTools::doubleToString( getBinWidth() ) );
+            }
+
+            //check if the xLabel has a unit, if so add it to the y label too
+            if( xLabel.find("GeV") != std::string::npos ){
+                yLabel += " GeV";                    
+            }
+    
+            std::shared_ptr<TH1D> hist = std::make_shared<TH1D>( (fileName + histName).c_str(), (fileName + histName + ";" + xLabel + ";" + yLabel).c_str(),  nBins, xMin, xMax);
 
             //set bin labels if they were initialized 
             if( !( binLabels.empty() ) ){
@@ -44,7 +60,10 @@ class HistInfo{
         double xMin, xMax;
         std::vector< std::string > binLabels;
         double maxBinC;
+        double binWidth;
 
         void setMaxBinCenter() { maxBinC = xMax - 0.5*(xMax - xMin)/nBins; }
+        void setBinWidth() { binWidth = (xMin - xMax)/nBins; }
+        double getBinWidth() const{ return binWidth; }
 };
 #endif
