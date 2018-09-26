@@ -181,7 +181,7 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "TChiWZ", "Drell-Yan", "TT", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
+    std::vector<std::string> proc = {"Data", "Drell-Yan", "TT", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "TChiWZ"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector < std::vector < TH1D* > >(nDist);
@@ -195,6 +195,14 @@ void treeReader::Analyze(){
                 }
                 ++sam;
             }
+        }
+    }
+
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned dist = 0; dist < nDist; ++dist){
+        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 1, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
+
+			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][2], &proc[0], mergedHists[m][dist].size() - 1, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
         }
     }
 }
