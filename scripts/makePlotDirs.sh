@@ -27,6 +27,13 @@ for dir in ./*/*
         done
     done
 done
+cd ..
+
+mkdir -p trilep
+cd trilep
+for dir in mllInclusive offZ onZ; do
+    mkdir -p $dir
+done
 cd ../..
 
 #set up ttgamma plots
