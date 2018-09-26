@@ -70,10 +70,25 @@ void treeReader::Analyze(){
         }
     }
 
+    //variables to write to training file
+    std::map< std::string, float > bdtVariableMap = {
+        {"mll", 0.},
+        {"mt", 0.},
+        {"met", 0.},
+        {"LTPlusMET", 0.},
+        {"HT", 0.},
+        {"m3l", 0.},
+        {"mt3l", 0.}
+    };
+
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
 
         initSample();
+
+        //make NN training tree for current sample
+        TrainingTree trainingTree("ewkinoNNTrainingTree/", currentSample, { {"mllInclusive", "onZ", "offZ"} }, bdtVariableMap, currentSample.isNewPhysicsSignal() ); 
+
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
 
         double progress = 0; 	//for printing progress bar
@@ -166,10 +181,24 @@ void treeReader::Analyze(){
 				mt3l
 			};
 
+            //set BDT variable maps
+			bdtVariableMap["mll"] = mll;
+			bdtVariableMap["mt"] = mt;
+			bdtVariableMap["met"] = _met;
+			bdtVariableMap["LTPlusMET"] = LT + _met;
+			bdtVariableMap["HT"] = HT;
+			bdtVariableMap["m3l"] = m3l;
+			bdtVariableMap["mt3l"] = mt3l;	
+
             //write variables to histograms 
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                hists[mllCat][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-            }
+			for(unsigned m = 0; m < nMll; ++m){
+				if( !( m == 0 || m == ( mllCat + 1) ) ){
+					trainingTree.fill( std::vector< size_t >({m}), bdtVariableMap);
+            		for(unsigned dist = 0; dist < nDist; ++dist){
+            		    hists[mllCat][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+            		}
+				}
+			}
         }
 
         //set histograms to 0 if negative
