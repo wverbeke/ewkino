@@ -2,6 +2,9 @@
 
 //Include c++ library classes
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
+
 
 std::string stringTools::removeBackSpaces( const std::string& s ){
     std::string formated(s);
@@ -71,4 +74,14 @@ std::pair< std::string, std::string > stringTools::splitFileExtension( const std
 
 std::string stringTools::fileWithoutExtension( const std::string& fileName ){
     return stringTools::splitFileExtension(fileName).first;
+}
+
+std::string stringTools::doubleToString( const double input, const unsigned precision ){
+    std::ostringstream stringStream;
+    if( precision == 0 ){
+        stringStream << input;
+    } else{
+        stringStream << std::setprecision( precision ) << input;
+    }
+    return stringStream.str();
 }
