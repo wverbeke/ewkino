@@ -57,13 +57,14 @@ void yieldOrder(TH1D** hists, const unsigned nHist, const bool* isSMSignal){
 }
 
 Color_t bkgColorEWK(const std::string& bkgName){
-    if(bkgName == "non-prompt") return kAzure + 1;
+    if(bkgName == "non-prompt" || bkgName == "TT") return kAzure + 1;
     else if(bkgName == "WZ") return kOrange;
     else if(bkgName == "ZZ/H") return  kGreen + 1;
     else if(bkgName == "TT/T + X") return  kViolet-3;
-    else if(bkgName == "triboson") return kRed + 1;
+    else if(bkgName == "triboson" || bkgName == "multiboson") return kRed + 1;
     else if(bkgName == "X + #gamma") return kOrange + 7;
     else if(bkgName == "T + X") return kCyan + 1;
+    else if(bkgName == "DY" || bkgName == "Drell-Yan") return kBlue + 7;
     else return kBlack;
 }
 
