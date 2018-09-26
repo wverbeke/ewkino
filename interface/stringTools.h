@@ -38,5 +38,8 @@ namespace stringTools{
 
     //return fileName without extension
     std::string fileWithoutExtension( const std::string& );
+
+    //convert double to string, with given precision
+    std::string doubleToString(const double, const unsigned precision = 0);
 }
 #endif
