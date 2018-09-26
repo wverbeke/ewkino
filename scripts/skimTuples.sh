@@ -60,6 +60,6 @@ foldersSUSY16=*/*ewkinoSignalList_v26
 foldersLeptonMva16=*CUETP8M1*/*leptonMvaTrainingList-v5
 foldersLeptonMva17=TTTo*CP5*/*leptonMvaTrainingList-v5
 
-for d in foldersMC foldersMC17 foldersData foldersData17 foldersSUSY16
+for d in $foldersMC $foldersMC17 $foldersData $foldersData17 $foldersSUSY16
     do skimSample $d $baseFolder
 done
