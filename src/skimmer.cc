@@ -104,10 +104,10 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
     for (long it=0; it <nEntries; ++it) {
         if(it%100 == 0 && it != 0){
             progress += (double) (100./ (double) nEntries);
-            tools::printProgress(progress);
+            analysisTools::printProgress(progress);
         } else if(it == nEntries -1){
             progress = 1.;
-            tools::printProgress(progress);
+            analysisTools::printProgress(progress);
         }
         sampleTree->GetEntry(it);
 
