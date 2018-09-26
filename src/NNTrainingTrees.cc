@@ -193,7 +193,9 @@ void treeReader::Analyze(){
             //write variables to histograms 
 			for(unsigned m = 0; m < nMll; ++m){
 				if( !( m == 0 || m == ( mllCat + 1) ) ){
-					trainingTree.fill( std::vector< size_t >({m}), bdtVariableMap);
+					if( isMC() ){
+                        trainingTree.fill( std::vector< size_t >({m}), bdtVariableMap);
+                    }
             		for(unsigned dist = 0; dist < nDist; ++dist){
             		    hists[mllCat][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
             		}
