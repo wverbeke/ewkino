@@ -40,7 +40,7 @@ void treeReader::Analyze(){
     gROOT->SetBatch(kTRUE);
 
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_ewkino_2016.txt.txt", "../../ntuples_ewkino");
+    readSamples("sampleLists/samples_ewkino_2016.txt", "../../ntuples_ewkino");
 
     //name      xlabel    nBins,  min, max
     histInfo = {
@@ -92,7 +92,7 @@ void treeReader::Analyze(){
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
 
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
             //print progress bar	
             if(it%100 == 0 && it != 0){
                 progress += (double) (100./nEntries);
@@ -137,6 +137,9 @@ void treeReader::Analyze(){
             } else {
                 mllCat = 0;
             }
+
+            //require met above 50
+            if( _met < 50 ) continue;
     
             //compute kinematic quantities of the event
 
@@ -212,7 +215,7 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "Drell-Yan", "TT", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "TChiWZ"};
+    std::vector<std::string> proc = {"Total bkg.", "Drell-Yan", "TT", "WZ", "multiboson", "TT/T + X", "X + #gamma", "ZZ/H", "TChiWZ"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector < std::vector < TH1D* > >(nDist);
@@ -234,7 +237,7 @@ void treeReader::Analyze(){
         for(unsigned dist = 0; dist < nDist; ++dist){
             delete mergedHists[m][dist][0];
             mergedHists[m][dist][0] = (TH1D*) mergedHists[m][dist][1]->Clone();
-            for(unsigned p = 2; p < proc.size(); ++p){
+            for(unsigned p = 2; p < proc.size() - 1 ; ++p){
                 mergedHists[m][dist][0]->Add( mergedHists[m][dist][p] );
             }
         }
@@ -242,9 +245,12 @@ void treeReader::Analyze(){
 
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned dist = 0; dist < nDist; ++dist){
-        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 1, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
+        	//plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
 
-			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][2], &proc[0], mergedHists[m][dist].size() - 1, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
+			//plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
+        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)");             //linear plots
+
+			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)"); //log plots    
         }
     }
     
