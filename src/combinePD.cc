@@ -59,7 +59,7 @@ void treeReader::combinePD(std::vector<std::string>& datasets, const bool is2017
         std::cout << dataset << std::endl;
 
         //Read tree	
-        TFile* sampleFile = TFile::Open( (const TString&) "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/" + dataset,"read");	
+        TFile* sampleFile = TFile::Open( (const TString&) "../../ntuples_ewkino/" + dataset,"read");	
 
         //Determine hcounter for cross section scaling
         sampleFile->cd("blackJackAndHookers");	
