@@ -32,7 +32,7 @@ class HistInfo{
             
             //don't add a binWidth to the y label if there is only one bin, or the x labels are custom text
             if( nBins > 1 && binLabels.empty() ){
-                yLabel += (" / " + stringTools::doubleToString( getBinWidth() ) );
+                yLabel += (" / " + stringTools::doubleToString( getBinWidth(), 2 ) );
                 //check if the xLabel has a unit, if so add it to the y label too
                 if( xLabel.find("GeV") != std::string::npos ){
                     yLabel += " GeV";                    
