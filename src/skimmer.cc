@@ -114,11 +114,11 @@ void treeReader::skimTree(const std::string& fileName, std::string outputDirecto
         //print event info to efficiently determine in which file a particular event was contained
         std::cout << _runNb << " " << _lumiBlock << " " << _eventNb << std::endl;
 
+        //require presence of three relatively loose (medium muon, electron trigger emulation) leptons
         std::vector<unsigned> ind;
-        /*
         unsigned lCount = selectLep(ind);
-        if(lCount < 2) continue;
-        */
+        if(lCount < 3) continue;
+
         for(unsigned l = 0; l < _nLight; ++l){
             pt = _lPt[l];
             eta = fabs(_lEta[l]);
