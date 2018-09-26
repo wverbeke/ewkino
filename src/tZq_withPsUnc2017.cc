@@ -522,7 +522,7 @@ void treeReader::Analyze(){
                     _psWeight[ps] = 1.;
                 }
             }
-
+            
             //vary b-tag down for b and c (correlated)
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapDown["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[6] );
@@ -678,8 +678,7 @@ void treeReader::Analyze(){
         }
 
         //extract histogram containing sum of weights for all possible ps variations
-        if( samples[sam].getFileName() == "tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root" ||
-            samples[sam].getFileName() == "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8_realistic_v10_Fall17.root")
+        if( samples[sam].getFileName().find("_withPsWeights") != std::string::npos )
         {  
             std::shared_ptr<TH1D> psCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/psCounter"));
             for(unsigned ps = 0; ps < 14; ++ps){
