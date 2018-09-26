@@ -30,14 +30,15 @@ class HistInfo{
             //make ylabel
             std::string yLabel = "Events";
             
-            if( nBins > 1 ){
+            //don't add a binWidth to the y label if there is only one bin, or the x labels are custom text
+            if( nBins > 1 && binLabels.empty() ){
                 yLabel += (" / " + stringTools::doubleToString( getBinWidth() ) );
+                //check if the xLabel has a unit, if so add it to the y label too
+                if( xLabel.find("GeV") != std::string::npos ){
+                    yLabel += " GeV";                    
+                }
             }
 
-            //check if the xLabel has a unit, if so add it to the y label too
-            if( xLabel.find("GeV") != std::string::npos ){
-                yLabel += " GeV";                    
-            }
     
             std::shared_ptr<TH1D> hist = std::make_shared<TH1D>( (fileName + histName).c_str(), (fileName + histName + ";" + xLabel + ";" + yLabel).c_str(),  nBins, xMin, xMax);
 
