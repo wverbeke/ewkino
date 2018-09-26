@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wno-reorder -Wextra
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= src/NNTrainingTrees.cc src/Sample.cc src/treeReader.cc src/analysisTools.cc src/eventSelection.cc plotting/drawLumi.cc plotting/plotCode.cc plotting/tdrStyle.cc src/objectSelection.cc src/kinematicTools.cc src/treeReaderErrors.cc src/stringTools.cc src/systemTools.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= dilepCR
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
