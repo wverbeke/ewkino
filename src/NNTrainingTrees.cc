@@ -87,7 +87,7 @@ void treeReader::Analyze(){
         initSample();
 
         //make NN training tree for current sample
-        TrainingTree trainingTree("ewkinoNNTrainingTree/", currentSample, { {"mllInclusive", "onZ", "offZ"} }, bdtVariableMap, currentSample.isNewPhysicsSignal() ); 
+        TrainingTree trainingTree("ewkinoNNTrainingTree/", currentSample, { {"mllInclusive", "onZ", "offZ"} }, bdtVariableMap, isNewPhysicsSignal() ); 
 
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
 
@@ -105,8 +105,8 @@ void treeReader::Analyze(){
             GetEntry(it);
 
             //apply triggers and MET filters
-            if( !passTriggerCocktail() ) continue;
-            if( !passMETFilters() ) continue;
+            //if( !passTriggerCocktail() ) continue;
+            //if( !passMETFilters() ) continue;
 
             //vector containing good lepton indices
             std::vector<unsigned> ind;
@@ -195,14 +195,13 @@ void treeReader::Analyze(){
 
             //write variables to histograms 
 			for(unsigned m = 0; m < nMll; ++m){
-				if( !( m == 0 || m == ( mllCat + 1) ) ){
-					if( isMC() ){
-                        trainingTree.fill( std::vector< size_t >({m}), bdtVariableMap);
-                    }
-            		for(unsigned dist = 0; dist < nDist; ++dist){
-            		    hists[mllCat][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
-            		}
-				}
+				if( !( m == 0 || m == ( mllCat + 1) ) ) continue;
+				if( isMC() ){
+                    trainingTree.fill( std::vector< size_t >({m}), bdtVariableMap);
+                }
+            	for(unsigned dist = 0; dist < nDist; ++dist){
+            	    hists[mllCat][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+            	}
 			}
         }
 
@@ -245,12 +244,9 @@ void treeReader::Analyze(){
 
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned dist = 0; dist < nDist; ++dist){
-        	//plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
+        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
 
-			//plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
-        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)");             //linear plots
-
-			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)"); //log plots    
+			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
         }
     }
     
