@@ -227,11 +227,31 @@ void treeReader::Analyze(){
         }
     }
 
+    //blind data!
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned dist = 0; dist < nDist; ++dist){
+            delete mergedHists[m][dist][0];
+            mergedHists[m][dist][0] = (TH1D*) mergedHists[m][dist][1]->Clone();
+            for(unsigned p = 2; p < proc.size(); ++p){
+                mergedHists[m][dist][0]->Add( mergedHists[m][dist][p] );
+            }
+        }
+    }
+
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned dist = 0; dist < nDist; ++dist){
         	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 1, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
 
 			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][2], &proc[0], mergedHists[m][dist].size() - 1, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
+        }
+    }
+    
+    //clean up memory
+    for(unsigned m = 0; m < nMll; ++m){
+        for(unsigned dist = 0; dist < nDist; ++dist){
+            for(unsigned p = 0; p < proc.size(); ++p){
+                delete mergedHists[m][dist][p];
+            }
         }
     }
 }
