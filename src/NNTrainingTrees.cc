@@ -126,9 +126,45 @@ void treeReader::Analyze(){
             //compute kinematic quantities of the event
 
             //find lepton from W decay
+           	unsigned lw = 99;
+    		for(unsigned l = 0; l < lCount; ++l){
+        		if( l != bestZ.first && l != bestZ.second ) lw = l;
+			} 
+
             TLorentzVector met;
             met.SetPtEtaPhiE( _met, 0, _metPhi, _met);
-            double mt = kinematics::mt(met, lepV
+            double mt = kinematics::mt(met, lepV[lw]);
+
+			double LT = 0.;
+ 			for(unsigned l = 0; l < lCount; ++l){
+        		LT += _lPt[ind[l]];
+			}	
+
+			//compute HT
+    		double HT = 0;
+    		for(unsigned j = 0; j < _nJets; ++j){
+				if( jetIsGood(j) ){
+        			HT += _jetPt[j];
+				}
+			}
+
+			TLorentzVector lepSyst( lepV[0] );
+			for(unsigned l = 1; l < lCount; ++l){
+				lepSyst += lepV[l];
+			}
+
+			double m3l = lepSyst.M();
+			double mt3l = kinematics::mt(lepSyst, met);
+
+			double fill[nDist] = {
+				mll,
+				mt,	
+				_met,
+				LT + _met,
+				HT,
+				m3l,
+				mt3l
+			};
 
             //write variables to histograms 
             for(unsigned dist = 0; dist < nDist; ++dist){
@@ -139,37 +175,28 @@ void treeReader::Analyze(){
         //set histograms to 0 if negative
         for(unsigned m = 0; m < nMll; ++m){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                analysisTools::setNegativeBinsToZero( hists[m][cat][dist][sam].get() );
+                analysisTools::setNegativeBinsToZero( hists[m][dist][sam].get() );
             }	
         }
     }
 
-    /*
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
-    std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
+    std::vector<std::string> proc = {"Data", "TChiWZ", "Drell-Yan", "TT", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H"};
+    std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
-        mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
-        for(unsigned cat = 0; cat < nCat; ++cat){
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                mergedHists[mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
-
-                //cut off loop before nonprompt contribution
-                for(size_t m = 0, sam = 0; m < proc.size() - 1; ++m){
-                    mergedHists[mll][cat][dist][m] = (TH1D*) hists[mll][cat][dist][sam]->Clone();
-                    while(sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
-                        mergedHists[mll][cat][dist][m]->Add(hists[mll][cat][dist][sam + 1].get());
-                        ++sam;
-                    }
+        mergedHists[mll] = std::vector < std::vector < TH1D* > >(nDist);
+        for(unsigned dist = 0; dist < nDist; ++dist){
+            mergedHists[mll][dist] = std::vector < TH1D* >( proc.size() );
+            for(size_t m = 0, sam = 0; m < proc.size(); ++m){
+                mergedHists[mll][dist][m] = (TH1D*) hists[mll][dist][sam]->Clone();
+                while( sam < samples.size() - 1 && samples[sam].getProcessName() == samples[sam + 1].getProcessName() ){
+                    mergedHists[mll][dist][m]->Add( hists[mll][dist][sam + 1].get() );
                     ++sam;
                 }
-
-                //add nonprompt histogram
-                mergedHists[mll][cat][dist][proc.size() - 1] = (TH1D*) hists[mll][cat][dist][samples.size()].get()->Clone();
+                ++sam;
             }
         }
     }
-    */
 }
 
 
