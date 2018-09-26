@@ -14,8 +14,8 @@ multiboson	    ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root							     
 multiboson      WZG_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                                                   0.04123
 multiboson      WWG_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                                                   0.2147
 multiboson      WGGJets_TuneCUETP8M1_13TeV_madgraphMLM_pythia8_Summer16.root                                            1.711
-TTZ		        TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root					                    0.2728
-TTZ		        TTZToLL_M-1to10_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root					                0.0283
+TTX		        TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root					                    0.2728
+TTX		        TTZToLL_M-1to10_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root					                0.0283
 TTX		        TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8_Summer16.root				                0.2043
 TTX		        TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8_Summer16.root				                0.40620
 TTX		        ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_Summer16.root				            3.68064
