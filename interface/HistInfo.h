@@ -63,7 +63,7 @@ class HistInfo{
         double binWidth;
 
         void setMaxBinCenter() { maxBinC = xMax - 0.5*(xMax - xMin)/nBins; }
-        void setBinWidth() { binWidth = (xMin - xMax)/nBins; }
+        void setBinWidth() { binWidth = (xMax - xMin)/nBins; }
         double getBinWidth() const{ return binWidth; }
 };
 #endif
