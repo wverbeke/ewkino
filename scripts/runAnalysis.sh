@@ -11,7 +11,7 @@ for process in tZq controlRegions tZq_lowBDT tZq_highBDT tZq_splitChannels nonpr
 done
 
 for process in tZq_combinedPlots tZq_withPsUnc2017; do
-   script=${process}$.sh
+   script=${process}.sh
    makeSubmit $script ${PWD}/..
    echo "make -f makeFiles/make${process}" >> $script
    echo "./${process}" >> $script
