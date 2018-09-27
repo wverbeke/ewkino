@@ -115,6 +115,8 @@ void treeReader::Analyze(){
             const unsigned lCount = selectLep(ind);
             if(lCount != 3) continue;
 
+            if( !(tightLepCount(ind, lCount) == lCount) ) continue;
+
             //require pt cuts (25, 15, 10) to be passed
             if(!passPtCuts(ind)) continue;
 
@@ -122,7 +124,7 @@ void treeReader::Analyze(){
             if(trilep::flavorChargeComb(ind, _lFlavor, _lCharge, lCount) != 0) continue; 
 
             //remove overlap between samples
-            if(photonOverlap(currentSample, false)) continue;
+            if(photonOverlap(currentSample)) continue;
 
             //make lorentzvectors for leptons
             TLorentzVector lepV[lCount];
@@ -200,7 +202,7 @@ void treeReader::Analyze(){
                     trainingTree.fill( std::vector< size_t >({m}), bdtVariableMap);
                 }
             	for(unsigned dist = 0; dist < nDist; ++dist){
-            	    hists[mllCat][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
+            	    hists[m][dist][sam]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
             	}
 			}
         }
