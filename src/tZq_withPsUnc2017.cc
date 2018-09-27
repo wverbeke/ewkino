@@ -1262,7 +1262,7 @@ void treeReader::Analyze(){
     }   
     std::cout << "Printed all datacards" << std::endl;
 
-     //initialize postFitScaler
+    //initialize postFitScaler
     PostFitScaler postFitScaler("total_postFit_yields.txt");
 
     //plot all distributions
@@ -1275,9 +1275,9 @@ void treeReader::Analyze(){
                     mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
                 }
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);             //linear plots
-      
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017_postFit" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", &totalSystUnc[m][cat][dist][1], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/psWeightCheck/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017_postFit", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
+
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/psWeightCheck/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017_postFit" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal); 
             }
         }
     }
