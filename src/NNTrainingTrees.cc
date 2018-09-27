@@ -78,7 +78,8 @@ void treeReader::Analyze(){
         {"LTPlusMET", 0.},
         {"HT", 0.},
         {"m3l", 0.},
-        {"mt3l", 0.}
+        {"mt3l", 0.},
+        {"eventWeight", 0.}
     };
 
     //loop over all samples 
@@ -141,8 +142,9 @@ void treeReader::Analyze(){
                 mllCat = 0;
             }
 
-            //require met above 50
+            //ewkino event selection
             if( _met < 50 ) continue;
+            if( nBJets() != 0 ) continue;
     
             //compute kinematic quantities of the event
 
@@ -195,6 +197,7 @@ void treeReader::Analyze(){
 			bdtVariableMap["HT"] = HT;
 			bdtVariableMap["m3l"] = m3l;
 			bdtVariableMap["mt3l"] = mt3l;	
+            bdtVariableMap["eventWeight"] = weight;
 
             //write variables to histograms 
 			for(unsigned m = 0; m < nMll; ++m){
