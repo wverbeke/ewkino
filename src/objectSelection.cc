@@ -97,7 +97,8 @@ bool treeReader::lepIsGood(const unsigned leptonIndex) const{
 }
 
 bool treeReader::lepIsTightBase(const unsigned leptonIndex) const{
-    return lepIsGood(leptonIndex);
+    if( !lepIsGood(leptonIndex) ) return false;
+    return _lEwkTight[leptonIndex];
 }
 
 bool treeReader::lepIsTight2016(const unsigned leptonIndex) const{
