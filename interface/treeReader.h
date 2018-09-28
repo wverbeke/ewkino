@@ -173,6 +173,9 @@ class treeReader {
         Double_t        _metPhiUnclUp;       
         Double_t        _metSignificance;
 
+        Double_t        _mChi1;
+        Double_t        _mChi2;
+
 
         //Constructor
         treeReader(TTree *tree = nullptr);
@@ -526,5 +529,8 @@ class treeReader {
         TBranch        *b__metPhiUnclDown;   
         TBranch        *b__metPhiUnclUp;   
         TBranch        *b__metSignificance;
+
+        TBranch        *b__mChi1;
+        TBranch        *b__mChi2;
 };
 #endif

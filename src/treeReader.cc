@@ -265,6 +265,8 @@ void treeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
         fChain->SetBranchAddress("_gen_HT", &_gen_HT, &b__gen_HT);
     }
+    fChain->SetBranchAddress("_mChi1", &_mChi1, &b__mChi1);
+    fChain->SetBranchAddress("_mChi2", &_mChi2, &b__mChi2);
 }
 
 void treeReader::setOutputTree(TTree* outputTree, const bool isData){
@@ -423,4 +425,6 @@ void treeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
         outputTree->Branch("_gen_HT",                    &_gen_HT,                    "_gen_HT/D");
     }
+    outputTree->Branch("_mChi1", &_mChi1, "_mChi1/D");
+    outputTree->Branch("_mChi2", &_mChi2, "_mChi2/D");
 }
