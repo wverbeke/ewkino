@@ -61,7 +61,7 @@ Color_t bkgColorEWK(const std::string& bkgName){
     else if(bkgName == "WZ") return kOrange;
     else if(bkgName == "ZZ/H") return  kGreen + 1;
     else if(bkgName == "TT/T + X") return  kViolet-3;
-    else if(bkgName == "triboson") return kRed + 1;
+    else if(bkgName == "triboson" || bkgName == "multiboson") return kRed + 1;
     else if(bkgName == "X + #gamma") return kOrange + 7;
     else if(bkgName == "T + X") return kCyan + 1;
     else return kBlack;
