@@ -30,8 +30,9 @@
 #include "../plotting/tdrStyle.h"
 
 //include TMVA classes
-//#include "TMVA/Tools.h"
-//#include "TMVA/Reader.h"
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
+#include "TMVA/PyMethodBase.h"
 
 void treeReader::Analyze(){
 
@@ -51,6 +52,7 @@ void treeReader::Analyze(){
         HistInfo("HT", "H_{T} (GeV)", 50, 0, 800), 
         HistInfo("m3l", "M_{3l} (GeV)", 50, 0, 1200),
         HistInfo("mt3l", "M_{T}(3l + MET) (GeV)", 50, 0, 800),
+        HistInfo("DNN", "Neural network output", 50, 0, 1)
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -82,6 +84,22 @@ void treeReader::Analyze(){
         {"eventWeight", 0.}
     };
 
+    //initialize TMVA keras interface
+    TMVA::PyMethodBase::PyInitialize();
+    
+    //set up TMVA reader
+    std::shared_ptr< TMVA::Reader > reader( new TMVA::Reader("!Color:!Silent") );
+    reader->AddVariable( "mll" , &( bdtVariableMap["mll"] ) );
+    reader->AddVariable( "mt" , &( bdtVariableMap["mt"] ) );
+    reader->AddVariable( "met" , &( bdtVariableMap["met"] ) );
+    reader->AddVariable( "LTPlusMET" , &( bdtVariableMap["LTPlusMET"] ) );
+    reader->AddVariable( "HT" , &( bdtVariableMap["HT"] ) );
+    reader->AddVariable( "m3l" , &( bdtVariableMap["m3l"] ) );
+    reader->AddVariable( "mt3l" , &( bdtVariableMap["mt3l"] ) );
+
+    reader->BookMVA("dense_DNN", "currentTraining/TMVAClassification_dense_DNN.weights.xml");
+
+
     //loop over all samples 
     for(size_t sam = 0; sam < samples.size(); ++sam){
 
@@ -105,6 +123,14 @@ void treeReader::Analyze(){
             }
 
             GetEntry(it);
+
+            //select specific susy mass points 
+            /*
+            if( isNewPhysicsSignal() ){
+                if( fabs(_mChi2 - 275.) > 0.01 ) continue;
+                if( fabs(_mChi1 - 185.) > 0.01 ) continue;
+            }
+            */
 
             //apply triggers and MET filters
             //if( !passTriggerCocktail() ) continue;
@@ -179,16 +205,6 @@ void treeReader::Analyze(){
 			double m3l = lepSyst.M();
 			double mt3l = kinematics::mt(lepSyst, met);
 
-			double fill[nDist] = {
-				mll,
-				mt,	
-				_met,
-				LT + _met,
-				HT,
-				m3l,
-				mt3l
-			};
-
             //set BDT variable maps
 			bdtVariableMap["mll"] = mll;
 			bdtVariableMap["mt"] = mt;
@@ -198,6 +214,19 @@ void treeReader::Analyze(){
 			bdtVariableMap["m3l"] = m3l;
 			bdtVariableMap["mt3l"] = mt3l;	
             bdtVariableMap["eventWeight"] = weight;
+
+            double NNOutput = reader->EvaluateMVA("dense_DNN");
+
+			double fill[nDist] = {
+				mll,
+				mt,	
+				_met,
+				LT + _met,
+				HT,
+				m3l,
+				mt3l,
+                NNOutput
+			};
 
             //write variables to histograms 
 			for(unsigned m = 0; m < nMll; ++m){
@@ -220,6 +249,7 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
+    //std::vector<std::string> proc = {"Total bkg.", "Drell-Yan", "TT", "WZ", "multiboson", "TT/T + X", "X + #gamma", "ZZ/H", "TChiWZ (275/185)"};
     std::vector<std::string> proc = {"Total bkg.", "Drell-Yan", "TT", "WZ", "multiboson", "TT/T + X", "X + #gamma", "ZZ/H", "TChiWZ"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
@@ -250,9 +280,12 @@ void treeReader::Analyze(){
 
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned dist = 0; dist < nDist; ++dist){
-        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
+        	//plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
 
-			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
+			//plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
+        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_average", "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
+
+			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_average_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
         }
     }
     
