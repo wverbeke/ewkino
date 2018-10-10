@@ -44,13 +44,16 @@ void treeReader::Analyze(){
 
     //name      xlabel    nBins,  min, max
     histInfo = {
-        HistInfo("mll", "M_{ll} (GeV)", 50, 0, 400),
+        HistInfo("mll", "M_{ll} (best - Z) (GeV)", 50, 0, 400),
+        HistInfo("mllOther", "M_{ll} (non best - Z) (GeV)", 50, 0, 400),
         HistInfo("mt", "M_{T} (GeV)", 50, 0, 600),
-        HistInfo("met", "M_{T} (GeV)", 50, 0, 800),
         HistInfo("LTPlusMET", "L_{T} + E_{T}^{miss} (GeV)", 50, 0, 1200),
         HistInfo("HT", "H_{T} (GeV)", 50, 0, 800), 
         HistInfo("m3l", "M_{3l} (GeV)", 50, 0, 1200),
         HistInfo("mt3l", "M_{T}(3l + MET) (GeV)", 50, 0, 800),
+        HistInfo("nJets", "number of jets", 8, 0, 8),
+        HistInfo("met", "MET (GeV)", 50, 0, 800),
+        HistInfo("metPhi", "#Phi(MET)", 50, 0, 800),
     };
 
     const unsigned nDist = histInfo.size(); //number of distributions to plot
@@ -72,13 +75,42 @@ void treeReader::Analyze(){
 
     //variables to write to training file
     std::map< std::string, float > bdtVariableMap = {
-        {"mll", 0.},
+        {"mllBestZ", 0.},
+        {"mllOther", 0.},
         {"mt", 0.},
-        {"met", 0.},
         {"LTPlusMET", 0.},
         {"HT", 0.},
         {"m3l", 0.},
         {"mt3l", 0.},
+        {"nJets", 0.},
+        {"lepPt1", 0.},
+        {"lepEta1", 0.},
+        {"lepPhi1", 0.},
+        {"lepCharge1", 0.},
+        {"lepFlavor1", 0.},
+        {"lepPt2", 0.},
+        {"lepEta2", 0.},
+        {"lepPhi2", 0.},
+        {"lepCharge2", 0.},
+        {"lepFlavor2", 0.},
+        {"lepPt3", 0.},
+        {"lepEta3", 0.},
+        {"lepPhi3", 0.},
+        {"lepCharge3", 0.},
+        {"lepFlavor3", 0.},
+        {"metPt", 0.},
+        {"metPhi", 0.},
+        {"jetPt1", 0.},
+        {"jetEta1", 0.},
+        {"jetPhi1", 0.},
+        {"jetM1", 0.},
+        {"jetCSV1", 0.},
+        {"jetPt2", 0.},
+        {"jetEta2", 0.},
+        {"jetPhi2", 0.},
+        {"jetM2", 0.},
+        {"jetCSV2", 0.},
+        //{"susyMassSplitting", 0.},
         {"eventWeight", 0.}
     };
 
@@ -88,12 +120,15 @@ void treeReader::Analyze(){
         initSample();
 
         //make NN training tree for current sample
+        if( isNewPhysicsSignal() ){
+            bdtVariableMap["susyMassSplitting"] = 0.;
+        }
         TrainingTree trainingTree("ewkinoNNTrainingTree/", currentSample, { {"mllInclusive", "onZ", "offZ"} }, bdtVariableMap, isNewPhysicsSignal() ); 
 
         std::cout<<"Entries in "<< currentSample.getFileName() << " " << nEntries << std::endl;
 
         double progress = 0; 	//for printing progress bar
-        for(long unsigned it = 0; it < nEntries; ++it){
+        for(long unsigned it = 0; it < nEntries/100; ++it){
 
             //print progress bar	
             if(it%100 == 0 && it != 0){
@@ -158,13 +193,29 @@ void treeReader::Analyze(){
             met.SetPtEtaPhiE( _met, 0, _metPhi, _met);
             double mt = kinematics::mt(met, lepV[lw]);
 
+            //compute mll of OS pair that does not form best Z
+            double mllOther = 0.;
+            if( _lCharge[ind[lw]] != _lCharge[ind[bestZ.first]]){
+                mllOther = (lepV[lw] + lepV[bestZ.second]).M();
+            } else if(  _lCharge[ind[lw]] !=  _lCharge[ind[bestZ.second]] ){
+                mllOther = (lepV[lw] + lepV[bestZ.second]).M();
+            }
+
 			double LT = 0.;
  			for(unsigned l = 0; l < lCount; ++l){
         		LT += _lPt[ind[l]];
 			}	
 
-			//compute HT
+			//select jets and compute HT
     		double HT = 0;
+            std::vector<unsigned> jetInd; 
+            unsigned jetCount = nJets(jetInd);
+            TLorentzVector jetV[jetCount]; 
+            for( unsigned j = 0; j < jetCount; ++j){
+                HT += _jetPt[jetInd[j]];    
+                jetV[j].SetPtEtaPhiE( _jetPt[jetInd[j]], _jetEta[jetInd[j]], _jetPhi[jetInd[j]], _jetE[jetInd[j]] );
+            }
+
     		for(unsigned j = 0; j < _nJets; ++j){
 				if( jetIsGood(j) ){
         			HT += _jetPt[j];
@@ -181,23 +232,59 @@ void treeReader::Analyze(){
 
 			double fill[nDist] = {
 				mll,
+                mllOther,
 				mt,	
-				_met,
 				LT + _met,
 				HT,
 				m3l,
-				mt3l
+				mt3l,
+                (double) jetCount,
+				_met,
+                _metPhi, 
 			};
 
             //set BDT variable maps
-			bdtVariableMap["mll"] = mll;
+			bdtVariableMap["mllBestZ"] = mll;
+			bdtVariableMap["mllOther"] = mllOther;
 			bdtVariableMap["mt"] = mt;
-			bdtVariableMap["met"] = _met;
 			bdtVariableMap["LTPlusMET"] = LT + _met;
 			bdtVariableMap["HT"] = HT;
 			bdtVariableMap["m3l"] = m3l;
 			bdtVariableMap["mt3l"] = mt3l;	
+            bdtVariableMap["nJets"] = (double) jetCount;
+			bdtVariableMap["metPt"] = _met;
+            bdtVariableMap["metPhi"] = _metPhi;
+            bdtVariableMap["lepPt1"] = _lPt[ind[0]];
+            bdtVariableMap["lepEta1"] = _lEta[ind[0]];
+            bdtVariableMap["lepPhi1"] = _lPhi[ind[0]];
+            bdtVariableMap["lepCharge1"] = _lCharge[ind[0]];
+            bdtVariableMap["lepFlavor1"] = _lFlavor[ind[0]];
+            bdtVariableMap["lepPt2"] = _lPt[ind[1]];
+            bdtVariableMap["lepEta2"] = _lEta[ind[1]];
+            bdtVariableMap["lepPhi2"] = _lPhi[ind[1]];
+            bdtVariableMap["lepCharge2"] = _lCharge[ind[1]];
+            bdtVariableMap["lepFlavor2"] = _lFlavor[ind[1]];
+            bdtVariableMap["lepPt3"] = _lPt[ind[2]];
+            bdtVariableMap["lepEta3"] = _lEta[ind[2]];
+            bdtVariableMap["lepPhi3"] = _lPhi[ind[2]];
+            bdtVariableMap["lepCharge3"] = _lCharge[ind[2]];
+            bdtVariableMap["lepFlavor3"] = _lFlavor[ind[2]];
+            bdtVariableMap["jetPt1"] = ( (jetCount > 0) ? jetV[0].Pt() : 0. );
+            bdtVariableMap["jetEta1"] = ( (jetCount > 0) ? jetV[0].Eta() : 0. );
+            bdtVariableMap["jetPhi1"] = ( (jetCount > 0) ? jetV[0].Phi() : 0. );
+            bdtVariableMap["jetM1"] = ( (jetCount > 0) ? jetV[0].M() : 0. );
+            bdtVariableMap["jetCSV1"] = ( (jetCount > 0) ? std::max( deepCSV( jetInd[0] ), 0.) : 0. );
+            bdtVariableMap["jetPt2"] = ( (jetCount > 1) ? jetV[1].Pt() : 0. );
+            bdtVariableMap["jetEta2"] = ( (jetCount > 1) ? jetV[1].Eta() : 0. );
+            bdtVariableMap["jetPhi2"] = ( (jetCount > 1) ? jetV[1].Phi() : 0. );
+            bdtVariableMap["jetM2"] = ( (jetCount > 1) ? jetV[1].M() : 0. );
+            bdtVariableMap["jetCSV2"] = ( (jetCount > 1) ? std::max( deepCSV( jetInd[1] ), 0.) : 0. );
             bdtVariableMap["eventWeight"] = weight;
+            if( isNewPhysicsSignal() ){
+                bdtVariableMap["susyMassSplitting"] = ( _mChi2 - _mChi1 );
+            } else{
+                //bdtVariableMap["susyMassSplitting"] = 0.;
+            }
 
             //write variables to histograms 
 			for(unsigned m = 0; m < nMll; ++m){
