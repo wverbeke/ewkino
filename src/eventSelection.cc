@@ -88,8 +88,16 @@ unsigned treeReader::tightLepCount(const std::vector<unsigned>& ind, const unsig
 
 //lepton pT thresholds
 bool treeReader::passPtCuts(const std::vector<unsigned>& ind) const{
-    if(_lPt[ind[0]] <= 25) return false;
-    if(_lPt[ind[1]] <= 15) return false;
+    
+    double leadingPtCut = 20.;
+    if( !isMuon(ind[0]) ){
+        leadingPtCut = 25.;
+    } else if( !( isMuon(ind[1]) || isMuon(ind[2]) ) ){
+        leadingPtCut = 25.;
+    }
+    if(_lPt[ind[0]] <= leadingPtCut ) return false;
+    if(_lPt[ind[1]] <= (15. - 5.*isMuon(ind[1]) ) ) return false;
+    if(_lPt[ind[2]] <= 10 ) return false;
     return true;
 }
 
