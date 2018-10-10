@@ -518,11 +518,6 @@ void treeReader::Analyze(){
                 uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
             }
  
-            //vary b-tag up for b and c (correlated)
-            for(unsigned dist = 0; dist < nDist; ++dist){
-                uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0)) );
-            }
-
            	//vary jet prefiring probabilities down
             double prefiringDownWeight = jetPrefiringWeight(1)/jetPrefiringWeight(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
