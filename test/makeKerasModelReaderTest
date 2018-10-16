@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wno-reorder -Wextra -I/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/python/2.7.11-omkpbe2/include/python2.7 -L/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/python/2.7.11-omkpbe2/lib -lpython2.7 -L/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/boost/1.63.0-omkpbe2/lib -lboost_python -lboost_system
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= ../src/KerasModelReader.cc testKerasModelReader.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= kerasModelReader
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
