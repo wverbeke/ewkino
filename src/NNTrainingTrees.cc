@@ -25,6 +25,7 @@
 #include "../interface/HistCollectionSample.h"
 #include "../interface/kinematicTools.h"
 #include "../interface/TrainingTree.h"
+#include "../interface/KerasModelReader.h"
 #include "../interface/BDTReader.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
@@ -44,6 +45,10 @@ void treeReader::Analyze(){
 
     //name      xlabel    nBins,  min, max
     histInfo = {
+        HistInfo("neuralNet_2layers", "DNN response", 50, 0, 1),
+        //HistInfo("neuralNet_4layers", "DNN response", 50, 0, 1), 
+        //HistInfo("neuralNet_10layers", "DNN response", 50, 0, 1), 
+        //HistInfo("neuralNet_4layers_largeLayers", "DNN response", 50, 0, 1), 
         HistInfo("mll", "M_{ll} (best - Z) (GeV)", 50, 0, 400),
         HistInfo("mllOther", "M_{ll} (non best - Z) (GeV)", 50, 0, 400),
         HistInfo("mt", "M_{T} (GeV)", 50, 0, 600),
@@ -72,6 +77,12 @@ void treeReader::Analyze(){
             }
         }
     }
+
+    //load keras models 
+    KerasModelReader modelDepth2( "kerasModels/model_2hiddenLayers_512unitsPerLayer_relu_learningRate0p0001.h5", 36);
+    //KerasModelReader modelDepth4( "kerasModels/model_4hiddenLayers_16unitsPerLayer_relu_learningRate0p0001.h5", 36);
+    //KerasModelReader modelDepth10( "kerasModels/model_10hiddenLayers_512unitsPerLayer_relu_learningRate0p001.h5", 36);
+    //KerasModelReader modelDepth4( "kerasModels/model_4hiddenLayers_512unitsPerLayer_relu_learningRate0p0001.h5", 36);
 
     //variables to write to training file
     std::map< std::string, float > bdtVariableMap = {
@@ -144,6 +155,12 @@ void treeReader::Analyze(){
             //apply triggers and MET filters
             //if( !passTriggerCocktail() ) continue;
             //if( !passMETFilters() ) continue;
+            
+            double susyMassSplitting = 50;
+            if( isNewPhysicsSignal() ){
+                susyMassSplitting = _mChi2 - _mChi1;
+                if( fabs(susyMassSplitting - 50 ) > 0.001 ) continue;
+            }
 
             //vector containing good lepton indices
             std::vector<unsigned> ind;
@@ -230,7 +247,24 @@ void treeReader::Analyze(){
 			double m3l = lepSyst.M();
 			double mt3l = kinematics::mt(lepSyst, met);
 
+            std::vector <double> inputs = { 
+            
+                _lPt[ind[0]], _lEta[ind[0]], _lPhi[ind[0]], (double) _lCharge[ind[0]], (double) _lFlavor[ind[0]], 
+                _lPt[ind[1]], _lEta[ind[1]], _lPhi[ind[1]], (double) _lCharge[ind[1]], (double) _lFlavor[ind[1]],
+                _lPt[ind[2]], _lEta[ind[2]], _lPhi[ind[2]], (double) _lCharge[ind[2]], (double) _lFlavor[ind[2]],
+                _met, _metPhi,
+                ( (jetCount > 0) ? jetV[0].Pt() : 0. ), ( (jetCount > 0) ? jetV[0].Eta() : 0. ), ( (jetCount > 0) ? jetV[0].Phi() : 0. ),  ( (jetCount > 0) ? std::max( deepCSV( jetInd[0] ), 0.) : 0. ), ( (jetCount > 0) ? jetV[0].M() : 0. ),
+
+                ( (jetCount > 1) ? jetV[1].Pt() : 0. ), ( (jetCount > 1) ? jetV[1].Eta() : 0. ), ( (jetCount > 1) ? jetV[1].Phi() : 0. ),  ( (jetCount > 1) ? std::max( deepCSV( jetInd[1] ), 0.) : 0. ),  ( (jetCount > 1) ? jetV[1].M() : 0. ),
+
+                mll, mllOther, mt, LT + _met, HT, m3l, mt3l, (double) jetCount, 
+
+                susyMassSplitting 
+            };
+            
+
 			double fill[nDist] = {
+                modelDepth2.predict(inputs),
 				mll,
                 mllOther,
 				mt,	
@@ -307,7 +341,8 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Total bkg.", "Drell-Yan", "TT", "WZ", "multiboson", "TT/T + X", "X + #gamma", "ZZ/H", "TChiWZ"};
+    //std::vector<std::string> proc = {"Total bkg.", "Drell-Yan", "TT", "WZ", "multiboson", "TT/T + X", "X + #gamma", "ZZ/H", "TChiWZ (WZ corridor)"};
+    std::vector<std::string> proc = {"Total bkg.", "Drell-Yan", "TT", "WZ", "multiboson", "TT/T + X", "X + #gamma", "ZZ/H", "TChiWZ (#Delta M = 50 GeV)"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector < std::vector < TH1D* > >(nDist);
@@ -337,9 +372,9 @@ void treeReader::Analyze(){
 
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned dist = 0; dist < nDist; ++dist){
-        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m], "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
+        	plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_massSplitting50", "ewkino", false, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1);             //linear plots
 
-			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
+			plotDataVSMC(mergedHists[m][dist][0], &mergedHists[m][dist][1], &proc[0], mergedHists[m][dist].size() - 2, "plots/ewkino/trilep/" + mllNames[m] + "/" + histInfo[dist].name() + "_" + mllNames[m] + "_massSplitting50_log", "ewkino", true, false, "35.9 fb^{-1} (13 TeV)", nullptr, nullptr, &mergedHists[m][dist][proc.size() - 1], &proc[proc.size() - 1], 1); //log plots    
         }
     }
     

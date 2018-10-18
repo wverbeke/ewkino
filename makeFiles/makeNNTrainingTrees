@@ -1,7 +1,7 @@
-CC=g++ -Wall -Wno-reorder -Wextra
+CC=g++ -Wall -Wno-reorder -Wextra -I/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/python/2.7.11-omkpbe2/include/python2.7 -L/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/python/2.7.11-omkpbe2/lib -lpython2.7 -L/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/boost/1.63.0-omkpbe2/lib -lboost_python -lboost_system
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= src/NNTrainingTrees.cc src/Sample.cc src/treeReader.cc src/analysisTools.cc src/eventSelection.cc plotting/drawLumi.cc plotting/plotCode.cc plotting/tdrStyle.cc src/objectSelection.cc src/kinematicTools.cc src/treeReaderErrors.cc src/stringTools.cc src/systemTools.cc src/trilepTools.cc src/TrainingTree.cc src/Category.cc
+SOURCES= src/NNTrainingTrees.cc src/Sample.cc src/treeReader.cc src/analysisTools.cc src/eventSelection.cc plotting/drawLumi.cc plotting/plotCode.cc plotting/tdrStyle.cc src/objectSelection.cc src/kinematicTools.cc src/treeReaderErrors.cc src/stringTools.cc src/systemTools.cc src/trilepTools.cc src/TrainingTree.cc src/Category.cc src/KerasModelReader.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= NNTrainingTree
 
