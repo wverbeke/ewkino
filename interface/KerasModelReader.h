@@ -23,17 +23,13 @@ class KerasModelReader{
         double predict( const std::vector<double>& ) const;
         
     private:
-        //typedef size_t numInputs;
-
         void initializePythonAPI() const;
 
-        void loadKerasModel(const std::string&) const;
-
-        void loadPythonModule();
+        void loadPythonModule( const std::string& );
 
         python::object pythonModule;
         python::object predictRoutine;
+        python::object kerasModel;
         size_t numberOfInputs;
-
 };
 #endif

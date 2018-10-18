@@ -18,8 +18,7 @@ KerasModelReader::KerasModelReader( const std::string& modelName, size_t numInpu
     numberOfInputs( numInputs )
 {
     initializePythonAPI();
-    loadPythonModule();
-    loadKerasModel( modelName );
+    loadPythonModule( modelName );
 }
 
 
@@ -29,24 +28,16 @@ KerasModelReader::~KerasModelReader(){
 
 
 void KerasModelReader::initializePythonAPI() const{
-    setenv("PYTHONPATH", "./python", 1);
+    setenv("PYTHONPATH", "../python", 1);
     Py_Initialize();
 }
 
-void KerasModelReader::loadPythonModule(){
+
+void KerasModelReader::loadPythonModule( const std::string& modelName ){
     try{
         pythonModule = python::import("kerasPredict");
-        predictRoutine = pythonModule.attr("predict");
-    } catch(...){
-        PyErr_Print();
-    }
-}
-
-
-void KerasModelReader::loadKerasModel( const std::string& modelName ) const{
-    try{
-        python::object loadModelRoutine = pythonModule.attr("loadModel");
-        loadModelRoutine( modelName );
+        kerasModel =  pythonModule.attr("kerasModel")(modelName);
+        predictRoutine = kerasModel.attr("predict");
     } catch(...){
         PyErr_Print();
     }
