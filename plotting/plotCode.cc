@@ -267,9 +267,9 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
         //Remcompute total background after scaling
 		delete bkgTot;
-        bkgTot = (TH1D*) bkg[0]->Clone();
+        bkgTot = (TH1D*) bkgClones[0]->Clone();
         for(unsigned h = 1; h < nBkg; ++h){
-            bkgTot->Add(bkg[h]);
+            bkgTot->Add(bkgClones[h]);
         }
     }
 
