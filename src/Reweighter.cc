@@ -228,8 +228,10 @@ double Reweighter::puWeight(const double nTrueInt, const Sample& sample, const u
         //WARNING: 2016 samples might be used when making 2017 plots when no 2017 equivalent is available
         // In this case is2016() will return false, but the pileup weights for the sample will only exist
         // up to 50 interactions. So one needs to be sure to check for what campaign the sample was generated.
+        // When using a sample (potentially simulated for 2017) for 2016 data analysis, always limit the bin
+        // to 50 interactions which is the limit to which the data pileup profile was evaluated.
         bool sampleIsSimulatedFor2016 =  ( sample.getFileName().find("Summer16") != std::string::npos );
-        double maxBin = (sampleIsSimulatedFor2016 ?  49.5 : 99.5 );
+        double maxBin = ( (sampleIsSimulatedFor2016 || is2016) ?  49.5 : 99.5 );
 
         TH1D* weights = ( (*weightVectorIter).second)[unc].get();
 
