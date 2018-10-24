@@ -816,7 +816,7 @@ void treeReader::Analyze(){
     } 
 
     //make final uncertainty histogram for plots 
-    std::vector<double> flatUnc = {1.025, 1.02}; //lumi, trigger
+    std::vector<double> flatUnc = {1.023, 1.02}; //lumi, trigger
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
             {"Nonprompt e/#mu", 1.3},
