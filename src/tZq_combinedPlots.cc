@@ -102,7 +102,7 @@ void treeReader::Analyze(){
     }
 
     const std::vector< std::string > uncNames = {"JEC_2016", "JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_udsg_2017", "bTag_bc_2016", "bTag_bc_2017", "prefiring", "WZ_extrapolation",
-        "lepton_reco", "muon_id_stat_2016", "muon_id_stat_2017", "electron_id_stat_2016", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
+        "lepton_reco", "muon_id_stat_2016", "muon_id_stat_2017", "electron_id_stat_2016", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec", "lumi_2016", "lumi_2017"};
 
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
@@ -630,6 +630,17 @@ void treeReader::Analyze(){
                 uncHistMapUp["lepton_id_syst"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*leptonIdSystUpWeight);
             }
 
+            //lumi uncertainty, fill it here to properly address the fact that it is uncorrelated between 2016 and 2017
+            double lumiUnc = ( is2016() ? 0.025 : 0.023 );
+            std::string lumi_keyChanged = std::string("lumi_") + (is2016() ? "2016" : "2017" );
+            std::string lumi_keyUnChanged = std::string("lumi_") + (is2016() ? "2017" : "2016" );
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown[lumi_keyChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*(1. - lumiUnc) );
+                uncHistMapUp[lumi_keyChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*(1. + lumiUnc) );
+                uncHistMapDown[lumi_keyUnChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight );
+                uncHistMapUp[lumi_keyUnChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight );
+            } 
+
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -953,7 +964,7 @@ void treeReader::Analyze(){
     }
 
     //make final uncertainty histogram for plots 
-    std::vector<double> flatUnc = {1.025, 1.02}; //lumi, trigger
+    std::vector<double> flatUnc = {1.02}; //trigger
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
             {"Nonprompt e/#mu", 1.3},
