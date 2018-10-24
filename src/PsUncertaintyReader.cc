@@ -46,14 +46,14 @@ double PsUncertaintyReader::getMapEntry( const std::map< std::string, std::map <
             if( binIt != (categoryIt->second).end() ){
                 return binIt->second;
             } else{
-                std::cerr << "Error in PsUncertaintyReader::getMapEntry, bin index not found! Returning 99999";
+                std::cerr << "Error in PsUncertaintyReader::getMapEntry, bin index not found! Returning 99999" << std::endl;
             }
         }
         else{
-            std::cerr << "Error in PsUncertaintyReader::getMapEntry, category name not found! Returning 99999";
+            std::cerr << "Error in PsUncertaintyReader::getMapEntry, category name not found! Returning 99999" << std::endl;
         }
     } else {
-        std::cerr << "Error in PsUncertaintyReader::getMapEntry, process name not found! Returning 99999";
+        std::cerr << "Error in PsUncertaintyReader::getMapEntry, process name not found! Returning 99999" << std::endl;
     }
 
     return 99999.;
