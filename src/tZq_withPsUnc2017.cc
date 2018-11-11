@@ -922,7 +922,7 @@ void treeReader::Analyze(){
     }
  
     //make final uncertainty histogram for plots 
-    std::vector<double> flatUnc = {1.025, 1.02}; //lumi, trigger
+    std::vector<double> flatUnc = {1.023, 1.02}; //lumi, trigger
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
             {"Nonprompt e/#mu", 1.3},
@@ -1111,7 +1111,7 @@ void treeReader::Analyze(){
 
     //initialize flat systematics
     for(unsigned p = 0; p < nBkg; ++p){ //signal and bkg  but ignore last background which is data-driven
-        systUnc[0][p] = 1.025;   //lumi
+        systUnc[0][p] = 1.023;   //lumi
         systUnc[1][p] = 1.02;   //trig eff  
     }
 
@@ -1132,6 +1132,9 @@ void treeReader::Analyze(){
 
            	//only consider WZ extrapolation uncertainty for WZ 
             if( (processNames[p] != "WZ") && shapeName == "WZ_extrapolation" ) continue; 
+
+            //only consider ISR and FSR for tZq and TTZ
+            if( !(processNames[p] == "tZq" || processNames[p] == "TTZ") && (shapeName == "isr" || shapeName == "fsr") ) continue;
 
             if( isCorrelatedBetweenProc[shapeName] ){
                 systUnc[nFlatSyst + shape][p] = 1.00;
