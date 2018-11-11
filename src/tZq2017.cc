@@ -28,6 +28,7 @@
 #include "../interface/TrainingTree.h"
 #include "../interface/BDTReader.h"
 #include "../interface/PostFitScaler.h"
+#include "../interface/PsUncertaintyReader.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -40,7 +41,8 @@ void treeReader::Analyze(){
     setTDRStyle();
     gROOT->SetBatch(kTRUE);
     //read samples and cross sections from txt file
-    readSamples("sampleLists/samples_nonpromptDataDriven_2017.txt", "../../ntuples_tzq/");
+    //readSamples("sampleLists/samples_nonpromptDataDriven_2017.txt", "../../ntuples_tzq/");
+    readSamples("sampleLists/samples_nonpromptDataDriven_2017_withPsWeights.txt", "../../ntuples_tzq/");
     //name      xlabel    nBins,  min, max
     histInfo = {
         //new BDT distribution
@@ -94,7 +96,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "prefiring", "WZ_extrapolation",
+    const std::vector< std::string > uncNames = {"JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2017", "bTag_bc_2017", "isr", "fsr", "prefiring", "WZ_extrapolation",
         "lepton_reco", "muon_id_stat_2017", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
 
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
@@ -166,7 +168,6 @@ void treeReader::Analyze(){
     weights = "2bJets_onZ_2017_BDTG_200Cuts_Depth4_baggedGrad_1000trees_shrinkage0p1.weights.xml";
     std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "etaMostForward", "m3l"}; 
     bdtReader2bJets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets) );
-
 
     //tweakable options
     const TString extra = ""; //for plot names
@@ -509,7 +510,35 @@ void treeReader::Analyze(){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapUp["bTag_bc_2017"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
             }
- 
+
+            //deal with samples that have no ps weights 
+            if( currentSample.getFileName().find("_withPsWeights") == std::string::npos )
+            {
+                for(unsigned ps = 0; ps < 14; ++ps){
+                    _psWeight[ps] = 1.;
+                }
+            }
+
+            //vary isr down
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[6] );
+            }
+
+            //vary isr up
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[8] );
+            }
+
+            //vary fsr down
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[7] );
+            }
+
+            //vary fsr up
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapUp["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*_psWeight[9] );
+            }
+
             //vary jet prefiring probabilities down
             double prefiringDownWeight = jetPrefiringWeight(1)/jetPrefiringWeight(0);
             for(unsigned dist = 0; dist < nDist; ++dist){
@@ -625,6 +654,7 @@ void treeReader::Analyze(){
 
     //compute lhe cross section ratio for every sample and variation
     std::vector< std::vector< double> > crossSectionRatio(samples.size(), std::vector<double>(110, 1.) );
+    std::vector< std::vector< double> > psCrossSectionRatio(samples.size(), std::vector<double>(14, 1.) );
     for(unsigned sam = 1; sam < samples.size(); ++sam){
 
         //lhe weights are not available for GluGlu->ZZ
@@ -641,6 +671,20 @@ void treeReader::Analyze(){
         for(unsigned lhe = 0; lhe < 110; ++lhe){
             double variedSumOfWeights = lheCounter->GetBinContent(lhe + 1);
             crossSectionRatio[sam][lhe] = sumOfWeights/( variedSumOfWeights );
+        }
+
+        //extract histogram containing sum of weights for all possible ps variations
+        if( samples[sam].getFileName().find("_withPsWeights") != std::string::npos )
+        {
+            std::shared_ptr<TH1D> psCounter = std::shared_ptr<TH1D>( (TH1D*) sample->Get("blackJackAndHookers/psCounter"));
+            for(unsigned ps = 0; ps < 14; ++ps){
+                double variedSumOfWeights = psCounter->GetBinContent(ps + 1);
+                psCrossSectionRatio[sam][ps] = sumOfWeights/( variedSumOfWeights );
+            }
+        } else{
+            for(unsigned ps = 0; ps < 14; ++ps){
+                psCrossSectionRatio[sam][ps] = 1.;
+            }
         }
     }
 
@@ -693,6 +737,12 @@ void treeReader::Analyze(){
                     for(unsigned dist = 0; dist < nDist; ++dist){
                         uncHistMapDown["scale"][m][cat][dist][sam]->Scale(crossSectionRatio[sam][8]);
                         uncHistMapUp["scale"][m][cat][dist][sam]->Scale(crossSectionRatio[sam][4]);
+
+                        uncHistMapDown["isr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][6]);
+                        uncHistMapUp["isr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][8]);
+
+                        uncHistMapDown["fsr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][7]);
+                        uncHistMapUp["fsr"][m][cat][dist][sam]->Scale(psCrossSectionRatio[sam][9]);
                     }
                 }
             }
@@ -872,6 +922,48 @@ void treeReader::Analyze(){
         }
     }
 
+    //temporary code to check PU uncertainties REMOVE LATER 
+    for(unsigned mll = 0; mll < nMll; ++mll){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            double maxUnc = 0.;
+            unsigned maxBinIndex = 0;
+            for(unsigned bin = 1; bin < ( unsigned) mergedHists[mll][cat][1][0]->GetNbinsX() + 1; ++bin){
+
+                double binUnc = 0.;
+
+                //for correlated case
+                double binUncDown = 0.;
+                double binUncUp = 0.;
+
+                double binContent = 0.;
+                for(unsigned p = 1; p < proc.size(); ++p){
+                    binContent += mergedHists[mll][cat][1][p]->GetBinContent(bin);
+                    double varDown = fabs( mergedHists[mll][cat][1][p]->GetBinContent(bin) - mergedUncMapDown["pileup"][mll][cat][1][p]->GetBinContent(bin) );
+                    double varUp = fabs( mergedHists[mll][cat][1][p]->GetBinContent(bin) - mergedUncMapUp["pileup"][mll][cat][1][p]->GetBinContent(bin) );
+
+                    binUncDown += varDown;
+                    binUncUp += varUp;
+                }
+                binUnc = std::max( binUncDown, binUncUp );
+                double fractionalUnc = binUnc/binContent;
+                if( fractionalUnc > maxUnc){
+                    maxUnc = fractionalUnc;
+                    maxBinIndex = bin;
+                }
+            }
+            std::cout << "#################################################3" << std::endl;
+            std::cout << "Pu information for category " << catNames[cat] << std::endl;
+            std::cout << "maximum pu bin = " << maxBinIndex << std::endl;
+            std::cout << "total pu unc = " << maxUnc << std::endl;
+            for(unsigned p = 1; p < proc.size(); ++p){
+                double varDown = fabs( mergedHists[mll][cat][1][p]->GetBinContent(maxBinIndex) - mergedUncMapDown["pileup"][mll][cat][1][p]->GetBinContent(maxBinIndex) );
+                double varUp = fabs( mergedHists[mll][cat][1][p]->GetBinContent(maxBinIndex) - mergedUncMapUp["pileup"][mll][cat][1][p]->GetBinContent(maxBinIndex) );
+                std::cout << proc[p] << " pu unc =  " << std::max( varDown, varUp)/mergedHists[mll][cat][1][p]->GetBinContent(maxBinIndex) << std::endl;
+            }
+        }
+    }
+
+
     //make final uncertainty histogram for plots 
     std::vector<double> flatUnc = {1.023, 1.02}; //lumi, trigger
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
@@ -979,6 +1071,7 @@ void treeReader::Analyze(){
     }
 
 
+
     const std::string sigNames[1] = {"tZq"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
     for(unsigned m = 0; m < nMll; ++m){
@@ -1084,6 +1177,9 @@ void treeReader::Analyze(){
 
             //only consider WZ extrapolation uncertainty for WZ 
             if( (processNames[p] != "WZ") && shapeName == "WZ_extrapolation" ) continue;
+
+            //only consider ISR and FSR for tZq and TTZ
+            if( !(processNames[p] == "tZq" || processNames[p] == "TTZ") && (shapeName == "isr" || shapeName == "fsr") ) continue;
 
             if( isCorrelatedBetweenProc[shapeName] ){
                 systUnc[nFlatSyst + shape][p] = 1.00;

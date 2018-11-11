@@ -28,6 +28,7 @@
 #include "../interface/TrainingTree.h"
 #include "../interface/BDTReader.h"
 #include "../interface/PostFitScaler.h"
+#include "../interface/PsUncertaintyReader.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -100,7 +101,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "prefiring", "WZ_extrapolation",
+    const std::vector< std::string > uncNames = {"JEC_2016", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_bc_2016", "isr", "fsr", "prefiring", "WZ_extrapolation",
         "lepton_reco", "muon_id_stat_2016", "electron_id_stat_2016", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec"};
 
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
@@ -176,6 +177,9 @@ void treeReader::Analyze(){
     //std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "topMass", "numberOfJets", "maxDeltaPhill", "maxDeltaPhijj", "etaMostForward", "m3l"}; 
     std::vector < std::string > bdtVars2bJets = {"etaRecoilingJet", "maxMjj", "asymmetryWlep", "highestDeepCSV", "ltmet", "ht", "mTW", "numberOfJets", "maxDeltaPhill", "etaMostForward", "m3l"}; 
     bdtReader2bJets = std::shared_ptr<BDTReader>( new BDTReader("BDTG", "bdtTraining/bdtWeights/" + weights, bdtVars2bJets) );
+
+    //initialize Ps uncertainty reader
+    PsUncertaintyReader psUncertaintyReader("weights/psUnc_2016.txt");
 
 
     //tweakable options
@@ -520,6 +524,32 @@ void treeReader::Analyze(){
             double bTag_bc_upWeight = bTagWeight_c(2)*bTagWeight_b(2)/ (bTagWeight_c(0)*bTagWeight_b(0) );
             for(unsigned dist = 0; dist < nDist; ++dist){
                 uncHistMapUp["bTag_bc_2016"][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
+            }
+
+            
+            double isrDownUnc = 0;
+            double isrUpUnc = 0;
+            double fsrDownUnc = 0;
+            double fsrUpUnc = 0;
+            if( currentSample.getFileName() == "tZq_ll_4f_13TeV-amcatnlo-pythia8_Summer16.root" || currentSample.getFileName() == "TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root"){
+                isrDownUnc = psUncertaintyReader.getISRUncertaintyDown( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapDown["isr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                isrUpUnc = psUncertaintyReader.getISRUncertaintyUp( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapUp["isr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                fsrDownUnc = psUncertaintyReader.getFSRUncertaintyDown( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapDown["fsr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                fsrUpUnc = psUncertaintyReader.getFSRUncertaintyUp( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapUp["fsr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+            }
+
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                //vary isr down
+                uncHistMapDown["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1 + isrDownUnc) );
+
+                //vary isr up
+                uncHistMapUp["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ),  weight*( 1 + isrUpUnc) );
+                
+                //vary fsr down
+                uncHistMapDown["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1 + fsrDownUnc) );
+
+                //vary fsr up
+                uncHistMapUp["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1 + fsrUpUnc) );
             }
 
             //vary jet prefiring probabilities down
@@ -1102,6 +1132,9 @@ void treeReader::Analyze(){
 
             //only consider WZ extrapolation uncertainty for WZ 
             if( (processNames[p] != "WZ") && shapeName == "WZ_extrapolation" ) continue;
+
+            //only consider ISR and FSR for tZq and TTZ
+            if( !(processNames[p] == "tZq" || processNames[p] == "TTZ") && (shapeName == "isr" || shapeName == "fsr") ) continue;
 
             if( isCorrelatedBetweenProc[shapeName] ){
                 systUnc[nFlatSyst + shape][p] = 1.00;
