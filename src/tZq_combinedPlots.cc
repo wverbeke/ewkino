@@ -27,6 +27,7 @@
 #include "../interface/kinematicTools.h"
 #include "../interface/TrainingTree.h"
 #include "../interface/BDTReader.h"
+#include "../interface/PsUncertaintyReader.h"
 #include "../interface/PostFitScaler.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
@@ -104,7 +105,7 @@ void treeReader::Analyze(){
         }
     }
 
-    const std::vector< std::string > uncNames = {"JEC_2016", "JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_udsg_2017", "bTag_bc_2016", "bTag_bc_2017", "prefiring", "WZ_extrapolation",
+    const std::vector< std::string > uncNames = {"JEC_2016", "JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_udsg_2017", "bTag_bc_2016", "bTag_bc_2017", "isr", "fsr", "prefiring", "WZ_extrapolation",
         "lepton_reco", "muon_id_stat_2016", "muon_id_stat_2017", "electron_id_stat_2016", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec", "lumi_2016", "lumi_2017"};
 
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
@@ -167,6 +168,10 @@ void treeReader::Analyze(){
             }
         }
     }
+
+	//initialize Ps uncertainty reader
+    PsUncertaintyReader psUncertaintyReader2016("weights/psUnc_2016.txt");
+    PsUncertaintyReader psUncertaintyReader2017("weights/psUnc_2017.txt");
 
     //tweakable options
     const TString extra = ""; //for plot names
@@ -555,6 +560,38 @@ void treeReader::Analyze(){
                 uncHistMapUp[bTag_bc_keyChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*bTag_bc_upWeight);
                 uncHistMapUp[bTag_bc_keyUnchanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
             }
+
+			double isrDownUnc = 0;
+            double isrUpUnc = 0;
+            double fsrDownUnc = 0;
+            double fsrUpUnc = 0;
+            if( currentSample.getFileName() == "tZq_ll_4f_13TeV-amcatnlo-pythia8_Summer16.root" || currentSample.getFileName() == "TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root"){
+                isrDownUnc = psUncertaintyReader2016.getISRUncertaintyDown( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapDown["isr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                isrUpUnc = psUncertaintyReader2016.getISRUncertaintyUp( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapUp["isr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                fsrDownUnc = psUncertaintyReader2016.getFSRUncertaintyDown( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapDown["fsr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                fsrUpUnc = psUncertaintyReader2016.getFSRUncertaintyUp( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapUp["fsr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+
+            } else if( currentSample.getFileName() == "tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v10_Fall17_withPsWeights.root" || currentSample.getFileName() == "TTZToLLNuNu_M-10_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_realistic_v14_Fall17_withPsWeights.root"){
+                isrDownUnc = psUncertaintyReader2017.getISRUncertaintyDown( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapDown["isr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                isrUpUnc = psUncertaintyReader2017.getISRUncertaintyUp( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapUp["isr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                fsrDownUnc = psUncertaintyReader2017.getFSRUncertaintyDown( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapDown["fsr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+                fsrUpUnc = psUncertaintyReader2017.getFSRUncertaintyUp( currentSample.getProcessName(), catNames[tzqCat - 3], uncHistMapUp["fsr"][mllCat][tzqCat - 3][0][fillIndex].get(), bdtNominal );
+            }	
+
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                //vary isr down
+                uncHistMapDown["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1 + isrDownUnc) );
+
+                //vary isr up
+                uncHistMapUp["isr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ),  weight*( 1 + isrUpUnc) );
+
+                //vary fsr down
+                uncHistMapDown["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1 + fsrDownUnc) );
+
+                //vary fsr up
+                uncHistMapUp["fsr"][mllCat][tzqCat - 3][dist][fillIndex]->Fill( std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*( 1 + fsrUpUnc) );
+            }
+
 
             //vary jet prefiring probabilities down
             double prefiringDownWeight = jetPrefiringWeight(1)/jetPrefiringWeight(0);
