@@ -88,13 +88,16 @@ void treeReader::Analyze(){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
                 hists[m][cat].push_back(std::vector < std::shared_ptr< TH1D > >() );
-                for(size_t sam = 0; sam < samples.size() + 1; ++sam){
+                for(size_t sam = 0; sam < samples.size() + 2; ++sam){
                     if(sam < samples.size()){
                         hists[m][cat][dist].push_back(histInfo[dist].makeHist(catNames[cat] + mllNames[m] + samples[sam].getUniqueName()) );
                     } else {
-
-                        //extra histogram for nonprompt prediction
-                        hists[m][cat][dist].push_back( histInfo[dist].makeHist(catNames[cat] + mllNames[m] + "nonprompt") ); 
+                        if( sam == samples.size() ){
+                            //extra histogram for nonprompt prediction
+                            hists[m][cat][dist].push_back( histInfo[dist].makeHist(catNames[cat] + mllNames[m] + "nonprompt_2016") ); 
+                        } else {
+                            hists[m][cat][dist].push_back( histInfo[dist].makeHist(catNames[cat] + mllNames[m] + "nonprompt_2017") );
+                        }
                     }
                 }
             }
@@ -116,15 +119,19 @@ void treeReader::Analyze(){
                 uncHistMapUp[key][m][cat] = std::vector < std::vector< std::shared_ptr< TH1D > > >( nDist );
                 uncHistMapDown[key][m][cat] = std::vector < std::vector< std::shared_ptr< TH1D > > >( nDist );
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    uncHistMapDown[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size() + 1);
-                    uncHistMapUp[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size() + 1);
-                    for(size_t sam = 0; sam < samples.size() + 1; ++sam){
+                    uncHistMapDown[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size() + 2);
+                    uncHistMapUp[key][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >(samples.size() + 2);
+                    for(size_t sam = 0; sam < samples.size() + 2; ++sam){
                         std::string sampleName;
                         if(sam < samples.size() ){
                             sampleName = samples[sam].getUniqueName();
                         } else {
                             //the nonprompt prediction is also affected by all nuisances through the prompt MC subtraction
-                            sampleName = "nonprompt";
+                            if( sam == samples.size() ){
+                                sampleName = "nonprompt_2016";
+                            } else {
+                                sampleName = "nonprompt_2017";
+                            }
                         }
                         uncHistMapDown[key][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + sampleName + key + "Down");
                         uncHistMapUp[key][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + sampleName + key + "Up");
@@ -142,13 +149,17 @@ void treeReader::Analyze(){
             for(unsigned cat = 0; cat < nCat; ++cat){
                 pdfUncHists[pdf][m][cat] = std::vector < std::vector< std::shared_ptr< TH1D > > >( nDist );
                 for(unsigned dist = 0; dist < nDist; ++dist){
-                    pdfUncHists[pdf][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >( samples.size() + 1);
-                    for(size_t sam = 0; sam < samples.size() + 1; ++sam){
+                    pdfUncHists[pdf][m][cat][dist] = std::vector< std::shared_ptr< TH1D > >( samples.size() + 2);
+                    for(size_t sam = 0; sam < samples.size() + 2; ++sam){
                         std::string sampleName;
                         if(sam < samples.size() ){
                             sampleName = samples[sam].getUniqueName();
                         } else {
-                            sampleName = "nonprompt";
+                            if( sam == samples.size() ){
+                                sampleName = "nonprompt_2016";
+                            } else {
+                                sampleName = "nonprompt_2017";
+                            }
                         } 
                         pdfUncHists[pdf][m][cat][dist][sam] = histInfo[dist].makeHist(catNames[cat] + mllNames[m] + sampleName + "pdf" + std::to_string(pdf) );
                     }
@@ -156,8 +167,6 @@ void treeReader::Analyze(){
             }
         }
     }
-
-
 
     //tweakable options
     const TString extra = ""; //for plot names
@@ -237,7 +246,7 @@ void treeReader::Analyze(){
             bool passTightCut = (tightLepCount(ind, lCount) == 3);
             if(!passTightCut){
                 //fill last histogram (nonprompt)
-                fillIndex = samples.size();
+                fillIndex = (is2016() ? samples.size() : samples.size() + 1 ); 
 
                 //apply fake-rate weights 
                 weight *= fakeRateWeight(); 
@@ -321,10 +330,8 @@ void treeReader::Analyze(){
                 }
             }
 
-
             //no nuisances for data
             if( isData() ) continue;
-
 
             //vary JEC Down
             unsigned tzqCatJECDown = setSearchVariablestZq("JECDown", ind, bestZ);
@@ -357,7 +364,6 @@ void treeReader::Analyze(){
                 for(unsigned dist = 0; dist < nDist; ++dist){
                     uncHistMapDown[JECKeyChanged][mllCat][tzqCatJECDown - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight);
                 }
-                
             }
 
             //vary JEC up
@@ -665,23 +671,29 @@ void treeReader::Analyze(){
         }
     }
 
+    std::cout << "crash 1" << std::endl;
     //set nonprompt bins to 0 if negative
     for(unsigned m = 0; m < nMll; ++m){
         for( unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                unsigned nonpromptIndex = samples.size();
-                analysisTools::setNegativeBinsToZero( hists[m][cat][dist][nonpromptIndex].get() );
-                for(auto & key : uncNames){
-                    analysisTools::setNegativeBinsToZero(uncHistMapDown[key][m][cat][dist][nonpromptIndex].get() );
-                    analysisTools::setNegativeBinsToZero(uncHistMapUp[key][m][cat][dist][nonpromptIndex].get() );
-                } 
-                for(unsigned pdf = 0; pdf < 100; ++pdf){    
-                    analysisTools::setNegativeBinsToZero(pdfUncHists[pdf][m][cat][dist][nonpromptIndex].get() );
+                
+                //loop here to set both 2016 and 2017 nonprompt to zero
+                for(unsigned i = 0; i < 2; ++i){
+                    unsigned nonpromptIndex = samples.size() + i;
+                    analysisTools::setNegativeBinsToZero( hists[m][cat][dist][nonpromptIndex].get() );
+                    for(auto & key : uncNames){
+                        analysisTools::setNegativeBinsToZero(uncHistMapDown[key][m][cat][dist][nonpromptIndex].get() );
+                        analysisTools::setNegativeBinsToZero(uncHistMapUp[key][m][cat][dist][nonpromptIndex].get() );
+                    } 
+                    for(unsigned pdf = 0; pdf < 100; ++pdf){    
+                        analysisTools::setNegativeBinsToZero(pdfUncHists[pdf][m][cat][dist][nonpromptIndex].get() );
+                    }
                 }
             }
         }
     }
 
+    std::cout << "crash 2" << std::endl;
     //compute lhe cross section ratio for every sample and variation
     std::vector< std::vector< double> > crossSectionRatio(samples.size(), std::vector<double>(110, 1.) );
     for(unsigned sam = 1; sam < samples.size(); ++sam){
@@ -705,11 +717,12 @@ void treeReader::Analyze(){
         }
     }
 
+    std::cout << "crash 2" << std::endl;
     //compute final pdf uncertainties
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
+                for(unsigned sam = 0; sam < samples.size() + 2; ++sam){
 
                     if(sam < samples.size() ){
                         if( samples[sam].isData() ) continue; 
@@ -720,7 +733,7 @@ void treeReader::Analyze(){
                         for(unsigned pdf = 0; pdf < 100; ++pdf){
 
                             double variedBin = pdfUncHists[pdf][m][cat][dist][sam]->GetBinContent(bin);
-                            if( sam != samples.size() ){
+                            if( !(sam >= samples.size() ) ){
                                 variedBin *= crossSectionRatio[sam][pdf + 9];
                             }
                             double diff = (  variedBin - hists[m][cat][dist][sam]->GetBinContent(bin) );
@@ -735,6 +748,7 @@ void treeReader::Analyze(){
         }
     }
 
+    std::cout << "crash 3" << std::endl;
     //add pdf and scale variation uncertainties of the cross-section
     std::vector< double > scaleXsecUncDown = {0.};  //first dummy entry for data
     std::vector< double > scaleXsecUncUp = {0.};
@@ -789,11 +803,12 @@ void treeReader::Analyze(){
         }
     }
 
+    std::cout << "crash 4" << std::endl;
     //add pdf and scale effects to shape uncertainties to automatically take into account the fractional effects from every sample that is merged
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                for(unsigned sam = 0; sam < samples.size() + 1; ++sam){
+                for(unsigned sam = 0; sam < samples.size() + 2; ++sam){
                     if(sam < samples.size() ){
                         for(unsigned bin = 1; bin < (unsigned) uncHistMapDown["scaleXsec"][m][cat][dist][sam]->GetNbinsX() + 1; ++bin){
                             uncHistMapDown["scaleXsec"][m][cat][dist][sam]->SetBinContent(bin, (1 + scaleXsecUncDown[sam])*hists[m][cat][dist][sam]->GetBinContent(bin) );
@@ -815,6 +830,7 @@ void treeReader::Analyze(){
         }
     }
 
+    std::cout << "crash 5" << std::endl;
     //merge histograms with the same physical background
     std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
@@ -844,11 +860,16 @@ void treeReader::Analyze(){
                     sam = nextProcessIndex;
                 }
 
-                //add nonprompt histogram
-                mergedHists[mll][cat][dist][proc.size() - 1] = (TH1D*) hists[mll][cat][dist][samples.size()].get()->Clone();
+                //add nonprompt histogram for 2016
+                mergedHists[mll][cat][dist][proc.size() - 1] = (TH1D*) hists[mll][cat][dist][samples.size()]->Clone();
+
+                //add nonprompt histogram for 2017
+                mergedHists[mll][cat][dist][proc.size() - 1]->Add( hists[mll][cat][dist][samples.size() + 1].get() );
             }
         }
     }
+
+    std::cout << "crash 6" << std::endl;
 
     //merging for uncertainties
     std::map< std::string, std::vector< std::vector< std::vector< std::vector< TH1D* > > > > > mergedUncMapDown;
@@ -886,13 +907,19 @@ void treeReader::Analyze(){
                         sam = nextProcessIndex;
                     }
 
-                    //add nonprompt histograms 
+                    //add nonprompt histograms for 2016
                     mergedUncMapDown[key][mll][cat][dist][proc.size() - 1] = (TH1D*) uncHistMapDown[key][mll][cat][dist][samples.size()]->Clone();
                     mergedUncMapUp[key][mll][cat][dist][proc.size() - 1] = (TH1D*) uncHistMapUp[key][mll][cat][dist][samples.size()]->Clone();
+
+                    //add nonprompt histograms for 2017
+                    mergedUncMapDown[key][mll][cat][dist][proc.size() - 1]->Add( uncHistMapDown[key][mll][cat][dist][samples.size() + 1].get() );
+                    mergedUncMapUp[key][mll][cat][dist][proc.size() - 1]->Add( uncHistMapUp[key][mll][cat][dist][samples.size() + 1].get() );
                 }
             }
         }
     } 
+
+    std::cout << "crash 7" << std::endl;
 
     const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf", "scaleXsec", "pdfXsec"};
 
@@ -962,6 +989,8 @@ void treeReader::Analyze(){
             std::cout << "Uncertainty : " << key << "\t" << std::setprecision(2) << minUnc*100 << "% - " << maxUnc*100 << "%" << std::endl;
         }
     }
+
+    std::cout << "crash 8" << std::endl;
 
     //make final uncertainty histogram for plots 
     std::vector<double> flatUnc = {1.02}; //trigger
@@ -1068,6 +1097,7 @@ void treeReader::Analyze(){
             }
         }
     }
+    std::cout << "crash 9" << std::endl;
                     
     const std::string sigNames[1] = {"tZq"};
     std::vector< std::vector< std::vector< TH1D* > > >  signal(nMll);
@@ -1081,6 +1111,7 @@ void treeReader::Analyze(){
         }
     }
 
+    std::cout << "crash 10" << std::endl;
     //plot all distributions
     const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     for(unsigned m = 0; m < nMll; ++m){
@@ -1092,19 +1123,99 @@ void treeReader::Analyze(){
             }
         }
     }
-    
+
+
+
+    //remerge histograms (separately for 2016 and 2017) for postfit scaling
+    std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists2016(nMll);
+    std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists2017(nMll);
+
+    for(unsigned mll = 0; mll < nMll; ++mll){
+        mergedHists2016[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                mergedHists2016[mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
+
+                //cut off loop before nonprompt contribution
+                for(size_t m = 0, sam = 0; m < proc.size() - 1; ++m){
+                    mergedHists2016[mll][cat][dist][m] = (TH1D*) hists[mll][cat][dist][sam]->Clone();
+
+                    //look for each sample with the same name 
+                    std::string currentName = samples[sam].getProcessName();
+
+                    //check how far to jump to next process 
+                    int nextProcessIndex = -1;
+                    for(size_t match = sam + 1; match < samples2016.size(); ++match){
+                        std::string nameToCompare = samples[match].getProcessName();
+                        if(currentName == nameToCompare){
+                            mergedHists2016[mll][cat][dist][m]->Add( hists[mll][cat][dist][match].get() );
+                        } else if( nextProcessIndex == -1 ){
+                            nextProcessIndex = match;
+                        }
+                    }
+                    sam = nextProcessIndex;
+                }
+
+                //add 2016 nonprompt histogram
+                mergedHists2016[mll][cat][dist][proc.size() - 1] = (TH1D*) hists[mll][cat][dist][samples.size()]->Clone();
+            }
+        }
+    }
+
+    for(unsigned mll = 0; mll < nMll; ++mll){
+        mergedHists2017[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                mergedHists2017[mll][cat].push_back(std::vector<TH1D*>(proc.size() ) );
+
+                //cut off loop before nonprompt contribution
+                for(size_t m = 0, sam = samples2016.size(); m < proc.size() - 1; ++m){
+                    mergedHists2017[mll][cat][dist][m] = (TH1D*) hists[mll][cat][dist][sam]->Clone();
+
+                    //look for each sample with the same name 
+                    std::string currentName = samples[sam].getProcessName();
+
+                    //check how far to jump to next process 
+                    int nextProcessIndex = -1;
+                    for(size_t match = sam + 1; match < samples2016.size() + samples2017.size(); ++match){
+                        std::string nameToCompare = samples[match].getProcessName();
+                        if(currentName == nameToCompare){
+                            mergedHists2017[mll][cat][dist][m]->Add( hists[mll][cat][dist][match].get() );
+                        } else if( nextProcessIndex == -1 ){
+                            nextProcessIndex = match;
+                        }
+                    }
+                    sam = nextProcessIndex;
+                }
+
+                //add 2017 nonprompt histogram
+                mergedHists2017[mll][cat][dist][proc.size() - 1] = (TH1D*) hists[mll][cat][dist][samples.size() + 1]->Clone();
+            }
+        }
+    }
+
     //initialize postFitScaler
     PostFitScaler postFitScaler("total_postFit_yields.txt");
+    for(unsigned mll = 0; mll < nMll; ++mll){
+        for(unsigned cat = 0; cat < nCat; ++cat){
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                for(size_t m = 0; m < proc.size(); ++m){
+                    if(proc[m] != "Data"){
+                        mergedHists2016[mll][cat][dist][m]->Scale( postFitScaler.postFitScaling( mergedHists2016[mll][cat][dist][m]->GetSumOfWeights() ) );
+                        mergedHists2017[mll][cat][dist][m]->Scale( postFitScaler.postFitScaling( mergedHists2017[mll][cat][dist][m]->GetSumOfWeights() ) );
+                    }
+                    delete mergedHists[mll][cat][dist][m];
+                    mergedHists[mll][cat][dist][m] = (TH1D*) mergedHists2016[mll][cat][dist][m]->Clone();
+                    mergedHists[mll][cat][dist][m]->Add( mergedHists2017[mll][cat][dist][m] );
+                }
+            }
+        }
+    }
 
     //plot all distributions
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-
-                //scale histograms to post fit plots
-                for(unsigned p = 1; p < proc.size(); ++p){
-                    mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
-                }
 
                 plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/combined/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_combined_postFit", "tzq", false, false, "77.4 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
 
