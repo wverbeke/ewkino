@@ -26,6 +26,7 @@
 #include "../interface/HistCollectionSample.h"
 #include "../interface/kinematicTools.h"
 #include "../interface/TrainingTree.h"
+#include "../interface/PostFitScaler.h"
 #include "../interface/BDTReader.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
@@ -1171,7 +1172,28 @@ void treeReader::Analyze(){
         
     }
     std::cout << "Printed all datacards" << std::endl;
+
+   	//initialize postFitScaler
+    PostFitScaler postFitScaler("total_postFit_yields.txt");
+
+    //plot all distributions
+    for(unsigned cr = 0; cr < nCr; ++cr){
+        for(unsigned dist = 0; dist < nDist; ++dist){
+
+            //scale histograms to post fit plots
+            for(unsigned p = 1; p < proc.size(); ++p){
+                mergedHists[cr][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[cr][dist][p]->GetSumOfWeights() ) );
+            }
+
+           	plotDataVSMC(mergedHists[cr][dist][0], &mergedHists[cr][dist][1], &proc[0], mergedHists[cr][dist].size() - 1, "plots/tZq/2016/controlR/" + crNames[cr] + "/" + histInfo[dist].name() + "_" + crNames[cr] + "_2016_postFit", "tzq", false, false, "35.9 fb^{-1} (13 TeV)", totalSystUnc[cr][dist], isSMSignal);             //linear plots
+
+		    plotDataVSMC(mergedHists[cr][dist][0], &mergedHists[cr][dist][1], &proc[0], mergedHists[cr][dist].size() - 1, "plots/tZq/2016/controlR/" + crNames[cr] + "/" + histInfo[dist].name() + "_"  + crNames[cr] + "_2016_postFit" + "_log", "tzq", true, false, "35.9 fb^{-1} (13 TeV)", totalSystUnc[cr][dist], isSMSignal);    //log plots
+ 
+        }
+    }
 }
+
+
 int main(){
     treeReader reader;
     reader.Analyze();
