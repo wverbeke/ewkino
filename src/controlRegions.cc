@@ -475,11 +475,12 @@ void treeReader::Analyze(){
                 }
             }
 
-            //now nominal cuts can be safely used
-            if( tzq::isWZControlRegion(controlRegion) && (_metUnclUp < 50 ||  bdtVariableMap["numberOfbJets"] != 0 ) ) continue;
-            
             //reset nominal values 
             setSearchVariablestZq("nominal", ind, bestZ);
+
+            //now nominal cuts can be safely used
+            if( tzq::isWZControlRegion(controlRegion) && (_met < 50 ||  bdtVariableMap["numberOfbJets"] != 0 ) ) continue;
+            
             double fill[nDist] = {
                     0.5,
                     bdtVariableMap["etaRecoilingJet"],
@@ -862,6 +863,71 @@ void treeReader::Analyze(){
     std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
 
 	const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf", "scaleXsec", "pdfXsec"};
+    //print the effect of systematic uncertainty
+    //compute minimum and maximum impact on each bin
+    for(unsigned dist : std::vector<unsigned>( {0, 7} ) ){
+        std::cout << "##################################################" << std::endl;
+        std::cout << "uncetainty ranges for " << histInfo[dist].name()  << std::endl;
+        for(auto& key : uncNames ){
+        
+            //check if nuisance is correlated or uncorrelated among processes 
+            bool nuisanceIsUnCorrelated = ( std::find( uncorrelatedBetweenProcesses.cbegin(), uncorrelatedBetweenProcesses.cend(), key ) != uncorrelatedBetweenProcesses.cend() );
+            
+            double maxUnc = 0.;
+            double minUnc = 999.;
+            //for(unsigned cr = 0; cr < nCr; ++cr){
+            for(unsigned cr = 0; cr < 1; ++cr){
+                for(unsigned bin = 1; bin < ( unsigned) mergedHists[cr][dist][dist]->GetNbinsX() + 1; ++bin){
+                
+                    //for uncorrelated case
+                    double binUnc = 0.;
+                    
+                    //for correlated case
+                    double binUncDown = 0.;
+                    double binUncUp = 0.;
+                    
+                    double binContent = 0.;
+                    for(unsigned p = 1; p < proc.size(); ++p){
+                        binContent += mergedHists[cr][dist][p]->GetBinContent(bin);
+                        if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
+                            continue;
+                        }
+                        if( (key == "WZ_extrapolation") && (proc[p] != "WZ") ){
+                            continue;
+                        }
+                        double varDown = fabs( mergedHists[cr][dist][p]->GetBinContent(bin) - mergedUncMapDown[key][cr][dist][p]->GetBinContent(bin) );
+                        double varUp = fabs( mergedHists[cr][dist][p]->GetBinContent(bin) - mergedUncMapUp[key][cr][dist][p]->GetBinContent(bin) );
+
+                        if(nuisanceIsUnCorrelated){
+                            double maxVar = std::max(varDown, varUp);
+                            binUnc += maxVar*maxVar;
+                        } else {
+                            binUncDown += varDown;
+                            binUncUp += varUp;
+                        }
+                    }
+                        
+                    if(binContent < 0.01) continue;
+
+                    if( nuisanceIsUnCorrelated ){
+                        binUnc = sqrt(binUnc); 
+                    } else {
+                        binUnc = std::max( binUncDown, binUncUp );
+                    }
+
+                    double fractionalUnc = binUnc/binContent;
+                    if( fractionalUnc > maxUnc){
+                        maxUnc = fractionalUnc;
+                    }
+                    if( fractionalUnc < minUnc){
+                        minUnc = fractionalUnc;
+                    }
+                }
+            }
+            std::cout << "Uncertainty : " << key << "\t" << std::setprecision(2) << minUnc*100 << "% - " << maxUnc*100 << "%" << std::endl;
+        }
+    }
+
     std::vector< std::vector< TH1D* > > totalSystUnc(nCr); //copy pointers to fix dimensionality of vector
 
     for( unsigned cr = 0; cr < nCr; ++cr){
@@ -952,6 +1018,7 @@ void treeReader::Analyze(){
         }
     }
 
+    /*
     //plot all distributions
     const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     for(unsigned cr = 0; cr < nCr; ++cr){
@@ -1191,6 +1258,7 @@ void treeReader::Analyze(){
  
         }
     }
+    */
 }
 
 

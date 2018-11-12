@@ -472,11 +472,12 @@ void treeReader::Analyze(){
                 }
             }
 
-            //now nominal cuts can be safely used
-            if( tzq::isWZControlRegion(controlRegion) && (_metUnclUp < 50 ||  bdtVariableMap["numberOfbJets"] != 0 ) ) continue;
-            
             //reset nominal values 
             setSearchVariablestZq("nominal", ind, bestZ);
+
+            //now nominal cuts can be safely used
+            if( tzq::isWZControlRegion(controlRegion) && (_met < 50 ||  bdtVariableMap["numberOfbJets"] != 0 ) ) continue;
+            
             double fill[nDist] = {
                     0.5,
                     bdtVariableMap["etaRecoilingJet"],
