@@ -795,7 +795,7 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
+    std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "t#bar{t} + Z", "t#bar{t}/t + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
@@ -885,7 +885,7 @@ void treeReader::Analyze(){
                         double binContent = 0.;
                         for(unsigned p = 1; p < proc.size(); ++p){
                             binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
-                            if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
+                            if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "t#bar{t}/t + X") ){
                                 continue;
                             }
                             if( (key == "WZ_extrapolation") && (proc[p] != "WZ") ){
@@ -951,7 +951,7 @@ void treeReader::Analyze(){
                     maxBinIndex = bin;
                 }
             }
-            std::cout << "#################################################3" << std::endl;
+            std::cout << "#################################################" << std::endl;
             std::cout << "Pu information for category " << catNames[cat] << std::endl;
             std::cout << "maximum pu bin = " << maxBinIndex << std::endl;
             std::cout << "total pu unc = " << maxUnc << std::endl;
@@ -972,10 +972,10 @@ void treeReader::Analyze(){
             {"WZ", 1.1},
             {"X + #gamma", 1.1},
             {"ZZ/H", 1.1},
-            {"TTZ", 1.15}
+            {"t#bar{t} + Z", 1.15}
         };
 
-    std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
+    std::vector< std::string > ignoreTheoryUncInPlot = {"tZq", "WZ", "X + #gamma", "ZZ/H", "t#bar{t} + Z"};
 
     std::vector< std::vector< std::vector< TH1D* > > > totalSystUnc(nMll); //copy pointers to fix dimensionality of vector
 
@@ -1084,14 +1084,16 @@ void treeReader::Analyze(){
         }
     }
 
+    const std::string plotCatLabels[3] = {"2-3 jets, 1 b-tagged", "#geq 4 jets, 1 b-tagged", "#geq 2 b jets"};
+
     //plot all distributions
     const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     for(unsigned m = 0; m < nMll; ++m){
         for(unsigned cat = 0; cat < nCat; ++cat){
             for(unsigned dist = 0; dist < nDist; ++dist){
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal, nullptr, nullptr, 0, true, plotCatLabels[cat]);             //linear plots
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal, nullptr, nullptr, 0, true, plotCatLabels[cat]);    //log plots
             }
         }
     }
@@ -1323,9 +1325,9 @@ void treeReader::Analyze(){
                     mergedHists[m][cat][dist][p]->Scale( postFitScaler.postFitScaling(  mergedHists[m][cat][dist][p]->GetSumOfWeights() ) );
                 }
 
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017_postFit", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);             //linear plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_" + catNames[cat] + "_" + mllNames[m] + "_2017_postFit", "tzq", false, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal, nullptr, nullptr, 0, true, plotCatLabels[cat]);             //linear plots
       
-                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017_postFit" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal);    //log plots
+                plotDataVSMC(mergedHists[m][cat][dist][0], &mergedHists[m][cat][dist][1], &proc[0], mergedHists[m][cat][dist].size() - 1, "plots/tZq/2017/final/" + catNames[cat] + "/" + histInfo[dist].name() + "_"  + catNames[cat] + "_" + mllNames[m] + "_2017_postFit" + "_log", "tzq", true, false, "41.5 fb^{-1} (13 TeV)", totalSystUnc[m][cat][dist], isSMSignal, nullptr, nullptr, 0, true, plotCatLabels[cat]);    //log plots
             }
         }
     }
