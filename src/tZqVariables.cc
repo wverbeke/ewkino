@@ -90,15 +90,15 @@ unsigned treeReader::setSearchVariablestZq(const std::string& uncertainty, const
     //make met vector 
     TLorentzVector met;
     if(uncertainty == "nominal"){
-        met.SetPtEtaPhiE(_met, _metPhi, 0, _met);    
+        met.SetPtEtaPhiE(_met, 0, _metPhi, _met);    
     } else if( uncertainty == "JECDown"){
-        met.SetPtEtaPhiE(_metJECDown, _metPhiJECDown, 0, _metJECDown);
+        met.SetPtEtaPhiE(_metJECDown, 0, _metPhiJECDown, _metJECDown);
     } else if( uncertainty == "JECUp"){
-        met.SetPtEtaPhiE(_metJECUp, _metPhiJECUp, 0, _metJECUp);
+        met.SetPtEtaPhiE(_metJECUp, 0, _metPhiJECUp, _metJECUp);
     } else if( uncertainty == "unclDown"){
-        met.SetPtEtaPhiE(_metUnclDown, _metPhiUnclDown, 0, _metUnclDown);
+        met.SetPtEtaPhiE(_metUnclDown, 0, _metPhiUnclDown, _metUnclDown);
     } else if( uncertainty == "unclUp"){
-        met.SetPtEtaPhiE(_metUnclUp, _metPhiUnclUp, 0, _metUnclUp);
+        met.SetPtEtaPhiE(_metUnclUp, 0, _metPhiUnclUp, _metUnclUp);
     }
 
     //make lorentzvectors for leptons
