@@ -8,6 +8,7 @@
 #include "TCanvas.h"
 #include "TLine.h"
 #include "TGraphAsymmErrors.h"
+#include "TLatex.h"
 //Include other parts of the code
 #include "plotCode.h"
 #include "drawLumi.h"
@@ -99,14 +100,14 @@ Color_t bkgColortZq(const std::string& bkgName){
     if(bkgName == "TT" ||  bkgName == "TT + Jets") return kOrange - 2;
     if(bkgName == "nonprompt" ||  bkgName == "non-prompt") return kOrange - 2;
     if(bkgName == "Nonprompt" ||  bkgName == "Nonprompt e/#mu") return kOrange - 2;
-    if(bkgName == "TT/T + X" || bkgName == "TT + X") return kBlue - 10;
+    if(bkgName == "TT/T + X" || bkgName == "TT + X" || bkgName == "t#bar{t}/t + X") return kBlue - 10;
     //if(bkgName == "X + #gamma") return kMagenta - 10;
     if(bkgName == "X + #gamma") return kMagenta - 7;
     //if(bkgName == "multiboson" || bkgName == "Multiboson") return kYellow - 9;
     if(bkgName == "multiboson" || bkgName == "Multiboson") return kYellow - 6;
     if(bkgName == "Drell-Yan" || bkgName == "DY") return kViolet - 7;
     if(bkgName == "WJets") return kSpring + 2;
-    if(bkgName == "TT + Z") return kBlue - 6; 
+    if(bkgName == "TT + Z" || bkgName == "t#bar{t} + Z") return kBlue - 6; 
     //if(bkgName == "ZZ/H") return kTeal - 4;
     if(bkgName == "ZZ/H") return kTeal - 5;
     if(bkgName == "WZ") return kCyan - 7;
@@ -203,7 +204,7 @@ double minBinContentPlusError(TH1D** histos, const unsigned nHistos){
 
 
 //plot a stack of backgrounds and compare it to data
-void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D* bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D* bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm, const std::string& title){
     
     //do not make empty plots
     bool isEmpty = true;
@@ -296,7 +297,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgTotE->SetMarkerStyle(0); //1
 
     //make legend and add all histograms
-    TLegend legend = TLegend(0.25, 0.73, 0.87, 0.92, NULL, "brNDC");
+    TLegend legend = TLegend(0.20, 0.67, 0.92, 0.90, NULL, "brNDC"); //TLegend(0.25, 0.73, 0.87, 0.92, NULL, "brNDC")
     legend.SetNColumns(2);
     legend.SetFillStyle(0); //avoid legend box
     legend.AddEntry(dataGraph, (const TString&) names[0], "pe1"); //add data to legend
@@ -337,6 +338,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     p1->Draw();
     p1->cd();
     p1->SetBottomMargin(0.03);
+    p1->SetTopMargin(0.07); //TEST
 
     //make pad logarithmic if needed
     if(ylog) p1->SetLogy();
@@ -367,7 +369,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
     //determine upper limit of plot
     if(!ylog){
-        bkgTotE->SetMaximum(totalMax*1.5);
+        bkgTotE->SetMaximum(totalMax*1.5); //1.5 
         //hack not to draw 0 observed event points
         for(int b = 1; b < data->GetNbinsX() + 1; ++b){
             if(dataGraph->GetY()[b - 1] == 0)  dataGraph->GetY()[b - 1] += totalMax*10;
@@ -409,6 +411,17 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //draw CMS header
     if(header == "") drawLumi(p1, "");
     else drawLumi(p1, "", (const TString&) header);
+
+    //add extra text to plot (for instance the event category or another title)
+    if( title != ""){
+        TLatex *titleText = new TLatex(0.5, 0.62, title.c_str());
+        titleText->SetNDC();
+        titleText->SetTextAlign(1);
+        titleText->SetTextColor(kBlack);
+        titleText->SetTextSize(0.05);
+        titleText->SetTextAngle(0);
+        titleText->Draw("same");
+    }
 
     //make ratio plot in second pad
     c->cd(); 
