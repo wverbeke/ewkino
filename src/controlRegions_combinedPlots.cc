@@ -496,11 +496,12 @@ void treeReader::Analyze(){
                 }
             }
 
-            //now nominal cuts can be safely used
-            if( tzq::isWZControlRegion(controlRegion) && (_metUnclUp < 50 ||  bdtVariableMap["numberOfbJets"] != 0 ) ) continue;
-            
 			//reset nominal values 
             setSearchVariablestZq("nominal", ind, bestZ);
+
+            //now nominal cuts can be safely used
+            if( tzq::isWZControlRegion(controlRegion) && (_met < 50 ||  bdtVariableMap["numberOfbJets"] != 0 ) ) continue;
+            
             double fill[nDist] = {
                     0.5,
                     bdtVariableMap["etaRecoilingJet"],
@@ -859,7 +860,7 @@ void treeReader::Analyze(){
 
     std::cout << "crash 5" << std::endl;
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
+    std::vector<std::string> proc = {"Data", "tZq", "WZ", "Multiboson", "t#bar{t} + Z", "t#bar{t}/t + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nCr);
     for(unsigned cr = 0; cr < nCr; ++cr){
         for(unsigned dist = 0; dist < nDist; ++dist){
@@ -951,10 +952,10 @@ void treeReader::Analyze(){
             {"WZ", 1.1},
             {"X + #gamma", 1.1},
             {"ZZ/H", 1.1},
-            {"TTZ", 1.15} 
+            {"t#bar{t} + Z", 1.15} 
         };
 
-    std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
+    std::vector< std::string > ignoreTheoryUncInPlot = {"tZq", "WZ", "X + #gamma", "ZZ/H", "t#bar{t} + Z"};
     
     std::vector< std::vector< TH1D* > > totalSystUnc(nCr); //copy pointers to fix dimensionality of vector
     for(unsigned cr = 0; cr < nCr; ++cr){
@@ -1124,11 +1125,16 @@ void treeReader::Analyze(){
     //initialize postFitScaler
     PostFitScaler postFitScaler("total_postFit_yields.txt");
     for(unsigned cr = 0; cr < nCr; ++cr){
+        if( cr == 1 ) continue;
         for(unsigned dist = 0; dist < nDist; ++dist){
             for(size_t m = 0; m < proc.size(); ++m){
                 if(proc[m] != "Data"){
-                    mergedHists2016[cr][dist][m]->Scale( postFitScaler.postFitScaling( mergedHists2016[cr][dist][m]->GetSumOfWeights() ) );
-                    mergedHists2017[cr][dist][m]->Scale( postFitScaler.postFitScaling( mergedHists2017[cr][dist][m]->GetSumOfWeights() ) );
+                    if( mergedHists2016[cr][dist][m]->GetSumOfWeights() > 0){
+                        mergedHists2016[cr][dist][m]->Scale( postFitScaler.postFitScaling( mergedHists2016[cr][dist][m]->GetSumOfWeights() ) );
+                    }
+                    if( mergedHists2017[cr][dist][m]->GetSumOfWeights() > 0){
+                        mergedHists2017[cr][dist][m]->Scale( postFitScaler.postFitScaling( mergedHists2017[cr][dist][m]->GetSumOfWeights() ) );
+                    }
                 }
                 delete mergedHists[cr][dist][m];
                 mergedHists[cr][dist][m] = (TH1D*) mergedHists2016[cr][dist][m]->Clone();

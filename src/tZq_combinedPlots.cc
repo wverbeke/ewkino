@@ -106,7 +106,7 @@ void treeReader::Analyze(){
     }
 
     const std::vector< std::string > uncNames = {"JEC_2016", "JEC_2017", "uncl", "scale", "pileup", "bTag_udsg_2016", "bTag_udsg_2017", "bTag_bc_2016", "bTag_bc_2017", "isr", "fsr", "prefiring", "WZ_extrapolation",
-        "lepton_reco", "muon_id_stat_2016", "muon_id_stat_2017", "electron_id_stat_2016", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec", "lumi_2016", "lumi_2017"};
+        "lepton_reco", "muon_id_stat_2016", "muon_id_stat_2017", "electron_id_stat_2016", "electron_id_stat_2017", "lepton_id_syst", "pdf", "scaleXsec", "pdfXsec", "lumi_2016", "lumi_2017", "trigger_2016", "trigger_2017"};
 
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapDown;
     std::map < std::string, std::vector< std::vector < std::vector< std::vector< std::shared_ptr< TH1D > > > > >  > uncHistMapUp;
@@ -684,6 +684,16 @@ void treeReader::Analyze(){
                 uncHistMapUp[lumi_keyUnChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight );
             } 
 
+            double triggerUnc = 0.02;
+            std::string trigger_keyChanged = std::string("trigger_") + (is2016() ? "2016" : "2017" );
+            std::string trigger_keyUnChanged = std::string("trigger_") + (is2016() ? "2017" : "2016" );
+            for(unsigned dist = 0; dist < nDist; ++dist){
+                uncHistMapDown[trigger_keyChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*(1. - triggerUnc) );
+                uncHistMapUp[trigger_keyChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight*(1. + triggerUnc) );
+                uncHistMapDown[trigger_keyUnChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight );
+                uncHistMapUp[trigger_keyUnChanged][mllCat][tzqCat - 3][dist][fillIndex]->Fill(std::min(fill[dist], histInfo[dist].maxBinCenter() ), weight );
+            } 
+
             //100 pdf variations
             for(unsigned pdf = 0; pdf < 100; ++pdf){
                 for(unsigned dist = 0; dist < nDist; ++dist){
@@ -869,7 +879,7 @@ void treeReader::Analyze(){
 
     std::cout << "crash 5" << std::endl;
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "t#bar{t} + Z", "t#bar{t}/t + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
+    std::vector<std::string> proc = {"Data", "tZq", "WZ", "Multiboson", "t#bar{t} + Z", "t#bar{t}/t + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
@@ -990,7 +1000,7 @@ void treeReader::Analyze(){
                         double binContent = 0.;
                         for(unsigned p = 1; p < proc.size(); ++p){
                             binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
-                            if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "t#bar{t}/t + X") ){
+                            if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "Multiboson" || proc[p] == "t#bar{t}/t + X") ){
                                 continue;
                             }
                             if( (key == "WZ_extrapolation") && (proc[p] != "WZ") ){
@@ -1030,7 +1040,8 @@ void treeReader::Analyze(){
     std::cout << "crash 8" << std::endl;
 
     //make final uncertainty histogram for plots 
-    std::vector<double> flatUnc = {1.02}; //trigger
+    //std::vector<double> flatUnc = {1.02}; //trigger
+    std::vector<double> flatUnc = {} ; //all uncorrelated 
     std::map< std::string, double > backgroundSpecificUnc =        //map of background specific nuisances that can be indexed with the name of the process 
         {
             {"Nonprompt e/#mu", 1.3},

@@ -795,7 +795,7 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "t#bar{t} + Z", "t#bar{t}/t + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
+    std::vector<std::string> proc = {"Data", "tZq", "WZ", "Multiboson", "t#bar{t} + Z", "t#bar{t}/t + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
@@ -885,7 +885,7 @@ void treeReader::Analyze(){
                         double binContent = 0.;
                         for(unsigned p = 1; p < proc.size(); ++p){
                             binContent += mergedHists[mll][cat][bdt][p]->GetBinContent(bin);
-                            if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "t#bar{t}/t + X") ){
+                            if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "Multiboson" || proc[p] == "t#bar{t}/t + X") ){
                                 continue;
                             }
                             if( (key == "WZ_extrapolation") && (proc[p] != "WZ") ){

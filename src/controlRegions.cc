@@ -797,7 +797,7 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
+    std::vector<std::string> proc = {"Data", "tZq", "WZ", "Multiboson", "t#bar{t} + Z", "t#bar{t}/t + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< TH1D* > > > mergedHists(nCr);
     for(unsigned cr = 0; cr < nCr; ++cr){
         for(unsigned dist = 0; dist < nDist; ++dist){
@@ -856,11 +856,11 @@ void treeReader::Analyze(){
             {"WZ", 1.1},
             {"X + #gamma", 1.1},
             {"ZZ/H", 1.1},
-            {"TTZ", 1.15}
+            {"t#bar{t} + Z", 1.15}
             //{"TTZ", 1.3}
         };
 
-    std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
+    std::vector< std::string > ignoreTheoryUncInPlot = {"tZq", "WZ", "X + #gamma", "ZZ/H", "t#bar{t} + Z"};
 
 	const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf", "scaleXsec", "pdfXsec"};
     //print the effect of systematic uncertainty
@@ -889,7 +889,7 @@ void treeReader::Analyze(){
                     double binContent = 0.;
                     for(unsigned p = 1; p < proc.size(); ++p){
                         binContent += mergedHists[cr][dist][p]->GetBinContent(bin);
-                        if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "multiboson" || proc[p] == "TT/T + X") ){
+                        if( (key.find("Xsec") != std::string::npos) && !(proc[p] == "Multiboson" || proc[p] == "t#bar{t}/t + X") ){
                             continue;
                         }
                         if( (key == "WZ_extrapolation") && (proc[p] != "WZ") ){
@@ -1018,7 +1018,6 @@ void treeReader::Analyze(){
         }
     }
 
-    /*
     //plot all distributions
     const bool isSMSignal[(const size_t) proc.size() - 1] = {true, false, false, false, false, false, false};
     for(unsigned cr = 0; cr < nCr; ++cr){
@@ -1258,7 +1257,6 @@ void treeReader::Analyze(){
  
         }
     }
-    */
 }
 
 

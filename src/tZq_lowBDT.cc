@@ -757,7 +757,7 @@ void treeReader::Analyze(){
     }
 
     //merge histograms with the same physical background
-    std::vector<std::string> proc = {"Data", "tZq", "WZ", "multiboson", "TT + Z", "TT/T + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
+    std::vector<std::string> proc = {"Data", "tZq", "WZ", "Multiboson", "t#bar{t} + Z", "t#bar{t}/t + X", "X + #gamma", "ZZ/H", "Nonprompt e/#mu"};
     std::vector< std::vector< std::vector< std::vector< TH1D* > > > > mergedHists(nMll);
     for(unsigned mll = 0; mll < nMll; ++mll){
         mergedHists[mll] = std::vector< std::vector < std::vector < TH1D* > > >(nCat);
@@ -823,10 +823,10 @@ void treeReader::Analyze(){
             {"WZ", 1.1},
             {"X + #gamma", 1.1},
             {"ZZ/H", 1.1},
-            {"TTZ", 1.15}
+            {"t#bar{t} + Z", 1.15}
         };
     
-    std::vector< std::string > ignoreTheoryUncInPlot = {"WZ", "X + #gamma", "ZZ/H", "TTZ"};
+    std::vector< std::string > ignoreTheoryUncInPlot = {"tZq", "WZ", "X + #gamma", "ZZ/H", "t#bar{t} + Z"};
     const std::vector< std::string > uncorrelatedBetweenProcesses = {"scale", "pdf", "scaleXsec", "pdfXsec"};
 
     std::vector< std::vector< std::vector< TH1D* > > > totalSystUnc(nMll); //copy pointers to fix dimensionality of vector
