@@ -206,7 +206,7 @@ void Reweighter::initializeFakeRate(){
 void Reweighter::initializePrefiringProbabilities(){
     std::string year = ( is2016 ? "2016" : "2017" );
     TFile* prefiringFile = TFile::Open( (const TString&) "weights/L1prefiring_eff_jet_" + year + ".root");
-    prefiringMap = std::shared_ptr<TH2D>( (TH2D*) prefiringFile->Get( is2016? "prefireEfficiencyMap" : "L1prefiring_jet_2017BtoF" ) );
+    prefiringMap = std::shared_ptr<TH2D>( (TH2D*) prefiringFile->Get( is2016? "prefireEfficiencyMap" : "L1prefiring_jetpt_2017BtoF" ) );
     prefiringMap->SetDirectory(gROOT);
     prefiringFile->Close();
 }
