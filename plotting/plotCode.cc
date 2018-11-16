@@ -473,7 +473,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     legend2.SetFillStyle(0); //avoid legend box 
     legend2.AddEntry(bkgStatErrors, "Stat. pred. unc.", "f");
     legend2.AddEntry(bkgErrors, "Total pred. unc.", "f");
-    legend2.AddEntry(obsRatio, "Obs./Pred.", "pe12");
+    legend2.AddEntry(obsRatio, "Data/Pred.", "pe12");
 
     /*
     We will set up the range and label sizes of the plot using bkgErros. As such this histogram always has to be 
@@ -482,7 +482,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgErrors->SetMarkerColor(1);
     bkgErrors->SetLineColor(1);
     bkgErrors->GetYaxis()->SetRangeUser(0.,1.999);
-    bkgErrors->GetYaxis()->SetTitle("Obs./Pred.");
+    bkgErrors->GetYaxis()->SetTitle("Data/Pred.");
     bkgErrors->GetYaxis()->SetTitleOffset(1.25/((1.-xPad)/xPad));
     bkgErrors->GetYaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
     bkgErrors->GetXaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
