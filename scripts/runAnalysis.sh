@@ -10,7 +10,7 @@ for process in tZq controlRegions tZq_lowBDT tZq_highBDT tZq_splitChannels nonpr
     done
 done
 
-for process in tZq_combinedPlots tZq_withPsUnc2017 controlRegions_combinedPlots; do
+for process in tZq_combinedPlots tZq_withPsUnc2017 controlRegions_combinedPlots tZq_highBDT_combinedPlots; do
    script=${process}.sh
    makeSubmit $script ${PWD}/..
    echo "make -f makeFiles/make${process}" >> $script
