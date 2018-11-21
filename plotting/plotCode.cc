@@ -352,18 +352,27 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
             if(dataGraph->GetY()[b - 1] == 0)  dataGraph->GetY()[b - 1] += totalMax*10;
         }
     } else{
+        //set minimum to be 5 times smaller than the smallest total background yield
         double minimum = totalMax; //find pad minimum when plotting on a log scale
         for(int b = 1; b < bkgTotE->GetNbinsX() + 1; ++b){
             if(bkgTotE->GetBinContent(b) != 0 && bkgTotE->GetBinContent(b) < minimum){
                 minimum = bkgTotE->GetBinContent(b);
             }
         }
-        double SF = 5*log10(std::max(10., totalMax/minimum));
-        bkgTotE->SetMinimum(minimum/5.);
-        bkgTotE->SetMaximum(totalMax*3*SF);
+        minimum /= 5;
+        bkgTotE->SetMinimum(minimum);
+
+        //compute the number of axis divisions (i.e. powers of 10) between minimum and maxmimum 
+        double sf = log10( totalMax/minimum );
+
+        //maximum of plot should be 40% higher (in terms of canvas size!) than totalMax
+        double extraMagnitude = 0.4*sf;
+        double plotMax = totalMax*std::pow(10, extraMagnitude);
+        bkgTotE->SetMaximum( plotMax );
+
         //hack not to draw 0 observed event points
         for(int b = 1; b < data->GetNbinsX() + 1; ++b){
-           if(data->GetBinContent(b) == 0)  dataGraph->GetY()[b - 1] += totalMax*30*SF;
+           if(data->GetBinContent(b) == 0)  dataGraph->GetY()[b - 1] += plotMax*10000;
         }
     }			
 
