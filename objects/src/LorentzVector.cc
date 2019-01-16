@@ -45,7 +45,12 @@ LorentzVector::LorentzVector(const double pt, const double eta, const double phi
 
 
 double LorentzVector::mass() const{
-    return std::sqrt( energyValue*energyValue - transverseMomentum*transverseMomentum - zMomentum*zMomentum );
+    double m2 = energyValue*energyValue - transverseMomentum*transverseMomentum - zMomentum*zMomentum;
+    if( m2 >= 0 ){
+        return std::sqrt( m2 );
+    } else {
+        return - ( std::sqrt( -m2 ) );
+    }
 }
 
 
