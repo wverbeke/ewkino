@@ -48,6 +48,12 @@ class LorentzVector{
 
         //make sure phi is in the interval ]-pi, pi]
         void normalizePhi();
+
+        //compute pseudorapidity given px, py and pz
+        double computePseudoRapidity() const;
+
+        //compute azimuthal angle given px and py
+        double computeAzimuthalAngle() const;
 };
 
 LorentzVector operator+( const LorentzVector&, const LorentzVector& );
