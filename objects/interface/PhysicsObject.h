@@ -1,0 +1,40 @@
+#ifndef PhysicsObject_H
+#define PhysicsObject_H
+
+//include c++ library classes 
+
+//include other parts of code 
+#include "LorentzVector.h"
+
+class PhysicsObject{
+
+    public:
+        
+        PhysicsObject() = default;
+        PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy ):
+            vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ) {} 
+
+        double pt() const{ return vector.pt(); }
+        double eta() const{ return vector.eta(); }
+        double phi() const{ return vector.phi(); }
+        double energy() const{ return vector.energy(); }
+        double mass() const{ return vector.mass(); }
+        double px() const{ return vector.px(); }
+        double py() const{ return vector.py(); }
+        double pz() const{ return vector.pz(); }
+
+        virtual bool isGood() const{ return true; }
+
+        PhysicsObject operator-() const;
+        PhysicsObject& operator+=( const PhysicsObject& );
+        PhysicsObject& operator-=( const PhysicsObject& );
+
+        //virtual ~PhysicsObject() = default;
+    private:
+        LorentzVector vector; 
+
+};
+
+PhysicsObject operator+(const PhysicsObject&, const PhysicsObject&);
+PhysicsObject operator-(const PhysicsObject&, const PhysicsObject&);
+#endif 
