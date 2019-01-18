@@ -7,8 +7,6 @@
 class LorentzVector{
 
     //non-class members that are part of the interface 
-    friend LorentzVector operator+( const LorentzVector&, const LorentzVector& );
-    friend LorentzVector operator-( const LorentzVector&, const LorentzVector& );
     friend std::ostream& operator<<( std::ostream&, const LorentzVector& ); 
 
     friend double deltaEta( const LorentzVector&, const LorentzVector& );
