@@ -1,0 +1,34 @@
+#ifndef Tau_H
+#define Tau_H
+
+//include other parts of code 
+#include "Lepton.h"
+
+class Tau : public Lepton{
+
+    public:
+        Tau( const TreeReader&, const unsigned );
+        Tau( const Tau& ) = default;
+        Tau( Tau&& ) = default;
+
+        Tau& operator=( const Tau& ) = default;
+        Tau& operator=( Tau&& ) = default;
+
+        virtual bool isLightLepton() const override{ return false; }
+        virtual bool isMuon() const override{ return false; }
+        virtual bool isElectron() const override{ return false; }
+        virtual bool isTau() const override{ return false; }
+
+        bool passMuonVeto() const{ return _passMuonVeto; }
+        bool passElectronVeto() const{ return _passElectronVeto; }
+        bool passDecayModeFindingNew() const{ return _passDecayModeFindingNew; }
+
+    private:
+        bool _passMuonVeto = false;
+        bool _passElectronVeto = false;
+        bool _passDecayModeFindingNew = false;
+
+        //More variables should be added in the future!
+
+};
+#endif

@@ -14,6 +14,13 @@ class PhysicsObject{
         PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy ):
             vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ) {} 
 
+        //define both copy and move constructors and assignment operators 
+        PhysicsObject( const PhysicsObject& ) = default;
+        PhysicsObject( PhysicsObject&& ) = default; 
+
+        PhysicsObject& operator=( const PhysicsObject& ) = default;
+        PhysicsObject& operator=( PhysicsObject&& ) = default;
+
         double pt() const{ return vector.pt(); }
         double eta() const{ return vector.eta(); }
         double phi() const{ return vector.phi(); }
@@ -29,7 +36,7 @@ class PhysicsObject{
         PhysicsObject& operator+=( const PhysicsObject& );
         PhysicsObject& operator-=( const PhysicsObject& );
 
-        //virtual ~PhysicsObject() = default;
+        virtual ~PhysicsObject() = default;
     private:
         LorentzVector vector; 
 

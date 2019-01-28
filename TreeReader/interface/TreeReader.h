@@ -1,5 +1,5 @@
-#ifndef treeReader_h
-#define treeReader_h
+#ifndef TreeReader_H
+#define TreeReader_H
 
 //include ROOT classes
 #include "TROOT.h"
@@ -11,11 +11,10 @@
 #include "TLorentzVector.h"
 
 //include other parts of code
-#include "Reweighter_old.h"
-#include "Sample.h"
-#include "HistInfo.h"
+#include "../../Tools/interface/Sample.h"
+//#include "HistInfo.h"
 
-class treeReader {
+class TreeReader {
     public :
         //Declare leaf types
         static const unsigned nL_max = 20;
@@ -175,15 +174,15 @@ class treeReader {
 
 
         //Constructor
-        treeReader(TTree *tree = nullptr);
+        TreeReader(TTree *tree = nullptr);
 
         //set up tree for reading and writing
         void initTree(TTree *tree, const bool isData = false);
         void setOutputTree(TTree*, const bool isData = false);
 
         //skim tree
-        void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
-        void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
+        //void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
+        //void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
 
         //set up tree for analysis
         void readSamples(const std::string& list, const std::string& directory); //read sample list from file
@@ -196,20 +195,21 @@ class treeReader {
         //functions to analyze tree
         void GetEntry(long unsigned entry);
         void GetEntry(const Sample&, long unsigned entry);
-        void Analyze();
-        void Analyze(const std::string&, long unsigned, long unsigned);
-        void Analyze(const Sample&, long unsigned, long unsigned);
-        void Analyze(const std::string&);
-        void Analyze(const Sample&);
-        void setup();
-        void splitJobs();
-        void Loop(const std::string& sample, const double xSection);
+        //void Analyze();
+        //void Analyze(const std::string&, long unsigned, long unsigned);
+        //void Analyze(const Sample&, long unsigned, long unsigned);
+        //void Analyze(const std::string&);
+        //void Analyze(const Sample&);
+        //void setup();
+        //void splitJobs();
+        //void Loop(const std::string& sample, const double xSection);
 
         //new functions for parallel plotting
-        void plot(const std::string&);
-        void splitPlots();
+        //void plot(const std::string&);
+        //void splitPlots();
 
         //functions for event selection
+        /*
         void orderByPt(std::vector<unsigned>&, const double*, const unsigned) const;
         unsigned dilFlavorComb(const std::vector<unsigned>&) const;
         double coneCorr(const unsigned) const;
@@ -264,7 +264,7 @@ class treeReader {
         //b-tag reweighting
         double bTagWeight_cut_singleJet(const unsigned jetIndex, const unsigned unc = 0) const;
         double bTagWeight_reshaping_singleJet(const unsigned jetIndex, const unsigned unc = 0) const;
-        double bTagWeight_base(const unsigned jetFlavor, const unsigned unc, double (treeReader::*jetWeight)(const unsigned, const unsigned) const ) const;
+        double bTagWeight_base(const unsigned jetFlavor, const unsigned unc, double (TreeReader::*jetWeight)(const unsigned, const unsigned) const ) const;
         double bTagWeight_cut( const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight_reshaping( const unsigned jetFlavor, const unsigned unc = 0) const;
         double bTagWeight(const unsigned jetFlavor, const unsigned unc = 0) const;
@@ -281,7 +281,9 @@ class treeReader {
         double fakeRateWeight(const unsigned unc = 0);
         double sfWeight();
         double jetPrefiringWeight(const unsigned unc = 0) const;
+        */
 
+        unsigned long nEntries = 0;
     private:
         TTree* fChain;                                                          //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
@@ -289,15 +291,15 @@ class treeReader {
         std::vector<Sample> samples2016;                                        //2016 data and MC samples
         std::vector<Sample> samples2017;                                        //2017 data and MC samples
         Sample currentSample;                                                   //reference to current sample, needed to check what era sample belongs to
-        std::vector<HistInfo> histInfo;                                         //histogram info
-        int currentSampleIndex = -1;                                                 //current index in list
+        //std::vector<HistInfo> histInfo;                                         //histogram info
+        int currentSampleIndex = -1;                                            //current index in list
         //bool isData = false;
+
         double scale = 0;
         double weight = 1;                                                      //weight of given event
-        unsigned long nEntries = 0;
         const double lumi2017 = 41.53;                                          //in units of 1/fb
         const double lumi2016 = 35.867;                 
-        std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class used for reweighting functions
+        //std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class used for reweighting functions
 
         //check whether sample is 2017 or not
         bool is2017() const { return currentSample.is2017(); }
@@ -307,6 +309,7 @@ class treeReader {
         bool isSMSignal() const{ return currentSample.isSMSignal(); }
         bool isNewPhysicsSignal() const{ return currentSample.isNewPhysicsSignal(); }
 
+        /*
         //check lepton flavors 
         bool isElectron(const unsigned leptonIndex) const { return (_lFlavor[leptonIndex] == 0); }
         bool isMuon(const unsigned leptonIndex) const { return (_lFlavor[leptonIndex] == 1); }
@@ -325,11 +328,11 @@ class treeReader {
         bool lepIsTight2016(const unsigned) const;
         bool lepIsTight2017(const unsigned) const;
 
-        bool eleIsCleanBase(const unsigned, bool (treeReader::*looseMuon)(const unsigned) const) const;
+        bool eleIsCleanBase(const unsigned, bool (TreeReader::*looseMuon)(const unsigned) const) const;
         bool eleIsClean2016(const unsigned) const;
         bool eleIsClean2017(const unsigned) const;
 
-        bool jetIsCleanBase(const unsigned, bool (treeReader::*leptonIsFO)(const unsigned) const) const;
+        bool jetIsCleanBase(const unsigned, bool (TreeReader::*leptonIsFO)(const unsigned) const) const;
 
         bool bTaggedDeepCSVBase(const unsigned, const unsigned wp, const double cuts[3]) const;
         bool bTaggedDeepCSV2016(const unsigned, const unsigned wp = 1) const;
@@ -361,14 +364,16 @@ class treeReader {
 
         //initialize SF weights
         void initializeWeights();
-        
+        */
+
+
         //some safety-checks for errors 
         void checkSampleEraConsistency() const;  //make sure a sample is not is2016() AND 2017() 
         void checkEraOrthogonality() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
 
         //debugging prints
-        void printLeptonContent( std::ostream& os = std::cout ) const;
-        void printLeptonPairing( std::ostream& os = std::cout ) const;
+        //void printLeptonContent( std::ostream& os = std::cout ) const;
+        //void printLeptonPairing( std::ostream& os = std::cout ) const;
 
         //general function to read a list of samples
         void readSamples(const std::string&, const std::string&, std::vector<Sample>&);

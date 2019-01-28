@@ -1,17 +1,17 @@
 #include <iostream>
 #include <fstream>
 
-#include "../interface/treeReader.h"
-#include "../interface/analysisTools.h"
+#include "../interface/TreeReader.h"
+#include "../../Tools/interface/analysisTools.h"
 
-treeReader::treeReader(TTree *tree) : fChain(nullptr) 
+TreeReader::TreeReader(TTree *tree) : fChain(nullptr) 
 {
     if (tree != nullptr){
         initTree(tree);
     }
 }
 
-void treeReader::readSamples(const std::string& list, const std::string& directory, std::vector<Sample>& sampleVector){
+void TreeReader::readSamples(const std::string& list, const std::string& directory, std::vector<Sample>& sampleVector){
 
     //clean current sample list 
     sampleVector.clear();
@@ -25,11 +25,11 @@ void treeReader::readSamples(const std::string& list, const std::string& directo
     }
 }
 
-void treeReader::readSamples(const std::string& list, const std::string& directory){
+void TreeReader::readSamples(const std::string& list, const std::string& directory){
     readSamples(list, directory, this->samples);
 }
 
-void treeReader::readSamples2016(const std::string& list, const std::string& directory){
+void TreeReader::readSamples2016(const std::string& list, const std::string& directory){
     std::cout << "########################################" << std::endl;
     std::cout << "         2016 samples                   " << std::endl;
     std::cout << "########################################" << std::endl;
@@ -44,7 +44,7 @@ void treeReader::readSamples2016(const std::string& list, const std::string& dir
 
 }
 
-void treeReader::readSamples2017(const std::string& list, const std::string& directory){
+void TreeReader::readSamples2017(const std::string& list, const std::string& directory){
     std::cout << "########################################" << std::endl;
     std::cout << "         2017 samples                   " << std::endl;
     std::cout << "########################################" << std::endl;
@@ -58,7 +58,7 @@ void treeReader::readSamples2017(const std::string& list, const std::string& dir
     checkSampleEraConsistency();
 }
 
-void treeReader::initSample(const Sample& samp){ 
+void TreeReader::initSample(const Sample& samp){ 
 
     //update current sample
     currentSample = samp;
@@ -86,12 +86,12 @@ void treeReader::initSample(const Sample& samp){
     }
 }
 
-void treeReader::initSample(){ //initialize the next sample in the list 
+void TreeReader::initSample(){ //initialize the next sample in the list 
     initSample(samples[++currentSampleIndex]);
 }
 
 
-void treeReader::GetEntry(const Sample& samp, long unsigned entry)
+void TreeReader::GetEntry(const Sample& samp, long unsigned entry)
 {
     if (!fChain) return;
     fChain->GetEntry(entry);
@@ -100,11 +100,11 @@ void treeReader::GetEntry(const Sample& samp, long unsigned entry)
     else weight = 1;                            //data
 }
 
-void treeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
+void TreeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
     GetEntry(samples[currentSampleIndex], entry);
 }
 
-void treeReader::initTree(TTree *tree, const bool isData)
+void TreeReader::initTree(TTree *tree, const bool isData)
 {
     // Set branch addresses and branch pointers
     if (!tree) return;
@@ -267,7 +267,7 @@ void treeReader::initTree(TTree *tree, const bool isData)
     }
 }
 
-void treeReader::setOutputTree(TTree* outputTree, const bool isData){
+void TreeReader::setOutputTree(TTree* outputTree, const bool isData){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");

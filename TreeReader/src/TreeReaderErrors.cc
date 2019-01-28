@@ -3,9 +3,9 @@
 //include c++ library classes
 
 //include other parts of code
-#include "../interface/treeReader.h"
+#include "../interface/TreeReader.h"
 
-void treeReader::checkSampleEraConsistency() const{
+void TreeReader::checkSampleEraConsistency() const{
     for(auto& sample : samples2016){
         if( sample.is2017() ){
             std::cerr << "Error: 2017 sample detected in list of 2016 samples, this will lead to inconsistent lumi-scaling and cuts being applied!" << std::endl;
@@ -18,7 +18,7 @@ void treeReader::checkSampleEraConsistency() const{
     }
 }
 
-void treeReader::checkEraOrthogonality() const{
+void TreeReader::checkEraOrthogonality() const{
     bool bothTrue = is2017() && is2016();
     if(bothTrue){
         std::cerr << "Error: both is2016 and is2017 flags are returning TRUE for current sample! Sample has to be either one." << std::endl;
@@ -29,7 +29,8 @@ void treeReader::checkEraOrthogonality() const{
     }
 }
 
-void treeReader::printLeptonContent( std::ostream& os ) const{
+/*
+void TreeReader::printLeptonContent( std::ostream& os ) const{
     
     //event tags
     os << "######################################\n";
@@ -96,7 +97,7 @@ void treeReader::printLeptonContent( std::ostream& os ) const{
     os << std::flush; 
 }
 
-void treeReader::printLeptonPairing( std::ostream& os ) const{
+void TreeReader::printLeptonPairing( std::ostream& os ) const{
     if( _nLight < 2){
         std::cerr << "Error : trying to print lepton pairing info for event with less than 2 light leptons." << std::endl;
         return;
@@ -126,3 +127,4 @@ void treeReader::printLeptonPairing( std::ostream& os ) const{
         }
     }
 }
+*/

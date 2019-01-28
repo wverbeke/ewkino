@@ -1,0 +1,72 @@
+#ifndef Lepton_H
+#define Lepton_H
+
+//include c++ library classes 
+
+//include ROOT classes 
+
+//include other parts of code 
+#include "PhysicsObject.h"
+#include "../../TreeReader/interface/TreeReader.h"
+#include "LeptonGeneratorInfo.h"
+
+class LeptonSelector;
+
+class Lepton : public PhysicsObject {
+    
+    public: 
+        Lepton( const TreeReader&, const unsigned); 
+        Lepton( const Lepton& );
+        Lepton( Lepton&& ) noexcept;
+
+        virtual ~Lepton();
+        
+        Lepton& operator=( const Lepton& );
+        Lepton& operator=( Lepton&& );
+
+        //get reconstructed lepton attributes 
+        double dxy() const{ return _dxy; }
+        double dz() const{ return _dz; }
+        double sip3d() const{ return _sip3d; }
+        int charge() const{ return _charge; }
+
+        //access generator-level attributes
+        bool isPrompt() const;
+        int matchPdgId() const;
+        int momPdgId() const;
+        unsigned provenance() const;
+        unsigned provenanceCompressed() const;
+        unsigned provenanceConversion() const;
+
+        //lepton id decisions 
+        //virtual bool isLoose() const = 0;
+        //virtual bool isGood() const = 0;
+        //virtual bool isTight() const = 0;
+
+        //check what type of lepton the object is
+        virtual bool isMuon() const = 0;
+        virtual bool isElectron() const = 0;
+        virtual bool isTau() const = 0;
+        virtual bool isLightLepton() const = 0;
+        
+    private:
+
+        int _charge = 0;
+    
+        //lepton impact parameter variables 
+        double _dxy = 0;
+        double _dz = 0;
+        double _sip3d = 0;
+
+        //lepton generator information
+        LeptonGeneratorInfo* generatorInfo = nullptr;
+
+        //check whether generator-level info was initialized 
+        bool hasGeneratorInfo() const{ return  generatorInfo != nullptr; }
+        bool checkGeneratorInfo() const;
+
+        //copy non-pointer attributes from other leptons, to be used in copy operations
+        void copyNonPointerAttributes( const Lepton& );
+        
+};
+#endif
