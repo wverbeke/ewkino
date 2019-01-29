@@ -1,5 +1,8 @@
 #include "../interface/LightLepton.h"
 
+//include c++ library classes 
+#include <cmath>
+
 
 LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonIndex ) :
     Lepton( treeReader, leptonIndex ),
@@ -18,10 +21,10 @@ LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonInd
 
     //catch nan deep CSV values 
     if( std::isnan( _closestJetDeepCSV ) ){
-        _closestJetDeepCSV = 0;
+        _closestJetDeepCSV = 0.;
 
     //catch default values in deep CSV
-    } else{
-        _closestJetDeepCSV = std::max( 0., _closestJetDeepCSV );
+    } else if( _closestJetDeepCSV > 0. ){
+        _closestJetDeepCSV = 0.;
     }
 }

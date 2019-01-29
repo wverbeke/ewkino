@@ -30,3 +30,8 @@ PhysicsObject operator+( const PhysicsObject& lhs, const PhysicsObject& rhs ){
 PhysicsObject operator-( const PhysicsObject& lhs, const PhysicsObject& rhs ){
     return lhs + (-rhs);
 }
+
+
+void PhysicsObject::setLorentzVector( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energyValue ){
+    *this = PhysicsObject( transverseMomentum, pseudoRapidity, azimuthalAngle, energyValue );
+}

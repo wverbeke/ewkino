@@ -21,6 +21,7 @@ class PhysicsObject{
         PhysicsObject& operator=( const PhysicsObject& ) = default;
         PhysicsObject& operator=( PhysicsObject&& ) = default;
 
+
         double pt() const{ return vector.pt(); }
         double eta() const{ return vector.eta(); }
         double phi() const{ return vector.phi(); }
@@ -37,6 +38,12 @@ class PhysicsObject{
         PhysicsObject& operator-=( const PhysicsObject& );
 
         virtual ~PhysicsObject() = default;
+
+    protected: 
+
+        //set the lorentzvector to new values 
+        void setLorentzVector(double, double, double, double);
+
     private:
         LorentzVector vector; 
 
