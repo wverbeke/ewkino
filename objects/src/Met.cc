@@ -15,7 +15,7 @@ Met::Met( const TreeReader& treeReader ):
 
 
 Met Met::variedMet( const double pt, const double phi ) const{
-    Met variedMet = *this;
+    Met variedMet( *this );
     variedMet.setLorentzVector( pt, eta(), phi, pt );
     return variedMet;
 }
