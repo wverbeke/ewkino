@@ -26,7 +26,7 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
 
 
 Jet Jet::variedJet(const double newPt) const{
-    Jet variedJet = *this;
+    Jet variedJet( *this );
     variedJet.setLorentzVector( newPt, eta(), phi(), energy()*( newPt / pt() ) );
     return variedJet;
 } 
