@@ -24,7 +24,7 @@ LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonInd
         _closestJetDeepCSV = 0.;
 
     //catch default values in deep CSV
-    } else if( _closestJetDeepCSV > 0. ){
+    } else if( _closestJetDeepCSV < 0. ){
         _closestJetDeepCSV = 0.;
     }
 }
