@@ -2,6 +2,7 @@
 #define Lepton_H
 
 //include c++ library classes 
+#include <utility>
 
 //include ROOT classes 
 
@@ -11,8 +12,12 @@
 #include "LeptonGeneratorInfo.h"
 
 class LeptonSelector;
+template< typename ObjectType > class PhysicsObjectCollection;
 
 class Lepton : public PhysicsObject {
+    
+    //The leptonCollection class represents a collection of leptons. Its base (PhysicsObjectCollection<Lepton>) should be a friend to be able to use clone().
+    friend class PhysicsObjectCollection<Lepton>;
     
     public: 
         Lepton( const TreeReader&, const unsigned); 
@@ -48,7 +53,8 @@ class Lepton : public PhysicsObject {
         virtual bool isElectron() const = 0;
         virtual bool isTau() const = 0;
         virtual bool isLightLepton() const = 0;
-        
+
+
     private:
 
         int _charge = 0;
@@ -67,6 +73,9 @@ class Lepton : public PhysicsObject {
 
         //copy non-pointer attributes from other leptons, to be used in copy operations
         void copyNonPointerAttributes( const Lepton& );
-        
+
+        //functions to facilitate dynamically typed dynamic memory allocation 
+        virtual Lepton* clone() const & = 0;
+        virtual Lepton* clone() && = 0;
 };
 #endif

@@ -5,14 +5,19 @@
 #include "PhysicsObject.h"
 #include "../../TreeReader/interface/TreeReader.h"
 
+template< typename objectType > class PhysicsObjectCollection;
+
 class Jet : public PhysicsObject{
     
+    friend class PhysicsObjectCollection< Jet >;
+
     public:
         Jet( const TreeReader&, const unsigned);
-        //Jet( const Jet& ) = default;
-        //Jet( Jet&& ) = default;
 
-        double deepCSV() const;
+        Jet( const Jet& ) = default;
+        Jet( Jet&& ) noexcept = default;
+
+        double deepCSV() const{ return _deepCSV; }
         unsigned hadronFlavor() const{ return _hadronFlavor; }
         bool isLoose() const{ return _isLoose; }
         bool isTight() const{ return _isTight; }
@@ -37,6 +42,9 @@ class Jet : public PhysicsObject{
         double _pt_JECUp = 0;
 
         Jet variedJet(const double) const;
+
+        Jet* clone() const & { return new Jet(*this); }
+        Jet* clone() && { return new Jet( std::move( *this ) ); }
 
 };
 #endif
