@@ -12,7 +12,7 @@
 class LightLepton : public Lepton {
     
     public: 
-        LightLepton( const TreeReader&, const unsigned); 
+        LightLepton( const TreeReader&, const unsigned, LeptonSelector* ); 
         LightLepton( const LightLepton& ) = default;
         LightLepton( LightLepton&& ) = default;
 

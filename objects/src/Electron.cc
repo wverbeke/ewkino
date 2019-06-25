@@ -1,8 +1,11 @@
 #include "../interface/Electron.h"
 
+//include other parts of framework
+#include "../interface/ElectronSelector.h"
+
 
 Electron::Electron( const TreeReader& treeReader, const unsigned leptonIndex ):
-    LightLepton( treeReader, leptonIndex ),
+    LightLepton( treeReader, leptonIndex, new ElectronSelector( this ) ),
     _passChargeConsistency( treeReader._lElectronChargeConst[leptonIndex] ),
     _passDoubleEGEmulation( treeReader._lElectronPassEmu[leptonIndex] ),
     _passConversionVeto( treeReader._lElectronPassConvVeto[leptonIndex] ),

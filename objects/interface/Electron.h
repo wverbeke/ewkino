@@ -59,5 +59,7 @@ class Electron : public LightLepton{
         bool _isMediumPOGElectron = false;
         bool _isTightPOGElectron = false;
         
+        virtual Electron* clone() const & override{ return new Electron( *this ); }
+        virtual Electron* clone() && override{ return new Electron( std::move( *this ) ); }
 };
 #endif 

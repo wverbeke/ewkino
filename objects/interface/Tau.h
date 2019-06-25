@@ -30,5 +30,7 @@ class Tau : public Lepton{
 
         //More variables should be added in the future!
 
+        virtual Tau* clone() const & override{ return new Tau( *this ); }
+        virtual Tau* clone() && override{ return new Tau( std::move( *this ) ); }   
 };
 #endif

@@ -34,6 +34,9 @@ class Muon : public LightLepton {
         bool _isLoosePOGMuon = false;
         bool _isMediumPOGMuon = false;
         bool _isTightPOGMuon = false;
+
+        virtual Muon* clone() const & override{ return new Muon( *this ); }
+        virtual Muon* clone() && override{ return new Muon( std::move(*this) ); }
 };
 
 #endif 

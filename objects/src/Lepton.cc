@@ -4,13 +4,14 @@
 #include <utility>
 
 
-Lepton::Lepton( const TreeReader& treeReader, const unsigned leptonIndex) :
+Lepton::Lepton( const TreeReader& treeReader, const unsigned leptonIndex, LeptonSelector* leptonSelector ) :
     PhysicsObject( treeReader._lPt[leptonIndex], treeReader._lEta[leptonIndex], treeReader._lPhi[leptonIndex], treeReader._lE[leptonIndex] ),
     _charge( treeReader._lCharge[leptonIndex] ),
     _dxy( treeReader._dxy[leptonIndex] ),
     _dz( treeReader._dz[leptonIndex] ), 
     _sip3d( treeReader._3dIPSig[leptonIndex] ),
-    generatorInfo( new LeptonGeneratorInfo( treeReader, leptonIndex ) )
+    generatorInfo( new LeptonGeneratorInfo( treeReader, leptonIndex ) ),
+    selector( leptonSelector )
     {}
 
 
@@ -21,7 +22,8 @@ Lepton::Lepton( const Lepton& rhs ) :
     _dxy( rhs._dxy ),
     _dz( rhs._dz ),
     _sip3d( rhs._sip3d ),
-    generatorInfo( new LeptonGeneratorInfo( *(rhs.generatorInfo) ) )
+    generatorInfo( new LeptonGeneratorInfo( *(rhs.generatorInfo) ) ),
+    selector( rhs.selector->clone() )
     {} 
 
 
@@ -31,13 +33,16 @@ Lepton::Lepton( Lepton&& rhs ) noexcept :
     _dxy( rhs._dxy ),
     _dz( rhs._dz ),
     _sip3d( rhs._sip3d ),
-    generatorInfo( rhs.generatorInfo )
+    generatorInfo( rhs.generatorInfo ),
+    selector( rhs.selector )
     {
         rhs.generatorInfo = nullptr;
+        rhs.selector = nullptr;
     }
 
 
 Lepton::~Lepton(){
+    delete selector;
     if( hasGeneratorInfo() ){
         delete generatorInfo;
     }
@@ -59,6 +64,11 @@ Lepton& Lepton::operator=( const Lepton& rhs ){
 
     //copy non pointer members
     copyNonPointerAttributes( rhs );
+
+    //add selector to other lepton, make sure self assignment works
+    LeptonSelector* oldSelector = selector;
+    selector = rhs.selector->clone();
+    delete oldSelector;
     
     //need to create new LeptonGeneratorInfo object to ensure self assignment works 
     if( hasGeneratorInfo() ){
@@ -78,11 +88,16 @@ Lepton& Lepton::operator=( Lepton&& rhs ){
     //move the PhysicsObject part of the lepton
     PhysicsObject::operator=( std::move(rhs) );
 
+
     //in case of self assignment the move assignment should do no work
     if( this != &rhs ){
 
         //copy non pointer members
         copyNonPointerAttributes( rhs );
+
+        //move the lepton selector
+        selector = rhs.selector;
+        rhs.selector = nullptr;
 
         //move pointer to generator information
         generatorInfo = rhs.generatorInfo;

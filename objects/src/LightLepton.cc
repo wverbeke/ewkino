@@ -4,8 +4,8 @@
 #include <cmath>
 
 
-LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonIndex ) :
-    Lepton( treeReader, leptonIndex ),
+LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonIndex, LeptonSelector* leptonSelector ) :
+    Lepton( treeReader, leptonIndex, leptonSelector ),
     _relIso0p3( treeReader._relIso[leptonIndex] ),
     _relIso0p4( treeReader._relIso0p4[leptonIndex] ), 
     _miniIso( treeReader._miniIso[leptonIndex] ),

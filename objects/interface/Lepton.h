@@ -3,15 +3,15 @@
 
 //include c++ library classes 
 #include <utility>
-
-//include ROOT classes 
+#include <memory>
 
 //include other parts of code 
 #include "PhysicsObject.h"
 #include "../../TreeReader/interface/TreeReader.h"
 #include "LeptonGeneratorInfo.h"
+#include "LeptonSelector.h"
 
-class LeptonSelector;
+//class LeptonSelector;
 template< typename ObjectType > class PhysicsObjectCollection;
 
 class Lepton : public PhysicsObject {
@@ -20,7 +20,7 @@ class Lepton : public PhysicsObject {
     friend class PhysicsObjectCollection<Lepton>;
     
     public: 
-        Lepton( const TreeReader&, const unsigned); 
+        Lepton( const TreeReader&, const unsigned, LeptonSelector* ); 
         Lepton( const Lepton& );
         Lepton( Lepton&& ) noexcept;
 
@@ -44,9 +44,10 @@ class Lepton : public PhysicsObject {
         unsigned provenanceConversion() const;
 
         //lepton id decisions 
-        //virtual bool isLoose() const = 0;
-        //virtual bool isGood() const = 0;
-        //virtual bool isTight() const = 0;
+        bool isLoose() const{ return selector->isLoose(); }
+        bool isFO() const{ return selector->isFO(); }
+        bool isGood() const{ return selector->isGood(); }
+        bool isTight() const{ return selector->isTight(); }
 
         //check what type of lepton the object is
         virtual bool isMuon() const = 0;
@@ -66,6 +67,9 @@ class Lepton : public PhysicsObject {
 
         //lepton generator information
         LeptonGeneratorInfo* generatorInfo = nullptr;
+
+        //lepton selector object 
+        LeptonSelector* selector;
 
         //check whether generator-level info was initialized 
         bool hasGeneratorInfo() const{ return  generatorInfo != nullptr; }
