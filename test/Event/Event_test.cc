@@ -9,6 +9,9 @@
 #include "../../objects/interface/Tau.h"
 #include "../../Event/interface/LeptonCollection.h"
 #include "../../Event/interface/JetCollection.h"
+#include "../../Event/interface/MuonCollection.h"
+#include "../../Event/interface/ElectronCollection.h"
+#include "../../Event/interface/TauCollection.h"
 
 //include c++ library classes
 #include <iostream>
@@ -30,12 +33,17 @@ int main(){
     auto start = std::chrono::high_resolution_clock::now();
 
     for(unsigned i = 0; i < treeReader.nEntries; ++i){
+
+        treeReader.GetEntry(i);
         std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
 
         //test LeptonCollection
-        treeReader.GetEntry(i);
         LeptonCollection leptonCollection( treeReader );
+        MuonCollection muonColletion = leptonCollection.muonCollection();
+        ElectronCollection electronCollection = leptonCollection.electronCollection();
+        TauCollection tauCollection = leptonCollection.tauCollection();
         leptonCollection.sortByPt();
+
         for(auto& lepton : leptonCollection ){
             std::cout << lepton->pt() << "\t";
             std::cout << ( lepton->isTau() ? "Tau" : "" );
@@ -45,7 +53,6 @@ int main(){
         }
 
         //test JetCollection
-        treeReader.GetEntry(i);
         JetCollection jetCollection( treeReader );
         for( auto& jet : jetCollection ){
             std::cout << "jet:\t" << jet->pt() << "\t" << jet->deepCSV() << std::endl;

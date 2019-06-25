@@ -17,6 +17,9 @@ template< typename ObjectType > class PhysicsObjectCollection {
         using value_type = typename collection_type::value_type;
         using size_type = typename collection_type::size_type;
 
+        PhysicsObjectCollection() {}
+        PhysicsObjectCollection( const collection_type& col ) : collection( col ) {}
+
         void push_back( const ObjectType& );
         void push_back( ObjectType&& );
 
@@ -29,10 +32,13 @@ template< typename ObjectType > class PhysicsObjectCollection {
 
         size_type size() const{ return collection.size(); }
         
-        template< typename func > void sortByAttribute( func f );
+        template< typename func > void sortByAttribute( const func& f );
         void sortByPt(){ return sortByAttribute( [](const std::shared_ptr< ObjectType >& lhs, const std::shared_ptr< ObjectType >& rhs){ return lhs->pt() > rhs->pt(); } ); }
 
         ~PhysicsObjectCollection() = default;
+
+    protected:
+        void selectObjects( bool (ObjectType::*passSelection)() const );
 
     private:
         collection_type collection;
@@ -50,7 +56,20 @@ template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::push
 }
 
 
-template< typename ObjectType > template< typename func > void PhysicsObjectCollection<ObjectType>::sortByAttribute( func f ){
+template< typename ObjectType > template< typename func > void PhysicsObjectCollection< ObjectType >::sortByAttribute( const func& f ){
     std::sort( begin(), end(), f );
+}
+
+
+template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::selectObjects( bool (ObjectType::*passSelection)() const ){
+    std::vector< const_iterator > objectsToDelete;
+    for( const_iterator it = cbegin(); it != cend(); ++it ){
+        if( ( (**it).*passSelection)() ){
+            objectsToDelete.push_back( it );
+        }
+    }
+    for( auto& it : objectsToDelete ){
+        collection.erase( it );
+    }
 }
 #endif
