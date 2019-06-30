@@ -31,6 +31,8 @@ template< typename ObjectType > class PhysicsObjectCollection {
         const_iterator cend() const{ return collection.cend(); }
 
         size_type size() const{ return collection.size(); }
+
+        ObjectType& operator[]( const size_type index ){ return collection[index]; }
         
         template< typename func > void sortByAttribute( const func& f );
         void sortByPt(){ return sortByAttribute( [](const std::shared_ptr< ObjectType >& lhs, const std::shared_ptr< ObjectType >& rhs){ return lhs->pt() > rhs->pt(); } ); }
@@ -39,6 +41,10 @@ template< typename ObjectType > class PhysicsObjectCollection {
 
     protected:
         void selectObjects( bool (ObjectType::*passSelection)() const );
+
+        //Does erase return an iterator or is it void?
+        template< typename IteratorType > void erase( IteratorType );
+        template< typename IteratorType > void erase( const std::vector< IteratorType >& );
 
     private:
         collection_type collection;
@@ -61,6 +67,17 @@ template< typename ObjectType > template< typename func > void PhysicsObjectColl
 }
 
 
+template< typename ObjectType > template< typename IteratorType > void PhysicsObjectCollection< ObjectType >::erase( IteratorType it ){
+    collection.erase( it );
+} 
+
+
+template< typename ObjectType > template< typename IteratorType > void PhysicsObjectCollection< ObjectType >::erase( const std::vector< IteratorType >& itVec ){
+    for( const auto& it : itVec ){
+        erase( it );
+    }
+}
+
 template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::selectObjects( bool (ObjectType::*passSelection)() const ){
     std::vector< const_iterator > objectsToDelete;
     for( const_iterator it = cbegin(); it != cend(); ++it ){
@@ -68,8 +85,9 @@ template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::sele
             objectsToDelete.push_back( it );
         }
     }
-    for( auto& it : objectsToDelete ){
-        collection.erase( it );
-    }
+    erase( objectsToDelete );
 }
+
+
+
 #endif
