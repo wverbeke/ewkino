@@ -8,6 +8,10 @@
 
 class PhysicsObject{
 
+    friend double deltaEta( const PhysicsObject&, const PhysicsObject& );
+    friend double deltaPhi( const PhysicsObject&, const PhysicsObject& );
+    friend double deltaR( const PhysicsObject&, const PhysicsObject& );
+
     public:
         
         PhysicsObject() = default;
@@ -42,13 +46,20 @@ class PhysicsObject{
     protected: 
 
         //set the lorentzvector to new values 
-        void setLorentzVector(double, double, double, double);
+        void setLorentzVector( double, double, double, double );
 
     private:
         LorentzVector vector; 
 
+        //virtual PhysicsObject* clone() const &{ return new PhysicsObject( *this ); } 
+        //virtual PhysicsObject* clone() &&{ return new PhysicsObject( std::move( *this ) ); }
 };
 
-PhysicsObject operator+(const PhysicsObject&, const PhysicsObject&);
-PhysicsObject operator-(const PhysicsObject&, const PhysicsObject&);
+PhysicsObject operator+( const PhysicsObject&, const PhysicsObject& );
+PhysicsObject operator-( const PhysicsObject&, const PhysicsObject& );
+
+double deltaEta( const PhysicsObject& , const PhysicsObject& );
+double deltaPhi( const PhysicsObject& , const PhysicsObject& );
+double deltaR( const PhysicsObject& , const PhysicsObject& );
+
 #endif 
