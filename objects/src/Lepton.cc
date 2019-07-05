@@ -16,29 +16,34 @@ Lepton::Lepton( const TreeReader& treeReader, const unsigned leptonIndex, Lepton
 
 
 //Lepton has value-like behavior 
-Lepton::Lepton( const Lepton& rhs ) : 
+Lepton::Lepton( const Lepton& rhs, LeptonSelector* leptonSelector ) : 
     PhysicsObject( rhs ),
     _charge( rhs._charge ),
     _dxy( rhs._dxy ),
     _dz( rhs._dz ),
     _sip3d( rhs._sip3d ),
     generatorInfo( new LeptonGeneratorInfo( *(rhs.generatorInfo) ) ),
-    selector( rhs.selector->clone() )
+
+    //WARNING: selector remains uninitialized, and has to be dynamically allocated in derived classes. Final derived copy constructur MUST CREATE A NEW SELECTOR
+    //selector( nullptr )
+    selector( leptonSelector )
     {} 
 
 
-Lepton::Lepton( Lepton&& rhs ) noexcept :
+Lepton::Lepton( Lepton&& rhs, LeptonSelector* leptonSelector ) noexcept :
     PhysicsObject( std::move( rhs ) ),
     _charge( rhs._charge ),
     _dxy( rhs._dxy ),
     _dz( rhs._dz ),
     _sip3d( rhs._sip3d ),
     generatorInfo( rhs.generatorInfo ),
-    selector( rhs.selector )
-    {
-        rhs.generatorInfo = nullptr;
-        rhs.selector = nullptr;
-    }
+
+    //WARNING: selector remains uninitialized, and has to be dynamically allocated in derived classes. Final derived copy constructur MUST CREATE A NEW SELECTOR
+    //selector( nullptr )
+    selector( leptonSelector )
+{
+    rhs.generatorInfo = nullptr;
+}
 
 
 Lepton::~Lepton(){
@@ -65,29 +70,22 @@ Lepton& Lepton::operator=( const Lepton& rhs ){
     //copy non pointer members
     copyNonPointerAttributes( rhs );
 
-    //add selector to other lepton, make sure self assignment works
-    LeptonSelector* oldSelector = selector;
-    selector = rhs.selector->clone();
-    delete oldSelector;
+    //selector can keep pointing to the current lepton and does not need to be copied!
     
     //need to create new LeptonGeneratorInfo object to ensure self assignment works 
     if( hasGeneratorInfo() ){
         LeptonGeneratorInfo* oldInfo = generatorInfo;
-
         generatorInfo = new LeptonGeneratorInfo( *rhs.generatorInfo );
-
         delete oldInfo;
     }
-
     return *this;
 }
 
 
-Lepton& Lepton::operator=( Lepton&& rhs ){
-    
+Lepton& Lepton::operator=( Lepton&& rhs ) noexcept{
+
     //move the PhysicsObject part of the lepton
     PhysicsObject::operator=( std::move(rhs) );
-
 
     //in case of self assignment the move assignment should do no work
     if( this != &rhs ){
@@ -95,9 +93,10 @@ Lepton& Lepton::operator=( Lepton&& rhs ){
         //copy non pointer members
         copyNonPointerAttributes( rhs );
 
+        //selector can keep pointing to the current lepton and does not need to be moved!
         //move the lepton selector
-        selector = rhs.selector;
-        rhs.selector = nullptr;
+        //selector = rhs.selector;
+        //rhs.selector = nullptr;
 
         //move pointer to generator information
         generatorInfo = rhs.generatorInfo;

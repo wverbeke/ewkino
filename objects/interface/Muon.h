@@ -8,18 +8,14 @@ class Muon : public LightLepton {
     
     public:
         Muon( const TreeReader&, const unsigned );
-        Muon( const Muon& ) = default;
-        Muon( Muon&& ) = default;
+        Muon( const Muon& );
+        Muon( Muon&& ) noexcept;
 
         Muon& operator=( const Muon& ) = default;
         Muon& operator=( Muon&& ) = default;
 
         virtual bool isMuon() const override{ return true; }
         virtual bool isElectron() const override{ return false; }
-
-        //virtual bool isLoose() const override;
-        //virtual bool isGood() const override;
-        //virtual bool isTight() const override;
 
         bool isLoosePOGMuon() const{ return _isLoosePOGMuon; }
         bool isMediumPOGMuon() const{ return _isMediumPOGMuon; }

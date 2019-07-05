@@ -21,13 +21,15 @@ class Lepton : public PhysicsObject {
     
     public: 
         Lepton( const TreeReader&, const unsigned, LeptonSelector* ); 
-        Lepton( const Lepton& );
-        Lepton( Lepton&& ) noexcept;
+
+        //copying of lepton will only be allowed if appropriate selector is provided by derived class
+        Lepton( const Lepton& ) = delete;
+        Lepton( Lepton&& ) noexcept = delete;
 
         virtual ~Lepton();
         
         Lepton& operator=( const Lepton& );
-        Lepton& operator=( Lepton&& );
+        Lepton& operator=( Lepton&& ) noexcept;
 
         //get reconstructed lepton attributes 
         double dxy() const{ return _dxy; }
@@ -57,7 +59,6 @@ class Lepton : public PhysicsObject {
 
 
     private:
-
         int _charge = 0;
     
         //lepton impact parameter variables 
@@ -67,9 +68,6 @@ class Lepton : public PhysicsObject {
 
         //lepton generator information
         LeptonGeneratorInfo* generatorInfo = nullptr;
-
-        //lepton selector object 
-        LeptonSelector* selector;
 
         //check whether generator-level info was initialized 
         bool hasGeneratorInfo() const{ return  generatorInfo != nullptr; }
@@ -81,5 +79,14 @@ class Lepton : public PhysicsObject {
         //functions to facilitate dynamically typed dynamic memory allocation 
         virtual Lepton* clone() const & = 0;
         virtual Lepton* clone() && = 0;
+
+    protected :
+
+        //lepton selector object 
+        LeptonSelector* selector;
+
+        Lepton( const Lepton&, LeptonSelector* );
+        Lepton( Lepton&&, LeptonSelector* ) noexcept;
 };
+
 #endif

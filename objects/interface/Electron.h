@@ -8,8 +8,8 @@ class Electron : public LightLepton{
 
     public:
         Electron( const TreeReader&, const unsigned );
-        Electron( const Electron& ) = default;
-        Electron( Electron&& ) = default;
+        Electron( const Electron& );
+        Electron( Electron&& ) noexcept;
 
         Electron& operator=( const Electron& ) = default;
         Electron& operator=( Electron&& ) = default;
@@ -33,10 +33,6 @@ class Electron : public LightLepton{
         bool isLoosePOGElectron() const{ return _isLoosePOGElectron; }
         bool isMediumPOGElectron() const{ return _isMediumPOGElectron; }
         bool isTightPOGElectron() const{ return _isTightPOGElectron; }
-
-        //virtual bool isLoose() const override;
-        //virtual bool isGood() const override;
-        //virtual bool isTight() const override;
 
     private:
         bool _passChargeConsistency = false;

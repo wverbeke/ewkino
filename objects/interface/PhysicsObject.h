@@ -20,10 +20,10 @@ class PhysicsObject{
 
         //define both copy and move constructors and assignment operators 
         PhysicsObject( const PhysicsObject& ) = default;
-        PhysicsObject( PhysicsObject&& ) = default; 
+        PhysicsObject( PhysicsObject&& ) noexcept = default; 
 
         PhysicsObject& operator=( const PhysicsObject& ) = default;
-        PhysicsObject& operator=( PhysicsObject&& ) = default;
+        PhysicsObject& operator=( PhysicsObject&& ) noexcept = default;
 
 
         double pt() const{ return vector.pt(); }

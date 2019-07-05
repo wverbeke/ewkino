@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= Electron_test.cc ../../objects/src/LorentzVector.cc ../../objects/src/PhysicsObject.cc ../../objects/src/Lepton.cc ../../objects/src/LightLepton.cc ../../objects/src/Electron.cc ../../objects/src/LeptonGeneratorInfo.cc ../../TreeReader/src/TreeReader.cc  ../../Tools/src/Sample.cc ../../TreeReader/src/TreeReaderErrors.cc ../../Tools/src/stringTools.cc ../../objects/src/ElectronSelector.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= Electron_test
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)

@@ -20,3 +20,39 @@ Electron::Electron( const TreeReader& treeReader, const unsigned leptonIndex ):
     _isMediumPOGElectron( treeReader._lPOGMedium[leptonIndex] ),
     _isTightPOGElectron( treeReader._lPOGTight[leptonIndex] )
     {}
+
+
+Electron::Electron( const Electron& rhs ) :
+	LightLepton( rhs, new ElectronSelector( this ) ),
+	_passChargeConsistency( rhs._passChargeConsistency ),
+	_passDoubleEGEmulation( rhs._passDoubleEGEmulation ),
+	_passConversionVeto( rhs._passConversionVeto ),
+	_numberOfMissingHits( rhs._numberOfMissingHits ),
+	_electronMVASpring16GP( rhs._electronMVASpring16GP ),
+	_electronMVASpring16HZZ( rhs._electronMVASpring16HZZ ),
+	_electronMVAFall17Iso( rhs._electronMVAFall17Iso ),
+	_electronMVAFall17NoIso( rhs._electronMVAFall17NoIso ),
+	_etaSuperCluster( rhs._etaSuperCluster ),
+	_isVetoPOGElectron( rhs._isVetoPOGElectron ),
+	_isLoosePOGElectron( rhs._isLoosePOGElectron ),
+	_isMediumPOGElectron( rhs._isMediumPOGElectron ),
+	_isTightPOGElectron( rhs._isTightPOGElectron )
+	{}
+
+
+Electron::Electron( Electron&& rhs ) noexcept : 
+	LightLepton( std::move( rhs ), new ElectronSelector( this ) ),
+	_passChargeConsistency( rhs._passChargeConsistency ),
+    _passDoubleEGEmulation( rhs._passDoubleEGEmulation ),
+    _passConversionVeto( rhs._passConversionVeto ),
+    _numberOfMissingHits( rhs._numberOfMissingHits ),
+    _electronMVASpring16GP( rhs._electronMVASpring16GP ),
+    _electronMVASpring16HZZ( rhs._electronMVASpring16HZZ ),
+    _electronMVAFall17Iso( rhs._electronMVAFall17Iso ),
+    _electronMVAFall17NoIso( rhs._electronMVAFall17NoIso ),
+    _etaSuperCluster( rhs._etaSuperCluster ),
+    _isVetoPOGElectron( rhs._isVetoPOGElectron ),
+    _isLoosePOGElectron( rhs._isLoosePOGElectron ),
+    _isMediumPOGElectron( rhs._isMediumPOGElectron ),
+    _isTightPOGElectron( rhs._isTightPOGElectron )
+    {}

@@ -3,16 +3,17 @@
 
 //include other parts of code 
 #include "Lepton.h"
+#include "TauSelector.h"
 
 class Tau : public Lepton{
 
     public:
         Tau( const TreeReader&, const unsigned );
-        Tau( const Tau& ) = default;
-        Tau( Tau&& ) = default;
+        Tau( const Tau& );
+        Tau( Tau&& ) noexcept;
 
         Tau& operator=( const Tau& ) = default;
-        Tau& operator=( Tau&& ) = default;
+        Tau& operator=( Tau&& ) noexcept = default;
 
         virtual bool isLightLepton() const override{ return false; }
         virtual bool isMuon() const override{ return false; }
@@ -33,4 +34,5 @@ class Tau : public Lepton{
         virtual Tau* clone() const & override{ return new Tau( *this ); }
         virtual Tau* clone() && override{ return new Tau( std::move( *this ) ); }   
 };
+
 #endif

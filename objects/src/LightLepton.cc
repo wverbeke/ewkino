@@ -28,3 +28,31 @@ LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonInd
         _closestJetDeepCSV = 0.;
     }
 }
+
+
+LightLepton::LightLepton( const LightLepton& rhs, LeptonSelector* leptonSelector ):
+    Lepton( rhs, leptonSelector ),
+    _relIso0p3( rhs._relIso0p3 ),
+    _relIso0p4( rhs._relIso0p4 ),
+    _miniIso( rhs._miniIso ),
+    _miniIsoCharged( rhs._miniIsoCharged ),
+    _ptRatio( rhs._ptRatio ),
+    _ptRel( rhs._ptRel ),
+    _closestJetDeepCSV( rhs._closestJetDeepCSV ),
+    _closestJetTrackMultiplicity( rhs._closestJetTrackMultiplicity ),
+    _leptonMVA( rhs._leptonMVA )
+    {}
+
+
+LightLepton::LightLepton( LightLepton&& rhs, LeptonSelector* leptonSelector ):
+    Lepton( std::move( rhs ), leptonSelector ),
+    _relIso0p3( rhs._relIso0p3 ),
+    _relIso0p4( rhs._relIso0p4 ),
+    _miniIso( rhs._miniIso ),
+    _miniIsoCharged( rhs._miniIsoCharged ),
+    _ptRatio( rhs._ptRatio ),
+    _ptRel( rhs._ptRel ),
+    _closestJetDeepCSV( rhs._closestJetDeepCSV ),
+    _closestJetTrackMultiplicity( rhs._closestJetTrackMultiplicity ),
+    _leptonMVA( rhs._leptonMVA )
+    {}

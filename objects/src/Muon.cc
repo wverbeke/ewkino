@@ -13,3 +13,25 @@ Muon::Muon( const TreeReader& treeReader, const unsigned leptonIndex ):
     _isMediumPOGMuon( treeReader._lPOGMedium[leptonIndex] ),
     _isTightPOGMuon( treeReader._lPOGTight[leptonIndex] )
     {}
+
+
+Muon::Muon( const Muon& rhs ):
+    LightLepton( rhs, new MuonSelector( this ) ),
+    _segmentCompatibility( rhs._segmentCompatibility ),
+    _trackPt( rhs._trackPt ),
+    _trackPtError( rhs._trackPtError ),
+    _isLoosePOGMuon( rhs._isLoosePOGMuon ),
+    _isMediumPOGMuon( rhs._isMediumPOGMuon ),
+    _isTightPOGMuon( rhs._isTightPOGMuon )
+    {}    
+
+
+Muon::Muon( Muon&& rhs ) noexcept:
+    LightLepton( std::move( rhs ), new MuonSelector( this ) ),
+    _segmentCompatibility( rhs._segmentCompatibility ),
+    _trackPt( rhs._trackPt ),
+    _trackPtError( rhs._trackPtError ),
+    _isLoosePOGMuon( rhs._isLoosePOGMuon ),
+    _isMediumPOGMuon( rhs._isMediumPOGMuon ),
+    _isTightPOGMuon( rhs._isTightPOGMuon )
+    {}    

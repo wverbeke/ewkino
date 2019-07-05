@@ -13,8 +13,8 @@ class LightLepton : public Lepton {
     
     public: 
         LightLepton( const TreeReader&, const unsigned, LeptonSelector* ); 
-        LightLepton( const LightLepton& ) = default;
-        LightLepton( LightLepton&& ) = default;
+        LightLepton( const LightLepton& ) = delete;
+        LightLepton( LightLepton&& ) = delete;
 
         LightLepton& operator=( const LightLepton& ) = default;
         LightLepton& operator=( LightLepton&& ) = default;
@@ -58,6 +58,10 @@ class LightLepton : public Lepton {
 
         //lepton MVA output 
         double _leptonMVA = 0;
+
+    protected: 
+        LightLepton( const LightLepton&, LeptonSelector* );
+        LightLepton( LightLepton&&, LeptonSelector* );
         
 };
 #endif
