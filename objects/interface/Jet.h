@@ -32,6 +32,9 @@ class Jet : public PhysicsObject{
 
         //analysis-specific jet selection
         virtual bool isGood() const override{ return selector->isGood(); }
+        bool isBTaggedLoose() const { return selector->isBTaggedLoose(); }
+        bool isBTaggedMedium() const { return selector->isBTaggedMedium(); }
+        bool isBTaggedTight() const { return selector->isBTaggedTight(); }
 
         //create new Jet with JEC varied within uncertainties
         Jet JetJECDown() const;

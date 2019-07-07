@@ -91,6 +91,7 @@ void LeptonCollection::clean( bool (Lepton::*isFlavorToClean)() const, bool (Lep
                 //clean within given cone size
                 if( deltaR( l1, l2 ) < coneSize ){
                     objectsToDelete.push_back( l1It );
+                    break;
                 }
             }
         }
