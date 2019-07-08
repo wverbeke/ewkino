@@ -50,10 +50,8 @@ Jet::Jet( Jet&& rhs ) noexcept :
     _hadronFlavor( rhs._hadronFlavor ),
     _pt_JECDown( rhs._pt_JECDown ),
     _pt_JECUp( rhs._pt_JECUp ),
-	selector( rhs.selector )
-{
-	rhs.selector = nullptr;
-}
+	selector( new JetSelector( this ) )
+{}
 
 
 Jet::~Jet(){
@@ -92,7 +90,6 @@ Jet& Jet::operator=( Jet&& rhs ) noexcept {
         copyNonPointerAttributes( rhs );
 
         //current selector can still keep pointing to this object
-        rhs.selector = nullptr;
     }
     return *this;
 }

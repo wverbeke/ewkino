@@ -56,7 +56,7 @@ void JetCollection::cleanJetsFromTightLeptons( const LeptonCollection& leptonCol
 JetCollection JetCollection::buildSubCollection( bool (Jet::*passSelection)() const ) const{
     std::vector< std::shared_ptr< Jet > > jetVector;
     for( const auto& jetPtr : *this ){
-        if( (*jetPtr.*passSelection)() ){
+        if( ( *jetPtr.*passSelection )() ){
             jetVector.push_back( jetPtr );
         }
     }

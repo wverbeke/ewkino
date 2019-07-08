@@ -31,7 +31,7 @@ int main(){
     for(unsigned i = 0; i < treeReader.nEntries; ++i){
 
         treeReader.GetEntry(i);
-
+    
         //test JetCollection
         JetCollection jetCollection( treeReader );
         jetCollection.selectGoodJets();
@@ -42,6 +42,10 @@ int main(){
         jetCollection.cleanJetsFromTightLeptons( leptonCollection );
         jetCollection.cleanJetsFromFOLeptons( leptonCollection );
         jetCollection.cleanJetsFromLooseLeptons( leptonCollection );
+
+        jetCollection.looseBTagCollection();
+        jetCollection.mediumBTagCollection();
+        jetCollection.tightBTagCollection();
         
     }
 

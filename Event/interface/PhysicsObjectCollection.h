@@ -18,7 +18,6 @@ template< typename ObjectType > class PhysicsObjectCollection {
         using size_type = typename collection_type::size_type;
 
         PhysicsObjectCollection() {}
-        PhysicsObjectCollection( const collection_type& col ) : collection( col ) {}
 
         void push_back( const ObjectType& );
         void push_back( ObjectType&& );
@@ -40,10 +39,11 @@ template< typename ObjectType > class PhysicsObjectCollection {
         ~PhysicsObjectCollection() = default;
 
     protected:
+        PhysicsObjectCollection( const collection_type& col ) : collection( col ) {}
+
         void selectObjects( bool (ObjectType::*passSelection)() const );
 
-        //Does erase return an iterator or is it void?
-        template< typename IteratorType > void erase( IteratorType );
+        template< typename IteratorType > IteratorType erase( IteratorType );
         template< typename IteratorType > void erase( const std::vector< IteratorType >& );
 
     private:
@@ -67,8 +67,8 @@ template< typename ObjectType > template< typename func > void PhysicsObjectColl
 }
 
 
-template< typename ObjectType > template< typename IteratorType > void PhysicsObjectCollection< ObjectType >::erase( IteratorType it ){
-    collection.erase( it );
+template< typename ObjectType > template< typename IteratorType > IteratorType PhysicsObjectCollection< ObjectType >::erase( IteratorType it ){
+    return collection.erase( it );
 } 
 
 
@@ -81,7 +81,7 @@ template< typename ObjectType > template< typename IteratorType > void PhysicsOb
 template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::selectObjects( bool (ObjectType::*passSelection)() const ){
     std::vector< const_iterator > objectsToDelete;
     for( const_iterator it = cbegin(); it != cend(); ++it ){
-        if( ( (**it).*passSelection)() ){
+        if( !( (**it).*passSelection)() ){
             objectsToDelete.push_back( it );
         }
     }
