@@ -172,13 +172,16 @@ class TreeReader {
         Double_t        _metPhiUnclUp;       
         Double_t        _metSignificance;
 
+        std::map< std::string, bool > _triggerMap;
+
 
         //Constructor
         TreeReader(TTree *tree = nullptr);
 
         //set up tree for reading and writing
         void initTree(TTree *tree, const bool isData = false);
-        void setOutputTree(TTree*, const bool isData = false);
+        //void setOutputTree(TTree*, const bool isData = false, const std::map< std::string, bool >& triggerMap = std::map< std::string, bool >() );
+        void setOutputTree(TTree*, const bool isData, std::map< std::string, bool >& triggerMap );
 
         //skim tree
         //void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
@@ -378,6 +381,9 @@ class TreeReader {
         //general function to read a list of samples
         void readSamples(const std::string&, const std::string&, std::vector<Sample>&);
 
+        //initialize triggerMap
+        void initializeTriggerMap( TTree* );
+        
         //list of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   
@@ -531,5 +537,7 @@ class TreeReader {
         TBranch        *b__metPhiUnclDown;   
         TBranch        *b__metPhiUnclUp;   
         TBranch        *b__metSignificance;
+        std::map< std::string, TBranch* > b__triggerMap;
 };
+
 #endif

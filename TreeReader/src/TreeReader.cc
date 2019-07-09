@@ -3,6 +3,7 @@
 
 #include "../interface/TreeReader.h"
 #include "../../Tools/interface/analysisTools.h"
+#include "../../Tools/interface/stringTools.h"
 
 TreeReader::TreeReader(TTree *tree) : fChain(nullptr) 
 {
@@ -57,6 +58,18 @@ void TreeReader::readSamples2017(const std::string& list, const std::string& dir
     //check for errors 
     checkSampleEraConsistency();
 }
+
+
+void TreeReader::initializeTriggerMap( TTree* treePtr ){
+    TObjArray* branch_list = treePtr->GetListOfBranches();
+    for( const auto& branch : *branch_list ){
+        if( stringTools::stringContains( branch->GetName(), "HLT" ) ){
+            _triggerMap[branch->GetName()]  = false;
+            b__triggerMap[branch->GetName()] = nullptr;
+        }
+    }
+}
+
 
 void TreeReader::initSample(const Sample& samp){ 
 
@@ -265,9 +278,16 @@ void TreeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
         fChain->SetBranchAddress("_gen_HT", &_gen_HT, &b__gen_HT);
     }
+
+    //add all individually stored triggers 
+    initializeTriggerMap( fChain );
+    for( const auto& trigger : _triggerMap ){
+        fChain->SetBranchAddress( trigger.first.c_str(), &_triggerMap[ trigger.first ], &b__triggerMap[ trigger.first ] );
+    } 
 }
 
-void TreeReader::setOutputTree(TTree* outputTree, const bool isData){
+
+void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< std::string, bool >& triggerMap ){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
@@ -403,7 +423,7 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_weight",                    &_weight,                    "_weight/D");
         outputTree->Branch("_lIsPrompt",                 &_lIsPrompt,                 "_lIsPrompt[_nL]/O");
         outputTree->Branch("_lMatchPdgId",               &_lMatchPdgId,               "_lMatchPdgId[_nL]/I");
-        outputTree->Branch("_lMomPdgId",                  &_lMomPdgId,                "_lMomPdgId[_nL]/I");
+        outputTree->Branch("_lMomPdgId",                 &_lMomPdgId,                 "_lMomPdgId[_nL]/I");
         outputTree->Branch("_lProvenance",               &_lProvenance,               "_lProvenance[_nL]/i");
         outputTree->Branch("_lProvenanceCompressed",     &_lProvenanceCompressed,     "_lProvenanceCompressed[_nL]/i");
         outputTree->Branch("_lProvenanceConversion",     &_lProvenanceConversion,     "_lProvenanceConversion[_nL]/i");
@@ -422,5 +442,9 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData){
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/b");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
         outputTree->Branch("_gen_HT",                    &_gen_HT,                    "_gen_HT/D");
+    }
+
+    for( const auto& trigger : triggerMap ){
+        outputTree->Branch( trigger.first.c_str() , &triggerMap[ trigger.first ], std::string( trigger.first + "/O" ).c_str() );
     }
 }
