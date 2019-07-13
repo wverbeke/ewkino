@@ -26,6 +26,27 @@ int main(){
         for( unsigned l = treeReader._nMu; l < treeReader._nLight; ++l ){
             electronVector.push_back( Electron( treeReader, l ) );
             electronVector.back() = electronVector.back();
+            Electron& electron = electronVector.back();
+
+            electron.isMuon();
+            electron.isElectron();
+
+            electron.passChargeConsistency();
+            electron.passDoubleEGEmulation();
+            electron.passConversionVeto();
+            electron.numberOfMissingHits();
+
+            electron.electronMVASummer16GP();
+            electron.electronMVASummer16HZZ();
+            electron.electronMVAFall17Iso();
+            electron.electronMVAFall17NoIso();
+
+            electron.etaSuperCluster();
+
+            electron.isVetoPOGElectron();
+            electron.isLoosePOGElectron();
+            electron.isMediumPOGElectron();
+            electron.isTightPOGElectron();
         }
         
         std::vector< Electron > electronVectorCopy;

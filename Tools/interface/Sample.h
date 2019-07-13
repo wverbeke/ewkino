@@ -1,6 +1,7 @@
 /*
 Class used for storing the info related to a particular sample: xSec, process name, file name
 */
+
 #ifndef Sample_H
 #define Sample_H
 
@@ -35,9 +36,11 @@ class Sample{
 
         bool isMC() const { return !isDataSample; }
 
+        bool is2016() const { return !( is2017Sample || is2018Sample ); }
+
         bool is2017() const { return is2017Sample; }
 
-        bool is2016() const { return !is2017Sample; }
+        bool is2018() const{ return is2018Sample; }
 
         bool isSMSignal() const { return smSignal; }
 
@@ -47,9 +50,8 @@ class Sample{
 
     private:
         void setData(); 
-
         void set2017();
-
+        void set2018();
         void setOptions(const std::string&);
 
         std::string fileName;
@@ -60,6 +62,7 @@ class Sample{
         double xSec;
         bool isDataSample;
         bool is2017Sample;
+        bool is2018Sample;
         bool smSignal;
         bool newPhysicsSignal;
 

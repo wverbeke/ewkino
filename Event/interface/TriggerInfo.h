@@ -12,7 +12,7 @@
 class TriggerInfo{
 
     public:
-        TriggerInfo( const TreeReader&, const bool readIndividualTriggers = false );
+        TriggerInfo( const TreeReader&, const bool readIndividualTriggers = false, const bool readIndividualMETFilters = false );
 
         bool passTriggers_e() const{ return _passTriggers_e; }
         bool passTriggers_m() const{ return _passTriggers_m; }
@@ -27,8 +27,10 @@ class TriggerInfo{
         bool passTriggers_mmm() const{ return _passTriggers_mmm; }
         bool passMETFilters() const{ return _passMETFilters; }
         bool passTrigger( const std::string& ) const;
+        bool passMETFilter( const std::string& ) const;
 
         void printAvailableIndividualTriggers() const;
+        void printAvailableMETFilters() const;
 
     private:
         bool _passTriggers_e;
@@ -44,6 +46,7 @@ class TriggerInfo{
         bool _passTriggers_mmm;
         bool _passMETFilters;
         std::map< std::string, bool > individualTriggerMap; 
+        std::map< std::string, bool > individualMETFilterMap; 
 };
 
 #endif 

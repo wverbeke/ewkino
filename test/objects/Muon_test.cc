@@ -26,6 +26,18 @@ int main(){
         for( unsigned l = 0; l < treeReader._nMu; ++l ){
             muonVector.push_back( Muon( treeReader, l ) );
             muonVector.back() = muonVector.back();
+            Muon& muon = muonVector.back();
+    
+            muon.isMuon();
+            muon.isElectron();
+
+            muon.isLoosePOGMuon();
+            muon.isMediumPOGMuon();
+            muon.isTightPOGMuon();
+
+            muon.segmentCompatibility();
+            muon.trackPt();
+            muon.trackPtError();
         }
         
         std::vector< Muon > muonVectorCopy;

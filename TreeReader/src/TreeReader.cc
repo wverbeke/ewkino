@@ -5,12 +5,14 @@
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Tools/interface/stringTools.h"
 
+
 TreeReader::TreeReader(TTree *tree) : fChain(nullptr) 
 {
     if (tree != nullptr){
         initTree(tree);
     }
 }
+
 
 void TreeReader::readSamples(const std::string& list, const std::string& directory, std::vector<Sample>& sampleVector){
 
@@ -26,9 +28,11 @@ void TreeReader::readSamples(const std::string& list, const std::string& directo
     }
 }
 
+
 void TreeReader::readSamples(const std::string& list, const std::string& directory){
     readSamples(list, directory, this->samples);
 }
+
 
 void TreeReader::readSamples2016(const std::string& list, const std::string& directory){
     std::cout << "########################################" << std::endl;
@@ -45,6 +49,7 @@ void TreeReader::readSamples2016(const std::string& list, const std::string& dir
 
 }
 
+
 void TreeReader::readSamples2017(const std::string& list, const std::string& directory){
     std::cout << "########################################" << std::endl;
     std::cout << "         2017 samples                   " << std::endl;
@@ -60,14 +65,40 @@ void TreeReader::readSamples2017(const std::string& list, const std::string& dir
 }
 
 
-void TreeReader::initializeTriggerMap( TTree* treePtr ){
+std::pair< std::map< std::string, bool >, std::map< std::string, TBranch* > > buildBranchMap( TTree* treePtr, const std::string& nameIdentifier, const std::string& antiIdentifier = "" ){   
+    std::map< std::string, bool > decisionMap;
+    std::map< std::string, TBranch* > branchMap;
     TObjArray* branch_list = treePtr->GetListOfBranches();
-    for( const auto& branch : *branch_list ){
-        if( stringTools::stringContains( branch->GetName(), "HLT" ) ){
-            _triggerMap[branch->GetName()]  = false;
-            b__triggerMap[branch->GetName()] = nullptr;
+    for( const auto& branchPtr : *branch_list ){
+        std::string branchName = branchPtr->GetName();
+        if( stringTools::stringContains( branchName, nameIdentifier ) ){
+            if( antiIdentifier != "" && stringTools::stringContains( branchName, antiIdentifier ) ) continue;
+            decisionMap[ branchName ] = false;
+            branchMap[ branchName ] = nullptr;
+                
         }
     }
+    return { decisionMap, branchMap };
+}
+
+
+void TreeReader::initializeTriggerMap( TTree* treePtr ){
+    auto triggerMaps = buildBranchMap( treePtr, "HLT", "prescale");
+    _triggerMap = triggerMaps.first;
+    b__triggerMap = triggerMaps.second;
+}
+
+
+void TreeReader::initializeMETFilterMap( TTree* treePtr ){
+
+    //WARNING: Currently one MET filter contains 'updated' rather than 'Flag' in the name. If this changes, make sure to modify the code here!
+    auto filterMaps = buildBranchMap( treePtr, "Flag" );
+    auto filterMaps_part2 = buildBranchMap( treePtr , "updated" );
+    filterMaps.first.insert( filterMaps_part2.first.cbegin(), filterMaps_part2.first.cend() );
+    filterMaps.second.insert( filterMaps_part2.second.cbegin(), filterMaps_part2.second.cend() );
+
+    _METFilterMap = filterMaps.first;
+    b__METFilterMap = filterMaps.second;
 }
 
 
@@ -99,6 +130,7 @@ void TreeReader::initSample(const Sample& samp){
     }
 }
 
+
 void TreeReader::initSample(){ //initialize the next sample in the list 
     initSample(samples[++currentSampleIndex]);
 }
@@ -113,9 +145,26 @@ void TreeReader::GetEntry(const Sample& samp, long unsigned entry)
     else weight = 1;                            //data
 }
 
+
 void TreeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
     GetEntry(samples[currentSampleIndex], entry);
 }
+
+
+template< typename T > void setMapBranchAddresses( TTree* treePtr, std::map< std::string, T >& variableMap, std::map< std::string, TBranch* > branchMap ){
+    for( const auto& variable : variableMap ){
+        treePtr->SetBranchAddress( variable.first.c_str(), &variableMap[ variable.first ], &branchMap[ variable.first ] );
+    }
+}
+
+
+//WARNING: this piece of code has not been generalized to other types than 'bool' because the correct ROOT identifier string needs to be used
+void setMapOutputBranches( TTree* treePtr, std::map< std::string, bool >& variableMap ){
+    for( const auto& variable : variableMap ){
+        treePtr->Branch( variable.first.c_str(), &variableMap[ variable.first ], ( variable.first + "/O" ).c_str() );
+    }    
+}
+
 
 void TreeReader::initTree(TTree *tree, const bool isData)
 {
@@ -140,10 +189,6 @@ void TreeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_passTrigger_et", &_passTrigger_et, &b__passTrigger_et);
     fChain->SetBranchAddress("_passTrigger_mt", &_passTrigger_mt, &b__passTrigger_mt);
     fChain->SetBranchAddress("_passMETFilters", &_passMETFilters, &b__passMETFilters);
-    //TEMPORARY FOR CHECK, CAN BE REMOVED LATER
-    fChain->SetBranchAddress("_Flag_BadPFMuonFilter", &_Flag_BadPFMuonFilter, &b__Flag_BadPFMuonFilter);
-    fChain->SetBranchAddress("_Flag_BadPFMuonFilter", &_Flag_BadPFMuonFilter, &b__Flag_BadPFMuonFilter);
-    ///////////////////////////////////////////
     fChain->SetBranchAddress("_nL", &_nL, &b__nL);
     fChain->SetBranchAddress("_nMu", &_nMu, &b__nMu);
     fChain->SetBranchAddress("_nEle", &_nEle, &b__nEle);
@@ -160,46 +205,51 @@ void TreeReader::initTree(TTree *tree, const bool isData)
     fChain->SetBranchAddress("_dz", _dz, &b__dz);
     fChain->SetBranchAddress("_3dIP", _3dIP, &b__3dIP);
     fChain->SetBranchAddress("_3dIPSig", _3dIPSig, &b__3dIPSig);
-    fChain->SetBranchAddress("_lElectronMva", _lElectronMva, &b__lElectronMva);
-    fChain->SetBranchAddress("_lElectronMvaHZZ", _lElectronMvaHZZ, &b__lElectronMvaHZZ);
+    fChain->SetBranchAddress("_lElectronSummer16MvaGP", _lElectronSummer16MvaGP, &b__lElectronSummer16MvaGP);
+    fChain->SetBranchAddress("_lElectronSummer16MvaHZZ", _lElectronSummer16MvaHZZ, &b__lElectronSummer16MvaHZZ);
     fChain->SetBranchAddress("_lElectronMvaFall17Iso", _lElectronMvaFall17Iso, &b__lElectronMvaFall17Iso);
     fChain->SetBranchAddress("_lElectronMvaFall17NoIso", _lElectronMvaFall17NoIso, &b__lElectronMvaFall17NoIso);
     fChain->SetBranchAddress("_lElectronPassEmu", _lElectronPassEmu, &b__lElectronPassEmu);
     fChain->SetBranchAddress("_lElectronPassConvVeto", _lElectronPassConvVeto, &b__lElectronPassConvVeto);
     fChain->SetBranchAddress("_lElectronChargeConst", _lElectronChargeConst, &b__lElectronChargeConst);
     fChain->SetBranchAddress("_lElectronMissingHits", _lElectronMissingHits, &b__lElectronMissingHits);
-    fChain->SetBranchAddress("_leptonMvaSUSY16", _leptonMvaSUSY16, &b__leptonMvaSUSY16);
-    fChain->SetBranchAddress("_leptonMvaTTH16", _leptonMvaTTH16, &b__leptonMvaTTH16);
-    fChain->SetBranchAddress("_leptonMvatZqTTV16", _leptonMvatZqTTV16, &b__leptonMvatZqTTV16);
-    fChain->SetBranchAddress("_leptonMvaSUSY17", _leptonMvaSUSY17, &b__leptonMvaSUSY17);
-    fChain->SetBranchAddress("_leptonMvaTTH17", _leptonMvaTTH17, &b__leptonMvaTTH17);
-    fChain->SetBranchAddress("_leptonMvatZqTTV17", _leptonMvatZqTTV17, &b__leptonMvatZqTTV17);
-    fChain->SetBranchAddress("_lHNLoose", _lHNLoose, &b__lHNLoose);
-    fChain->SetBranchAddress("_lHNFO", _lHNFO, &b__lHNFO);
-    fChain->SetBranchAddress("_lHNTight", _lHNTight, &b__lHNTight);
-    fChain->SetBranchAddress("_lEwkLoose", _lEwkLoose, &b__lEwkLoose);
-    fChain->SetBranchAddress("_lEwkFO", _lEwkFO, &b__lEwkFO);
-    fChain->SetBranchAddress("_lEwkTight", _lEwkTight, &b__lEwkTight);
+    fChain->SetBranchAddress("_leptonMvaSUSY", _leptonMvaSUSY, &b__leptonMvaSUSY);
+    fChain->SetBranchAddress("_leptonMvaTTH", _leptonMvaTTH, &b__leptonMvaTTH);
+    fChain->SetBranchAddress("_leptonMvatZq", _leptonMvatZq, &b__leptonMvatZq);
     fChain->SetBranchAddress("_lPOGVeto", _lPOGVeto, &b__lPOGVeto);
     fChain->SetBranchAddress("_lPOGLoose", _lPOGLoose, &b__lPOGLoose);
     fChain->SetBranchAddress("_lPOGMedium", _lPOGMedium, &b__lPOGMedium);
     fChain->SetBranchAddress("_lPOGTight", _lPOGTight, &b__lPOGTight);
-    fChain->SetBranchAddress("_tauMuonVeto", _tauMuonVeto, &b__tauMuonVeto);
-    fChain->SetBranchAddress("_tauEleVeto", _tauEleVeto, &b__tauEleVeto);
+
+    fChain->SetBranchAddress("_tauDecayMode", _tauDecayMode, &b__tauDecayMode);
+    fChain->SetBranchAddress("_decayModeFinding", _decayModeFinding, &b__decayModeFinding);
     fChain->SetBranchAddress("_decayModeFindingNew", _decayModeFindingNew, &b__decayModeFindingNew);
-    fChain->SetBranchAddress("_tauVLooseMvaNew", _tauVLooseMvaNew, &b__tauVLooseMvaNew);
-    fChain->SetBranchAddress("_tauLooseMvaNew", _tauLooseMvaNew, &b__tauLooseMvaNew);
-    fChain->SetBranchAddress("_tauMediumMvaNew", _tauMediumMvaNew, &b__tauMediumMvaNew);
-    fChain->SetBranchAddress("_tauTightMvaNew", _tauTightMvaNew, &b__tauTightMvaNew);
-    fChain->SetBranchAddress("_tauVTightMvaNew", _tauVTightMvaNew, &b__tauVTightMvaNew);
-    fChain->SetBranchAddress("_tauVTightMvaOld", _tauVTightMvaOld, &b__tauVTightMvaOld);
-    fChain->SetBranchAddress("_tauAgainstElectronMVA6Raw", _tauAgainstElectronMVA6Raw, &b__tauAgainstElectronMVA6Raw);
-    fChain->SetBranchAddress("_tauCombinedIsoDBRaw3Hits", _tauCombinedIsoDBRaw3Hits, &b__tauCombinedIsoDBRaw3Hits);
-    fChain->SetBranchAddress("_tauIsoMVAPWdR03oldDMwLT", _tauIsoMVAPWdR03oldDMwLT, &b__tauIsoMVAPWdR03oldDMwLT);
-    fChain->SetBranchAddress("_tauIsoMVADBdR03oldDMwLT", _tauIsoMVADBdR03oldDMwLT, &b__tauIsoMVADBdR03oldDMwLT);
-    fChain->SetBranchAddress("_tauIsoMVADBdR03newDMwLT", _tauIsoMVADBdR03newDMwLT, &b__tauIsoMVADBdR03newDMwLT);
-    fChain->SetBranchAddress("_tauIsoMVAPWnewDMwLT", _tauIsoMVAPWnewDMwLT, &b__tauIsoMVAPWnewDMwLT);
-    fChain->SetBranchAddress("_tauIsoMVAPWoldDMwLT", _tauIsoMVAPWoldDMwLT, &b__tauIsoMVAPWoldDMwLT);
+    fChain->SetBranchAddress("_tauMuonVetoLoose", _tauMuonVetoLoose, &b__tauMuonVetoLoose);
+    fChain->SetBranchAddress("_tauMuonVetoTight", _tauMuonVetoTight, &b__tauMuonVetoTight);
+    fChain->SetBranchAddress("_tauEleVetoVLoose", _tauEleVetoVLoose, &b__tauEleVetoVLoose);
+    fChain->SetBranchAddress("_tauEleVetoLoose", _tauEleVetoLoose, &b__tauEleVetoLoose);
+    fChain->SetBranchAddress("_tauEleVetoMedium", _tauEleVetoMedium, &b__tauEleVetoMedium);
+    fChain->SetBranchAddress("_tauEleVetoTight", _tauEleVetoTight, &b__tauEleVetoTight);
+    fChain->SetBranchAddress("_tauEleVetoVTight", _tauEleVetoVTight, &b__tauEleVetoVTight);
+    fChain->SetBranchAddress("_tauPOGVLoose2015", _tauPOGVLoose2015, &b__tauPOGVLoose2015);
+    fChain->SetBranchAddress("_tauPOGLoose2015", _tauPOGLoose2015, &b__tauPOGLoose2015);
+    fChain->SetBranchAddress("_tauPOGMedium2015", _tauPOGMedium2015, &b__tauPOGMedium2015);
+    fChain->SetBranchAddress("_tauPOGTight2015", _tauPOGTight2015, &b__tauPOGTight2015);
+    fChain->SetBranchAddress("_tauPOGVTight2015", _tauPOGVTight2015, &b__tauPOGVTight2015);
+    fChain->SetBranchAddress("_tauVLooseMvaNew2015", _tauVLooseMvaNew2015, &b__tauVLooseMvaNew2015);
+    fChain->SetBranchAddress("_tauLooseMvaNew2015", _tauLooseMvaNew2015, &b__tauLooseMvaNew2015);
+    fChain->SetBranchAddress("_tauMediumMvaNew2015", _tauMediumMvaNew2015, &b__tauMediumMvaNew2015);
+    fChain->SetBranchAddress("_tauTightMvaNew2015", _tauTightMvaNew2015, &b__tauTightMvaNew2015);
+    fChain->SetBranchAddress("_tauVTightMvaNew2015", _tauVTightMvaNew2015, &b__tauVTightMvaNew2015);
+    fChain->SetBranchAddress("_tauPOGVVLoose2017v2", _tauPOGVVLoose2017v2, &b__tauPOGVVLoose2017v2);
+    fChain->SetBranchAddress("_tauPOGVTight2017v2", _tauPOGVTight2017v2, &b__tauPOGVTight2017v2);
+    fChain->SetBranchAddress("_tauPOGVVTight2017v2", _tauPOGVVTight2017v2, &b__tauPOGVVTight2017v2);
+    fChain->SetBranchAddress("_tauVLooseMvaNew2017v2", _tauVLooseMvaNew2017v2, &b__tauVLooseMvaNew2017v2);
+    fChain->SetBranchAddress("_tauLooseMvaNew2017v2", _tauLooseMvaNew2017v2, &b__tauLooseMvaNew2017v2);
+    fChain->SetBranchAddress("_tauMediumMvaNew2017v2", _tauMediumMvaNew2017v2, &b__tauMediumMvaNew2017v2);
+    fChain->SetBranchAddress("_tauTightMvaNew2017v2", _tauTightMvaNew2017v2, &b__tauTightMvaNew2017v2);
+    fChain->SetBranchAddress("_tauVTightMvaNew2017v2", _tauVTightMvaNew2017v2, &b__tauVTightMvaNew2017v2);
+
     fChain->SetBranchAddress("_relIso", _relIso, &b__relIso);
     fChain->SetBranchAddress("_relIso0p4", _relIso0p4, &b__relIso0p4);
     fChain->SetBranchAddress("_relIso0p4MuDeltaBeta", _relIso0p4MuDeltaBeta, &b__relIso0p4MuDeltaBeta);
@@ -256,7 +306,10 @@ void TreeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_weight", &_weight, &b__weight);
         fChain->SetBranchAddress("_nLheWeights", &_nLheWeights, &b__nLheWeights);
         fChain->SetBranchAddress("_lheWeight", _lheWeight, &b__lheWeight);
+        fChain->SetBranchAddress("_nPsWeights", &_nPsWeights, &b__nPsWeights);
+        fChain->SetBranchAddress("_psWeight", _psWeight, &b__psWeight);
         fChain->SetBranchAddress("_nTrueInt", &_nTrueInt, &b__nTrueInt);
+        fChain->SetBranchAddress("_lheHTIncoming", &_lheHTIncoming, &b__lheHTIncoming);
         fChain->SetBranchAddress("_gen_met", &_gen_met, &b__gen_met);
         fChain->SetBranchAddress("_gen_metPhi", &_gen_metPhi, &b__gen_metPhi);
         fChain->SetBranchAddress("_gen_nL", &_gen_nL, &b__gen_nL);
@@ -276,22 +329,23 @@ void TreeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_lProvenanceConversion", _lProvenanceConversion, &b__lProvenanceConversion);
         fChain->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
         fChain->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
-        fChain->SetBranchAddress("_gen_HT", &_gen_HT, &b__gen_HT);
     }
 
     //add all individually stored triggers 
     initializeTriggerMap( fChain );
-    for( const auto& trigger : _triggerMap ){
-        fChain->SetBranchAddress( trigger.first.c_str(), &_triggerMap[ trigger.first ], &b__triggerMap[ trigger.first ] );
-    } 
+    setMapBranchAddresses( fChain, _triggerMap, b__triggerMap );
+
+    //add all individually stored MET filters
+    initializeMETFilterMap( fChain );
+    setMapBranchAddresses( fChain, _METFilterMap, b__METFilterMap );
 }
 
 
-void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< std::string, bool >& triggerMap ){
+void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< std::string, bool >& triggerMap, std::map< std::string, bool >& METFilterMap ){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
-    outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/b");
+    outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/i");
     outputTree->Branch("_met",                          &_met,                          "_met/D");
     outputTree->Branch("_metJECDown",                   &_metJECDown,                   "_metJECDown/D");
     outputTree->Branch("_metJECUp",                     &_metJECUp,                     "_metJECUp/D");
@@ -315,15 +369,11 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< s
     outputTree->Branch("_passTrigger_et", &_passTrigger_et, "_passTrigger_et/O");
     outputTree->Branch("_passTrigger_mt", &_passTrigger_mt, "_passTrigger_mt/O");
     outputTree->Branch("_passMETFilters", &_passMETFilters, "_passMETFilters/O");
-    //TEMPORARY FOR CHECK, CAN BE REMOVED LATER
-    outputTree->Branch("_Flag_BadPFMuonFilter", &_Flag_BadPFMuonFilter, "_Flag_BadPFMuonFilter/O");
-    outputTree->Branch("_Flag_BadChargedCandidateFilter", &_Flag_BadChargedCandidateFilter, "_Flag_BadChargedCandidateFilter/O");
-    //////////////////////////////////////////
-    outputTree->Branch("_nL",                           &_nL,                           "_nL/b");
-    outputTree->Branch("_nMu",                          &_nMu,                          "_nMu/b");
-    outputTree->Branch("_nEle",                         &_nEle,                         "_nEle/b");
-    outputTree->Branch("_nLight",                       &_nLight,                       "_nLight/b");
-    outputTree->Branch("_nTau",                         &_nTau,                         "_nTau/b");
+    outputTree->Branch("_nL",                           &_nL,                           "_nL/i");
+    outputTree->Branch("_nMu",                          &_nMu,                          "_nMu/i");
+    outputTree->Branch("_nEle",                         &_nEle,                         "_nEle/i");
+    outputTree->Branch("_nLight",                       &_nLight,                       "_nLight/i");
+    outputTree->Branch("_nTau",                         &_nTau,                         "_nTau/i");
     outputTree->Branch("_lPt",                          &_lPt,                          "_lPt[_nL]/D");
     outputTree->Branch("_lEta",                         &_lEta,                         "_lEta[_nL]/D");
     outputTree->Branch("_lEtaSC",                       &_lEtaSC,                       "_lEtaSC[_nLight]/D");
@@ -335,46 +385,51 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< s
     outputTree->Branch("_dz",                           &_dz,                           "_dz[_nL]/D");
     outputTree->Branch("_3dIP",                         &_3dIP,                         "_3dIP[_nL]/D");
     outputTree->Branch("_3dIPSig",                      &_3dIPSig,                      "_3dIPSig[_nL]/D");
-    outputTree->Branch("_lElectronMva",                 &_lElectronMva,                 "_lElectronMva[_nLight]/F");
-    outputTree->Branch("_lElectronMvaHZZ",              &_lElectronMvaHZZ,              "_lElectronMvaHZZ[_nLight]/F");
+    outputTree->Branch("_lElectronSummer16MvaGP",       &_lElectronSummer16MvaGP,       "_lElectronSummer16MvaGP[_nLight]/F");
+    outputTree->Branch("_lElectronSummer16MvaHZZ",      &_lElectronSummer16MvaHZZ,      "_lElectronSummer16MvaHZZ[_nLight]/F");
     outputTree->Branch("_lElectronMvaFall17Iso",        &_lElectronMvaFall17Iso,        "_lElectronMvaFall17Iso[_nLight]/F");
     outputTree->Branch("_lElectronMvaFall17NoIso",      &_lElectronMvaFall17NoIso,      "_lElectronMvaFall17NoIso[_nLight]/F");
     outputTree->Branch("_lElectronPassEmu",             &_lElectronPassEmu,             "_lElectronPassEmu[_nLight]/O");
     outputTree->Branch("_lElectronPassConvVeto",        &_lElectronPassConvVeto,        "_lElectronPassConvVeto[_nLight]/O");
     outputTree->Branch("_lElectronChargeConst",         &_lElectronChargeConst,         "_lElectronChargeConst[_nLight]/O");
     outputTree->Branch("_lElectronMissingHits",         &_lElectronMissingHits,         "_lElectronMissingHits[_nLight]/i");
-    outputTree->Branch("_leptonMvaSUSY16",              &_leptonMvaSUSY16,              "_leptonMvaSUSY16[_nLight]/D");
-    outputTree->Branch("_leptonMvaTTH16",               &_leptonMvaTTH16,               "_leptonMvaTTH16[_nLight]/D");
-    outputTree->Branch("_leptonMvatZqTTV16",            &_leptonMvatZqTTV16,            "_leptonMvatZqTTV16[_nLight]/D");
-    outputTree->Branch("_leptonMvaSUSY17",              &_leptonMvaSUSY17,              "_leptonMvaSUSY17[_nLight]/D");
-    outputTree->Branch("_leptonMvaTTH17",               &_leptonMvaTTH17,               "_leptonMvaTTH17[_nLight]/D");
-    outputTree->Branch("_leptonMvatZqTTV17",            &_leptonMvatZqTTV17,            "_leptonMvatZqTTV17[_nLight]/D");
-    outputTree->Branch("_lHNLoose",                     &_lHNLoose,                     "_lHNLoose[_nLight]/O");
-    outputTree->Branch("_lHNFO",                        &_lHNFO,                        "_lHNFO[_nLight]/O");
-    outputTree->Branch("_lHNTight",                     &_lHNTight,                     "_lHNTight[_nLight]/O");
-    outputTree->Branch("_lEwkLoose",                    &_lEwkLoose,                    "_lEwkLoose[_nL]/O");
-    outputTree->Branch("_lEwkFO",                       &_lEwkFO,                       "_lEwkFO[_nL]/O");
-    outputTree->Branch("_lEwkTight",                    &_lEwkTight,                    "_lEwkTight[_nL]/O");
+    outputTree->Branch("_leptonMvaSUSY",                &_leptonMvaSUSY,                "_leptonMvaSUSY[_nLight]/D");
+    outputTree->Branch("_leptonMvaTTH",                 &_leptonMvaTTH,                 "_leptonMvaTTH[_nLight]/D");
+    outputTree->Branch("_leptonMvatZq",                 &_leptonMvatZq,                 "_leptonMvatZq[_nLight]/D");
     outputTree->Branch("_lPOGVeto",                     &_lPOGVeto,                     "_lPOGVeto[_nL]/O");
     outputTree->Branch("_lPOGLoose",                    &_lPOGLoose,                    "_lPOGLoose[_nL]/O");
     outputTree->Branch("_lPOGMedium",                   &_lPOGMedium,                   "_lPOGMedium[_nL]/O");
     outputTree->Branch("_lPOGTight",                    &_lPOGTight,                    "_lPOGTight[_nL]/O");
-    outputTree->Branch("_tauMuonVeto",                  &_tauMuonVeto,                  "_tauMuonVeto[_nL]/O");
-    outputTree->Branch("_tauEleVeto",                   &_tauEleVeto,                   "_tauEleVeto[_nL]/O");
-    outputTree->Branch("_decayModeFindingNew",          &_decayModeFindingNew,          "_decayModeFindingNew[_nL]/O");
-    outputTree->Branch("_tauVLooseMvaNew",              &_tauVLooseMvaNew,              "_tauVLooseMvaNew[_nL]/O");
-    outputTree->Branch("_tauLooseMvaNew",               &_tauLooseMvaNew,               "_tauLooseMvaNew[_nL]/O");
-    outputTree->Branch("_tauMediumMvaNew",              &_tauMediumMvaNew,              "_tauMediumMvaNew[_nL]/O");
-    outputTree->Branch("_tauTightMvaNew",               &_tauTightMvaNew,               "_tauTightMvaNew[_nL]/O");
-    outputTree->Branch("_tauVTightMvaNew",              &_tauVTightMvaNew,              "_tauVTightMvaNew[_nL]/O");
-    outputTree->Branch("_tauVTightMvaOld",              &_tauVTightMvaOld,              "_tauVTightMvaOld[_nL]/O");
-    outputTree->Branch("_tauAgainstElectronMVA6Raw",    &_tauAgainstElectronMVA6Raw,    "_tauAgainstElectronMVA6Raw[_nL]/D");
-    outputTree->Branch("_tauCombinedIsoDBRaw3Hits",     &_tauCombinedIsoDBRaw3Hits,     "_tauCombinedIsoDBRaw3Hits[_nL]/D");
-    outputTree->Branch("_tauIsoMVAPWdR03oldDMwLT",      &_tauIsoMVAPWdR03oldDMwLT,      "_tauIsoMVAPWdR03oldDMwLT[_nL]/D");
-    outputTree->Branch("_tauIsoMVADBdR03oldDMwLT",      &_tauIsoMVADBdR03oldDMwLT,      "_tauIsoMVADBdR03oldDMwLT[_nL]/D");
-    outputTree->Branch("_tauIsoMVADBdR03newDMwLT",      &_tauIsoMVADBdR03newDMwLT,      "_tauIsoMVADBdR03newDMwLT[_nL]/D");
-    outputTree->Branch("_tauIsoMVAPWnewDMwLT",          &_tauIsoMVAPWnewDMwLT,          "_tauIsoMVAPWnewDMwLT[_nL]/D");
-    outputTree->Branch("_tauIsoMVAPWoldDMwLT",          &_tauIsoMVAPWoldDMwLT,          "_tauIsoMVAPWoldDMwLT[_nL]/D"); 
+
+    outputTree->Branch("_tauDecayMode",                 &_tauDecayMode,                 "_tauDecayMode[_nL]/i");
+    outputTree->Branch("_decayModeFinding",             &_decayModeFinding,             "_decayModeFinding[_nL]/O");
+   	outputTree->Branch("_decayModeFindingNew",          &_decayModeFindingNew,          "_decayModeFindingNew[_nL]/O");
+    outputTree->Branch("_tauPOGVLoose2015",             &_tauPOGVLoose2015,             "_tauPOGVLoose2015[_nL]/O");
+    outputTree->Branch("_tauPOGLoose2015",              &_tauPOGLoose2015,              "_tauPOGLoose2015[_nL]/O");
+    outputTree->Branch("_tauPOGMedium2015",             &_tauPOGMedium2015,             "_tauPOGMedium2015[_nL]/O");
+    outputTree->Branch("_tauPOGTight2015",              &_tauPOGTight2015,              "_tauPOGTight2015[_nL]/O");
+    outputTree->Branch("_tauPOGVTight2015",             &_tauPOGVTight2015,             "_tauPOGVTight2015[_nL]/O");
+    outputTree->Branch("_tauVLooseMvaNew2015",          &_tauVLooseMvaNew2015,          "_tauVLooseMvaNew2015[_nL]/O");
+    outputTree->Branch("_tauLooseMvaNew2015",           &_tauLooseMvaNew2015,           "_tauLooseMvaNew2015[_nL]/O");
+    outputTree->Branch("_tauMediumMvaNew2015",          &_tauMediumMvaNew2015,          "_tauMediumMvaNew2015[_nL]/O");
+    outputTree->Branch("_tauTightMvaNew2015",           &_tauTightMvaNew2015,           "_tauTightMvaNew2015[_nL]/O");
+    outputTree->Branch("_tauVTightMvaNew2015",          &_tauVTightMvaNew2015,          "_tauVTightMvaNew2015[_nL]/O");
+    outputTree->Branch("_tauPOGVVLoose2017v2",          &_tauPOGVVLoose2017v2,          "_tauPOGVVLoose2017v2[_nL]/O");
+    outputTree->Branch("_tauPOGVTight2017v2",           &_tauPOGVTight2017v2,           "_tauPOGVTight2017v2[_nL]/O");
+    outputTree->Branch("_tauPOGVVTight2017v2",          &_tauPOGVVTight2017v2,          "_tauPOGVVTight2017v2[_nL]/O");
+    outputTree->Branch("_tauVLooseMvaNew2017v2",        &_tauVLooseMvaNew2017v2,        "_tauVLooseMvaNew2017v2[_nL]/O");
+    outputTree->Branch("_tauLooseMvaNew2017v2",         &_tauLooseMvaNew2017v2,         "_tauLooseMvaNew2017v2[_nL]/O");
+    outputTree->Branch("_tauMediumMvaNew2017v2",        &_tauMediumMvaNew2017v2,        "_tauMediumMvaNew2017v2[_nL]/O");
+    outputTree->Branch("_tauTightMvaNew2017v2",         &_tauTightMvaNew2017v2,         "_tauTightMvaNew2017v2[_nL]/O");
+    outputTree->Branch("_tauVTightMvaNew2017v2",        &_tauVTightMvaNew2017v2,        "_tauVTightMvaNew2017v2[_nL]/O");
+	outputTree->Branch("_tauMuonVetoLoose",             &_tauMuonVetoLoose,             "_tauMuonVetoLoose[_nL]/O");
+    outputTree->Branch("_tauMuonVetoTight",             &_tauMuonVetoTight,             "_tauMuonVetoTight[_nL]/O");
+    outputTree->Branch("_tauEleVetoVLoose",             &_tauEleVetoVLoose,             "_tauEleVetoVLoose[_nL]/O");
+    outputTree->Branch("_tauEleVetoLoose",              &_tauEleVetoLoose,              "_tauEleVetoLoose[_nL]/O");
+    outputTree->Branch("_tauEleVetoMedium",             &_tauEleVetoMedium,             "_tauEleVetoMedium[_nL]/O");
+    outputTree->Branch("_tauEleVetoTight",              &_tauEleVetoTight,              "_tauEleVetoTight[_nL]/O");
+    outputTree->Branch("_tauEleVetoVTight",             &_tauEleVetoVTight,             "_tauEleVetoVTight[_nL]/O"); 
+
     outputTree->Branch("_relIso",                       &_relIso,                       "_relIso[_nLight]/D");
     outputTree->Branch("_relIso0p4",                    &_relIso0p4,                    "_relIso0p4[_nLight]/D");
     outputTree->Branch("_relIso0p4MuDeltaBeta",         &_relIso0p4MuDeltaBeta,         "_relIso0p4MuDeltaBeta[_nMu]/D");
@@ -389,7 +444,7 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< s
     outputTree->Branch("_lMuonSegComp",                 &_lMuonSegComp,                 "_lMuonSegComp[_nMu]/D");
     outputTree->Branch("_lMuonTrackPt",                 &_lMuonTrackPt,                 "_lMuonTrackPt[_nMu]/D");
     outputTree->Branch("_lMuonTrackPtErr",              &_lMuonTrackPtErr,              "_lMuonTrackPtErr[_nMu]/D");
-    outputTree->Branch("_nJets",                     &_nJets,                    "_nJets/b");
+    outputTree->Branch("_nJets",                     &_nJets,                    "_nJets/i");
     outputTree->Branch("_jetPt",                     &_jetPt,                    "_jetPt[_nJets]/D");
     outputTree->Branch("_jetPt_JECUp",               &_jetPt_JECUp,              "_jetPt_JECUp[_nJets]/D");
     outputTree->Branch("_jetPt_JECDown",             &_jetPt_JECDown,            "_jetPt_JECDown[_nJets]/D");
@@ -418,16 +473,19 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< s
 
 
     if(!isData){
-        outputTree->Branch("_nLheWeights",               &_nLheWeights,               "_nLheWeights/b");
+        outputTree->Branch("_nLheWeights",               &_nLheWeights,               "_nLheWeights/i");
         outputTree->Branch("_lheWeight",                 &_lheWeight,                 "_lheWeight[_nLheWeights]/D");
         outputTree->Branch("_weight",                    &_weight,                    "_weight/D");
+        outputTree->Branch("_nPsWeights",                &_nPsWeights,                "_nPsWeights/i");
+        outputTree->Branch("_psWeight",                  &_psWeight,                  "_psWeight/D");
+        outputTree->Branch("_nTrueInt",                  &_nTrueInt,                  "_nTrueInt/F");
+        outputTree->Branch("_lheHTIncoming",             &_lheHTIncoming,             "_lheHTIncoming/D");
         outputTree->Branch("_lIsPrompt",                 &_lIsPrompt,                 "_lIsPrompt[_nL]/O");
         outputTree->Branch("_lMatchPdgId",               &_lMatchPdgId,               "_lMatchPdgId[_nL]/I");
         outputTree->Branch("_lMomPdgId",                 &_lMomPdgId,                 "_lMomPdgId[_nL]/I");
         outputTree->Branch("_lProvenance",               &_lProvenance,               "_lProvenance[_nL]/i");
         outputTree->Branch("_lProvenanceCompressed",     &_lProvenanceCompressed,     "_lProvenanceCompressed[_nL]/i");
         outputTree->Branch("_lProvenanceConversion",     &_lProvenanceConversion,     "_lProvenanceConversion[_nL]/i");
-        outputTree->Branch("_nTrueInt",                  &_nTrueInt,                  "_nTrueInt/F");
         outputTree->Branch("_gen_met",                   &_gen_met,                   "_gen_met/D");
         outputTree->Branch("_gen_metPhi",                &_gen_metPhi,                "_gen_metPhi/D");
         outputTree->Branch("_gen_nL",                    &_gen_nL,                    "_gen_nL/b");
@@ -441,10 +499,11 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< s
         outputTree->Branch("_gen_lIsPrompt",             &_gen_lIsPrompt,             "_gen_lIsPrompt[_gen_nL]/O");
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/b");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
-        outputTree->Branch("_gen_HT",                    &_gen_HT,                    "_gen_HT/D");
     }
 
-    for( const auto& trigger : triggerMap ){
-        outputTree->Branch( trigger.first.c_str() , &triggerMap[ trigger.first ], std::string( trigger.first + "/O" ).c_str() );
-    }
+    //write individual trigger decisions to output tree 
+    setMapOutputBranches( outputTree, triggerMap );
+
+    //write individual MET filters to output tree
+    setMapOutputBranches( outputTree, METFilterMap );
 }

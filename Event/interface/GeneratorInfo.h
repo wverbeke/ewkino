@@ -1,0 +1,57 @@
+#ifndef GeneratorInfo_H
+#define GeneratorInfo_H
+
+//include other parts of framework
+#include "../../TreeReader/interface/TreeReader.h"
+
+class GeneratorInfo{
+    
+    public:
+        GeneratorInfo( const TreeReader& );
+
+        unsigned numberOfLheWeights() const{ return _numberOfLheWeights; }
+        double relativeWeightScaleVar( const unsigned scaleIndex ) const;
+        double relativeWeight_MuR_1_MuF_1() const{ return relativeWeightScaleVar( 1 ); }
+        double relativeWeight_MuR_1_MuF_0p5() const{ return relativeWeightScaleVar( 2 ); }
+        double relativeWeight_MuR_2_MuF_1() const{ return relativeWeightScaleVar( 3 ); }
+        double relativeWeight_MuR_2_MuF_2() const{ return relativeWeightScaleVar( 4 ); }
+        double relativeWeight_MuR_2_MuF_0p5() const{ return relativeWeightScaleVar( 5 ); }
+        double relativeWeight_MuR_0p5_MuF_1() const{ return relativeWeightScaleVar( 6 ); }
+        double relativeWeight_MuR_0p5_MuF_2() const{ return relativeWeightScaleVar( 7 ); }
+        double relativeWeight_MuR_0p5_MuF_0p5() const{ return relativeWeightScaleVar( 8 ); }
+
+        double relativeWeightPdfVar( const unsigned pdfIndex ) const;
+
+        unsigned numberOfPsWeights() const{ return _numberOfPsWeights; }
+        double relativeWeightPsVar( const unsigned psIndex ) const;
+        double relativeWeight_ISR_InverseSqrt2() const{ return relativeWeightPsVar( 2 ); }
+        double relativeWeight_FSR_InverseSqrt2_() const{ return relativeWeightPsVar( 3 ); }
+        double relativeWeight_ISR_Sqrt2() const{ return relativeWeightPsVar( 4 ); }
+        double relativeWeight_FSR_Sqrt2() const{ return relativeWeightPsVar( 5 ); }
+        double relativeWeight_ISR_0p5() const{ return relativeWeightPsVar( 6 ); }
+        double relativeWeight_FSR_0p5() const{ return relativeWeightPsVar( 7 ); }
+        double relativeWeight_ISR_2() const{ return relativeWeightPsVar( 8 ); }
+        double relativeWeight_FSR_2() const{ return relativeWeightPsVar( 9 ); }
+        double relativeWeight_ISR_0p25() const{ return relativeWeightPsVar( 10 ); }
+        double relativeWeight_FSR_0p25() const{ return relativeWeightPsVar( 11 ); }
+        double relativeWeight_ISR_4() const{ return relativeWeightPsVar( 12 ); }
+        double relativeWeight_FSR_4() const{ return relativeWeightPsVar( 13 ); }
+
+        unsigned ttgEventType() const{ return _ttgEventType; }
+        unsigned zgEventType() const{ return _zgEventType; }
+        double partonLevelHT() const{ return _partonLevelHT; }
+        float numberOfTrueInteractions() const{ return _numberOfTrueInteractions; }
+
+    private:
+        unsigned _numberOfLheWeights;
+        double _lheWeights[110];
+        unsigned _numberOfPsWeights;
+        double _psWeights[14];
+
+        unsigned _ttgEventType;
+        unsigned _zgEventType;
+        double _partonLevelHT;
+        float _numberOfTrueInteractions;
+};
+
+#endif 

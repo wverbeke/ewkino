@@ -14,9 +14,7 @@ LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonInd
     _ptRel( treeReader._ptRel[leptonIndex] ), 
     _closestJetDeepCSV( treeReader._closestJetDeepCsv_b[leptonIndex] + treeReader._closestJetDeepCsv_bb[leptonIndex] ), 
     _closestJetTrackMultiplicity( treeReader._selectedTrackMult[leptonIndex] ),
-
-    //a way has to be found to handle this correctly for all separate datasets!
-    _leptonMVA( treeReader._leptonMvatZqTTV16[leptonIndex] )
+    _leptonMVA( treeReader._leptonMvatZq[leptonIndex] )
 {
 
     //catch nan deep CSV values 

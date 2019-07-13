@@ -3,6 +3,7 @@
 //include c++ library classes 
 #include <sstream>
 #include <fstream>
+#include <stdexcept>
 
 //include other parts of code 
 #include "../interface/stringTools.h"
@@ -22,18 +23,22 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
     std::istringstream stream(line);
     stream >> process >> fileName >> xSecString;
 
-    //if not Xsection is specified it is zero
+    //if Xsection is not specified it is zero
     xSec = ( xSecString == "" ? 0 : std::stod(xSecString) );
 
     setData();
     set2017();
+    set2018();
 
     //unique name is equal to fileName without file extension
     uniqueName = stringTools::fileWithoutExtension( fileName );
 
-    //data has no xSection
+    //data should not have an xSection
     if(isData() && xSecString != ""){
-        std::cerr << "xSection specified for data: are you sure this was intended?" << std::endl;
+        std::string errorMessage = "Error in sample list on line:\n";
+        errorMessage += ( line + "\n" );
+        errorMessage += "xSection specified for data sample, this is not allowed!"; 
+        throw std::invalid_argument( errorMessage );
     }
 
     //extract all optional strings at the end of the line
@@ -60,7 +65,7 @@ Sample::Sample( std::istream& is, const std::string& directory ){
     do{
         nextLineIsComment = false;
         if(std::getline(is, line)){
-            nextLineIsComment =  (line[line.find_first_not_of(" \t")] == '#');
+            nextLineIsComment = (line[line.find_first_not_of(" \t")] == '#');
             if(!nextLineIsComment){
                 *this = Sample(line, directory); 
             }
@@ -81,7 +86,12 @@ void Sample::setData(){
 
 
 void Sample::set2017(){
-    is2017Sample = (fileName.find("Fall17") != std::string::npos) || (fileName.find("2017") != std::string::npos);
+    is2017Sample = ( stringTools::stringContains( fileName, "Fall17" ) || stringTools::stringContains( fileName, "2017" ) );
+}
+
+
+void Sample::set2018(){
+    is2018Sample = ( stringTools::stringContains( fileName, "Autumn18" ) || stringTools::stringContains( fileName, "2018" ) );
 }
 
 
@@ -99,21 +109,30 @@ void Sample::setOptions( const std::string& optionString ){
 
     //signal can not be both SM and BSM sigal
     if(smSignal && newPhysicsSignal){
-        std::cerr << "Error in sample construction: sample is both SM and BSM signal" << std::endl;
+        throw std::invalid_argument( "Error in sample construction: sample is both SM and BSM signal!" );
     }
     
-    //check if sample needs to be used in different era it was intended for (i.e. 2016 sample when comparing to 2017 data)
-    bool flag2017 = ( optionString.find("forceIs2017") != std::string::npos );
-    bool flag2016 = ( optionString.find("forceIs2016") != std::string::npos );
+    //check if sample needs to be used in different era it was intended for (i.e. 2016 sample when comparing to 2017 or 2018 data, or vice-versa)
+    bool flag2016 = stringTools::stringContains( optionString, "forceIs2016" );
+    bool flag2017 = stringTools::stringContains( optionString, "forceIs2017" );
+    bool flag2018 = stringTools::stringContains( optionString, "forceIs2018" );
+
     if(flag2016 && flag2017){
-        std::cerr << "Error in sample construction: both forceIs2016 and forceIs2017 flags were set, can not set both!" << std::endl;
+        throw std::invalid_argument( "Error in sample construction: both forceIs2016 and forceIs2017 flags were set, can not set both " );
     }
-    if(flag2017){
-        is2017Sample = true;
-        uniqueName += "_forcedIs2017";
-    } else if(flag2016){
+
+    if(flag2016){
         is2017Sample = false;
+        is2018Sample = false;
         uniqueName += "_forcedIs2016";
+    } else if(flag2016){
+        is2017Sample = true;
+        is2018Sample = false;
+        uniqueName += "_forcedIs2017";
+    } else if( flag2018 ){
+        is2017Sample = false;
+        is2018Sample = true;
+        uniqueName += "_forcedIs2018";
     }
 }
 
@@ -134,6 +153,7 @@ std::ostream& operator<<( std::ostream& os, const Sample& sam ){
         ( sam.newPhysicsSignal ? "\tBSM signal" : "" );
     return os;
 }
+
 
 //read a list of samples into a vector 
 std::vector< Sample > readSampleList( const std::string& listFile, const std::string& directory ){

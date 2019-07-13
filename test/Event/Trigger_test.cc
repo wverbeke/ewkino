@@ -20,9 +20,24 @@ int main(){
 
         treeReader.GetEntry(i);
         
-        TriggerInfo triggerInfo( treeReader );
-        triggerInfo.printAvailableSingleTriggers();
+        TriggerInfo triggerInfo( treeReader, true, true);
+        triggerInfo.passTriggers_e();
+        triggerInfo.passTriggers_m();
+        triggerInfo.passTriggers_ee();
+        triggerInfo.passTriggers_em();
+        triggerInfo.passTriggers_et();
+        triggerInfo.passTriggers_mm();
+        triggerInfo.passTriggers_mt();
+        triggerInfo.passTriggers_eee();
+        triggerInfo.passTriggers_eem();
+        triggerInfo.passTriggers_emm();
+        triggerInfo.passTriggers_mmm();
+        triggerInfo.passMETFilters();
 
+        if( i == 0 ){
+            triggerInfo.printAvailableIndividualTriggers();
+            triggerInfo.printAvailableMETFilters();
+        }
     }
 
     auto end = std::chrono::high_resolution_clock::now();

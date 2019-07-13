@@ -21,6 +21,10 @@ class Muon : public LightLepton {
         bool isMediumPOGMuon() const{ return _isMediumPOGMuon; }
         bool isTightPOGMuon() const{ return _isTightPOGMuon; }
 
+        double segmentCompatibility() const{ return _segmentCompatibility; }
+        double trackPt() const{ return _trackPt; }
+        double trackPtError() const{ return _trackPtError; }
+
     private:
         double _segmentCompatibility = 0;
         double _trackPt = 0;

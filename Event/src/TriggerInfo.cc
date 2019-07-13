@@ -2,9 +2,10 @@
 
 //include c++ library classes
 #include <iostream>
+#include <stdexcept>
 
 
-TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividualTriggers ) :
+TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividualTriggers, const bool readIndividualMETFilters ) :
     _passTriggers_e( treeReader._passTrigger_e ),
     _passTriggers_m( treeReader._passTrigger_m ),
     _passTriggers_em( treeReader._passTrigger_em ),
@@ -22,21 +23,49 @@ TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividua
             individualTriggerMap.insert( trigger );
         }
     }
+    if( readIndividualMETFilters ){
+        for( const auto& filter : treeReader._METFilterMap ){
+            individualMETFilterMap.insert( filter );
+        }   
+    }
+}
+
+
+bool passTriggerOrFilter( const std::map< std::string, bool >& decisionMap,  const std::string& name ){
+    auto decisionIt = decisionMap.find( name );
+
+    //throw error if non-existing trigger or MET filter is requested
+    if( decisionIt == decisionMap.cend() ){
+        throw std::invalid_argument( "Requested trigger or MET filter does not exist." );
+    } else {
+        return (*decisionIt).second;
+    }
 }
 
 
 bool TriggerInfo::passTrigger( const std::string& triggerName ) const{
-    auto decisionIt = individualTriggerMap.find( triggerName );
-    if( decisionIt != individualTriggerMap.cend() ){
-        return (*decisionIt).second;
+    return passTriggerOrFilter( individualTriggerMap, triggerName );
+}
+
+
+bool TriggerInfo::passMETFilter( const std::string& filterName ) const{
+    return passTriggerOrFilter( individualMETFilterMap, filterName );
+}
+
+
+void printAvailableInfo( const std::map< std::string, bool >& decisionMap, const std::string& decisionType ){
+    std::cout << "Available " << decisionType << " :" << std::endl;
+    for( const auto& decision : decisionMap ){
+        std::cout << decision.first << std::endl;
     }
-    return false;
 }
 
 
 void TriggerInfo::printAvailableIndividualTriggers() const{
-    std::cout << "Available triggers :" << std::endl;
-    for( const auto& trigger : individualTriggerMap ){
-        std::cout << trigger.first << std::endl;
-    }
+    printAvailableInfo( individualTriggerMap, "triggers" );
+}
+
+
+void TriggerInfo::printAvailableMETFilters() const{
+    printAvailableInfo( individualMETFilterMap, "MET filters");
 }

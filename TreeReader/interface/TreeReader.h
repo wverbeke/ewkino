@@ -21,17 +21,20 @@ class TreeReader {
         static const unsigned nJets_max = 20;
         static const unsigned gen_nL_max = 20;
         static const unsigned gen_nPh_max = 10;
-        ULong_t       _runNb;
-        ULong_t       _lumiBlock;
-        ULong_t       _eventNb;
-        UChar_t         _nVertex;
+        ULong_t         _runNb;
+        ULong_t         _lumiBlock;
+        ULong_t         _eventNb;
+        UInt_t          _nVertex;
         Double_t        _weight;
-        UChar_t         _nLheWeights;
+        UInt_t          _nLheWeights;
         Double_t        _lheWeight[110];
+        UInt_t          _nPsWeights;
+        Double_t        _psWeight[14];
         Float_t         _nTrueInt;
+        Double_t        _lheHTIncoming;
         Double_t        _gen_met;
         Double_t        _gen_metPhi;
-        UChar_t         _gen_nL;
+        UInt_t          _gen_nL;
         Double_t        _gen_lPt[gen_nL_max];   
         Double_t        _gen_lEta[gen_nL_max];   
         Double_t        _gen_lPhi[gen_nL_max];   
@@ -40,9 +43,8 @@ class TreeReader {
         Int_t           _gen_lCharge[gen_nL_max];   
         Int_t           _gen_lMomPdg[gen_nL_max];   
         Bool_t          _gen_lIsPrompt[gen_nL_max];   
-        UChar_t         _ttgEventType;
-        UChar_t         _zgEventType;
-        Double_t        _gen_HT;
+        UInt_t          _ttgEventType;
+        UInt_t          _zgEventType;
         Bool_t          _passTrigger_e;
         Bool_t          _passTrigger_ee;
         Bool_t          _passTrigger_eee;
@@ -55,14 +57,11 @@ class TreeReader {
         Bool_t          _passTrigger_et;
         Bool_t          _passTrigger_mt;
         Bool_t          _passMETFilters;
-        //TEMPORARY FOR TEST, CAN BE REMOVED LATER
-        Bool_t          _Flag_BadPFMuonFilter;
-        Bool_t          _Flag_BadChargedCandidateFilter;
-        UChar_t         _nL;
-        UChar_t         _nMu;
-        UChar_t         _nEle;
-        UChar_t         _nLight;
-        UChar_t         _nTau;
+        UInt_t          _nL;
+        UInt_t          _nMu;
+        UInt_t          _nEle;
+        UInt_t          _nLight;
+        UInt_t          _nTau;
         Double_t        _lPt[nL_max];   
         Double_t        _lEta[nL_max];   
         Double_t        _lEtaSC[nL_max];   
@@ -74,46 +73,51 @@ class TreeReader {
         Double_t        _dz[nL_max];   
         Double_t        _3dIP[nL_max];   
         Double_t        _3dIPSig[nL_max];   
-        Float_t         _lElectronMva[nL_max];   
-        Float_t         _lElectronMvaHZZ[nL_max];
+        Float_t         _lElectronSummer16MvaGP[nL_max];   
+        Float_t         _lElectronSummer16MvaHZZ[nL_max];
         Float_t         _lElectronMvaFall17Iso[nL_max];
         Float_t         _lElectronMvaFall17NoIso[nL_max];
         Bool_t          _lElectronPassEmu[nL_max];   
         Bool_t          _lElectronPassConvVeto[nL_max];
         Bool_t          _lElectronChargeConst[nL_max];
         UInt_t          _lElectronMissingHits[nL_max];
-        Double_t        _leptonMvaSUSY16[nL_max];   
-        Double_t        _leptonMvaTTH16[nL_max];
-        Double_t        _leptonMvatZqTTV16[nL_max];
-        Double_t        _leptonMvaSUSY17[nL_max];
-        Double_t        _leptonMvaTTH17[nL_max];
-        Double_t        _leptonMvatZqTTV17[nL_max];
-        Bool_t          _lHNLoose[nL_max];   
-        Bool_t          _lHNFO[nL_max];   
-        Bool_t          _lHNTight[nL_max];   
-        Bool_t          _lEwkLoose[nL_max];   
-        Bool_t          _lEwkFO[nL_max];   
-        Bool_t          _lEwkTight[nL_max];   
+        Double_t        _leptonMvaSUSY[nL_max];   
+        Double_t        _leptonMvaTTH[nL_max];
+        Double_t        _leptonMvatZq[nL_max];
         Bool_t          _lPOGVeto[nL_max];   
         Bool_t          _lPOGLoose[nL_max];   
         Bool_t          _lPOGMedium[nL_max];   
         Bool_t          _lPOGTight[nL_max];   
-        Bool_t          _tauMuonVeto[nL_max];   
-        Bool_t          _tauEleVeto[nL_max];   
+
+        UInt_t          _tauDecayMode[nL_max];
+        Bool_t          _decayModeFinding[nL_max];
         Bool_t          _decayModeFindingNew[nL_max];   
-        Bool_t          _tauVLooseMvaNew[nL_max];   
-        Bool_t          _tauLooseMvaNew[nL_max];   
-        Bool_t          _tauMediumMvaNew[nL_max];   
-        Bool_t          _tauTightMvaNew[nL_max];   
-        Bool_t          _tauVTightMvaNew[nL_max];   
-        Bool_t          _tauVTightMvaOld[nL_max];   
-        Double_t        _tauAgainstElectronMVA6Raw[nL_max];
-        Double_t        _tauCombinedIsoDBRaw3Hits[nL_max];
-        Double_t        _tauIsoMVAPWdR03oldDMwLT[nL_max];
-        Double_t        _tauIsoMVADBdR03oldDMwLT[nL_max];
-        Double_t        _tauIsoMVADBdR03newDMwLT[nL_max];
-        Double_t        _tauIsoMVAPWnewDMwLT[nL_max];
-        Double_t        _tauIsoMVAPWoldDMwLT[nL_max];
+        Bool_t          _tauMuonVetoLoose[nL_max];
+        Bool_t          _tauMuonVetoTight[nL_max];
+        Bool_t          _tauEleVetoVLoose[nL_max];
+        Bool_t          _tauEleVetoLoose[nL_max];
+        Bool_t          _tauEleVetoMedium[nL_max];
+        Bool_t          _tauEleVetoTight[nL_max];
+        Bool_t          _tauEleVetoVTight[nL_max];
+		Bool_t 			_tauPOGVLoose2015[nL_max];
+		Bool_t			_tauPOGLoose2015[nL_max];
+		Bool_t			_tauPOGMedium2015[nL_max];
+		Bool_t			_tauPOGTight2015[nL_max];
+		Bool_t			_tauPOGVTight2015[nL_max];
+		Bool_t			_tauVLooseMvaNew2015[nL_max];
+		Bool_t			_tauLooseMvaNew2015[nL_max];
+		Bool_t			_tauMediumMvaNew2015[nL_max];
+		Bool_t			_tauTightMvaNew2015[nL_max];
+		Bool_t			_tauVTightMvaNew2015[nL_max];
+		Bool_t			_tauPOGVVLoose2017v2[nL_max];
+		Bool_t			_tauPOGVTight2017v2[nL_max];
+		Bool_t			_tauPOGVVTight2017v2[nL_max];
+		Bool_t			_tauVLooseMvaNew2017v2[nL_max];
+		Bool_t			_tauLooseMvaNew2017v2[nL_max];
+		Bool_t			_tauMediumMvaNew2017v2[nL_max];
+		Bool_t			_tauTightMvaNew2017v2[nL_max];
+		Bool_t			_tauVTightMvaNew2017v2[nL_max];
+
         Double_t        _relIso[nL_max];   
         Double_t        _relIso0p4[nL_max];
         Double_t        _relIso0p4MuDeltaBeta[nL_max];
@@ -134,7 +138,7 @@ class TreeReader {
         UInt_t          _lProvenance[nL_max];
         UInt_t          _lProvenanceCompressed[nL_max];
         UInt_t          _lProvenanceConversion[nL_max];
-        UChar_t         _nJets;
+        UInt_t          _nJets;
         Double_t        _jetPt[nJets_max];   
         Double_t        _jetPt_JECUp[nJets_max];   
         Double_t        _jetPt_JECDown[nJets_max];   
@@ -173,7 +177,7 @@ class TreeReader {
         Double_t        _metSignificance;
 
         std::map< std::string, bool > _triggerMap;
-
+        std::map< std::string, bool > _METFilterMap;
 
         //Constructor
         TreeReader(TTree *tree = nullptr);
@@ -181,7 +185,7 @@ class TreeReader {
         //set up tree for reading and writing
         void initTree(TTree *tree, const bool isData = false);
         //void setOutputTree(TTree*, const bool isData = false, const std::map< std::string, bool >& triggerMap = std::map< std::string, bool >() );
-        void setOutputTree(TTree*, const bool isData, std::map< std::string, bool >& triggerMap );
+        void setOutputTree(TTree*, const bool isData, std::map< std::string, bool >& triggerMap, std::map< std::string, bool>& METFilterMap);
 
         //skim tree
         //void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
@@ -383,6 +387,7 @@ class TreeReader {
 
         //initialize triggerMap
         void initializeTriggerMap( TTree* );
+        void initializeMETFilterMap( TTree* );
         
         //list of branches
         TBranch        *b__runNb;   
@@ -391,8 +396,11 @@ class TreeReader {
         TBranch        *b__nVertex;   
         TBranch        *b__weight;   
         TBranch        *b__nLheWeights;   
+        TBranch        *b__nPsWeights;
+        TBranch        *b__psWeight;
         TBranch        *b__lheWeight;   
         TBranch        *b__nTrueInt;   
+        TBranch        *b__lheHTIncoming;
         TBranch        *b__gen_met;   
         TBranch        *b__gen_metPhi;   
         TBranch        *b__gen_nL;   
@@ -406,7 +414,6 @@ class TreeReader {
         TBranch        *b__gen_lIsPrompt;   
         TBranch        *b__ttgEventType;
         TBranch        *b__zgEventType;
-        TBranch        *b__gen_HT;
         TBranch        *b__passTrigger_e;   
         TBranch        *b__passTrigger_ee;   
         TBranch        *b__passTrigger_eee;   
@@ -419,10 +426,6 @@ class TreeReader {
         TBranch        *b__passTrigger_et;
         TBranch        *b__passTrigger_mt;
         TBranch        *b__passMETFilters;   
-        //TEMPORARY FOR CHECK, CAN BE REMOVED LATER
-        TBranch        *b__Flag_BadPFMuonFilter;
-        TBranch        *b__Flag_BadChargedCandidateFilter;
-        //////////////////////////////////////////
         TBranch        *b__nL;   
         TBranch        *b__nMu;   
         TBranch        *b__nEle;   
@@ -439,46 +442,49 @@ class TreeReader {
         TBranch        *b__dz;   
         TBranch        *b__3dIP;   
         TBranch        *b__3dIPSig;   
-        TBranch        *b__lElectronMva;   
-        TBranch        *b__lElectronMvaHZZ;
+        TBranch        *b__lElectronSummer16MvaGP;   
+        TBranch        *b__lElectronSummer16MvaHZZ;
         TBranch        *b__lElectronMvaFall17Iso;
         TBranch        *b__lElectronMvaFall17NoIso;
         TBranch        *b__lElectronPassEmu;   
         TBranch        *b__lElectronPassConvVeto;
         TBranch        *b__lElectronChargeConst;
         TBranch        *b__lElectronMissingHits;
-        TBranch        *b__leptonMvaSUSY16;
-        TBranch        *b__leptonMvaTTH16;
-        TBranch        *b__leptonMvatZqTTV16;
-        TBranch        *b__leptonMvaSUSY17;
-        TBranch        *b__leptonMvaTTH17;
-        TBranch        *b__leptonMvatZqTTV17;
-        TBranch        *b__lHNLoose;   
-        TBranch        *b__lHNFO;   
-        TBranch        *b__lHNTight;   
-        TBranch        *b__lEwkLoose;   
-        TBranch        *b__lEwkFO;   
-        TBranch        *b__lEwkTight;   
+        TBranch        *b__leptonMvaSUSY;
+        TBranch        *b__leptonMvaTTH;
+        TBranch        *b__leptonMvatZq;
         TBranch        *b__lPOGVeto;   
         TBranch        *b__lPOGLoose;   
         TBranch        *b__lPOGMedium;   
         TBranch        *b__lPOGTight;   
-        TBranch        *b__tauMuonVeto;   
-        TBranch        *b__tauEleVeto;   
-        TBranch        *b__decayModeFindingNew;   
-        TBranch        *b__tauVLooseMvaNew;   
-        TBranch        *b__tauLooseMvaNew;   
-        TBranch        *b__tauMediumMvaNew;   
-        TBranch        *b__tauTightMvaNew;   
-        TBranch        *b__tauVTightMvaNew;   
-        TBranch        *b__tauVTightMvaOld;   
-        TBranch        *b__tauAgainstElectronMVA6Raw;
-        TBranch        *b__tauCombinedIsoDBRaw3Hits;
-        TBranch        *b__tauIsoMVAPWdR03oldDMwLT;
-        TBranch        *b__tauIsoMVADBdR03oldDMwLT;
-        TBranch        *b__tauIsoMVADBdR03newDMwLT;
-        TBranch        *b__tauIsoMVAPWnewDMwLT;
-        TBranch        *b__tauIsoMVAPWoldDMwLT;
+		TBranch		   *b__tauDecayMode;
+        TBranch		   *b__decayModeFinding;
+        TBranch		   *b__decayModeFindingNew;
+        TBranch		   *b__tauMuonVetoLoose;
+        TBranch		   *b__tauMuonVetoTight;
+        TBranch		   *b__tauEleVetoVLoose;
+        TBranch		   *b__tauEleVetoLoose;
+        TBranch		   *b__tauEleVetoMedium;
+        TBranch		   *b__tauEleVetoTight;
+        TBranch		   *b__tauEleVetoVTight;
+        TBranch		   *b__tauPOGVLoose2015;
+        TBranch		   *b__tauPOGLoose2015;
+        TBranch		   *b__tauPOGMedium2015;
+        TBranch		   *b__tauPOGTight2015;
+        TBranch		   *b__tauPOGVTight2015;
+        TBranch		   *b__tauVLooseMvaNew2015;
+        TBranch		   *b__tauLooseMvaNew2015;
+        TBranch		   *b__tauMediumMvaNew2015;
+        TBranch		   *b__tauTightMvaNew2015;
+        TBranch		   *b__tauVTightMvaNew2015;
+        TBranch		   *b__tauPOGVVLoose2017v2;
+        TBranch		   *b__tauPOGVTight2017v2;
+        TBranch		   *b__tauPOGVVTight2017v2;
+        TBranch		   *b__tauVLooseMvaNew2017v2;
+        TBranch		   *b__tauLooseMvaNew2017v2;
+        TBranch		   *b__tauMediumMvaNew2017v2;
+        TBranch		   *b__tauTightMvaNew2017v2;
+        TBranch		   *b__tauVTightMvaNew2017v2;	
         TBranch        *b__relIso;   
         TBranch        *b__relIso0p4;
         TBranch        *b__relIso0p4MuDeltaBeta;
@@ -538,6 +544,7 @@ class TreeReader {
         TBranch        *b__metPhiUnclUp;   
         TBranch        *b__metSignificance;
         std::map< std::string, TBranch* > b__triggerMap;
+        std::map< std::string, TBranch* > b__METFilterMap; 
 };
 
 #endif
