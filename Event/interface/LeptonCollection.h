@@ -8,6 +8,7 @@
 #include "MuonCollection.h"
 #include "ElectronCollection.h"
 #include "TauCollection.h"
+#include "LightLeptonCollection.h"
 
 
 
@@ -19,6 +20,7 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
         MuonCollection muonCollection() const;
         ElectronCollection electronCollection() const;
         TauCollection tauCollection() const;
+        LightLeptonCollection lightLeptonCollection() const;
 
         //select leptons
         void selectLooseLeptons();

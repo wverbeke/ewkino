@@ -12,6 +12,7 @@
 #include "../../Event/interface/MuonCollection.h"
 #include "../../Event/interface/ElectronCollection.h"
 #include "../../Event/interface/TauCollection.h"
+#include "../../Event/interface/LightLeptonCollection.h"
 
 //include c++ library classes
 #include <iostream>
@@ -44,6 +45,7 @@ int main(){
         MuonCollection muonColletion = leptonCollection.muonCollection();
         ElectronCollection electronCollection = leptonCollection.electronCollection();
         TauCollection tauCollection = leptonCollection.tauCollection();
+        LightLeptonCollection lightLeptonCollection = leptonCollection.lightLeptonCollection();
 
         leptonCollection.sortByPt();
     }

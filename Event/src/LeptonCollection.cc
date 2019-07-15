@@ -58,6 +58,17 @@ TauCollection LeptonCollection::tauCollection() const{
 }
 
 
+LightLeptonCollection LeptonCollection::lightLeptonCollection() const{
+    std::vector< std::shared_ptr< LightLepton > > lightLeptonVector;
+    for( const auto leptonPtr : *this ){
+        if( leptonPtr->isLightLepton() ){
+            lightLeptonVector.push_back( std::static_pointer_cast< LightLepton >( leptonPtr ) );
+        }
+    }
+    return LightLeptonCollection( lightLeptonVector );
+}
+
+
 void LeptonCollection::selectLooseLeptons(){
     selectObjects( &Lepton::isLoose );
 }
