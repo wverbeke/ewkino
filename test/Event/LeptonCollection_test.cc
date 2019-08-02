@@ -48,6 +48,27 @@ int main(){
         LightLeptonCollection lightLeptonCollection = leptonCollection.lightLeptonCollection();
 
         leptonCollection.sortByPt();
+        
+        leptonCollection.looseLeptonCollection();
+        leptonCollection.FOLeptonCollection();
+        leptonCollection.tightLeptonCollection();
+
+        if( leptonCollection.hasLightOSSFPair() ){
+            leptonCollection.bestZBosonCandidateIndicesAndMass();
+            leptonCollection.bestZBosonCandidateIndices();
+            leptonCollection.bestZBosonCandidateMass();
+        }
+
+        leptonCollection.hasOSSFPair();
+        leptonCollection.hasLightOSSFPair();
+        leptonCollection.hasOSPair();
+        leptonCollection.isSameSign();
+
+        leptonCollection.numberOfMuons();
+        leptonCollection.numberOfElectrons();
+        leptonCollection.numberOfTaus();
+        leptonCollection.numberOfLightLeptons();
+
     }
 
     auto end = std::chrono::high_resolution_clock::now();

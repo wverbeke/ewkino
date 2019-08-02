@@ -46,7 +46,8 @@ int main(){
         jetCollection.looseBTagCollection();
         jetCollection.mediumBTagCollection();
         jetCollection.tightBTagCollection();
-        
+
+        jetCollection.selectGoodJets();
     }
 
     auto end = std::chrono::high_resolution_clock::now();

@@ -17,6 +17,13 @@ void JetCollection::selectGoodJets(){
 }
 
 
+JetCollection JetCollection::goodJetCollection() const{
+    JetCollection jetCol( *this );
+    jetCol.selectGoodJets();
+    return jetCol;
+}
+
+
 void JetCollection::cleanJetsFromLeptons( const LeptonCollection& leptonCollection, bool (Lepton::*passSelection)() const, const double coneSize ){
     std::vector< const_iterator > objectsToDelete;
     for( const_iterator jetIt = cbegin(); jetIt != cend(); ++jetIt ){

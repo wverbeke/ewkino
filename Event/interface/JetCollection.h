@@ -29,6 +29,8 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
         //select jets
         void selectGoodJets();
 
+        JetCollection goodJetCollection() const;
+
         //clean jets 
         void cleanJetsFromLooseLeptons( const LeptonCollection&, const double coneSize = 0.4 );
         void cleanJetsFromFOLeptons( const LeptonCollection&, const double coneSize = 0.4 );
