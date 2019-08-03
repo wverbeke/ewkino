@@ -36,15 +36,22 @@ template< typename ObjectType > class PhysicsObjectCollection {
         template< typename func > void sortByAttribute( const func& f );
         void sortByPt(){ return sortByAttribute( [](const std::shared_ptr< ObjectType >& lhs, const std::shared_ptr< ObjectType >& rhs){ return lhs->pt() > rhs->pt(); } ); }
 
+        double mass() const;
+        double scalarPtSum() const;
+
         ~PhysicsObjectCollection() = default;
 
     protected:
         PhysicsObjectCollection( const collection_type& col ) : collection( col ) {}
 
+        //select objects passing a threshold and remove the others 
         void selectObjects( bool (ObjectType::*passSelection)() const );
 
         template< typename IteratorType > IteratorType erase( IteratorType );
         template< typename IteratorType > void erase( const std::vector< IteratorType >& );
+
+        //count the number of objects satisfying given criterion
+        size_type count( bool (ObjectType::*passSelection)() const ) const;
 
     private:
         collection_type collection;
@@ -78,6 +85,7 @@ template< typename ObjectType > template< typename IteratorType > void PhysicsOb
     }
 }
 
+
 template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::selectObjects( bool (ObjectType::*passSelection)() const ){
     std::vector< const_iterator > objectsToDelete;
     for( const_iterator it = cbegin(); it != cend(); ++it ){
@@ -88,6 +96,35 @@ template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::sele
     erase( objectsToDelete );
 }
 
+
+template< typename ObjectType > typename PhysicsObjectCollection< ObjectType >::size_type PhysicsObjectCollection< ObjectType >::count( bool (ObjectType::*passSelection)() const ) const{
+    size_type counter = 0;
+    for( auto& objectPtr : *this ){
+        if( ( (*objectPtr).*passSelection)() ){
+            ++counter;
+        }
+    }
+    return counter;
+}
+
+
+template< typename ObjectType > double PhysicsObjectCollection< ObjectType >::mass() const{
+    if( size() == 0 ) return 0;
+    PhysicsObject& totalSystem = (*this)[0];
+    for( size_type objectIndex = 1; objectIndex < size(); ++objectIndex ){
+        totalSystem += (*this)[objectIndex];
+    }
+    return totalSystem.mass();
+}
+
+
+template< typename ObjectType > double PhysicsObjectCollection< ObjectType >::scalarPtSum() const{
+    double ptSum = 0;
+    for( const auto& object : *this ){
+        ptSum += object->pt();
+    }
+    return ptSum;
+}
 
 
 #endif

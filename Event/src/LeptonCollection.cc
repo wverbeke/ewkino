@@ -1,6 +1,7 @@
 #include "../interface/LeptonCollection.h"
 
 //include c++ library classes 
+#include <set>
 
 //include other parts of code 
 #include "../../objects/interface/Muon.h"
@@ -165,35 +166,38 @@ void LeptonCollection::cleanTausFromFOLightLeptons( const double coneSize ){
 }
 
 
-//count the number of leptons of a given flavor
-LeptonCollection::size_type LeptonCollection::numberOfLeptonsOfFlavor( bool (Lepton::*isFlavorToCount)() const ) const{
-    size_type flavorCounter = 0;
-    for( const auto& leptonPtr : *this ){
-        if( ((*leptonPtr).*isFlavorToCount)() ){
-            ++flavorCounter;
-        }
-    }
-    return flavorCounter;
-}
-
-
 LeptonCollection::size_type LeptonCollection::numberOfMuons() const{
-    return numberOfLeptonsOfFlavor( &Lepton::isMuon );
+    return count( &Lepton::isMuon );
 }
 
 
 LeptonCollection::size_type LeptonCollection::numberOfElectrons() const{
-    return numberOfLeptonsOfFlavor( &Lepton::isElectron );
+    return count( &Lepton::isElectron );
 }
 
 
 LeptonCollection::size_type LeptonCollection::numberOfTaus() const{
-    return numberOfLeptonsOfFlavor( &Lepton::isTau );
+    return count( &Lepton::isTau );
 }
 
 
 LeptonCollection::size_type LeptonCollection::numberOfLightLeptons() const{
-    return numberOfLeptonsOfFlavor( &Lepton::isLightLepton );
+    return count( &Lepton::isLightLepton );
+}
+
+
+LeptonCollection::size_type LeptonCollection::numberOfLooseLeptons() const{
+    return count( &Lepton::isLoose );
+}
+
+
+LeptonCollection::size_type LeptonCollection::numberOfFOLeptons() const{
+    return count( &Lepton::isFO );
+}
+
+
+LeptonCollection::size_type LeptonCollection::numberOfTightLeptons() const{
+    return count( &Lepton::isTight );
 }
 
 
@@ -250,6 +254,45 @@ bool LeptonCollection::hasOSPair() const{
 
 bool LeptonCollection::isSameSign() const{
     return ( flavorChargeCombination() == SS );
+}
+
+
+template< typename function_type> LeptonCollection::size_type LeptonCollection::numberOfUniquePairs( const function_type& pairSatisfiesCondition ) const{
+	size_type numberOfPairs = 0;
+
+    //there can be no pairs when there are less than 2 leptons
+    if( size() <= 1 ){
+        return 0;
+    }
+
+    //avoid double counting of leptons 
+    std::set< const_iterator > usedLeptonIterators;
+
+    for( const_iterator l1It = cbegin(); l1It != cend() - 1; ++l1It ){
+        if( usedLeptonIterators.find( l1It ) != usedLeptonIterators.cend() ) continue;
+        Lepton& l1 = **l1It;
+        for( const_iterator l2It = l1It + 1; l2It != cend(); ++l2It ){
+            if( usedLeptonIterators.find( l2It ) != usedLeptonIterators.cend() ) continue;
+            Lepton& l2 = **l2It;
+
+			//if the lepton pair satisfies the condition, count it and make sure it can not be re-used 
+            if( pairSatisfiesCondition( l1, l2 ) ){
+                ++numberOfPairs;
+                usedLeptonIterators.insert( {l1It, l2It} );
+            }
+        }
+    }
+    return numberOfPairs;
+}
+
+
+LeptonCollection::size_type LeptonCollection::numberOfUniqueOSSFPairs() const{
+	return numberOfUniquePairs( oppositeSignSameFlavor ); 
+}
+
+
+LeptonCollection::size_type LeptonCollection::numberOfUniqueOSPairs() const{
+	return numberOfUniquePairs( []( const Lepton& lhs, const Lepton& rhs ){ return lhs.charge() != rhs.charge(); } );
 }
 
 

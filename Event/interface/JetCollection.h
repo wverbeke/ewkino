@@ -28,8 +28,13 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
 
         //select jets
         void selectGoodJets();
-
         JetCollection goodJetCollection() const;
+
+        //count jets passing criteria
+        size_type numberOfLooseBTaggedJets() const;
+        size_type numberOfMediumBTaggedJets() const;
+        size_type numberOfTightBTaggedJets() const;
+        size_type numberOfGoodJets() const;
 
         //clean jets 
         void cleanJetsFromLooseLeptons( const LeptonCollection&, const double coneSize = 0.4 );
@@ -45,6 +50,8 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
         //build JetCollection of jets satisfying a certain requirement
         JetCollection buildSubCollection( bool (Jet::*passSelection)() const ) const;
         JetCollection( const std::vector< std::shared_ptr< Jet > >& jetVector ) : PhysicsObjectCollection< Jet >( jetVector ) {}
+
+        
 
 };
 

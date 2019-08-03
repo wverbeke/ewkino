@@ -69,6 +69,13 @@ int main(){
         leptonCollection.numberOfTaus();
         leptonCollection.numberOfLightLeptons();
 
+        leptonCollection.numberOfLightLeptons();
+        leptonCollection.numberOfFOLeptons();
+        leptonCollection.numberOfTightLeptons();
+
+        leptonCollection.numberOfUniqueOSSFPairs();
+        leptonCollection.numberOfUniqueOSPairs();
+
     }
 
     auto end = std::chrono::high_resolution_clock::now();

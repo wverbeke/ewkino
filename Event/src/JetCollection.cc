@@ -45,21 +45,6 @@ void JetCollection::cleanJetsFromLeptons( const LeptonCollection& leptonCollecti
 }
 
 
-void JetCollection::cleanJetsFromLooseLeptons( const LeptonCollection& leptonCollection, const double coneSize ){
-    cleanJetsFromLeptons( leptonCollection, &Lepton::isLoose, coneSize );
-} 
-
-
-void JetCollection::cleanJetsFromFOLeptons( const LeptonCollection& leptonCollection, const double coneSize ){
-    cleanJetsFromLeptons( leptonCollection, &Lepton::isFO, coneSize );
-} 
-
-
-void JetCollection::cleanJetsFromTightLeptons( const LeptonCollection& leptonCollection, const double coneSize ){
-    cleanJetsFromLeptons( leptonCollection, &Lepton::isTight, coneSize );
-}
-
-
 JetCollection JetCollection::buildSubCollection( bool (Jet::*passSelection)() const ) const{
     std::vector< std::shared_ptr< Jet > > jetVector;
     for( const auto& jetPtr : *this ){
@@ -83,4 +68,39 @@ JetCollection JetCollection::mediumBTagCollection() const{
 
 JetCollection JetCollection::tightBTagCollection() const{
     return buildSubCollection( &Jet::isBTaggedTight );
+}
+
+
+JetCollection::size_type JetCollection::numberOfLooseBTaggedJets() const{
+    return count( &Jet::isBTaggedLoose );
+}
+
+
+JetCollection::size_type JetCollection::numberOfMediumBTaggedJets() const{
+    return count( &Jet::isBTaggedMedium );
+}
+
+
+JetCollection::size_type JetCollection::numberOfTightBTaggedJets() const{
+    return count( &Jet::isBTaggedTight );
+}
+
+
+JetCollection::size_type JetCollection::numberOfGoodJets() const{
+    return count( &Jet::isGood );
+}
+
+
+void JetCollection::cleanJetsFromLooseLeptons( const LeptonCollection& leptonCollection, const double coneSize ){
+    cleanJetsFromLeptons( leptonCollection, &Lepton::isLoose, coneSize );
+} 
+
+
+void JetCollection::cleanJetsFromFOLeptons( const LeptonCollection& leptonCollection, const double coneSize ){
+    cleanJetsFromLeptons( leptonCollection, &Lepton::isFO, coneSize );
+} 
+
+
+void JetCollection::cleanJetsFromTightLeptons( const LeptonCollection& leptonCollection, const double coneSize ){
+    cleanJetsFromLeptons( leptonCollection, &Lepton::isTight, coneSize );
 }

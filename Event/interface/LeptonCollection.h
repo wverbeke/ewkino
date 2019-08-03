@@ -40,16 +40,27 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
         void cleanTausFromLooseLightLeptons( const double coneSize = 0.4 );
         void cleanTausFromFOLightLeptons( const double coneSize = 0.4 );
 
-        //number of leptons of each flavor
+        //number of leptons of each flavor 
         size_type numberOfMuons() const;
         size_type numberOfElectrons() const;
         size_type numberOfTaus() const;
         size_type numberOfLightLeptons() const;
 
+        //number of leptons passing selection
+        size_type numberOfLooseLeptons() const;
+        size_type numberOfFOLeptons() const;
+        size_type numberOfTightLeptons() const;
+
         bool hasOSSFPair() const;
         bool hasLightOSSFPair() const;
         bool hasOSPair() const;
         bool isSameSign() const;
+
+        //number of unique OSSF pairs 
+        size_type numberOfUniqueOSSFPairs() const;
+
+        //number of unique OS pairs 
+        size_type numberOfUniqueOSPairs() const;
 
         double bestZBosonCandidateMass() const;
         std::pair< size_type, size_type > bestZBosonCandidateIndices() const;
@@ -66,15 +77,12 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
         //build collection of objects passing given selection
         LeptonCollection selectedCollection( void (LeptonCollection::*applySelection)() ) const;
 
-        //count the number of leptons of a given flavor
-        size_type numberOfLeptonsOfFlavor( bool (Lepton::*isFlavorToCount)() const ) const;
-
         //determine the flavor + charge combination of the leptons
-        //enum FlavorCharge{ OSSF_light, OSSF_tau, OS, SS, ZeroOrOneLepton };
         enum FlavorCharge : unsigned int;
         FlavorCharge  flavorChargeCombination() const;
-        
 
+        //number of unique lepton pairs satisfying given condition
+        template< typename function_type > size_type numberOfUniquePairs( const function_type&  ) const;
 };
 
 
