@@ -5,11 +5,11 @@
 #include "../../TreeReader/interface/TreeReader.h"
 
 
-Event::Event( const TreeReader& treeReader ) : 
+Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , const bool readIndividualMetFilters ) : 
     _leptonCollectionPtr( new LeptonCollection( treeReader ) ),
     _jetCollectionPtr( new JetCollection( treeReader ) ),
     _metPtr( new Met( treeReader ) ),
-    _triggerInfoPtr( new TriggerInfo( treeReader ) ),
+    _triggerInfoPtr( new TriggerInfo( treeReader, readIndividualTriggers, readIndividualMetFilters ) ),
     _generatorInfoPtr( treeReader.isMC() ? new GeneratorInfo( treeReader ) : nullptr ),
     _numberOfVertices( treeReader._nVertex ),
     _weight( treeReader._weight )
@@ -61,7 +61,9 @@ Event& Event::operator=( const Event& rhs ){
         delete _jetCollectionPtr;
         delete _metPtr;
         delete _triggerInfoPtr;
-        delete _generatorInfoPtr;
+        if( hasGeneratorInfo() ){
+            delete _generatorInfoPtr;
+        }
 
         _leptonCollectionPtr = new LeptonCollection( *rhs._leptonCollectionPtr );
         _jetCollectionPtr = new JetCollection( *rhs._jetCollectionPtr );
@@ -82,7 +84,9 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         delete _jetCollectionPtr;
         delete _metPtr;
         delete _triggerInfoPtr;
-        delete _generatorInfoPtr;
+        if( hasGeneratorInfo() ){
+            delete _generatorInfoPtr;
+        }
 
         _leptonCollectionPtr = rhs._leptonCollectionPtr;
         rhs._leptonCollectionPtr = nullptr;
