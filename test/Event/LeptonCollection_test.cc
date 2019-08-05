@@ -1,18 +1,12 @@
 
 //include class to test 
 #include "../../TreeReader/interface/TreeReader.h"
-#include "../../objects/interface/PhysicsObject.h"
-#include "../../objects/interface/Lepton.h"
-#include "../../objects/interface/LightLepton.h"
-#include "../../objects/interface/Muon.h"
-#include "../../objects/interface/Electron.h"
-#include "../../objects/interface/Tau.h"
 #include "../../Event/interface/LeptonCollection.h"
-#include "../../Event/interface/JetCollection.h"
 #include "../../Event/interface/MuonCollection.h"
 #include "../../Event/interface/ElectronCollection.h"
 #include "../../Event/interface/TauCollection.h"
 #include "../../Event/interface/LightLeptonCollection.h"
+#include "../copyMoveTest.h"
 
 //include c++ library classes
 #include <iostream>
@@ -76,6 +70,7 @@ int main(){
         leptonCollection.numberOfUniqueOSSFPairs();
         leptonCollection.numberOfUniqueOSPairs();
 
+        copyMoveTest( leptonCollection );
     }
 
     auto end = std::chrono::high_resolution_clock::now();

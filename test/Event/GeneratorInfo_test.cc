@@ -2,6 +2,7 @@
 //include class to test 
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../Event/interface/GeneratorInfo.h"
+#include "../copyMoveTest.h"
 
 //include c++ library classes
 #include <iostream>
@@ -62,6 +63,8 @@ int main(){
         generatorInfo.zgEventType();
         generatorInfo.partonLevelHT();
         generatorInfo.numberOfTrueInteractions();
+
+        copyMoveTest( generatorInfo );
     }
 
     auto end = std::chrono::high_resolution_clock::now();

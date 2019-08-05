@@ -2,6 +2,7 @@
 //include class to test 
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../Event/interface/TriggerInfo.h"
+#include "../copyMoveTest.h"
 
 //include c++ library classes
 #include <iostream>
@@ -38,6 +39,8 @@ int main(){
             triggerInfo.printAvailableIndividualTriggers();
             triggerInfo.printAvailableMETFilters();
         }
+
+        copyMoveTest( triggerInfo );
     }
 
     auto end = std::chrono::high_resolution_clock::now();
