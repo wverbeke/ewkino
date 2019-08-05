@@ -3,6 +3,7 @@
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../objects/interface/PhysicsObject.h"
 #include "../../objects/interface/Muon.h"
+#include "../copyMoveTest.h"
 
 //include c++ library classes
 #include <iostream>
@@ -24,9 +25,12 @@ int main(){
 
         std::vector< Muon > muonVector;
         for( unsigned l = 0; l < treeReader._nMu; ++l ){
+
             muonVector.push_back( Muon( treeReader, l ) );
             muonVector.back() = muonVector.back();
             Muon& muon = muonVector.back();
+        
+            Muon testMuon = Muon( treeReader, l );
     
             muon.isMuon();
             muon.isElectron();
@@ -38,6 +42,12 @@ int main(){
             muon.segmentCompatibility();
             muon.trackPt();
             muon.trackPtError();
+
+            muon.isLoose();
+            muon.isFO();
+            muon.isTight();
+
+            copyMoveTest( muon );
         }
         
         std::vector< Muon > muonVectorCopy;

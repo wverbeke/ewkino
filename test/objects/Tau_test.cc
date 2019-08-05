@@ -3,6 +3,7 @@
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../objects/interface/PhysicsObject.h"
 #include "../../objects/interface/Tau.h"
+#include "../copyMoveTest.h"
 
 //include c++ library classes
 #include <iostream>
@@ -70,6 +71,12 @@ int main(){
         	tau.passMediumMVANew2017();
         	tau.passTightMVANew2017();
         	tau.passVTightMVANew2017();
+
+            tau.isLoose();
+            tau.isFO();
+            tau.isTight();
+
+            copyMoveTest( tau );
         }
         
         std::vector< Tau > tauVectorCopy;

@@ -2,15 +2,16 @@
 
 //include c++ library classes
 #include <utility>
+#include <stdexcept>
 
 
 Lepton::Lepton( const TreeReader& treeReader, const unsigned leptonIndex, LeptonSelector* leptonSelector ) :
-    PhysicsObject( treeReader._lPt[leptonIndex], treeReader._lEta[leptonIndex], treeReader._lPhi[leptonIndex], treeReader._lE[leptonIndex] ),
+    PhysicsObject( treeReader._lPt[leptonIndex], treeReader._lEta[leptonIndex], treeReader._lPhi[leptonIndex], treeReader._lE[leptonIndex], treeReader.is2016(), treeReader.is2017() ),
     _charge( treeReader._lCharge[leptonIndex] ),
     _dxy( treeReader._dxy[leptonIndex] ),
     _dz( treeReader._dz[leptonIndex] ), 
     _sip3d( treeReader._3dIPSig[leptonIndex] ),
-    generatorInfo( new LeptonGeneratorInfo( treeReader, leptonIndex ) ),
+    generatorInfo( treeReader.isMC() ? new LeptonGeneratorInfo( treeReader, leptonIndex ) : nullptr ),
     selector( leptonSelector )
     {}
 
@@ -27,7 +28,7 @@ Lepton::Lepton( const Lepton& rhs, LeptonSelector* leptonSelector ) :
     //WARNING: selector remains uninitialized, and has to be dynamically allocated in derived classes. Final derived copy constructur MUST CREATE A NEW SELECTOR
     //selector( nullptr )
     selector( leptonSelector )
-    {} 
+    {}
 
 
 Lepton::Lepton( Lepton&& rhs, LeptonSelector* leptonSelector ) noexcept :
@@ -94,11 +95,9 @@ Lepton& Lepton::operator=( Lepton&& rhs ) noexcept{
         copyNonPointerAttributes( rhs );
 
         //selector can keep pointing to the current lepton and does not need to be moved!
-        //move the lepton selector
-        //selector = rhs.selector;
-        //rhs.selector = nullptr;
 
-        //move pointer to generator information
+        //move pointer to generator information and make sure to free old memory
+        delete generatorInfo; 
         generatorInfo = rhs.generatorInfo;
         rhs.generatorInfo = nullptr;
         
@@ -109,8 +108,7 @@ Lepton& Lepton::operator=( Lepton&& rhs ) noexcept{
 
 bool Lepton::checkGeneratorInfo() const{
     if( !hasGeneratorInfo() ){
-        std::cerr << "Error: trying to access generator information for a lepton that has no generator info!" << std::endl;
-        return false;
+        throw std::domain_error( "Ttrying to access generator information for a lepton that has no generator info!" );
     }
     return true;
 }
@@ -143,6 +141,15 @@ int Lepton::matchPdgId() const{
 }
 
 
+int Lepton::matchCharge() const{
+    if( checkGeneratorInfo() ){
+        return generatorInfo->matchPdgId();
+    } else {
+        return 0;
+    }
+}
+
+
 unsigned Lepton::provenance() const{
     if( checkGeneratorInfo() ){
         return generatorInfo->provenance();
@@ -167,4 +174,18 @@ unsigned Lepton::provenanceConversion() const{
     } else {
         return 0;
     }
+}
+
+
+bool sameFlavor( const Lepton& lhs, const Lepton& rhs ){
+    return ( 
+        ( lhs.isMuon() && rhs.isMuon() ) ||
+        ( lhs.isElectron() && rhs.isElectron() ) ||
+        ( lhs.isTau() && rhs.isTau() )
+    );
+}
+
+
+bool oppositeSignSameFlavor( const Lepton& lhs, const Lepton& rhs ){
+    return ( sameFlavor( lhs, rhs ) && ( lhs.charge() != rhs.charge() ) );
 }

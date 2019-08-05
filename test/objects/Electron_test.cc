@@ -3,6 +3,7 @@
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../objects/interface/PhysicsObject.h"
 #include "../../objects/interface/Electron.h"
+#include "../copyMoveTest.h"
 
 //include c++ library classes
 #include <iostream>
@@ -47,6 +48,12 @@ int main(){
             electron.isLoosePOGElectron();
             electron.isMediumPOGElectron();
             electron.isTightPOGElectron();
+
+            electron.isLoose();
+            electron.isFO();
+            electron.isTight();
+
+            copyMoveTest( electron );
         }
         
         std::vector< Electron > electronVectorCopy;

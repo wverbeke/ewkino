@@ -2,12 +2,8 @@
 //include class to test 
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../objects/interface/PhysicsObject.h"
-//#include "../../objects/interface/Lepton.h"
-//#include "../../objects/interface/LightLepton.h"
-//#include "../../objects/interface/Muon.h"
-//#include "../../objects/interface/Electron.h"
-//#include "../../objects/interface/Tau.h"
 #include "../../objects/interface/Jet.h"
+#include "../copyMoveTest.h"
 
 //include c++ library classes
 #include <iostream>
@@ -30,12 +26,15 @@ int main(){
         std::vector< Jet > jetVector;
         for( unsigned j = 0; j < treeReader._nJets; ++j ){
             jetVector.push_back( Jet( treeReader, j ) );
-            jetVector[j] = jetVector[j];
-        }
-        
-        std::vector< Jet > jetVectorCopy;
-        for( auto& j : jetVector ){
-            jetVectorCopy.push_back( j );
+            jetVector.back() = jetVector.back();
+
+            Jet& jet = jetVector.back();
+            jet.isGood();
+            jet.isBTaggedLoose();
+            jet.isBTaggedMedium();
+            jet.isBTaggedTight();
+            
+            copyMoveTest( jet );
         }
     }
 
