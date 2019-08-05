@@ -12,7 +12,9 @@
 class TriggerInfo{
 
     public:
-        TriggerInfo( const TreeReader&, const bool readIndividualTriggers = false, const bool readIndividualMETFilters = false );
+
+        //WARNING : turning on 'readIndividualTriggers' and/or 'readIndividualMETFilters' is relatively slow ( takes slightly more time than building the entire event! )
+        TriggerInfo( const TreeReader&, const bool readIndividualTriggers = false, const bool readIndividualMetFilters = false );
 
         bool passTriggers_e() const{ return _passTriggers_e; }
         bool passTriggers_m() const{ return _passTriggers_m; }
@@ -25,12 +27,12 @@ class TriggerInfo{
         bool passTriggers_eem() const{ return _passTriggers_eem; }
         bool passTriggers_emm() const{ return _passTriggers_emm; }
         bool passTriggers_mmm() const{ return _passTriggers_mmm; }
-        bool passMETFilters() const{ return _passMETFilters; }
+        bool passMetFilters() const{ return _passMetFilters; }
         bool passTrigger( const std::string& ) const;
-        bool passMETFilter( const std::string& ) const;
+        bool passMetFilter( const std::string& ) const;
 
         void printAvailableIndividualTriggers() const;
-        void printAvailableMETFilters() const;
+        void printAvailableMetFilters() const;
 
     private:
         bool _passTriggers_e;
@@ -44,9 +46,9 @@ class TriggerInfo{
         bool _passTriggers_eem;
         bool _passTriggers_emm;
         bool _passTriggers_mmm;
-        bool _passMETFilters;
+        bool _passMetFilters;
         std::map< std::string, bool > individualTriggerMap; 
-        std::map< std::string, bool > individualMETFilterMap; 
+        std::map< std::string, bool > individualMetFilterMap; 
 };
 
 #endif 

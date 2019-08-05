@@ -33,11 +33,11 @@ int main(){
         triggerInfo.passTriggers_eem();
         triggerInfo.passTriggers_emm();
         triggerInfo.passTriggers_mmm();
-        triggerInfo.passMETFilters();
+        triggerInfo.passMetFilters();
 
         if( i == 0 ){
             triggerInfo.printAvailableIndividualTriggers();
-            triggerInfo.printAvailableMETFilters();
+            triggerInfo.printAvailableMetFilters();
         }
 
         copyMoveTest( triggerInfo );

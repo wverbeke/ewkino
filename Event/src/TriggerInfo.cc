@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 
-TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividualTriggers, const bool readIndividualMETFilters ) :
+TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividualTriggers, const bool readIndividualMetFilters ) :
     _passTriggers_e( treeReader._passTrigger_e ),
     _passTriggers_m( treeReader._passTrigger_m ),
     _passTriggers_em( treeReader._passTrigger_em ),
@@ -16,16 +16,16 @@ TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividua
     _passTriggers_eem( treeReader._passTrigger_eem ),
     _passTriggers_emm( treeReader._passTrigger_emm ),
     _passTriggers_mmm( treeReader._passTrigger_mmm ),
-    _passMETFilters( treeReader._passMETFilters )
+    _passMetFilters( treeReader._passMETFilters )
 {
     if( readIndividualTriggers ){
         for( const auto& trigger : treeReader._triggerMap ){
             individualTriggerMap.insert( trigger );
         }
     }
-    if( readIndividualMETFilters ){
-        for( const auto& filter : treeReader._METFilterMap ){
-            individualMETFilterMap.insert( filter );
+    if( readIndividualMetFilters ){
+        for( const auto& filter : treeReader._MetFilterMap ){
+            individualMetFilterMap.insert( filter );
         }   
     }
 }
@@ -48,8 +48,8 @@ bool TriggerInfo::passTrigger( const std::string& triggerName ) const{
 }
 
 
-bool TriggerInfo::passMETFilter( const std::string& filterName ) const{
-    return passTriggerOrFilter( individualMETFilterMap, filterName );
+bool TriggerInfo::passMetFilter( const std::string& filterName ) const{
+    return passTriggerOrFilter( individualMetFilterMap, filterName );
 }
 
 
@@ -66,6 +66,6 @@ void TriggerInfo::printAvailableIndividualTriggers() const{
 }
 
 
-void TriggerInfo::printAvailableMETFilters() const{
-    printAvailableInfo( individualMETFilterMap, "MET filters");
+void TriggerInfo::printAvailableMetFilters() const{
+    printAvailableInfo( individualMetFilterMap, "MET filters");
 }

@@ -89,7 +89,7 @@ void TreeReader::initializeTriggerMap( TTree* treePtr ){
 }
 
 
-void TreeReader::initializeMETFilterMap( TTree* treePtr ){
+void TreeReader::initializeMetFilterMap( TTree* treePtr ){
 
     //WARNING: Currently one MET filter contains 'updated' rather than 'Flag' in the name. If this changes, make sure to modify the code here!
     auto filterMaps = buildBranchMap( treePtr, "Flag" );
@@ -97,8 +97,25 @@ void TreeReader::initializeMETFilterMap( TTree* treePtr ){
     filterMaps.first.insert( filterMaps_part2.first.cbegin(), filterMaps_part2.first.cend() );
     filterMaps.second.insert( filterMaps_part2.second.cbegin(), filterMaps_part2.second.cend() );
 
-    _METFilterMap = filterMaps.first;
-    b__METFilterMap = filterMaps.second;
+    _MetFilterMap = filterMaps.first;
+    b__MetFilterMap = filterMaps.second;
+}
+
+
+bool treeHasBranchWithName( TTree* treePtr, const std::string& nameToFind ){
+	TObjArray* branch_list = treePtr->GetListOfBranches();
+    for( const auto& branchPtr : *branch_list ){
+        std::string branchName = branchPtr->GetName();
+		if( stringTools::stringContains( branchName, nameToFind ) ){
+			return true;
+		}
+	}
+	return false;
+}
+
+
+bool TreeReader::containsGeneratorInfo() const{
+    return treeHasBranchWithName( fChain, "_gen_" );
 }
 
 
@@ -323,6 +340,7 @@ void TreeReader::initTree(TTree *tree, const bool isData)
         fChain->SetBranchAddress("_gen_lIsPrompt", _gen_lIsPrompt, &b__gen_lIsPrompt);
         fChain->SetBranchAddress("_lIsPrompt", _lIsPrompt, &b__lIsPrompt);
         fChain->SetBranchAddress("_lMatchPdgId", _lMatchPdgId, &b__lMatchPdgId);
+        fChain->SetBranchAddress("_lMatchCharge", _lMatchCharge, &b__lMatchCharge);
         fChain->SetBranchAddress("_lMomPdgId",  _lMomPdgId, &b__lMomPdgId);
         fChain->SetBranchAddress("_lProvenance", _lProvenance, &b__lProvenance);
         fChain->SetBranchAddress("_lProvenanceCompressed", _lProvenanceCompressed, &b__lProvenanceCompressed);
@@ -336,12 +354,12 @@ void TreeReader::initTree(TTree *tree, const bool isData)
     setMapBranchAddresses( fChain, _triggerMap, b__triggerMap );
 
     //add all individually stored MET filters
-    initializeMETFilterMap( fChain );
-    setMapBranchAddresses( fChain, _METFilterMap, b__METFilterMap );
+    initializeMetFilterMap( fChain );
+    setMapBranchAddresses( fChain, _MetFilterMap, b__MetFilterMap );
 }
 
 
-void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< std::string, bool >& triggerMap, std::map< std::string, bool >& METFilterMap ){
+void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< std::string, bool >& triggerMap, std::map< std::string, bool >& MetFilterMap ){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
@@ -482,6 +500,7 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< s
         outputTree->Branch("_lheHTIncoming",             &_lheHTIncoming,             "_lheHTIncoming/D");
         outputTree->Branch("_lIsPrompt",                 &_lIsPrompt,                 "_lIsPrompt[_nL]/O");
         outputTree->Branch("_lMatchPdgId",               &_lMatchPdgId,               "_lMatchPdgId[_nL]/I");
+        outputTree->Branch("_lMatchCharge",              &_lMatchCharge,              "_lMatchCharge[_nL]/I");
         outputTree->Branch("_lMomPdgId",                 &_lMomPdgId,                 "_lMomPdgId[_nL]/I");
         outputTree->Branch("_lProvenance",               &_lProvenance,               "_lProvenance[_nL]/i");
         outputTree->Branch("_lProvenanceCompressed",     &_lProvenanceCompressed,     "_lProvenanceCompressed[_nL]/i");
@@ -505,5 +524,5 @@ void TreeReader::setOutputTree(TTree* outputTree, const bool isData, std::map< s
     setMapOutputBranches( outputTree, triggerMap );
 
     //write individual MET filters to output tree
-    setMapOutputBranches( outputTree, METFilterMap );
+    setMapOutputBranches( outputTree, MetFilterMap );
 }

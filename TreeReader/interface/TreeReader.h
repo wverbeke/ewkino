@@ -134,6 +134,7 @@ class TreeReader {
         Double_t        _lMuonTrackPtErr[nL_max];
         Bool_t          _lIsPrompt[nL_max];   
         Int_t           _lMatchPdgId[nL_max];   
+        Int_t           _lMatchCharge[nL_max];
         Int_t           _lMomPdgId[nL_max];
         UInt_t          _lProvenance[nL_max];
         UInt_t          _lProvenanceCompressed[nL_max];
@@ -177,7 +178,7 @@ class TreeReader {
         Double_t        _metSignificance;
 
         std::map< std::string, bool > _triggerMap;
-        std::map< std::string, bool > _METFilterMap;
+        std::map< std::string, bool > _MetFilterMap;
 
         //Constructor
         TreeReader(TTree *tree = nullptr);
@@ -185,23 +186,33 @@ class TreeReader {
         //set up tree for reading and writing
         void initTree(TTree *tree, const bool isData = false);
         //void setOutputTree(TTree*, const bool isData = false, const std::map< std::string, bool >& triggerMap = std::map< std::string, bool >() );
-        void setOutputTree(TTree*, const bool isData, std::map< std::string, bool >& triggerMap, std::map< std::string, bool>& METFilterMap);
+        void setOutputTree(TTree*, const bool isData, std::map< std::string, bool >& triggerMap, std::map< std::string, bool>& MetFilterMap);
 
         //skim tree
         //void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
         //void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
 
-        //set up tree for analysis
-        void readSamples(const std::string& list, const std::string& directory); //read sample list from file
-        void readSamples2016(const std::string&, const std::string&);
-        void readSamples2017(const std::string&, const std::string&);
 
         void initSample();                              //event weights will be set according to is2016() ( or equally is2017() ) flag
         void initSample(const Sample&);  
+        void readSamples2016(const std::string&, const std::string&);
+        void readSamples2017(const std::string&, const std::string&);
+        void readSamples(const std::string& list, const std::string& directory); //read sample list from file
 
         //functions to analyze tree
         void GetEntry(long unsigned entry);
         void GetEntry(const Sample&, long unsigned entry);
+
+        //check whether sample is 2017 or not
+        bool is2016() const { return currentSample.is2016(); }
+        bool is2017() const { return currentSample.is2017(); }
+        bool is2018() const { return currentSample.is2018(); }
+        bool isData() const { return currentSample.isData(); }
+        bool isMC() const { return currentSample.isMC(); } 
+        bool isSMSignal() const{ return currentSample.isSMSignal(); }
+        bool isNewPhysicsSignal() const{ return currentSample.isNewPhysicsSignal(); }
+        bool containsGeneratorInfo() const;
+
         //void Analyze();
         //void Analyze(const std::string&, long unsigned, long unsigned);
         //void Analyze(const Sample&, long unsigned, long unsigned);
@@ -308,13 +319,6 @@ class TreeReader {
         const double lumi2016 = 35.867;                 
         //std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class used for reweighting functions
 
-        //check whether sample is 2017 or not
-        bool is2017() const { return currentSample.is2017(); }
-        bool is2016() const { return currentSample.is2016(); }                  //if sample is not 2017 it is automatically 2016
-        bool isData() const { return currentSample.isData(); }
-        bool isMC() const { return currentSample.isMC(); } 
-        bool isSMSignal() const{ return currentSample.isSMSignal(); }
-        bool isNewPhysicsSignal() const{ return currentSample.isNewPhysicsSignal(); }
 
         /*
         //check lepton flavors 
@@ -387,7 +391,7 @@ class TreeReader {
 
         //initialize triggerMap
         void initializeTriggerMap( TTree* );
-        void initializeMETFilterMap( TTree* );
+        void initializeMetFilterMap( TTree* );
         
         //list of branches
         TBranch        *b__runNb;   
@@ -500,7 +504,8 @@ class TreeReader {
         TBranch        *b__lMuonTrackPt;
         TBranch        *b__lMuonTrackPtErr;
         TBranch        *b__lIsPrompt;   
-        TBranch        *b__lMatchPdgId;   
+        TBranch        *b__lMatchPdgId;
+        TBranch        *b__lMatchCharge;
         TBranch        *b__lMomPdgId;
         TBranch        *b__lProvenance;
         TBranch        *b__lProvenanceCompressed;
@@ -544,7 +549,7 @@ class TreeReader {
         TBranch        *b__metPhiUnclUp;   
         TBranch        *b__metSignificance;
         std::map< std::string, TBranch* > b__triggerMap;
-        std::map< std::string, TBranch* > b__METFilterMap; 
+        std::map< std::string, TBranch* > b__MetFilterMap; 
 };
 
 #endif
