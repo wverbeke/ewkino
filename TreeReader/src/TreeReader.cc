@@ -1,16 +1,17 @@
-#include <iostream>
-#include <fstream>
-
 #include "../interface/TreeReader.h"
+
+//include c++ library classes 
+#include <fstream>
+#include <iostream>
+
+//include other parts of analysis framework
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Tools/interface/stringTools.h"
+#include "../../Event/interface/Event.h"
 
 
-TreeReader::TreeReader(TTree *tree) : fChain(nullptr) 
-{
-    if (tree != nullptr){
-        initTree(tree);
-    }
+TreeReader::TreeReader( const std::string& sampleListFile, const std::string& sampleDirectory ){
+    readSamples( sampleListFile, sampleDirectory );
 }
 
 
@@ -122,7 +123,7 @@ bool TreeReader::containsGeneratorInfo() const{
 void TreeReader::initSample(const Sample& samp){ 
 
     //update current sample
-    currentSample = samp;
+    _currentSample = samp;
     sampleFile = samp.getFile();
     sampleFile->cd("blackJackAndHookers");
     fChain = (TTree*) sampleFile->Get("blackJackAndHookers/blackJackAndHookersTree");
@@ -153,18 +154,30 @@ void TreeReader::initSample(){ //initialize the next sample in the list
 }
 
 
-void TreeReader::GetEntry(const Sample& samp, long unsigned entry)
-{
+void TreeReader::GetEntry(const Sample& samp, long unsigned entry){
     if (!fChain) return;
     fChain->GetEntry(entry);
+
     //Set up correct weights
-    if(!samp.isData() ) weight = _weight*scale; //MC
-    else weight = 1;                            //data
+    if(!samp.isData() ) _scaledWeight = _weight*scale; //MC
+    else _scaledWeight = 1;                            //data
 }
 
 
 void TreeReader::GetEntry(long unsigned entry){    //currently initialized sample when running serial
-    GetEntry(samples[currentSampleIndex], entry);
+    GetEntry( _currentSample , entry);
+}
+
+
+Event TreeReader::buildEvent( const Sample& samp, long unsigned entry, const bool readIndividualTriggers, const bool readIndividualMetFilters ){
+    GetEntry( samp, entry );
+    return Event( *this, readIndividualTriggers, readIndividualMetFilters);
+}
+
+
+Event TreeReader::buildEvent( long unsigned entry, const bool readIndividualTriggers, const bool readIndividualMetFilters){
+    GetEntry( entry );
+    return Event( *this, readIndividualTriggers, readIndividualMetFilters);
 }
 
 

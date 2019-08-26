@@ -12,10 +12,19 @@
 
 //include other parts of code
 #include "../../Tools/interface/Sample.h"
-//#include "HistInfo.h"
+
+
+class Event;
+
 
 class TreeReader {
+
     public :
+
+        //Constructor
+        TreeReader() = default;
+        TreeReader( const std::string&, const std::string& ); 
+
         //Declare leaf types
         static const unsigned nL_max = 20;
         static const unsigned nJets_max = 20;
@@ -180,8 +189,9 @@ class TreeReader {
         std::map< std::string, bool > _triggerMap;
         std::map< std::string, bool > _MetFilterMap;
 
-        //Constructor
-        TreeReader(TTree *tree = nullptr);
+        //weight including cross section scaling 
+        double          _scaledWeight;
+
 
         //set up tree for reading and writing
         void initTree(TTree *tree, const bool isData = false);
@@ -199,32 +209,29 @@ class TreeReader {
         void readSamples2017(const std::string&, const std::string&);
         void readSamples(const std::string& list, const std::string& directory); //read sample list from file
 
-        //functions to analyze tree
-        void GetEntry(long unsigned entry);
-        void GetEntry(const Sample&, long unsigned entry);
+        //Get entry from Tree, should not be used except for test purposes
+        void GetEntry(const Sample&, long unsigned );
+        void GetEntry(long unsigned );
+
+        //Build event (this will implicitly use GetEntry )
+        //Use these functions in analysis code 
+        Event buildEvent( const Sample&, long unsigned , const bool readIndividualTriggers = false, const bool readIndividualMetFilters = false );
+        Event buildEvent( long unsigned, const bool readIndividualTriggers = false, const bool readIndividualMetFilters = false );
 
         //check whether sample is 2017 or not
-        bool is2016() const { return currentSample.is2016(); }
-        bool is2017() const { return currentSample.is2017(); }
-        bool is2018() const { return currentSample.is2018(); }
-        bool isData() const { return currentSample.isData(); }
-        bool isMC() const { return currentSample.isMC(); } 
-        bool isSMSignal() const{ return currentSample.isSMSignal(); }
-        bool isNewPhysicsSignal() const{ return currentSample.isNewPhysicsSignal(); }
+        bool is2016() const { return _currentSample.is2016(); }
+        bool is2017() const { return _currentSample.is2017(); }
+        bool is2018() const { return _currentSample.is2018(); }
+        bool isData() const { return _currentSample.isData(); }
+        bool isMC() const { return _currentSample.isMC(); } 
+        bool isSMSignal() const{ return _currentSample.isSMSignal(); }
+        bool isNewPhysicsSignal() const{ return _currentSample.isNewPhysicsSignal(); }
         bool containsGeneratorInfo() const;
 
-        //void Analyze();
-        //void Analyze(const std::string&, long unsigned, long unsigned);
-        //void Analyze(const Sample&, long unsigned, long unsigned);
-        //void Analyze(const std::string&);
-        //void Analyze(const Sample&);
-        //void setup();
-        //void splitJobs();
-        //void Loop(const std::string& sample, const double xSection);
+        //access number of samples and current sample
+        Sample& currentSample(){ return _currentSample; }
+        std::vector< Sample >::size_type numberOfSamples() const{ return samples.size(); }
 
-        //new functions for parallel plotting
-        //void plot(const std::string&);
-        //void splitPlots();
 
         //functions for event selection
         /*
@@ -303,18 +310,18 @@ class TreeReader {
 
         unsigned long nEntries = 0;
     private:
-        TTree* fChain;                                                          //current Tree
+        TTree* fChain = nullptr;                                                //current Tree
         std::shared_ptr<TFile> sampleFile;                                      //current sample
         std::vector<Sample> samples;                                            //combined list of samples
         std::vector<Sample> samples2016;                                        //2016 data and MC samples
         std::vector<Sample> samples2017;                                        //2017 data and MC samples
-        Sample currentSample;                                                   //reference to current sample, needed to check what era sample belongs to
+        Sample _currentSample;                                                   //reference to current sample, needed to check what era sample belongs to
         //std::vector<HistInfo> histInfo;                                         //histogram info
         int currentSampleIndex = -1;                                            //current index in list
         //bool isData = false;
 
         double scale = 0;
-        double weight = 1;                                                      //weight of given event
+        //double weight = 1;                                                      //weight of given event
         const double lumi2017 = 41.53;                                          //in units of 1/fb
         const double lumi2016 = 35.867;                 
         //std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class used for reweighting functions
