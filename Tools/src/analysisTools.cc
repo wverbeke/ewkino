@@ -33,7 +33,7 @@ void analysisTools::setNegativeBinsToZero( const std::shared_ptr< TH1D >& h){
 
 
 //Function to print dataCard to be analysed by CMS combination tool
-void analysisTools::printDataCard(const double obsYield, const double sigYield, const std::string& sigName, const double* bkgYield, const unsigned nBkg, const std::string* bkgNames, const std::vector<std::vector<double> >& systUnc, const unsigned nSyst, const std::string* systNames, const std::string* systDist, const std::string& cardName, const bool shapeCard, const std::string& shapeFileName){
+void analysisTools::printDataCard(const std::string& cardName, const double obsYield, const double sigYield, const std::string& sigName, const double* bkgYield, const unsigned nBkg, const std::string* bkgNames, const std::vector<std::vector<double> >& systUnc, const unsigned nSyst, const std::string* systNames, const std::string* systDist, const bool shapeCard, const std::string& shapeFileName, const bool autoMCStats ){
 
 	//stream for writing card
     std::ofstream card;
@@ -83,14 +83,22 @@ void analysisTools::printDataCard(const double obsYield, const double sigYield, 
     card << "---------------------------------------------------------------------------------------- \n";
 
     //define sources of systematic uncertainty, what distibution they follow and how large their effect is
-    for(unsigned syst = 0; syst < nSyst; ++syst){
-        card << systNames[syst] << "	" << systDist[syst];
-        for(unsigned proc = 0; proc < nBkg + 1; ++proc){
-            card << "	";
-            if(systUnc[syst][proc] == 0) card << "-";
-            else card << systUnc[syst][proc];
+    if( nSyst != 0 ){
+        for(unsigned syst = 0; syst < nSyst; ++syst){
+            card << systNames[syst] << "	" << systDist[syst];
+            for(unsigned proc = 0; proc < nBkg + 1; ++proc){
+                card << "	";
+                if(systUnc[syst][proc] == 0) card << "-";
+                else card << systUnc[syst][proc];
+            }
+            card << "\n";
         }
-        card << "\n";
     }
+
+    //add line to automatically include statistical uncertainties from the MC shape histograms 
+    if( autoMCStats ){
+        card << "* autoMCStats 0\n";
+    }
+    
     card.close();		
 }
