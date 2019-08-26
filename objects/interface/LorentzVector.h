@@ -3,6 +3,7 @@
 
 //include c++ library classes 
 #include <iostream>
+#include <cmath>
 
 class LorentzVector{
 
@@ -13,12 +14,16 @@ class LorentzVector{
     friend double deltaPhi( const LorentzVector&, const LorentzVector& );
     friend double deltaR( const LorentzVector&, const LorentzVector& );
 
+    //unlike the mass, mt can not be defined for a single lorentzVector. The reason is that it is defined as the mass of the transverse projection of two objects in the ultrarelativistic limit. The summed object still has a mass, but the mass of the constituents must be removed.
+    friend double mt( const LorentzVector&, const LorentzVector& );
+
     public:
         LorentzVector() = default;
         LorentzVector( const double pt, const double eta, const double phi, const double energy );
         
         double pt() const { return transverseMomentum; }
         double eta() const { return pseudoRapidity; }
+        double absEta() const{ return std::abs( pseudoRapidity ); }
         double phi() const { return azimuthalAngle; }
         double energy() const { return energyValue; }
         double mass() const;
@@ -61,5 +66,6 @@ std::ostream& operator<<( std::ostream&, const LorentzVector& );
 double deltaEta( const LorentzVector&, const LorentzVector& );
 double deltaPhi( const LorentzVector&, const LorentzVector& );
 double deltaR( const LorentzVector&, const LorentzVector& );
+double mt( const LorentzVector&, const LorentzVector& );
 
 #endif

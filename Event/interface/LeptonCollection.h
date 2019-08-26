@@ -40,6 +40,9 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
         void cleanTausFromLooseLightLeptons( const double coneSize = 0.4 );
         void cleanTausFromFOLightLeptons( const double coneSize = 0.4 );
 
+        //apply cone correction for fake-rate prediction
+        void applyConeCorrection() const;
+
         //number of leptons of each flavor 
         size_type numberOfMuons() const;
         size_type numberOfElectrons() const;

@@ -110,10 +110,14 @@ LeptonCollection LeptonCollection::tightLeptonCollection() const{
 
 
 void LeptonCollection::clean( bool (Lepton::*isFlavorToClean)() const, bool (Lepton::*isFlavorToCleanFrom)() const, bool (Lepton::*passSelection)() const, const double coneSize ){
-    std::vector< const_iterator > objectsToDelete;
-    for( const_iterator l1It = cbegin(); l1It != cend(); ++l1It ){
+
+    for( const_iterator l1It = cbegin(); l1It != cend(); ){
         Lepton& l1 = **l1It;
+        
+        //to increment iterator when no lepton is deleted 
+        bool isDeleted = false;
         if( (l1.*isFlavorToClean)() ){
+
             for( const_iterator l2It = cbegin(); l2It != cend(); ++l2It ){
 
                 //prevent comparing same objects 
@@ -126,13 +130,18 @@ void LeptonCollection::clean( bool (Lepton::*isFlavorToClean)() const, bool (Lep
 
                 //clean within given cone size
                 if( deltaR( l1, l2 ) < coneSize ){
-                    objectsToDelete.push_back( l1It );
+
+                    l1It = erase( l1It );
+                    isDeleted = true;
+
                     break;
                 }
             }
         }
+        if( ! isDeleted ){
+            ++l1It;
+        }
     }
-    erase( objectsToDelete );
 }
 
 
@@ -163,6 +172,13 @@ void LeptonCollection::cleanTausFromLooseLightLeptons( const double coneSize ){
 
 void LeptonCollection::cleanTausFromFOLightLeptons( const double coneSize ){
     return cleanTausFromLightLeptons( &Lepton::isFO, coneSize );
+}
+
+
+void LeptonCollection::applyConeCorrection() const{
+    for( const auto& leptonPtr : *this ){
+        leptonPtr->applyConeCorrection();
+    }
 }
 
 
@@ -279,6 +295,9 @@ template< typename function_type> LeptonCollection::size_type LeptonCollection::
             if( pairSatisfiesCondition( l1, l2 ) ){
                 ++numberOfPairs;
                 usedLeptonIterators.insert( {l1It, l2It} );
+            
+                //without this break there can be cases where l1 will be making a pair with yet another l2!
+                break;
             }
         }
     }

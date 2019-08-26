@@ -26,8 +26,10 @@ Lepton::Lepton( const Lepton& rhs, LeptonSelector* leptonSelector ) :
     generatorInfo( new LeptonGeneratorInfo( *(rhs.generatorInfo) ) ),
 
     //WARNING: selector remains uninitialized, and has to be dynamically allocated in derived classes. Final derived copy constructur MUST CREATE A NEW SELECTOR
-    //selector( nullptr )
-    selector( leptonSelector )
+    selector( leptonSelector ),
+
+    //make sure to copy "isConeCorrected" so a cone-correction can not be re-applied even after copying a lepton
+    isConeCorrected( rhs.isConeCorrected )
     {}
 
 
@@ -40,8 +42,10 @@ Lepton::Lepton( Lepton&& rhs, LeptonSelector* leptonSelector ) noexcept :
     generatorInfo( rhs.generatorInfo ),
 
     //WARNING: selector remains uninitialized, and has to be dynamically allocated in derived classes. Final derived copy constructur MUST CREATE A NEW SELECTOR
-    //selector( nullptr )
-    selector( leptonSelector )
+    selector( leptonSelector ),
+
+    //make sure to copy "isConeCorrected" so a cone-correction can not be re-applied even after copying a lepton
+    isConeCorrected( rhs.isConeCorrected )
 {
     rhs.generatorInfo = nullptr;
 }
@@ -60,6 +64,9 @@ void Lepton::copyNonPointerAttributes( const Lepton& rhs ){
     _dxy = rhs._dxy;
     _dz = rhs._dz;
     _sip3d = rhs._sip3d;
+
+    //make sure to copy "isConeCorrected" so a cone-correction can not be re-applied even after copying a lepton
+    isConeCorrected = rhs.isConeCorrected;
 }
 
 
@@ -108,7 +115,7 @@ Lepton& Lepton::operator=( Lepton&& rhs ) noexcept{
 
 bool Lepton::checkGeneratorInfo() const{
     if( !hasGeneratorInfo() ){
-        throw std::domain_error( "Ttrying to access generator information for a lepton that has no generator info!" );
+        throw std::domain_error( "Trying to access generator information for a lepton that has no generator info!" );
     }
     return true;
 }
@@ -177,6 +184,22 @@ unsigned Lepton::provenanceConversion() const{
 }
 
 
+void Lepton::applyConeCorrection(){
+
+    //make sure cone correction can only be applied once 
+    if( isConeCorrected ) return;
+    isConeCorrected = true;
+
+    //only apply cone correction only to leptons that are FO and not tight
+    //loose leptons that do not pass FO are not corrected to make sure the object-level pT thresholds in isFO() are respected, and because they are usually used for purposes not requiring a cone correction
+    //Tight leptons should never receive a cone correction!
+    if( isFO() && !isTight() ){
+        double correctionFactor = selector->coneCorrection();
+        setLorentzVector( pt()*correctionFactor, eta(), phi(), energy()*correctionFactor );
+    }
+}
+
+
 bool sameFlavor( const Lepton& lhs, const Lepton& rhs ){
     return ( 
         ( lhs.isMuon() && rhs.isMuon() ) ||
@@ -188,4 +211,11 @@ bool sameFlavor( const Lepton& lhs, const Lepton& rhs ){
 
 bool oppositeSignSameFlavor( const Lepton& lhs, const Lepton& rhs ){
     return ( sameFlavor( lhs, rhs ) && ( lhs.charge() != rhs.charge() ) );
+}
+
+
+std::ostream& Lepton::print( std::ostream& os) const{
+    PhysicsObject::print( os );
+    os << " / charge = " << ( _charge > 0 ? "+" : "-" ) << " / dxy = " << _dxy << " / dz = " << _dz << " / sip3d = " << _sip3d;
+    return os;
 }

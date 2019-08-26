@@ -10,9 +10,12 @@ Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , 
     _jetCollectionPtr( new JetCollection( treeReader ) ),
     _metPtr( new Met( treeReader ) ),
     _triggerInfoPtr( new TriggerInfo( treeReader, readIndividualTriggers, readIndividualMetFilters ) ),
+    _eventTagsPtr( new EventTags( treeReader ) ),
     _generatorInfoPtr( treeReader.isMC() ? new GeneratorInfo( treeReader ) : nullptr ),
     _numberOfVertices( treeReader._nVertex ),
-    _weight( treeReader._weight )
+
+    //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes
+    _weight( treeReader._scaledWeight )
     {}
 
 
@@ -21,6 +24,7 @@ Event::~Event(){
     delete _jetCollectionPtr;
     delete _metPtr;
     delete _triggerInfoPtr;
+    delete _eventTagsPtr;
     if( hasGeneratorInfo() ){
         delete _generatorInfoPtr;
     }
@@ -32,6 +36,7 @@ Event::Event( const Event& rhs ) :
     _jetCollectionPtr( new JetCollection( *rhs._jetCollectionPtr ) ),
     _metPtr( new Met( *rhs._metPtr ) ),
     _triggerInfoPtr( new TriggerInfo( *rhs._triggerInfoPtr ) ),
+    _eventTagsPtr( new EventTags( *rhs._eventTagsPtr ) ),
     _generatorInfoPtr( rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr ),
     _numberOfVertices( rhs._numberOfVertices ),
     _weight( rhs._weight )
@@ -43,6 +48,7 @@ Event::Event( Event&& rhs ) noexcept :
     _jetCollectionPtr( rhs._jetCollectionPtr ),
     _metPtr( rhs._metPtr ),
     _triggerInfoPtr( rhs._triggerInfoPtr ),
+    _eventTagsPtr( rhs._eventTagsPtr ),
     _generatorInfoPtr( rhs._generatorInfoPtr ),
     _numberOfVertices( rhs._numberOfVertices ),
     _weight( rhs._weight )
@@ -51,6 +57,7 @@ Event::Event( Event&& rhs ) noexcept :
     rhs._jetCollectionPtr = nullptr;
     rhs._metPtr = nullptr;
     rhs._triggerInfoPtr = nullptr;
+    rhs._eventTagsPtr = nullptr;
     rhs._generatorInfoPtr = nullptr;
 }
     
@@ -61,6 +68,7 @@ Event& Event::operator=( const Event& rhs ){
         delete _jetCollectionPtr;
         delete _metPtr;
         delete _triggerInfoPtr;
+        delete _eventTagsPtr;
         if( hasGeneratorInfo() ){
             delete _generatorInfoPtr;
         }
@@ -69,6 +77,7 @@ Event& Event::operator=( const Event& rhs ){
         _jetCollectionPtr = new JetCollection( *rhs._jetCollectionPtr );
         _metPtr = new Met( *rhs._metPtr );
         _triggerInfoPtr = new TriggerInfo( *rhs._triggerInfoPtr );
+        _eventTagsPtr = new EventTags( *rhs._eventTagsPtr );
         _generatorInfoPtr = rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr;
 
         _numberOfVertices = rhs._numberOfVertices;
@@ -84,6 +93,7 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         delete _jetCollectionPtr;
         delete _metPtr;
         delete _triggerInfoPtr;
+        delete _eventTagsPtr;
         if( hasGeneratorInfo() ){
             delete _generatorInfoPtr;
         }
@@ -96,6 +106,8 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         rhs._metPtr = nullptr;
         _triggerInfoPtr = rhs._triggerInfoPtr;
         rhs._triggerInfoPtr = nullptr;
+        _eventTagsPtr = rhs._eventTagsPtr;
+        rhs._eventTagsPtr = nullptr;
         _generatorInfoPtr = rhs._generatorInfoPtr;
         rhs._generatorInfoPtr = nullptr;
 
@@ -103,4 +115,49 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         _weight = rhs._weight;
     }
     return *this;
+}
+
+
+void Event::checkGeneratorInfo() const{
+    if( !hasGeneratorInfo() ){
+        std::domain_error( "Trying to access generator information for a data event!" );
+    }
+}
+
+
+GeneratorInfo& Event::generatorInfo() const{
+    checkGeneratorInfo();
+    return *_generatorInfoPtr;
+}
+
+
+void Event::initializeZBosonCandidate(){
+    if( !ZisInitialized ){
+
+        //check that there are at least two leptons is performed automatically in LeptonCollection
+
+        //reconstruct the best Z boson
+        std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >, double > ZBosonCandidateIndicesAndMass = _leptonCollectionPtr->bestZBosonCandidateIndicesAndMass();
+        _bestZBosonCandidateIndices = ZBosonCandidateIndicesAndMass.first;
+        _bestZBosonCandidateMass = ZBosonCandidateIndicesAndMass.second;
+
+        //leading lepton not used in this pairing is considered to be from the W decay (in trilepton events )
+        //WARNING : LEPTON ORDERING MUST HAPPEN HERE!
+        if( numberOfLeptons() >= 3 ){
+            for( LeptonCollection::size_type leptonIndex = 0; leptonIndex < numberOfLeptons(); ++leptonIndex ){
+                if( !( leptonIndex == _bestZBosonCandidateIndices.first || leptonIndex == _bestZBosonCandidateIndices.second ) ){
+                    _WLeptonIndex = leptonIndex;
+                }
+            }
+        }
+
+        ZisInitialized = true;
+    }
+}
+
+
+std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >, double > Event::bestZBosonCandidateIndicesAndMass() const{
+    if( !ZisInitialized ){
+        
+    }
 }

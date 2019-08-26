@@ -155,7 +155,7 @@ LorentzVector operator-( const LorentzVector& lhs, const LorentzVector& rhs ){
 
 
 std::ostream& operator<<( std::ostream& os, const LorentzVector& rhs ){
-    os << "(pT = " << rhs.transverseMomentum << ", eta = " << rhs.pseudoRapidity << ", phi = " << rhs.azimuthalAngle << ", energy = " << rhs.energyValue;
+    os << "(pT = " << rhs.transverseMomentum << ", eta = " << rhs.pseudoRapidity << ", phi = " << rhs.azimuthalAngle << ", energy = " << rhs.energyValue << ")";
     return os;
 }
 
@@ -175,4 +175,9 @@ double deltaR( const LorentzVector& lhs, const LorentzVector& rhs ){
     double dEta = deltaEta( lhs, rhs );
     double dPhi = deltaPhi( lhs, rhs );
     return std::sqrt( dEta*dEta + dPhi*dPhi );
+}
+
+
+double mt( const LorentzVector& lhs, const LorentzVector& rhs ){
+    return sqrt(2*lhs.pt()*rhs.pt()*( 1 - std::cos( lhs.phi()-rhs.phi() ) ) );
 }

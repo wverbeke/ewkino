@@ -2,6 +2,7 @@
 #define PhysicsObject_H
 
 //include c++ library classes 
+#include <ostream>
 
 //include other parts of code 
 #include "LorentzVector.h"
@@ -11,12 +12,14 @@ class PhysicsObject{
     friend double deltaEta( const PhysicsObject&, const PhysicsObject& );
     friend double deltaPhi( const PhysicsObject&, const PhysicsObject& );
     friend double deltaR( const PhysicsObject&, const PhysicsObject& );
+    friend double mt( const PhysicsObject&, const PhysicsObject& );
 
     public:
         
         PhysicsObject() = default;
-        PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy ):
-            vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ) {} 
+        //PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy ):
+        //    vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ) {} 
+        PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy, const bool objectIs2016 = false, const bool objectIs2017 = false );
 
         //define both copy and move constructors and assignment operators 
         PhysicsObject( const PhysicsObject& ) = default;
@@ -28,6 +31,7 @@ class PhysicsObject{
 
         double pt() const{ return vector.pt(); }
         double eta() const{ return vector.eta(); }
+        double absEta() const{ return vector.absEta(); }
         double phi() const{ return vector.phi(); }
         double energy() const{ return vector.energy(); }
         double mass() const{ return vector.mass(); }
@@ -41,7 +45,13 @@ class PhysicsObject{
         PhysicsObject& operator+=( const PhysicsObject& );
         PhysicsObject& operator-=( const PhysicsObject& );
 
+        bool is2016() const{ return is2016Object; }
+        bool is2017() const{ return is2017Object; }
+        bool is2018() const{ return !( is2016Object || is2017Object ); }
+
         virtual ~PhysicsObject() = default;
+
+        virtual std::ostream& print( std::ostream& os = std::cout ) const;
 
     protected: 
 
@@ -50,6 +60,9 @@ class PhysicsObject{
 
     private:
         LorentzVector vector; 
+
+        bool is2016Object = false;
+        bool is2017Object = false;
 
         //virtual PhysicsObject* clone() const &{ return new PhysicsObject( *this ); } 
         //virtual PhysicsObject* clone() &&{ return new PhysicsObject( std::move( *this ) ); }
@@ -61,5 +74,8 @@ PhysicsObject operator-( const PhysicsObject&, const PhysicsObject& );
 double deltaEta( const PhysicsObject& , const PhysicsObject& );
 double deltaPhi( const PhysicsObject& , const PhysicsObject& );
 double deltaR( const PhysicsObject& , const PhysicsObject& );
+double mt( const PhysicsObject&, const PhysicsObject& );
+
+std::ostream& operator<<( std::ostream&, const PhysicsObject& );
 
 #endif 

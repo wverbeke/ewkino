@@ -25,9 +25,11 @@ JetCollection JetCollection::goodJetCollection() const{
 
 
 void JetCollection::cleanJetsFromLeptons( const LeptonCollection& leptonCollection, bool (Lepton::*passSelection)() const, const double coneSize ){
-    std::vector< const_iterator > objectsToDelete;
-    for( const_iterator jetIt = cbegin(); jetIt != cend(); ++jetIt ){
+    for( const_iterator jetIt = cbegin(); jetIt != cend(); ){
         Jet& jet = **jetIt;
+
+        //increment iterator if jet is not deleted 
+        bool isDeleted = false;
         for( LeptonCollection::const_iterator lIt = leptonCollection.cbegin(); lIt != leptonCollection.cend(); ++lIt ){
             Lepton& lepton = **lIt;
 
@@ -36,12 +38,16 @@ void JetCollection::cleanJetsFromLeptons( const LeptonCollection& leptonCollecti
 
             //remove jet if it overlaps with a selected lepton
             if( deltaR( jet, lepton ) < coneSize ){
-                objectsToDelete.push_back( jetIt );
+
+                jetIt = erase( jetIt );
+                isDeleted = true;
                 break;
             }
         }
+        if( !isDeleted ){
+            ++jetIt;
+        }
     }
-    erase( objectsToDelete );
 }
 
 

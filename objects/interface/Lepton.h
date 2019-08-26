@@ -40,6 +40,7 @@ class Lepton : public PhysicsObject {
         //access generator-level attributes
         bool isPrompt() const;
         int matchPdgId() const;
+        int matchCharge() const;
         int momPdgId() const;
         unsigned provenance() const;
         unsigned provenanceCompressed() const;
@@ -48,8 +49,11 @@ class Lepton : public PhysicsObject {
         //lepton id decisions 
         bool isLoose() const{ return selector->isLoose(); }
         bool isFO() const{ return selector->isFO(); }
-        bool isGood() const{ return selector->isGood(); }
         bool isTight() const{ return selector->isTight(); }
+        virtual bool isGood() const override{ return isFO(); }
+
+        //cone-correction for fake-rate prediction
+        void applyConeCorrection();
 
         //check what type of lepton the object is
         virtual bool isMuon() const = 0;
@@ -57,6 +61,8 @@ class Lepton : public PhysicsObject {
         virtual bool isTau() const = 0;
         virtual bool isLightLepton() const = 0;
 
+        //print out lepton information
+        virtual std::ostream& print( std::ostream& os = std::cout ) const override;
 
     private:
         int _charge = 0;
@@ -80,13 +86,19 @@ class Lepton : public PhysicsObject {
         virtual Lepton* clone() const & = 0;
         virtual Lepton* clone() && = 0;
 
-    protected :
-
         //lepton selector object 
         LeptonSelector* selector;
 
+        //check if lepton was already cone-corrected
+        bool isConeCorrected = false;
+
+    protected :
         Lepton( const Lepton&, LeptonSelector* );
         Lepton( Lepton&&, LeptonSelector* ) noexcept;
 };
+
+//check whether two leptons have the same flavor
+bool sameFlavor( const Lepton&, const Lepton& );
+bool oppositeSignSameFlavor( const Lepton&, const Lepton& );
 
 #endif

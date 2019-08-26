@@ -126,3 +126,107 @@ Tau::Tau( Tau&& rhs ) noexcept :
     _passTightMVANew2017( rhs._passTightMVANew2017 ),
     _passVTightMVANew2017( rhs._passVTightMVANew2017 )
 	{}
+
+
+std::ostream& Tau::print( std::ostream& os ) const{
+    os << "Tau : ";
+    Lepton::print( os );
+
+    //decay mocde finding 
+    if( _passDecayModeFinding ){
+        os << " / passes old decay mode finding";
+    } 
+    if( _passDecayModeFindingNew ){
+        os << " / passes new decay mode finding";
+    } 
+
+    //muon veto
+    if( _passMuonVetoTight ){
+        os << " / pass tight muon veto";
+    } else if( _passMuonVetoLoose ){
+        os << " / pass loose muon veto";
+    } else{
+        os << " / fail muon veto";
+    }
+
+    //electron veto
+    if( _passEleVetoVTight ){
+        os << " / pass very tight electron veto";
+    } else if( _passEleVetoTight ){
+        os << " / pass tight electron veto";
+    } else if( _passEleVetoMedium ){
+        os << " / pass medium electron veto";
+    } else if( _passEleVetoLoose ){
+        os << " / pass loose electron veto";
+    } else if( _passEleVetoVLoose ){
+        os << " / pass very loose electron veto";
+    } else {
+        os << " / fail electron veto";
+    }
+
+    //old MVA 2015
+    if( _passVTightMVAOld2015 ){
+        os << " / pass very tight old MVA 2015";
+    } else if( _passTightMVAOld2015 ){
+        os << " / pass tight old MVA 2015";
+    } else if( _passMediumMVAOld2015 ){
+        os << " / pass medium old MVA 2015";
+    } else if( _passLooseMVAOld2015 ){
+        os << " / pass loose old MVA 2015";
+    } else if( _passVLooseMVAOld2015 ){
+        os << " / pass very loose old MVA 2015";
+    } else {
+        os << " / fail old MVA 2015";
+    }
+
+    //new MVA 2015
+    if( _passVTightMVANew2015 ){
+        os << " / pass very tight new MVA 2015";
+    } else if( _passTightMVANew2015 ){
+        os << " / pass tight new MVA 2015";
+    } else if( _passMediumMVANew2015 ){
+        os << " / pass medium new MVA 2015";
+    } else if( _passLooseMVANew2015 ){
+        os << " / pass loose new MVA 2015";
+    } else if( _passVLooseMVANew2015 ){
+        os << " / pass very loose new MVA 2015";
+    } else {
+        os << " / fail new MVA 2015";
+    }
+
+    //old MVA 2017
+    if( _passVVTightMVAOld2017 ){
+        os << " / pass very very tight old MVA 2017";
+    } else if( _passVTightMVAOld2017 ){
+        os << " / pass very tight old MVA 2017";
+    } else if( _passTightMVAOld2017 ){
+        os << " / pass tight old MVA 2017";
+    } else if( _passMediumMVAOld2017 ){
+        os << " / pass medium old MVA 2017";
+    } else if( _passLooseMVAOld2017 ){
+        os << " / pass loose old MVA 2017";
+    } else if( _passVLooseMVAOld2017 ){
+        os << " / pass very loose old MVA 2017";
+    } else if( _passVVLooseMVAOld2017 ){
+        os << " / pass very very loose old MVA 2017";
+    } else {
+        os << " / fail old MVA 2017";
+    }
+
+    //new MVA 2017
+    if( _passVTightMVANew2017 ){
+        os << " / pass very tight new MVA 2017";
+    } else if( _passTightMVANew2017 ){
+        os << " / pass tight new MVA 2017";
+    } else if( _passMediumMVANew2017 ){
+        os << " / pass medium new MVA 2017";
+    } else if( _passLooseMVANew2017 ){
+        os << " / pass loose new MVA 2017";
+    } else if( _passVLooseMVANew2017 ){
+        os << " / pass very loose new MVA 2017";
+    } else {
+        os << " / fail new MVA 2017";
+    }
+
+    return os;
+}

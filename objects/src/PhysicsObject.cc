@@ -1,6 +1,13 @@
 #include "../interface/PhysicsObject.h"
 
 
+PhysicsObject::PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy, const bool objectIs2016, const bool objectIs2017 ) :
+    vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ),
+    is2016Object( objectIs2016 ),
+    is2017Object( objectIs2017 )
+    {}
+
+
 void PhysicsObject::setLorentzVector( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energyValue ){
     *this = PhysicsObject( transverseMomentum, pseudoRapidity, azimuthalAngle, energyValue );
 }
@@ -49,4 +56,20 @@ double deltaPhi( const PhysicsObject& lhs, const PhysicsObject& rhs ){
 
 double deltaR( const PhysicsObject& lhs, const PhysicsObject& rhs ){
     return deltaR( lhs.vector, rhs.vector );
+}
+
+
+double mt( const PhysicsObject& lhs, const PhysicsObject& rhs ){
+    return mt( lhs.vector, rhs.vector );
+}
+
+
+std::ostream& PhysicsObject::print( std::ostream& os ) const{
+    os << vector;
+    return os;
+}
+
+
+std::ostream& operator<<( std::ostream& os, const PhysicsObject& physicsObject ){
+    return physicsObject.print( os );
 }

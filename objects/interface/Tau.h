@@ -3,7 +3,6 @@
 
 //include other parts of code 
 #include "Lepton.h"
-#include "TauSelector.h"
 
 class Tau : public Lepton{
 
@@ -18,7 +17,7 @@ class Tau : public Lepton{
         virtual bool isLightLepton() const override{ return false; }
         virtual bool isMuon() const override{ return false; }
         virtual bool isElectron() const override{ return false; }
-        virtual bool isTau() const override{ return false; }
+        virtual bool isTau() const override{ return true; }
 
         unsigned decayMode() const{ return _decayMode; }
         bool passDecayModeFinding() const{ return _passDecayModeFinding; }
@@ -57,6 +56,8 @@ class Tau : public Lepton{
         bool passMediumMVANew2017() const{ return _passMediumMVANew2017; }
         bool passTightMVANew2017() const{ return _passTightMVANew2017; }
         bool passVTightMVANew2017() const{ return _passVTightMVANew2017; }
+
+        virtual std::ostream& print( std::ostream& os = std::cout ) const override;
 
     private:
         unsigned _decayMode;

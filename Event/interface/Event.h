@@ -2,13 +2,16 @@
 #define Event_H
 
 //include c++ library classes 
+#include <utility>
 
 //include other parts of framework
 #include "LeptonCollection.h"
 #include "JetCollection.h"
 #include "GeneratorInfo.h"
 #include "TriggerInfo.h"
+#include "EventTags.h"
 #include "../../objects/interface/Met.h"
+#include "../../objects/interface/PhysicsObject.h"
 
 
 class TreeReader;
@@ -20,7 +23,7 @@ class TauCollection;
 class Met;
 class TriggerInfo;
 class GeneratorInfo;
-class EventTags;
+//class EventTags;
 
 class Event{
 
@@ -41,6 +44,12 @@ class Event{
         TriggerInfo& triggerInfo() const{ return *_triggerInfoPtr; }
         EventTags& eventTags() const{ return *_eventTagsPtr; }
         GeneratorInfo& generatorInfo() const;
+
+        Lepton& lepton( const LeptonCollection::size_type leptonIndex ) const{ return (*_leptonCollectionPtr)[ leptonIndex ]; }
+        Jet& jet( const JetCollection::size_type jetIndex ) const{ return (*_jetCollectionPtr)[ jetIndex ]; }
+
+        void sortLeptonsByPt() const{ _leptonCollectionPtr->sortByPt(); }
+        void sortJetsByPt() const{ _jetCollectionPtr->sortByPt(); }
 
         unsigned numberOfVertices() const{ return _numberOfVertices; }
         double weight() const{ return _weight; }
@@ -69,15 +78,26 @@ class Event{
         void cleanTausFromLooseLightLeptons( const double coneSize = 0.4 ){ _leptonCollectionPtr->cleanTausFromLooseLightLeptons( coneSize ); }
         void cleanTausFromFOLightLeptons( const double coneSize = 0.4 ){ _leptonCollectionPtr->cleanTausFromFOLightLeptons( coneSize ); }
 
+        //apply lepton cone correction for fake-rate prediction
+        void applyLeptonConeCorrection() const{ _leptonCollectionPtr->applyConeCorrection(); }
+
         //separate lepton flavor collections
         MuonCollection muonCollection() const{ return _leptonCollectionPtr->muonCollection(); }
         ElectronCollection electronCollection() const{ return _leptonCollectionPtr->electronCollection(); }
         TauCollection tauCollection() const{ return _leptonCollectionPtr->tauCollection(); }
+        LeptonCollection::size_type numberOfMuons() const{ return _leptonCollectionPtr->numberOfMuons(); }
+        LeptonCollection::size_type numberOfElectrons() const{ return _leptonCollectionPtr->numberOfElectrons(); }
+        LeptonCollection::size_type numberOfTaus() const{ return _leptonCollectionPtr->numberOfTaus(); }
+        LeptonCollection::size_type numberOfLightLeptons() const{ return _leptonCollectionPtr->numberOfLightLeptons(); }
 
         //lepton collections based on selection
         LeptonCollection looseLeptonCollection() const{ return _leptonCollectionPtr->looseLeptonCollection(); }
         LeptonCollection FOLeptonCollection() const{ return _leptonCollectionPtr->FOLeptonCollection(); }
         LeptonCollection TightLeptonCollection() const{ return _leptonCollectionPtr->tightLeptonCollection(); }
+        LeptonCollection::size_type numberOfLooseLeptons() const{ return _leptonCollectionPtr->numberOfLooseLeptons(); }
+        LeptonCollection::size_type numberOfFOLeptons() const{ return _leptonCollectionPtr->numberOfFOLeptons(); }
+        LeptonCollection::size_type numberOfTightLeptons() const{ return _leptonCollectionPtr->numberOfTightLeptons(); }
+        
 
         //Trigger information
        	bool passTriggers_e() const{ return _triggerInfoPtr->passTriggers_e(); }
@@ -94,7 +114,6 @@ class Event{
         bool passMetFilters() const{ return _triggerInfoPtr->passMetFilters(); }
         bool passTrigger( const std::string& triggerName ) const{ return _triggerInfoPtr->passTrigger( triggerName ); }
         bool passMetFilter( const std::string& filterName ) const{ return _triggerInfoPtr->passMetFilter( filterName ); }
- 
 
         //number of leptons 
         LeptonCollection::size_type numberOfLeptons() const{ return _leptonCollectionPtr->size(); }
@@ -119,10 +138,11 @@ class Event{
         std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >, double > bestZBosonCandidateIndicesAndMass() const;
 
         //transverse mass of lepton from W decay in 1 or 3 lepton events and the MET
+        LeptonCollection::size_type WLeptonIndex() const;
         double mtW() const;
 
         //other transverse mass options
-        double mtLeptonMet( const LeptonCollection::size_type leptonIndex ) const;
+        double mtLeptonMet( const LeptonCollection::size_type leptonIndex ) const{ return mt( lepton( leptonIndex ), met() ); }
         
         //number of jets 
         JetCollection::size_type numberOfJets() const{ return _jetCollectionPtr->size(); }
@@ -135,6 +155,18 @@ class Event{
         bool hasLooseBTaggedJet() const{ return ( numberOfLooseBTaggedJets() != 0 ); }
         bool hasMediumBTaggedJet() const{ return ( numberOfMediumBTaggedJets() != 0 ); }
         bool hasTightBTaggedJet() const{ return ( numberOfTightBTaggedJets() != 0 ); }
+
+        //total lepton system
+        PhysicsObject leptonSystem() const{ return _leptonCollectionPtr->objectSum(); }
+
+        //total jet system 
+        PhysicsObject jetSystem() const{ return _leptonCollectionPtr->objectSum(); }
+
+        //total lepton + jet system 
+        PhysicsObject leptonJetSystem() const{ return ( leptonSystem() + jetSystem() ); }
+
+        //total lepton + jet + met system
+        PhysicsObject leptonJetMetSystem() const{ return ( leptonJetSystem() + met() ); }
         
 		
  
@@ -145,18 +177,25 @@ class Event{
         JetCollection* _jetCollectionPtr = nullptr;
         Met* _metPtr = nullptr;
         TriggerInfo* _triggerInfoPtr = nullptr;
-        EventTags* _eventTagsPtr;
+        EventTags* _eventTagsPtr = nullptr;
         GeneratorInfo* _generatorInfoPtr = nullptr;
         unsigned _numberOfVertices = 0;
         double _weight = 1;
 
         //presence of Z boson
-        std::pair< LeptonCollection::size_type, LeptonCollection::size_type > ZBosonCandidateIndices;
-        LeptonCollection::size_type WLeptonIndex;
+        bool ZisInitialized = false;
+        std::pair< LeptonCollection::size_type, LeptonCollection::size_type > _bestZBosonCandidateIndices;
+        LeptonCollection::size_type _WLeptonIndex = 0;
+        double _bestZBosonCandidateMass;
+        void initializeZBosonCandidate();
+        
+        //always make sure lepton collection is sorted before selecting Z candidates 
+        //WARNING : make sure this is robust when cone-correction is applied!
+        //bool leptonCollectionIsSorted = false;
 
         //check the presence of generator information
         bool hasGeneratorInfo() const{ return ( _generatorInfoPtr != nullptr ); }
-        bool checkGeneratorInfo() const;
+        void checkGeneratorInfo() const;
 };
 
 #endif
