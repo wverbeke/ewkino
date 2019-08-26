@@ -90,7 +90,6 @@ class TreeReader {
         Bool_t          _lElectronPassConvVeto[nL_max];
         Bool_t          _lElectronChargeConst[nL_max];
         UInt_t          _lElectronMissingHits[nL_max];
-        Double_t        _leptonMvaSUSY[nL_max];   
         Double_t        _leptonMvaTTH[nL_max];
         Double_t        _leptonMvatZq[nL_max];
         Bool_t          _lPOGVeto[nL_max];   
@@ -137,6 +136,9 @@ class TreeReader {
         Double_t        _closestJetCsvV2[nL_max];
         Double_t        _closestJetDeepCsv_b[nL_max];
         Double_t        _closestJetDeepCsv_bb[nL_max];
+        Double_t        _closestJetDeepFlavor_b[nL_max];
+        Double_t        _closestJetDeepFlavor_bb[nL_max];
+        Double_t        _closestJetDeepFlavor_lepb[nL_max];
         UInt_t          _selectedTrackMult[nL_max];   
         Double_t        _lMuonSegComp[nL_max];   
         Double_t        _lMuonTrackPt[nL_max];
@@ -163,9 +165,11 @@ class TreeReader {
         Double_t        _jetDeepCsv_udsg[nJets_max];   
         Double_t        _jetDeepCsv_b[nJets_max];   
         Double_t        _jetDeepCsv_c[nJets_max];   
-        Double_t        _jetDeepCsv_bb[nJets_max];   
+        Double_t        _jetDeepCsv_bb[nJets_max];
+        Double_t        _jetDeepFlavor_b[nJets_max];
+        Double_t        _jetDeepFlavor_bb[nJets_max];
+        Double_t        _jetDeepFlavor_lepb[nJets_max];
         UInt_t          _jetHadronFlavor[nJets_max];   
-        Bool_t          _jetIsLoose[nJets_max];
         Bool_t          _jetIsTight[nJets_max];
         Bool_t          _jetIsTightLepVeto[nJets_max];
         Double_t        _jetNeutralHadronFraction[nJets_max];
@@ -461,7 +465,6 @@ class TreeReader {
         TBranch        *b__lElectronPassConvVeto;
         TBranch        *b__lElectronChargeConst;
         TBranch        *b__lElectronMissingHits;
-        TBranch        *b__leptonMvaSUSY;
         TBranch        *b__leptonMvaTTH;
         TBranch        *b__leptonMvatZq;
         TBranch        *b__lPOGVeto;   
@@ -506,6 +509,9 @@ class TreeReader {
         TBranch        *b__closestJetCsvV2;
         TBranch        *b__closestJetDeepCsv_b;
         TBranch        *b__closestJetDeepCsv_bb;
+        TBranch        *b__closestJetDeepFlavor_b;
+        TBranch        *b__closestJetDeepFlavor_bb;
+        TBranch        *b__closestJetDeepFlavor_lepb;
         TBranch        *b__selectedTrackMult;   
         TBranch        *b__lMuonSegComp;   
         TBranch        *b__lMuonTrackPt;
@@ -533,9 +539,11 @@ class TreeReader {
         TBranch        *b__jetDeepCsv_b;   
         TBranch        *b__jetDeepCsv_c;   
         TBranch        *b__jetDeepCsv_bb;   
+        TBranch        *b__jetDeepFlavor_b;
+        TBranch        *b__jetDeepFlavor_bb;
+        TBranch        *b__jetDeepFlavor_lepb;
         TBranch        *b__jetHadronFlavor;   
         TBranch        *b__jetId;   
-        TBranch        *b__jetIsLoose;
         TBranch        *b__jetIsTight;
         TBranch        *b__jetIsTightLepVeto;
         TBranch        *b__jetNeutralHadronFraction;

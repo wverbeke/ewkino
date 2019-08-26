@@ -30,10 +30,12 @@ class LightLepton : public Lepton {
         double ptRatio() const{ return _ptRatio; }
         double ptRel() const{ return _ptRel; }
         double closestJetDeepCSV() const{ return _closestJetDeepCSV; }
+        double closestJetDeepFlavor() const{ return _closestJetDeepFlavor; }
         unsigned closestJetTrackMultiplicity() const{ return _closestJetTrackMultiplicity; }
 
         //lepton MVA discriminant
-        double leptonMVA() const{ return _leptonMVA; }
+        double leptonMVAtZq() const{ return _leptonMVAtZq; }
+        double leptonMVAttH() const{ return _leptonMVAttH; }
 
         //check lepton type
         virtual bool isLightLepton() const override{ return true; }
@@ -41,6 +43,9 @@ class LightLepton : public Lepton {
 
         //destructor
         virtual ~LightLepton(){};
+
+        //print out lepton information
+        virtual std::ostream& print( std::ostream& os = std::cout ) const override;
 
     private:
 
@@ -54,10 +59,12 @@ class LightLepton : public Lepton {
         double _ptRatio = 0;
         double _ptRel = 0;
         double _closestJetDeepCSV = 0;
+        double _closestJetDeepFlavor = 0;
         unsigned _closestJetTrackMultiplicity = 0;
 
         //lepton MVA output 
-        double _leptonMVA = 0;
+        double _leptonMVAtZq = 0;
+        double _leptonMVAttH = 0;
 
     protected: 
         LightLepton( const LightLepton&, LeptonSelector* );

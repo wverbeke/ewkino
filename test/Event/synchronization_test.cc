@@ -455,12 +455,11 @@ void makeDumpStandalone(){
 
 int main(){
 
-    //testCopyMove();
-
+    std::cout << "copy test" << std::endl;
+    testCopyMove();
     std::cout << "makeDumpWithFrameWork" << std::endl;
     makeDumpWithFrameWork();
-    //std::cout << "makeDumpStandalone" << std::endl;
-    //makeDumpStandalone();
-
+    std::cout << "makeDumpStandalone" << std::endl;
+    makeDumpStandalone();
     return 0;
 }

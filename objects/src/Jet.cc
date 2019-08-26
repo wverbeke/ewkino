@@ -3,11 +3,14 @@
 //include c++ library classes 
 #include <cmath>
 
+//include other parts of framework
+#include "../interface/JetSelector.h"
+
 
 Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
-    PhysicsObject( treeReader._jetPt[jetIndex], treeReader._jetEta[jetIndex], treeReader._jetPhi[jetIndex], treeReader._jetE[jetIndex] ),
+    PhysicsObject( treeReader._jetPt[jetIndex], treeReader._jetEta[jetIndex], treeReader._jetPhi[jetIndex], treeReader._jetE[jetIndex], treeReader.is2016(), treeReader.is2017() ),
     _deepCSV( treeReader._jetDeepCsv_b[jetIndex] + treeReader._jetDeepCsv_bb[jetIndex] ),
-    _isLoose( treeReader._jetIsLoose[jetIndex] ),
+    _deepFlavor( treeReader._jetDeepFlavor_b[jetIndex] + treeReader._jetDeepFlavor_bb[jetIndex] + treeReader._jetDeepFlavor_lepb[jetIndex] ),
     _isTight( treeReader._jetIsTight[jetIndex] ),
     _isTightLeptonVeto( treeReader._jetIsTightLepVeto[jetIndex] ),
 
@@ -17,7 +20,7 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
     _pt_JECUp( treeReader._jetPt_JECUp[jetIndex] ),
     selector( new JetSelector( this ) )
 {
-    //catch potential invalid values of deepCSV 
+    //catch potential invalid values of deepCSV and deepFlavor
     if( std::isnan( _deepCSV ) ){
         _deepCSV = 0.;
 
@@ -25,13 +28,20 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
     } else if( _deepCSV < 0 ){
         _deepCSV = 0.;
     }
+
+    if( std::isnan( _deepFlavor ) ){
+        _deepFlavor = 0.;
+    } else if( _deepFlavor < 0 ){
+        _deepFlavor = 0.;
+    }
+    
 }
 
 
 Jet::Jet( const Jet& rhs ) : 
     PhysicsObject( rhs ),
     _deepCSV( rhs._deepCSV ),
-    _isLoose( rhs._isLoose ),
+    _deepFlavor( rhs._deepFlavor ),
     _isTight( rhs._isTight ),
     _isTightLeptonVeto( rhs._isTightLeptonVeto ),
     _hadronFlavor( rhs._hadronFlavor ),
@@ -44,7 +54,7 @@ Jet::Jet( const Jet& rhs ) :
 Jet::Jet( Jet&& rhs ) noexcept :
     PhysicsObject( std::move( rhs ) ),
 	_deepCSV( rhs._deepCSV ),
-    _isLoose( rhs._isLoose ),
+    _deepFlavor( rhs._deepFlavor ),
     _isTight( rhs._isTight ),
     _isTightLeptonVeto( rhs._isTightLeptonVeto ),
     _hadronFlavor( rhs._hadronFlavor ),
@@ -61,7 +71,7 @@ Jet::~Jet(){
 
 void Jet::copyNonPointerAttributes( const Jet& rhs ){
     _deepCSV = rhs._deepCSV;
-    _isLoose = rhs._isLoose;
+    _deepFlavor = rhs._deepFlavor;
     _isTight = rhs._isTight;
     _isTightLeptonVeto = rhs._isTightLeptonVeto;
     _hadronFlavor = rhs._hadronFlavor;
@@ -109,4 +119,32 @@ Jet Jet::JetJECDown() const{
 
 Jet Jet::JetJECUp() const{
     return variedJet( _pt_JECUp );
+}
+
+
+bool Jet::isGood() const{
+    return selector->isGood();
+}
+
+
+bool Jet::isBTaggedLoose() const{
+    return selector->isBTaggedLoose();
+}
+
+
+bool Jet::isBTaggedMedium() const{
+    return selector->isBTaggedMedium();
+}
+
+
+bool Jet::isBTaggedTight() const{
+    return selector->isBTaggedTight();
+}
+
+
+std::ostream& Jet::print( std::ostream& os ) const{
+    os << "Jet : ";
+    PhysicsObject::print( os );
+    os << " / deepCSV = " << _deepCSV << " / deepFlavor = " << _deepFlavor << " / isTight = " << _isTight << " / isTightLeptonVeto = " << _isTightLeptonVeto << " / hadronFlavor = " << _hadronFlavor << " / pt_JECDown = " << _pt_JECDown << " / pt_JECUp = " << _pt_JECUp;
+    return os;
 }

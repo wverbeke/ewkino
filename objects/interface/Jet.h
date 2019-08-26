@@ -4,10 +4,11 @@
 //include other parts of code 
 #include "PhysicsObject.h"
 #include "../../TreeReader/interface/TreeReader.h"
-#include "JetSelector.h"
+//#include "JetSelector.h"
 
 
 template< typename objectType > class PhysicsObjectCollection;
+class JetSelector;
 
 class Jet : public PhysicsObject{
     
@@ -25,23 +26,28 @@ class Jet : public PhysicsObject{
         Jet& operator=( Jet&& ) noexcept;
 
         double deepCSV() const{ return _deepCSV; }
+        double deepFlavor() const{ return _deepFlavor; }
         unsigned hadronFlavor() const{ return _hadronFlavor; }
         bool isLoose() const{ return _isLoose; }
         bool isTight() const{ return _isTight; }
         bool isTightLeptonVeto() const{ return _isTightLeptonVeto; }
 
         //analysis-specific jet selection
-        virtual bool isGood() const override{ return selector->isGood(); }
-        bool isBTaggedLoose() const { return selector->isBTaggedLoose(); }
-        bool isBTaggedMedium() const { return selector->isBTaggedMedium(); }
-        bool isBTaggedTight() const { return selector->isBTaggedTight(); }
+        virtual bool isGood() const override;
+        bool isBTaggedLoose() const;
+        bool isBTaggedMedium() const;
+        bool isBTaggedTight() const;
 
         //create new Jet with JEC varied within uncertainties
         Jet JetJECDown() const;
         Jet JetJECUp() const;
 
+        //print jet information
+        virtual std::ostream& print( std::ostream& ) const override;
+
     private:
         double _deepCSV = 0;
+        double _deepFlavor = 0;
         bool _isLoose = false;
         bool _isTight = false;
         bool _isTightLeptonVeto = false;
