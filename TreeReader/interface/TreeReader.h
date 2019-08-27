@@ -29,7 +29,6 @@ class TreeReader {
         static const unsigned nL_max = 20;
         static const unsigned nJets_max = 20;
         static const unsigned gen_nL_max = 20;
-        static const unsigned gen_nPh_max = 10;
         ULong_t         _runNb;
         ULong_t         _lumiBlock;
         ULong_t         _eventNb;
@@ -189,6 +188,8 @@ class TreeReader {
         Double_t        _metPhiUnclDown;
         Double_t        _metPhiUnclUp;       
         Double_t        _metSignificance;
+        Double_t        _mChi1;
+        Double_t        _mChi2;
 
         std::map< std::string, bool > _triggerMap;
         std::map< std::string, bool > _MetFilterMap;
@@ -196,22 +197,26 @@ class TreeReader {
         //weight including cross section scaling 
         double          _scaledWeight;
 
-
         //set up tree for reading and writing
-        void initTree(TTree *tree, const bool isData = false);
-        //void setOutputTree(TTree*, const bool isData = false, const std::map< std::string, bool >& triggerMap = std::map< std::string, bool >() );
-        void setOutputTree(TTree*, const bool isData, std::map< std::string, bool >& triggerMap, std::map< std::string, bool>& MetFilterMap);
+        void initTree();
+        void setOutputTree( TTree* );
 
         //skim tree
         //void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
         //void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
 
 
-        void initSample();                              //event weights will be set according to is2016() ( or equally is2017() ) flag
+        //initialize the next sample
+        void initSample();
         void initSample(const Sample&);  
+
+        //read sample list from text file
         void readSamples2016(const std::string&, const std::string&);
         void readSamples2017(const std::string&, const std::string&);
-        void readSamples(const std::string& list, const std::string& directory); //read sample list from file
+        void readSamples(const std::string& list, const std::string& directory);
+
+        //initialize the current sample directly from a root file
+        void initSampleFromFile( const std::string& fileName, const bool is2017, const bool is2018 );
 
         //Get entry from Tree, should not be used except for test purposes
         void GetEntry(const Sample&, long unsigned );
@@ -222,18 +227,25 @@ class TreeReader {
         Event buildEvent( const Sample&, long unsigned , const bool readIndividualTriggers = false, const bool readIndividualMetFilters = false );
         Event buildEvent( long unsigned, const bool readIndividualTriggers = false, const bool readIndividualMetFilters = false );
 
-        //check whether sample is 2017 or not
-        bool is2016() const { return _currentSample.is2016(); }
-        bool is2017() const { return _currentSample.is2017(); }
-        bool is2018() const { return _currentSample.is2018(); }
-        bool isData() const { return _currentSample.isData(); }
-        bool isMC() const { return _currentSample.isMC(); } 
-        bool isSMSignal() const{ return _currentSample.isSMSignal(); }
-        bool isNewPhysicsSignal() const{ return _currentSample.isNewPhysicsSignal(); }
+        //check whether generator info is present in current tree
         bool containsGeneratorInfo() const;
 
+        //check whether SUSY mass info is present in the current sample ( this is the case for SUSY signal scans )
+        bool containsSUSYMassInfo() const;
+
+        //check which year the current sample belongs to
+        bool is2016() const;
+        bool is2017() const;
+        bool is2018() const;
+
+        //check whether the current sample is data or MC, and or signal
+        bool isData() const;
+        bool isMC() const;
+        bool isSMSignal() const;
+        bool isNewPhysicsSignal() const;
+
         //access number of samples and current sample
-        Sample& currentSample(){ return _currentSample; }
+        const Sample& currentSample(){ return *currentSamplePtr; }
         std::vector< Sample >::size_type numberOfSamples() const{ return samples.size(); }
 
 
@@ -312,23 +324,45 @@ class TreeReader {
         double jetPrefiringWeight(const unsigned unc = 0) const;
         */
 
-        unsigned long nEntries = 0;
-    private:
-        TTree* fChain = nullptr;                                                //current Tree
-        std::shared_ptr<TFile> sampleFile;                                      //current sample
-        std::vector<Sample> samples;                                            //combined list of samples
-        std::vector<Sample> samples2016;                                        //2016 data and MC samples
-        std::vector<Sample> samples2017;                                        //2017 data and MC samples
-        Sample _currentSample;                                                   //reference to current sample, needed to check what era sample belongs to
-        //std::vector<HistInfo> histInfo;                                         //histogram info
-        int currentSampleIndex = -1;                                            //current index in list
-        //bool isData = false;
+        unsigned long numberOfEntries() const;
 
+    private:
+
+        //list of samples to loop over 
+        std::vector< Sample > samples;
+        std::vector< Sample > samples2016;
+        std::vector< Sample > samples2017;
+        std::vector< Sample > samples2018;
+
+        //current sample
+        const Sample* currentSamplePtr = nullptr;                                      
+
+        //TFile associated to current sample
+        std::shared_ptr< TFile > currentFilePtr;
+
+        //TTree associated to current sample 
+        std::shared_ptr< TTree > currentTreePtr = std::shared_ptr< TTree >( nullptr );
+
+        //check whether current sample is initialized, throw an error if it is not 
+        void checkCurrentSample() const;
+
+        //check whether current Tree is initialized, throw an error if it is not 
+        void checkCurrentTree() const;
+
+        //current index in samples vector
+        int currentSampleIndex = -1;
+
+        //luminosity for each year in units of fb
+        static constexpr double lumi2016 = 35.92;
+        static constexpr double lumi2017 = 41.53;
+        static constexpr double lumi2018 = 59.74;
+
+        //luminosity scaling
         double scale = 0;
-        //double weight = 1;                                                      //weight of given event
-        const double lumi2017 = 41.53;                                          //in units of 1/fb
-        const double lumi2016 = 35.867;                 
+
         //std::shared_ptr<Reweighter> reweighter;                                 //instance of reweighter class used for reweighting functions
+        //initialize SF weights
+        //void initializeWeights();
 
 
         /*
@@ -384,8 +418,6 @@ class TreeReader {
 
         bool lepIsGoodMultiAnalysis(const std::string&, const unsigned) const;
 
-        //initialize SF weights
-        void initializeWeights();
         */
 
 
@@ -403,7 +435,7 @@ class TreeReader {
         //initialize triggerMap
         void initializeTriggerMap( TTree* );
         void initializeMetFilterMap( TTree* );
-        
+
         //list of branches
         TBranch        *b__runNb;   
         TBranch        *b__lumiBlock;   
@@ -563,6 +595,9 @@ class TreeReader {
         TBranch        *b__metPhiUnclDown;   
         TBranch        *b__metPhiUnclUp;   
         TBranch        *b__metSignificance;
+        TBranch        *b__mChi1;
+        TBranch        *b__mChi2;
+
         std::map< std::string, TBranch* > b__triggerMap;
         std::map< std::string, TBranch* > b__MetFilterMap; 
 };
