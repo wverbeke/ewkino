@@ -10,7 +10,7 @@
 
 
 Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
-    directory( sampleDirectory)
+    _directory( sampleDirectory)
 {
     /*
     only works if input line is formatted as:
@@ -21,20 +21,20 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
 
     //first 3 words on the line are the process name, filename and cross section
     std::istringstream stream(line);
-    stream >> process >> fileName >> xSecString;
+    stream >> _processName >> _fileName >> xSecString;
 
     //if Xsection is not specified it is zero
-    xSec = ( xSecString == "" ? 0 : std::stod(xSecString) );
+    _xSec = ( xSecString == "" ? 0 : std::stod( xSecString ) );
 
-    setData();
-    set2017();
-    set2018();
+    setIsData();
+    setIs2017();
+    setIs2018();
 
     //unique name is equal to fileName without file extension
-    uniqueName = stringTools::fileWithoutExtension( fileName );
+    _uniqueName = stringTools::fileWithoutExtension( _fileName );
 
     //data should not have an xSection
-    if(isData() && xSecString != ""){
+    if( isData() && xSecString != "" ){
         std::string errorMessage = "Error in sample list on line:\n";
         errorMessage += ( line + "\n" );
         errorMessage += "xSection specified for data sample, this is not allowed!"; 
@@ -44,14 +44,63 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
     //extract all optional strings at the end of the line
     std::string optionString;
     std::string tempString;
-    while(stream){
+    while( stream ){
         stream >> tempString;
-        optionString.append(tempString);
+        optionString.append( tempString );
     }
 
     //read options
     //This might modify uniqueName. uniqueName has to be set before calling this function!
-    setOptions(optionString);
+    setOptions( optionString );
+}
+
+
+Sample::Sample( const std::string& directory, const std::string& fileName, const bool is2017, const bool is2018, const bool isData, const std::string& processName, const double xSec, const bool isSMSignal, const bool isNewPhysicsSignal ) :
+    _fileName( fileName ),
+    _directory( directory ),
+    _uniqueName( stringTools::formatDirectoryName( _directory ) + _fileName ),
+    _processName( processName ),
+    _xSec( xSec ),
+    _isData( isData ),
+    _is2017( is2017 ),
+    _is2018( is2018 ),
+    _isSMSignal( isSMSignal ),
+    _isNewPhysicsSignal( isNewPhysicsSignal )
+{}
+
+
+Sample::Sample( const std::string& pathToFile, const bool is2017, const bool is2018, const bool isData, const std::string& processName, const double xSec, const bool isSMSignal, const bool isNewPhysicsSignal ) :
+    _processName( processName ),
+    _xSec( xSec ),
+    _isData( isData ),
+    _is2017( is2017 ),
+    _is2018( is2018 ),
+    _isSMSignal( isSMSignal ),
+    _isNewPhysicsSignal( isNewPhysicsSignal )
+{
+    std::pair< std::string, std::string > directoryAndFileName = stringTools::splitDirectoryFileName( pathToFile );
+    _directory = directoryAndFileName.first;
+    _fileName = directoryAndFileName.second;
+    _uniqueName = stringTools::formatDirectoryName( _directory ) + _fileName;
+}
+
+
+
+//check whether line in the sample list txt file should be read to build a Sample
+bool considerLine( const std::string& line ){
+    
+    //if line starts with # it is a comment and should be ignored 
+    if( line[ line.find_first_not_of( " \t" ) ] == '#' ){
+        return false;
+    }
+
+    //if line only contains spaces and tabs, it should be ignored 
+    //WARNING : CHECK WHETHER THIS IS CORRECT WHEN INTERNET WORKS
+    if( line.find_first_not_of( " \t" ) == std::string::npos ){
+        return false;
+    }    
+
+    return true;
 }
 
 
@@ -60,55 +109,58 @@ Sample::Sample( std::istream& is, const std::string& directory ){
     //read sample info from txt file
     std::string line;
 
-    //jump to next line if current line is a comment
-    bool nextLineIsComment;
+    bool lineToConsider;
     do{
-        nextLineIsComment = false;
-        if(std::getline(is, line)){
-            nextLineIsComment = (line[line.find_first_not_of(" \t")] == '#');
-            if(!nextLineIsComment){
-                *this = Sample(line, directory); 
-            }
+        lineToConsider = true;
+        if( std::getline( is, line ) ){
+            
+            //skip comments or empty lines 
+            lineToConsider = considerLine( line );
+            if( !lineToConsider ) continue;
+
+            *this = Sample( line, directory ); 
         }
-    } while(nextLineIsComment);
+    } while( !lineToConsider );
 }
 
 
-void Sample::setData(){
-    isDataSample = false;
-    static std::vector<std::string> dataNames = {"data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG"};
-    for(auto it = dataNames.cbegin(); it != dataNames.cend(); ++it){
-        if(fileName.find(*it) != std::string::npos){
-            isDataSample = true;
+
+void Sample::setIsData(){
+    _isData = false;
+    static std::vector<std::string> dataNames = { "data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG", "EGamma" };
+    for( auto it = dataNames.cbegin(); it != dataNames.cend(); ++it ){
+        if( _fileName.find( *it ) != std::string::npos ){
+            _isData = true;
         }
     }
 }
 
 
-void Sample::set2017(){
-    is2017Sample = ( stringTools::stringContains( fileName, "Fall17" ) || stringTools::stringContains( fileName, "2017" ) );
+void Sample::setIs2017(){
+    _is2017 = ( stringTools::stringContains( _fileName, "Fall17" ) || stringTools::stringContains( _fileName, "2017" ) );
 }
 
 
-void Sample::set2018(){
-    is2018Sample = ( stringTools::stringContains( fileName, "Autumn18" ) || stringTools::stringContains( fileName, "2018" ) );
+void Sample::setIs2018(){
+    _is2018 = ( stringTools::stringContains( _fileName, "Autumn18" ) || stringTools::stringContains( _fileName, "2018" ) );
 }
 
 
 void Sample::setOptions( const std::string& optionString ){
-    if(optionString == ""){
-        smSignal = false;
-        newPhysicsSignal = false;
+
+    if( optionString == "" ){
+        _isSMSignal = false;
+        _isNewPhysicsSignal = false;
         return;
     } 
 
     //signal flags
     //determine whether process is some kind of signal
-    smSignal = ( optionString.find("SMSignal") != std::string::npos );
-    newPhysicsSignal = ( optionString.find("newPhysicsSignal") != std::string::npos );
+    _isSMSignal = ( optionString.find( "SMSignal" ) != std::string::npos );
+    _isNewPhysicsSignal = ( optionString.find( "newPhysicsSignal" ) != std::string::npos );
 
     //signal can not be both SM and BSM sigal
-    if(smSignal && newPhysicsSignal){
+    if( _isSMSignal && _isNewPhysicsSignal ){
         throw std::invalid_argument( "Error in sample construction: sample is both SM and BSM signal!" );
     }
     
@@ -117,40 +169,40 @@ void Sample::setOptions( const std::string& optionString ){
     bool flag2017 = stringTools::stringContains( optionString, "forceIs2017" );
     bool flag2018 = stringTools::stringContains( optionString, "forceIs2018" );
 
-    if(flag2016 && flag2017){
+    if( flag2016 && flag2017 ){
         throw std::invalid_argument( "Error in sample construction: both forceIs2016 and forceIs2017 flags were set, can not set both " );
     }
 
-    if(flag2016){
-        is2017Sample = false;
-        is2018Sample = false;
-        uniqueName += "_forcedIs2016";
-    } else if(flag2016){
-        is2017Sample = true;
-        is2018Sample = false;
-        uniqueName += "_forcedIs2017";
+    if( flag2016 ){
+        _is2017 = false;
+        _is2018 = false;
+        _uniqueName += "_forcedIs2016";
+    } else if( flag2017 ){
+        _is2017 = true;
+        _is2018 = false;
+        _uniqueName += "_forcedIs2017";
     } else if( flag2018 ){
-        is2017Sample = false;
-        is2018Sample = true;
-        uniqueName += "_forcedIs2018";
+        _is2017 = false;
+        _is2018 = true;
+        _uniqueName += "_forcedIs2018";
     }
 }
 
 
-std::shared_ptr<TFile> Sample::getFile() const{
-    return std::make_shared<TFile>( ( stringTools::directoryName(directory) + fileName).c_str() , "read");
+std::shared_ptr<TFile> Sample::filePtr() const{
+    return std::make_shared<TFile>( ( stringTools::formatDirectoryName( _directory ) + _fileName ).c_str() , "read");
 }
 
 
 //print Sample info
 std::ostream& operator<<( std::ostream& os, const Sample& sam ){
-    os << sam.process << "\t" << 
-        sam.fileName << "\t" << 
-        sam.xSec << "\t" << 
-        ( sam.isData() ? "data" : "MC" ) << "\t" << 
-        ( sam.is2017() ? "Fall17" : "Summer16" ) << 
-        ( sam.smSignal ? "\tSM signal" : "" ) << 
-        ( sam.newPhysicsSignal ? "\tBSM signal" : "" );
+    os << sam._processName << "\t" << 
+        sam._fileName << "\t" << 
+        sam._xSec << "\t" << 
+        ( sam._isData ? "data" : "MC" ) << "\t" << 
+        ( sam.is2016() ? "Summer16" : ( sam._is2017 ? "Fall17" : "Autumn18" ) ) << 
+        ( sam._isSMSignal ? "\tSM signal" : "" ) << 
+        ( sam._isNewPhysicsSignal ? "\tBSM signal" : "" );
     return os;
 }
 

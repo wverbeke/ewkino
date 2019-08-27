@@ -122,7 +122,7 @@ std::vector<std::string> systemTools::listFiles( const std::string& directory, c
     systemTools::makeFile( outFileName );
 
     //pipe directory contents to file
-    systemTools::system( "for f in " + stringTools::directoryName(directory) + "*; do echo $f >> " + outFileName + "; done");
+    systemTools::system( "for f in " + stringTools::formatDirectoryName(directory) + "*; do echo $f >> " + outFileName + "; done");
 
     //read the txt file into a vector
 	std::vector< std::string > fileList = systemTools::readLines(outFileName, mustContain, fileExtension);

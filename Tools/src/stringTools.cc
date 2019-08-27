@@ -52,7 +52,7 @@ std::string stringTools::extractFirst( std::string& s ){
 
 
 //add training / to directoryName if needed
-std::string stringTools::directoryName( const std::string& directory ){
+std::string stringTools::formatDirectoryName( const std::string& directory ){
     std::string formated(directory);
     if(formated.back() != '/') formated.append("/");
     return formated;
@@ -63,18 +63,22 @@ bool stringTools::stringContains( const std::string& s, const std::string& subst
     return (s.find(substring) != std::string::npos);
 }
 
+
 bool stringTools::stringEndsWith( const std::string& s, const std::string& ending ){
     return std::equal(ending.crbegin(), ending.crend(), s.crbegin() );
 }
+
 
 std::pair< std::string, std::string > stringTools::splitFileExtension( const std::string& fileName ){
     size_t dotPosition = fileName.find_last_of(".");
     return { fileName.substr(0, dotPosition),  fileName.substr(dotPosition, fileName.size()) };
 }
 
+
 std::string stringTools::fileWithoutExtension( const std::string& fileName ){
     return stringTools::splitFileExtension(fileName).first;
 }
+
 
 std::string stringTools::doubleToString( const double input, const unsigned precision ){
     std::ostringstream stringStream;
@@ -84,4 +88,23 @@ std::string stringTools::doubleToString( const double input, const unsigned prec
         stringStream << std::setprecision( precision ) << input;
     }
     return stringStream.str();
+}
+
+
+//split file base name and directory
+std::pair< std::string, std::string > stringTools::splitDirectoryFileName( const std::string& path ){
+    size_t splitPosition = path.find_last_of("/");
+    return { path.substr( 0, splitPosition ), path.substr( splitPosition + 1, path.size() ) };
+}
+
+
+//extract directory name from path
+std::string stringTools::directoryNameFromPath( const std::string& path ){
+    return splitDirectoryFileName( path ).first;
+}
+
+
+//extract file name from path
+std::string stringTools::fileNameFromPath( const std::string& path ){
+    return splitDirectoryFileName( path ).second;
 }

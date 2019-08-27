@@ -19,52 +19,52 @@ class Sample{
     friend std::ostream& operator<<( std::ostream& os, const Sample& ); 
     public:
         Sample() = default;
-        //Sample(const std::string& file, const std::string& proc, double cross = 0);
+
+        //initialize from an input text file
         Sample( const std::string& line, const std::string& directory ); 
         Sample( std::istream&, const std::string& directory ); 
 
-        std::string getFileName() const { return fileName; }
+        //initialize manually
+        Sample( const std::string& directory, const std::string& fileName, const bool is2017, const bool is2018, const bool isData, const std::string& processName = "", const double xSec = 1., const bool isSMSignal = false, const bool isNewPhysicsSignal = false );
+        Sample( const std::string& pathToFile, const bool is2017, const bool is2018, const bool isData, const std::string& processName = "", const double xSec = 1., const bool isSMSignal = false, const bool isNewPhysicsSignal = false );
 
-        std::string getProcessName() const { return process; } 
+        std::string fileName() const { return _fileName; }
+        std::string processName() const { return _processName; } 
     
         //to prevent overlapping file names when re-using a sample in both the 2016 and 2017 data lists 
-        std::string getUniqueName() const { return uniqueName; }
+        std::string uniqueName() const { return _uniqueName; }
 
-        double getXSec() const { return xSec; }
+        double xSec() const { return _xSec; }
 
-        bool isData() const { return isDataSample; }
+        bool isData() const { return _isData; }
+        bool isMC() const { return !_isData; }
 
-        bool isMC() const { return !isDataSample; }
+        bool is2016() const { return !( _is2017 || _is2018 ); }
+        bool is2017() const { return _is2017; }
+        bool is2018() const{ return _is2018; }
 
-        bool is2016() const { return !( is2017Sample || is2018Sample ); }
+        bool isSMSignal() const { return _isSMSignal; }
+        bool isNewPhysicsSignal() const { return _isNewPhysicsSignal; }
 
-        bool is2017() const { return is2017Sample; }
-
-        bool is2018() const{ return is2018Sample; }
-
-        bool isSMSignal() const { return smSignal; }
-
-        bool isNewPhysicsSignal() const { return newPhysicsSignal; }
-
-        std::shared_ptr<TFile> getFile() const;
+        std::shared_ptr<TFile> filePtr() const;
 
     private:
-        void setData(); 
-        void set2017();
-        void set2018();
+        void setIsData(); 
+        void setIs2017();
+        void setIs2018();
         void setOptions(const std::string&);
 
-        std::string fileName;
-        std::string process;
-        std::string uniqueName;
-        std::string directory;
+        std::string _fileName;
+        std::string _directory;
+        std::string _uniqueName;
+        std::string _processName;
 
-        double xSec;
-        bool isDataSample;
-        bool is2017Sample;
-        bool is2018Sample;
-        bool smSignal;
-        bool newPhysicsSignal;
+        double _xSec;
+        bool _isData;
+        bool _is2017;
+        bool _is2018;
+        bool _isSMSignal;
+        bool _isNewPhysicsSignal;
 
 };
 

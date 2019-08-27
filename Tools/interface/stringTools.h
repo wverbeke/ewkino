@@ -25,7 +25,7 @@ namespace stringTools{
     std::string extractFirst( std::string& s );
 
     //add trailing / to directoryName if needed
-    std::string directoryName( const std::string& );
+    std::string formatDirectoryName( const std::string& );
 
     //check whether string contains substring
     bool stringContains( const std::string& s, const std::string& substring );
@@ -36,8 +36,17 @@ namespace stringTools{
     //split file name and extentions
     std::pair< std::string, std::string > splitFileExtension( const std::string& );
 
-    //return fileName without extension
+    //return file name without extension
     std::string fileWithoutExtension( const std::string& );
+
+    //split file base name and directory
+    std::pair< std::string, std::string > splitDirectoryFileName( const std::string& );
+
+    //return directory name 
+    std::string directoryNameFromPath( const std::string& );
+
+    //return file name 
+    std::string fileNameFromPath( const std::string& );
 
     //convert double to string, with given precision
     std::string doubleToString(const double, const unsigned precision = 0);
