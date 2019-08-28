@@ -201,10 +201,7 @@ class TreeReader {
         void initTree();
         void setOutputTree( TTree* );
 
-        //skim tree
-        //void skimTree(const std::string&, std::string outputDirectory = "", const bool isData = false);
         //void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
-
 
         //initialize the next sample
         void initSample();
@@ -216,7 +213,7 @@ class TreeReader {
         void readSamples(const std::string& list, const std::string& directory);
 
         //initialize the current sample directly from a root file
-        void initSampleFromFile( const std::string& fileName, const bool is2017, const bool is2018 );
+        void initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018 );
 
         //Get entry from Tree, should not be used except for test purposes
         void GetEntry(const Sample&, long unsigned );
@@ -247,6 +244,10 @@ class TreeReader {
         //access number of samples and current sample
         const Sample& currentSample(){ return *currentSamplePtr; }
         std::vector< Sample >::size_type numberOfSamples() const{ return samples.size(); }
+
+        //access current file and tree 
+        std::shared_ptr< TFile > getCurrentFilePtr(){ return currentFilePtr; }
+        std::shared_ptr< TTree > getCurrentTreePtr(){ return currentTreePtr; }
 
 
         //functions for event selection

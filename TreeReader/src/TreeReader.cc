@@ -128,7 +128,7 @@ bool TreeReader::isData() const{
     if( currentSamplePtr != nullptr ){
         return currentSamplePtr->isData();
     } else {
-        return containsGeneratorInfo();
+        return !containsGeneratorInfo();
     }
 }
 
@@ -236,6 +236,8 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
     samp = Sample( pathToFile, is2017, is2018, isData() );
     currentSamplePtr = &samp;
 
+    //initialize tree
+    initTree();
 }
 
 
@@ -475,7 +477,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
-    outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/i");
+    outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/b");
     outputTree->Branch("_met",                          &_met,                          "_met/D");
     outputTree->Branch("_metJECDown",                   &_metJECDown,                   "_metJECDown/D");
     outputTree->Branch("_metJECUp",                     &_metJECUp,                     "_metJECUp/D");
