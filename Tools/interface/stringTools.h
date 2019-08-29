@@ -50,5 +50,8 @@ namespace stringTools{
 
     //convert double to string, with given precision
     std::string doubleToString(const double, const unsigned precision = 0);
+
+    //remove occurences of substring 
+    std::string removeOccurencesOf( const std::string& s, const std::string& substring );
 }
 #endif

@@ -108,3 +108,14 @@ std::string stringTools::directoryNameFromPath( const std::string& path ){
 std::string stringTools::fileNameFromPath( const std::string& path ){
     return splitDirectoryFileName( path ).second;
 }
+
+
+//remove all occurences of a substring from a string
+std::string stringTools::removeOccurencesOf( const std::string& s, const std::string& substring ){
+    std::string ret( s );
+    auto pos = ret.size();
+    while( ( pos = ret.find( substring ) ) != std::string::npos ){
+        ret.erase( pos, substring.size() );
+    }
+    return ret;
+}
