@@ -81,9 +81,11 @@ if __name__ == '__main__' :
     #TO DO : make code to extract CMSSW directory in a general way
     #this is already available in DeepLearning repository, submodule would be a good solution
     current_CMSSW_version = 'CMSSW_10_2_16'
+        
+    #WARNING : it is assumed this script is run from the 'skimmer' directory
+    current_directory = os.path.dirname( os.path.abspath( __file__ ) )
     
     input_directory = sys.argv[1] 
-    print( input_directory )
     version_name = sys.argv[2] 
     output_directory_base = sys.argv[3] 
     skim_condition = sys.argv[4]
@@ -101,11 +103,8 @@ if __name__ == '__main__' :
         sample_directories.append( sample_directory )
         sample_sub_directories.append( subdirectory )
     
-    sample_names = [ directory.rstrip( os.path.sep ).split( os.path.sep )[-1] for directory in sample_directories ]
-    for sample in sample_names :
-        print( sample )
-    
     #output directory for each sample
+    sample_names = [ directory.rstrip( os.path.sep ).split( os.path.sep )[-1] for directory in sample_directories ]
     sample_output_directories = []
     for sample in sample_names:
         output_directory = os.path.join( output_directory_base, 'ntuples_skimmed_{}_version_{}'.format( sample, version_name ) )
@@ -128,7 +127,7 @@ if __name__ == '__main__' :
                 script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
                 script.write('cd {}/src\n'.format( current_CMSSW_version ) )
                 script.write('eval `scram runtime -sh`\n') 
-                script.write('cd {}\n'.format( output_directory ) ) 
+                script.write('cd {}\n'.format( current_directory ) ) 
                 for f in chunk :
                     skim_command = './skimmer {} {} {}\n'.format( f, output_directory, skim_condition )
                     script.write( skim_command )
