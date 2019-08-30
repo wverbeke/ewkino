@@ -33,6 +33,9 @@ class TreeReader {
         ULong_t         _lumiBlock;
         ULong_t         _eventNb;
         UInt_t          _nVertex;
+        Float_t         _prefireWeight;
+        Float_t         _prefireWeightDown;
+        Float_t         _prefireWeightUp;
         Double_t        _weight;
         UInt_t          _nLheWeights;
         Double_t        _lheWeight[110];
@@ -153,6 +156,11 @@ class TreeReader {
         Double_t        _jetPt[nJets_max];   
         Double_t        _jetPt_JECUp[nJets_max];   
         Double_t        _jetPt_JECDown[nJets_max];   
+        Double_t        _jetSmearedPt[nJets_max];
+        Double_t        _jetSmearedPt_JECDown[nJets_max];
+        Double_t        _jetSmearedPt_JECUp[nJets_max];
+        Double_t        _jetSmearedPt_JERDown[nJets_max];
+        Double_t        _jetSmearedPt_JERUp[nJets_max];
         Double_t        _jetPt_Uncorrected[nJets_max];
         Double_t        _jetPt_L1[nJets_max];
         Double_t        _jetPt_L2[nJets_max];
@@ -442,6 +450,9 @@ class TreeReader {
         TBranch        *b__lumiBlock;   
         TBranch        *b__eventNb;   
         TBranch        *b__nVertex;   
+        TBranch        *b__prefireWeight;
+        TBranch        *b__prefireWeightDown;
+        TBranch        *b__prefireWeightUp;
         TBranch        *b__weight;   
         TBranch        *b__nLheWeights;   
         TBranch        *b__nPsWeights;
@@ -560,6 +571,11 @@ class TreeReader {
         TBranch        *b__jetPt;   
         TBranch        *b__jetPt_JECUp;   
         TBranch        *b__jetPt_JECDown;   
+        TBranch        *b__jetSmearedPt;
+        TBranch        *b__jetSmearedPt_JECDown;
+        TBranch        *b__jetSmearedPt_JECUp;
+        TBranch        *b__jetSmearedPt_JERDown;
+        TBranch        *b__jetSmearedPt_JERUp;
         TBranch        *b__jetPt_Uncorrected;
         TBranch        *b__jetPt_L1;
         TBranch        *b__jetPt_L2;

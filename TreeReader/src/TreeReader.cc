@@ -390,6 +390,11 @@ void TreeReader::initTree(){
     currentTreePtr->SetBranchAddress("_lMuonTrackPtErr", _lMuonTrackPtErr, &b__lMuonTrackPtErr);
     currentTreePtr->SetBranchAddress("_nJets", &_nJets, &b__nJets);
     currentTreePtr->SetBranchAddress("_jetPt", _jetPt, &b__jetPt);
+    currentTreePtr->SetBranchAddress("_jetSmearedPt", _jetSmearedPt, &b__jetSmearedPt);
+    currentTreePtr->SetBranchAddress("_jetSmearedPt_JECDown", _jetSmearedPt_JECDown, &b__jetSmearedPt_JECDown);
+    currentTreePtr->SetBranchAddress("_jetSmearedPt_JECUp", _jetSmearedPt_JECUp, &b__jetSmearedPt_JECUp);
+    currentTreePtr->SetBranchAddress("_jetSmearedPt_JERDown", _jetSmearedPt_JERDown, &b__jetSmearedPt_JERDown);
+    currentTreePtr->SetBranchAddress("_jetSmearedPt_JERUp", _jetSmearedPt_JERUp, &b__jetSmearedPt_JERUp);
     currentTreePtr->SetBranchAddress("_jetPt_JECUp", _jetPt_JECUp, &b__jetPt_JECUp);
     currentTreePtr->SetBranchAddress("_jetPt_JECDown", _jetPt_JECDown, &b__jetPt_JECDown);
     currentTreePtr->SetBranchAddress("_jetEta", _jetEta, &b__jetEta);
@@ -457,6 +462,12 @@ void TreeReader::initTree(){
         currentTreePtr->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
         currentTreePtr->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
     } 
+
+    if( !is2018() ){
+        currentTreePtr->SetBranchAddress("_prefireWeight", &_prefireWeight, &b__prefireWeight);
+        currentTreePtr->SetBranchAddress("_prefireWeightDown", &_prefireWeightDown, &b__prefireWeightDown);
+        currentTreePtr->SetBranchAddress("_prefireWeightUp", &_prefireWeightUp, &b__prefireWeightUp);
+    }
 
 	if( containsSUSYMassInfo() ){
 		currentTreePtr->SetBranchAddress("_mChi1", &_mChi1, &b__mChi1);
@@ -582,6 +593,11 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_jetPt",                     &_jetPt,                    "_jetPt[_nJets]/D");
     outputTree->Branch("_jetPt_JECUp",               &_jetPt_JECUp,              "_jetPt_JECUp[_nJets]/D");
     outputTree->Branch("_jetPt_JECDown",             &_jetPt_JECDown,            "_jetPt_JECDown[_nJets]/D");
+    outputTree->Branch("_jetSmearedPt",              &_jetSmearedPt,             "_jetSmearedPt[_nJets]/D");
+    outputTree->Branch("_jetSmearedPt_JECDown",      &_jetSmearedPt_JECDown,     "_jetSmearedPt_JECDown[_nJets]/D");
+    outputTree->Branch("_jetSmearedPt_JECUp",        &_jetSmearedPt_JECUp,       "_jetSmearedPt_JECUp[_nJets]/D");
+    outputTree->Branch("_jetSmearedPt_JERDown",      &_jetSmearedPt_JERDown,     "_jetSmearedPt_JERDown[_nJets]/D");
+    outputTree->Branch("_jetSmearedPt_JERUp",        &_jetSmearedPt_JERUp,       "_jetSmearedPt_JERUp[_nJets]/D");
     outputTree->Branch("_jetEta",                    &_jetEta,                   "_jetEta[_nJets]/D");
     outputTree->Branch("_jetPhi",                    &_jetPhi,                   "_jetPhi[_nJets]/D");
     outputTree->Branch("_jetE",                      &_jetE,                     "_jetE[_nJets]/D");
@@ -637,6 +653,12 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/b");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
     } 
+
+    if( !is2018() ){
+       	outputTree->Branch("_prefireWeight",             &_prefireWeight,             "_prefireWeight/F");
+        outputTree->Branch("_prefireWeightUp",           &_prefireWeightUp,           "_prefireWeightUp/F");
+        outputTree->Branch("_prefireWeightDown",         &_prefireWeightDown,         "_prefireWeightDown/F"); 
+    }
 
     if( containsSUSYMassInfo() ){
 		outputTree->Branch("_mChi1", &_mChi1, "_mChi1/D");
