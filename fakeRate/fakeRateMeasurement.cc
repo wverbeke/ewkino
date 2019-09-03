@@ -18,10 +18,102 @@
 #include "../Tools/interface/analysisTools.h"
 
 
+std::string muonPtToTriggerName( const double pt ){
+    if( pt < 8 ){
+        return "HLT_Mu3_PFJet40";
+    } else if( pt < 17 ){
+        return "HLT_Mu8";
+    } else if( pt < 20 ){
+        return "HLT_Mu17";
+    } else if( pt < 27 ){
+        return "HLT_Mu20";
+    } else if( pt < 50 ){
+        return "HLT_Mu27";
+    } else {
+        return "HLT_Mu50";
+    }
+}
+
+
+std::string electronPtToTriggerName( const double pt ){
+    if( pt < 17 ){
+        return "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30";
+    } else if( pt < 23 ){
+        return "HLT_Ele17_CaloIdM_TrackIdM_PFJet30";
+    } else {
+        return "HLT_Ele23_CaloIdM_TrackIdM_PFJet30";
+    } 
+}
+        
 
 //TAKE FR TRIGGERS INTO ACCOUNT 
 bool passFakeRateTrigger( const Event& event ){
-    return true;
+    
+    //leading selected lepton
+    Lepton& lepton = event.lepton( 0 );
+
+    //WARNING: There must be a ptRatio cut-off in the cone_correction 
+    //IMPLEMENT MAXIMUM CONE CORRECTION BASED ON ISFO DEFINITION
+    double ptRatioCutoff = 0.75;
+    
+    double maximumConeCorrection = 1./ptRatioCutoff;
+
+    double effectivePt = lepton.pt()/maximumConeCorrection;
+
+    std::string trigger_to_use = lepton.isMuon() ? muonPtToTriggerName( effectivePt ) : electronPtToTriggerName( effectivePt );
+    return event.passTrigger( trigger_to_use );
+}
+
+
+//event selection for fake-rate measurement 
+bool passFakeRateEventSelection( Event& event, bool isMuonMeasurement, bool onlyTightLeptons = false, bool requireJet = true, double jetDeltaRCut = 1){
+
+	//Require the presence of just one lepton, and veto a second loose lepton
+	event.cleanElectronsFromLooseMuons();
+	event.cleanTausFromLooseLightLeptons();
+	if( event.numberOfLooseLeptons() != 1 ){
+		return false;
+	}
+	
+	//Select FO or Tight leptons 
+	if( onlyTightLeptons ){
+		event.selectTightLeptons();
+	} else {
+		event.selectFOLeptons();
+	}
+	if( event.numberOfLeptons() != 1 ){
+		return false;
+	}
+	
+	//IMPORTANT : apply cone correction
+	event.applyLeptonConeCorrection();
+	
+	Lepton& lepton = event.lepton( 0 );
+	
+	//select correct lepton flavor
+	if( isMuonMeasurement ){
+	    if( !lepton.isMuon() ) return false;
+	} else {
+	    if( !lepton.isElectron() ) return false;
+	}
+
+	//optionally require the presence of at least one good jet
+	if( requireJet ){
+		event.selectGoodJets();
+		event.cleanJetsFromLooseLeptons();
+		if( event.numberOfJets() < 1 ) return false;
+		
+		//require deltaR of at least 1 between lepton and any of the selected jets 
+		double maxDeltaR = 0;
+		for( auto jetPtr : event.jetCollection() ){
+		    double currentDeltaR = deltaR( lepton, *jetPtr );
+		    if( currentDeltaR > maxDeltaR ){
+		        maxDeltaR = currentDeltaR;
+		    }
+		}
+		if( maxDeltaR < jetDeltaRCut ) return false;
+	}
+	return true;
 }
 
 
@@ -68,6 +160,78 @@ void checkYearString( const std::string& year ){
     }
 }
 
+
+//function to determine prescale of each trigger
+//this will be done by determining the prompt normalization in a fit to mT
+//std::map< std::string, double > measurePrescales(){
+
+void fillPrescaleMeasurementHistograms(){
+    static std::vector< std::string > triggerVector = { "HLT_Mu3_PFJet40", "HLT_Mu8", "HLT_Mu17", "HLT_Mu20", "HLT_Mu27", "HLT_Mu50", "HLT_Ele17_CaloIdM_TrackIdM_PFJet30", "HLT_Ele23_CaloIdM_TrackIdM_PFJet30"};
+
+    unsigned numberOfMTBins = 100;
+    HistInfo mtHistInfo( "mT", "m_{T}( GeV )", numberOfMTBins, 0, 200 );
+    std::map< std::string, std::shared_ptr< TH1D > > prompt_map;
+    std::map< std::string, std::shared_ptr< TH1D > > nonprompt_map;
+    std::map< std::string, std::shared_ptr< TH1D > > data_map;
+    
+    //initialize histograms
+    for( const auto& trigger : triggerVector ){
+        prompt_map[trigger] = mtHistInfo.makeHist( "mT_prompt_" + trigger );
+        nonprompt_map[trigger] = mtHistInfo.makeHist( "mT_nonprompt_" + trigger );
+        data_map[trigger] = mtHistInfo.makeHist( "mt_data_" + trigger );
+    }
+    
+
+	//loop over events and fill  histograms for each trigger 
+   	TreeReader treeReader( "samples_fakeRateMeasurement.txt", "../test/testData");
+    for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
+
+        //load next sample
+        treeReader.initSample();
+
+        //loop over events in sample
+        for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
+            Event event = treeReader.buildEvent( entry, true, true);
+
+			//apply event selection, note that event is implicitly modified (lepton selection etc)
+            if( !passFakeRateEventSelection( event, true, false ) ) continue;
+
+            Lepton& lepton = event.lepton(0);
+            double mT = mt( lepton, event.met() );
+
+            for( const auto& trigger : triggerVector ){
+				if( stringTools::stringContains( trigger, "Mu" ) ){
+					if( !lepton.isMuon() ) continue;
+				} else {
+					if( !lepton.isElectron() ) continue;
+				}
+                if( !event.passTrigger( trigger ) ) continue;
+                
+                if( treeReader.isData() ){
+                    data_map[trigger]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), event.weight() );
+                } else {
+                    if( lepton.isPrompt() ){
+                        prompt_map[trigger]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), event.weight() ); 
+                    } else {
+                        nonprompt_map[trigger]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), event.weight() );
+                    }
+                }
+            }
+        }
+    }
+
+	//write histograms to TFile 
+    TFile* histogram_file = TFile::Open( ( std::string("prescaleMeasurement_mT_histograms.root") ).c_str(), "RECREATE" );
+	for( const auto& trigger : triggerVector ){
+		data_map[trigger]->Write();
+		prompt_map[trigger]->Write();
+		nonprompt_map[trigger]->Write();
+	}
+    histogram_file->Close();
+}
+
+
+
 //function to fill MT shape histogram for numerator and denominator
 void makeFakeRateHistograms( const std::string& leptonFlavor, const std::string& year ){
 
@@ -111,45 +275,12 @@ void makeFakeRateHistograms( const std::string& leptonFlavor, const std::string&
         treeReader.initSample();
 
         //loop over events in sample
-        for( long unsigned entry = 0; entry < treeReader.nEntries; ++entry ){
+        for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
             Event event = treeReader.buildEvent( entry );
 
-
-            //Require the presence of just one lepton, and veto a second loose lepton
-            event.cleanElectronsFromLooseMuons();
-            event.cleanTausFromLooseLightLeptons();
-            if( event.numberOfLooseLeptons() != 1 ) continue;
-
-            //Select FO leptons 
-            event.selectFOLeptons();
-            if( event.numberOfLeptons() != 1 ) continue;
-
-            //IMPORTANT : apply cone correction
-            event.applyLeptonConeCorrection();
-
-            //Require the presence of at least one good jet
-            event.selectGoodJets();
-            event.cleanJetsFromLooseLeptons();
-            if( event.numberOfJets() < 1 ) continue;
-
-            Lepton& lepton = event.lepton( 0 );
-
-            //select correct lepton flavor
-            if( isMuonMeasurement ){
-                if( !lepton.isMuon() ) continue;
-            } else {
-                if( !lepton.isElectron() ) continue;
-            }
-
-            //require deltaR of at least 1 between lepton and any of the selected jets 
-            double maxDeltaR = 0; 
-            for( auto jetPtr : event.jetCollection() ){
-                double currentDeltaR = deltaR( lepton, *jetPtr );
-                if( currentDeltaR > maxDeltaR ){
-                    maxDeltaR = currentDeltaR;
-                }
-            }
-            if( maxDeltaR < 1 ) continue;
+			//apply event selection, note that event is implicitly modified (lepton selection etc)
+			if( !passFakeRateEventSelection( event, isMuonMeasurement, false, true, 1 ) ) continue;
+			Lepton& lepton = event.lepton( 0 );
 
             //IMPORTANT : apply correct trigger
             if( !passFakeRateTrigger( event ) ) continue;
@@ -289,6 +420,7 @@ void printDataCards( const std::string& fileName ){
 int main(){
 
     //makeFakeRateHistograms( "muon", "2016" );
-    printDataCards( "muon_2016_fakeRate_mT_histograms.root" );
+    //printDataCards( "muon_2016_fakeRate_mT_histograms.root" );
+	fillPrescaleMeasurementHistograms();
     return 0;
 }
