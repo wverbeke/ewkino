@@ -4,6 +4,19 @@
 #include <iostream>
 #include <stdexcept>
 
+//include other parts of framework
+#include "../../Tools/interface/stringTools.h"
+
+
+//remove leading _ from trigger and filter names 
+std::string cleanName( const std::string& name ){
+    std::string ret( name );
+    if( stringTools::stringStartsWith( name, "_" ) ){
+        ret.erase(0, 1);
+    }
+    return ret;
+}
+
 
 TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividualTriggers, const bool readIndividualMetFilters ) :
     _passTriggers_e( treeReader._passTrigger_e ),
@@ -20,12 +33,12 @@ TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividua
 {
     if( readIndividualTriggers ){
         for( const auto& trigger : treeReader._triggerMap ){
-            individualTriggerMap.insert( trigger );
+            individualTriggerMap.insert( { cleanName( trigger.first ), trigger.second } );
         }
     }
     if( readIndividualMetFilters ){
         for( const auto& filter : treeReader._MetFilterMap ){
-            individualMetFilterMap.insert( filter );
+            individualMetFilterMap.insert( { cleanName( filter.first ), filter.second } );
         }   
     }
 }
@@ -36,7 +49,7 @@ bool passTriggerOrFilter( const std::map< std::string, bool >& decisionMap,  con
 
     //throw error if non-existing trigger or MET filter is requested
     if( decisionIt == decisionMap.cend() ){
-        throw std::invalid_argument( "Requested trigger or MET filter does not exist." );
+        throw std::invalid_argument( "Requested trigger or MET filter '" + name + "' does not exist." );
     } else {
         return (*decisionIt).second;
     }

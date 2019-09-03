@@ -7,6 +7,7 @@
 
 //include other parts of code 
 #include "../interface/stringTools.h"
+#include "../interface/systemTools.h"
 
 
 Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
@@ -209,6 +210,12 @@ std::ostream& operator<<( std::ostream& os, const Sample& sam ){
 
 //read a list of samples into a vector 
 std::vector< Sample > readSampleList( const std::string& listFile, const std::string& directory ){
+
+    //check if input file exists 
+    if( !systemTools::fileExists( listFile ) ){
+        throw std::invalid_argument( "Sample list '" + listFile + "' does not exist." );
+    }
+    
 	
 	std::vector< Sample> sampleList;
 

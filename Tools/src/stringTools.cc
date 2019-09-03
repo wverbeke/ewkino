@@ -53,30 +53,35 @@ std::string stringTools::extractFirst( std::string& s ){
 
 //add training / to directoryName if needed
 std::string stringTools::formatDirectoryName( const std::string& directory ){
-    std::string formated(directory);
-    if(formated.back() != '/') formated.append("/");
+    std::string formated( directory );
+    if( formated.back() != '/' ) formated.append( "/" );
     return formated;
 }
 
 
 bool stringTools::stringContains( const std::string& s, const std::string& substring ){
-    return (s.find(substring) != std::string::npos);
+    return ( s.find( substring ) != std::string::npos );
 }
 
 
 bool stringTools::stringEndsWith( const std::string& s, const std::string& ending ){
-    return std::equal(ending.crbegin(), ending.crend(), s.crbegin() );
+    return std::equal( ending.crbegin(), ending.crend(), s.crbegin() );
+}
+
+
+bool stringTools::stringStartsWith( const std::string& s, const std::string& beginning ){
+    return std::equal( beginning.cbegin(), beginning.cend(), s.cbegin() );
 }
 
 
 std::pair< std::string, std::string > stringTools::splitFileExtension( const std::string& fileName ){
-    size_t dotPosition = fileName.find_last_of(".");
-    return { fileName.substr(0, dotPosition),  fileName.substr(dotPosition, fileName.size()) };
+    size_t dotPosition = fileName.find_last_of( "." );
+    return { fileName.substr( 0, dotPosition ),  fileName.substr( dotPosition, fileName.size() ) };
 }
 
 
 std::string stringTools::fileWithoutExtension( const std::string& fileName ){
-    return stringTools::splitFileExtension(fileName).first;
+    return stringTools::splitFileExtension( fileName ).first;
 }
 
 

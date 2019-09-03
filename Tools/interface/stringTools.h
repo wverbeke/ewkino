@@ -33,6 +33,9 @@ namespace stringTools{
     //check whether string ends with substring 
     bool stringEndsWith( const std::string& s, const std::string& ending );
 
+    //check whether string starts with substring
+    bool stringStartsWith( const std::string& s, const std::string& beginning );
+
     //split file name and extentions
     std::pair< std::string, std::string > splitFileExtension( const std::string& );
 

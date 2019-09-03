@@ -463,7 +463,7 @@ void TreeReader::initTree(){
         currentTreePtr->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
     } 
 
-    if( !is2018() ){
+    if( !is2018() && isMC() ){
         currentTreePtr->SetBranchAddress("_prefireWeight", &_prefireWeight, &b__prefireWeight);
         currentTreePtr->SetBranchAddress("_prefireWeightDown", &_prefireWeightDown, &b__prefireWeightDown);
         currentTreePtr->SetBranchAddress("_prefireWeightUp", &_prefireWeightUp, &b__prefireWeightUp);
@@ -654,7 +654,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
     } 
 
-    if( !is2018() ){
+    if( !is2018() && isMC() ){
        	outputTree->Branch("_prefireWeight",             &_prefireWeight,             "_prefireWeight/F");
         outputTree->Branch("_prefireWeightUp",           &_prefireWeightUp,           "_prefireWeightUp/F");
         outputTree->Branch("_prefireWeightDown",         &_prefireWeightDown,         "_prefireWeightDown/F"); 
