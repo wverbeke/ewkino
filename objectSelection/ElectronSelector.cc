@@ -33,7 +33,7 @@ FO electron selection
 */
 
 bool ElectronSelector::isFOBase() const{
-    if( isLoose() ) return false;
+    if( !isLoose() ) return false;
     return true;
 }
 
@@ -58,7 +58,7 @@ tight electron selection
 */
 
 bool ElectronSelector::isTightBase() const{
-    if( isFO() ) return false;
+    if( !isFO() ) return false;
     if( !electronPtr->isTightPOGElectron() ) return false;
     return true;
 }
