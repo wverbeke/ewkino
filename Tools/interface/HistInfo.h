@@ -40,7 +40,7 @@ class HistInfo{
             }
 
     
-            std::shared_ptr<TH1D> hist = std::make_shared<TH1D>( (fileName + histName).c_str(), (fileName + histName + ";" + xLabel + ";" + yLabel).c_str(),  nBins, xMin, xMax);
+            std::shared_ptr<TH1D> hist = std::make_shared<TH1D>( histName.c_str(), ( histName + ";" + xLabel + ";" + yLabel).c_str(),  nBins, xMin, xMax);
 
             //set bin labels if they were initialized 
             if( !( binLabels.empty() ) ){
