@@ -27,6 +27,8 @@ class TriggerInfo{
         bool passTriggers_eem() const{ return _passTriggers_eem; }
         bool passTriggers_emm() const{ return _passTriggers_emm; }
         bool passTriggers_mmm() const{ return _passTriggers_mmm; }
+        bool passTriggers_FR() const{ return _passTriggers_FR; }
+        bool passTriggers_FR_iso() const{ return _passTriggers_FR_iso; }
         bool passMetFilters() const{ return _passMetFilters; }
         bool passTrigger( const std::string& ) const;
         bool passMetFilter( const std::string& ) const;
@@ -46,6 +48,8 @@ class TriggerInfo{
         bool _passTriggers_eem;
         bool _passTriggers_emm;
         bool _passTriggers_mmm;
+        bool _passTriggers_FR;
+        bool _passTriggers_FR_iso;
         bool _passMetFilters;
         std::map< std::string, bool > individualTriggerMap; 
         std::map< std::string, bool > individualMetFilterMap; 

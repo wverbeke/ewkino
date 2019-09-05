@@ -29,6 +29,8 @@ TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividua
     _passTriggers_eem( treeReader._passTrigger_eem ),
     _passTriggers_emm( treeReader._passTrigger_emm ),
     _passTriggers_mmm( treeReader._passTrigger_mmm ),
+    _passTriggers_FR( treeReader._passTrigger_FR ),
+    _passTriggers_FR_iso( treeReader._passTrigger_FR_iso ),
     _passMetFilters( treeReader._passMETFilters )
 {
     if( readIndividualTriggers ){

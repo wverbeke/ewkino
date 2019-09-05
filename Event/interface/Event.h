@@ -111,6 +111,8 @@ class Event{
         bool passTriggers_eem() const{ return _triggerInfoPtr->passTriggers_eem(); }
         bool passTriggers_emm() const{ return _triggerInfoPtr->passTriggers_emm(); }
         bool passTriggers_mmm() const{ return _triggerInfoPtr->passTriggers_mmm(); }
+        bool passTriggers_FR() const{ return _triggerInfoPtr->passTriggers_FR(); }
+        bool passTriggers_FR_iso() const{ return _triggerInfoPtr->passTriggers_FR_iso(); }
         bool passMetFilters() const{ return _triggerInfoPtr->passMetFilters(); }
         bool passTrigger( const std::string& triggerName ) const{ return _triggerInfoPtr->passTrigger( triggerName ); }
         bool passMetFilter( const std::string& filterName ) const{ return _triggerInfoPtr->passMetFilter( filterName ); }
