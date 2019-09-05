@@ -310,6 +310,8 @@ void TreeReader::initTree(){
     currentTreePtr->SetBranchAddress("_passTrigger_mmm", &_passTrigger_mmm, &b__passTrigger_mmm);
     currentTreePtr->SetBranchAddress("_passTrigger_et", &_passTrigger_et, &b__passTrigger_et);
     currentTreePtr->SetBranchAddress("_passTrigger_mt", &_passTrigger_mt, &b__passTrigger_mt);
+    currentTreePtr->SetBranchAddress("_passTrigger_FR", &_passTrigger_FR, &b__passTrigger_FR);
+    currentTreePtr->SetBranchAddress("_passTrigger_FR_iso", &_passTrigger_FR_iso, &b__passTrigger_FR_iso);
     currentTreePtr->SetBranchAddress("_passMETFilters", &_passMETFilters, &b__passMETFilters);
     currentTreePtr->SetBranchAddress("_nL", &_nL, &b__nL);
     currentTreePtr->SetBranchAddress("_nMu", &_nMu, &b__nMu);
@@ -511,6 +513,8 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_passTrigger_mmm", &_passTrigger_mmm, "_passTrigger_mmm/O");
     outputTree->Branch("_passTrigger_et", &_passTrigger_et, "_passTrigger_et/O");
     outputTree->Branch("_passTrigger_mt", &_passTrigger_mt, "_passTrigger_mt/O");
+    outputTree->Branch("_passTrigger_FR", &_passTrigger_FR, "_passTrigger_FR/O");
+    outputTree->Branch("_passTrigger_FR_iso", &_passTrigger_FR_iso, "_passTrigger_FR_iso/O");
     outputTree->Branch("_passMETFilters", &_passMETFilters, "_passMETFilters/O");
     outputTree->Branch("_nL",                           &_nL,                           "_nL/i");
     outputTree->Branch("_nMu",                          &_nMu,                          "_nMu/i");

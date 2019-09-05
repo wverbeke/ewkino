@@ -67,6 +67,8 @@ class TreeReader {
         Bool_t          _passTrigger_mmm;
         Bool_t          _passTrigger_et;
         Bool_t          _passTrigger_mt;
+        Bool_t          _passTrigger_FR;
+        Bool_t          _passTrigger_FR_iso;
         Bool_t          _passMETFilters;
         UInt_t          _nL;
         UInt_t          _nMu;
@@ -484,6 +486,8 @@ class TreeReader {
         TBranch        *b__passTrigger_mmm;   
         TBranch        *b__passTrigger_et;
         TBranch        *b__passTrigger_mt;
+        TBranch        *b__passTrigger_FR;
+        TBranch        *b__passTrigger_FR_iso;
         TBranch        *b__passMETFilters;   
         TBranch        *b__nL;   
         TBranch        *b__nMu;   
