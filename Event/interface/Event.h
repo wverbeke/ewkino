@@ -169,9 +169,13 @@ class Event{
 
         //total lepton + jet + met system
         PhysicsObject leptonJetMetSystem() const{ return ( leptonJetSystem() + met() ); }
-        
-		
- 
+
+        //check what year event corresponds to and whether it is a data or MC event
+        bool isData(){ return _isData; }
+        bool isMC(){ return !_isData; }
+        bool is2016(){ return !( _is2017 || _is2018 ); }
+        bool is2017(){ return _is2017; }
+        bool is2018(){ return _is2018; }
 
 
     private:
@@ -183,6 +187,9 @@ class Event{
         GeneratorInfo* _generatorInfoPtr = nullptr;
         unsigned _numberOfVertices = 0;
         double _weight = 1;
+        bool _isData;
+        bool _is2017;
+        bool _is2018;
 
         //presence of Z boson
         bool ZisInitialized = false;

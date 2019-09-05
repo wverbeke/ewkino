@@ -15,7 +15,10 @@ Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , 
     _numberOfVertices( treeReader._nVertex ),
 
     //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes
-    _weight( treeReader._scaledWeight )
+    _weight( treeReader._scaledWeight ),
+    _isData( treeReader.isData() ),
+    _is2017( treeReader.is2017() ),
+    _is2018( treeReader.is2018() )
     {}
 
 
@@ -39,7 +42,10 @@ Event::Event( const Event& rhs ) :
     _eventTagsPtr( new EventTags( *rhs._eventTagsPtr ) ),
     _generatorInfoPtr( rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr ),
     _numberOfVertices( rhs._numberOfVertices ),
-    _weight( rhs._weight )
+    _weight( rhs._weight ),
+    _isData( rhs._isData ),
+    _is2017( rhs._is2017 ),
+    _is2018( rhs._is2018 )
     {}
 
 
@@ -51,7 +57,10 @@ Event::Event( Event&& rhs ) noexcept :
     _eventTagsPtr( rhs._eventTagsPtr ),
     _generatorInfoPtr( rhs._generatorInfoPtr ),
     _numberOfVertices( rhs._numberOfVertices ),
-    _weight( rhs._weight )
+    _weight( rhs._weight ),
+    _isData( rhs._isData ),
+    _is2017( rhs._is2017 ),
+    _is2018( rhs._is2018 )
 {
     rhs._leptonCollectionPtr = nullptr;
     rhs._jetCollectionPtr = nullptr;
@@ -82,6 +91,9 @@ Event& Event::operator=( const Event& rhs ){
 
         _numberOfVertices = rhs._numberOfVertices;
         _weight = rhs._weight;
+        _isData = rhs._isData;
+        _is2017 = rhs._is2017;
+        _is2018 = rhs._is2018;
     }
     return *this;
 }
@@ -113,6 +125,9 @@ Event& Event::operator=( Event&& rhs ) noexcept{
 
         _numberOfVertices = rhs._numberOfVertices;
         _weight = rhs._weight;
+        _isData = rhs._isData;
+        _is2017 = rhs._is2017;
+        _is2018 = rhs._is2018;
     }
     return *this;
 }
