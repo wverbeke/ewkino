@@ -553,13 +553,15 @@ void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* na
     }
 
     //make and draw legend
-	TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
-    legend.SetNColumns(4);
-    legend.SetFillStyle(0); //avoid legend box
-	for(unsigned h = 0; h < nHistos; ++h){
-		legend.AddEntry(histoClones[h], names[h].c_str());
-	}
-	legend.Draw("same");
+    if( nHistos > 1 ){
+	    TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
+        legend.SetNColumns(4);
+        legend.SetFillStyle(0); //avoid legend box
+	    for(unsigned h = 0; h < nHistos; ++h){
+	    	legend.AddEntry(histoClones[h], names[h].c_str());
+	    }
+	    legend.Draw("same");
+    }
 
 	//save canvas
     c->SaveAs( std::string(file + ".pdf").c_str() );
