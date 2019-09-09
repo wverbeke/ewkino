@@ -40,7 +40,7 @@ namespace stringTools{
     std::pair< std::string, std::string > splitFileExtension( const std::string& );
 
     //return file name without extension
-    std::string fileWithoutExtension( const std::string& );
+    std::string fileNameWithoutExtension( const std::string& );
 
     //split file base name and directory
     std::pair< std::string, std::string > splitDirectoryFileName( const std::string& );

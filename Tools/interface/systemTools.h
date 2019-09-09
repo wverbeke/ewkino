@@ -49,10 +49,10 @@ namespace systemTools{
     std::string CMSSWDirectory();
 
     //initialize a submission script
-    std::ostream& initScript( std::ostream& );
+    std::ostream& initScript( std::ostream&, const std::string& CMSSWDir = "" );
 
     //submit script of given name and catch submission errors
-    void submitScript( const std::string&, const std::string& );
+    void submitScript( const std::string&, const std::string&, const std::string& queue = "", const unsigned numberOfThreads = 1 );
 
     //check whether there are running jobs
     bool runningJobs( const std::string& jobName = "" );

@@ -32,7 +32,7 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
     setIs2018();
 
     //unique name is equal to fileName without file extension
-    _uniqueName = stringTools::fileWithoutExtension( _fileName );
+    _uniqueName = stringTools::fileNameWithoutExtension( _fileName );
 
     //data should not have an xSection
     if( isData() && xSecString != "" ){

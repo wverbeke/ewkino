@@ -15,7 +15,10 @@
 
 //call std::system with std::string argyment
 void systemTools::system( const std::string& command ){
-    std::system(command.c_str() );
+    int response = std::system(command.c_str() );
+    if( response <= 0 ){
+        throw std::runtime_error( "system command '" + command + " failed." );
+    }
 }
 
 
@@ -150,8 +153,12 @@ std::string systemTools::CMSSWDirectory(){
 
 
 //initialize a submission script for running on cluster
-std::ostream& systemTools::initScript(std::ostream& os){
-    os << "cd " << systemTools::CMSSWDirectory() << "\n";
+std::ostream& systemTools::initScript(std::ostream& os, const std::string& CMSSWDir ){
+    if( CMSSWDir == "" ){
+        os << "cd " << systemTools::CMSSWDirectory() << "\n";
+    } else {
+        os << "cd " << CMSSWDir << "\n";
+    }
     os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
     os << "eval \\`scram runtime -sh\\` \n";
     os << "cd " << systemTools::currentDirectory() << "\n";     //go back to directory from where job was submitted 
@@ -160,7 +167,7 @@ std::ostream& systemTools::initScript(std::ostream& os){
 
 
 //submit script as cluster job and catch potential errors
-void systemTools::submitScript( const std::string& scriptName, const std::string& walltime ){
+void systemTools::submitScript( const std::string& scriptName, const std::string& walltime, const std::string& queue, const unsigned numberOfThreads ){
 
     //as long as submission failed, sleep and try again
     bool submitted = false;
@@ -168,7 +175,17 @@ void systemTools::submitScript( const std::string& scriptName, const std::string
 
         //submit script and pipe output to text file to check if submission succeeded
         std::string outFileName =  systemTools::uniqueFileName("submissionOutput.txt");
-        system( "qsub " + scriptName + " -l walltime=" + walltime + " > " + outFileName + " 2>> " + outFileName );
+        
+        //check if extra arguments are given, specifying the number of threads or the submission queue 
+        std::string extraArguments;
+        if( queue != "" ){
+            extraArguments += ( " -q " + queue );
+        } 
+        if( numberOfThreads != 1 ){
+            extraArguments += ( " -lnodes=1:ppn=" + std::to_string( numberOfThreads ) );
+        }
+
+        system( "qsub " + scriptName + " -l walltime=" + walltime + extraArguments + " > " + outFileName + " 2>> " + outFileName );
         std::ifstream submissionOutput(outFileName);
 
         //check for errors in output file

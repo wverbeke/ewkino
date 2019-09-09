@@ -80,7 +80,7 @@ std::pair< std::string, std::string > stringTools::splitFileExtension( const std
 }
 
 
-std::string stringTools::fileWithoutExtension( const std::string& fileName ){
+std::string stringTools::fileNameWithoutExtension( const std::string& fileName ){
     return stringTools::splitFileExtension( fileName ).first;
 }
 
