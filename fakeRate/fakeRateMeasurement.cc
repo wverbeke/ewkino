@@ -5,6 +5,8 @@
 #include <utility>
 #include <memory>
 #include <string>
+#include <iterator>
+#include <fstream>
 
 //include ROOT classes 
 #include "TH1D.h"
@@ -16,105 +18,8 @@
 #include "../Tools/interface/HistInfo.h"
 #include "../Tools/interface/stringTools.h"
 #include "../Tools/interface/analysisTools.h"
-
-
-std::string muonPtToTriggerName( const double pt ){
-    if( pt < 8 ){
-        return "HLT_Mu3_PFJet40";
-    } else if( pt < 17 ){
-        return "HLT_Mu8";
-    } else if( pt < 20 ){
-        return "HLT_Mu17";
-    } else if( pt < 27 ){
-        return "HLT_Mu20";
-    } else if( pt < 50 ){
-        return "HLT_Mu27";
-    } else {
-        return "HLT_Mu50";
-    }
-}
-
-
-std::string electronPtToTriggerName( const double pt ){
-    if( pt < 17 ){
-        return "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30";
-    } else if( pt < 23 ){
-        return "HLT_Ele17_CaloIdM_TrackIdM_PFJet30";
-    } else {
-        return "HLT_Ele23_CaloIdM_TrackIdM_PFJet30";
-    } 
-}
-        
-
-//TAKE FR TRIGGERS INTO ACCOUNT 
-bool passFakeRateTrigger( const Event& event ){
-    
-    //leading selected lepton
-    Lepton& lepton = event.lepton( 0 );
-
-    //WARNING: There must be a ptRatio cut-off in the cone_correction 
-    //IMPLEMENT MAXIMUM CONE CORRECTION BASED ON ISFO DEFINITION
-    double ptRatioCutoff = 0.75;
-    
-    double maximumConeCorrection = 1./ptRatioCutoff;
-
-    double effectivePt = lepton.pt()/maximumConeCorrection;
-
-    std::string trigger_to_use = lepton.isMuon() ? muonPtToTriggerName( effectivePt ) : electronPtToTriggerName( effectivePt );
-    return event.passTrigger( trigger_to_use );
-}
-
-
-//event selection for fake-rate measurement 
-bool passFakeRateEventSelection( Event& event, bool isMuonMeasurement, bool onlyTightLeptons = false, bool requireJet = true, double jetDeltaRCut = 1){
-
-	//Require the presence of just one lepton, and veto a second loose lepton
-	event.cleanElectronsFromLooseMuons();
-	event.cleanTausFromLooseLightLeptons();
-	if( event.numberOfLooseLeptons() != 1 ){
-		return false;
-	}
-	
-	//Select FO or Tight leptons 
-	if( onlyTightLeptons ){
-		event.selectTightLeptons();
-	} else {
-		event.selectFOLeptons();
-	}
-	if( event.numberOfLeptons() != 1 ){
-		return false;
-	}
-	
-	//IMPORTANT : apply cone correction
-	event.applyLeptonConeCorrection();
-	
-	Lepton& lepton = event.lepton( 0 );
-	
-	//select correct lepton flavor
-	if( isMuonMeasurement ){
-	    if( !lepton.isMuon() ) return false;
-	} else {
-	    if( !lepton.isElectron() ) return false;
-	}
-
-	//optionally require the presence of at least one good jet
-	if( requireJet ){
-		event.selectGoodJets();
-		event.cleanJetsFromLooseLeptons();
-		if( event.numberOfJets() < 1 ) return false;
-		
-		//require deltaR of at least 1 between lepton and any of the selected jets 
-		double maxDeltaR = 0;
-		for( auto jetPtr : event.jetCollection() ){
-		    double currentDeltaR = deltaR( lepton, *jetPtr );
-		    if( currentDeltaR > maxDeltaR ){
-		        maxDeltaR = currentDeltaR;
-		    }
-		}
-		if( maxDeltaR < jetDeltaRCut ) return false;
-	}
-	return true;
-}
+#include "../Tools/interface/systemTools.h"
+#include "interface/fakeRateSelection.h"
 
 
 RangedMap< RangedMap< std::shared_ptr< TH1D > > > build2DHistogramMap( const std::vector< double >& ptBinBorders, const std::vector< double >& etaBinBorders, const HistInfo& mtHistInfo, const std::string& name ){
@@ -176,9 +81,9 @@ void fillPrescaleMeasurementHistograms(){
     
     //initialize histograms
     for( const auto& trigger : triggerVector ){
-        prompt_map[trigger] = mtHistInfo.makeHist( "mT_prompt_" + trigger );
-        nonprompt_map[trigger] = mtHistInfo.makeHist( "mT_nonprompt_" + trigger );
-        data_map[trigger] = mtHistInfo.makeHist( "mt_data_" + trigger );
+        prompt_map[trigger] = mtHistInfo.makeHist( "prompt_mT_" + trigger );
+        nonprompt_map[trigger] = mtHistInfo.makeHist( "nonprompt_mT_" + trigger );
+        data_map[trigger] = mtHistInfo.makeHist( "data_mT_" + trigger );
     }
     
 
@@ -200,12 +105,27 @@ void fillPrescaleMeasurementHistograms(){
             double mT = mt( lepton, event.met() );
 
             for( const auto& trigger : triggerVector ){
+
+                //check lepton flavor corresponding to this trigger
 				if( stringTools::stringContains( trigger, "Mu" ) ){
 					if( !lepton.isMuon() ) continue;
 				} else {
 					if( !lepton.isElectron() ) continue;
 				}
+
+                //event must pass trigger
                 if( !event.passTrigger( trigger ) ) continue;
+
+                //apply offline pT threshold equal to that of the trigger 
+                if( lepton.pt() <= triggerLeptonPtCut( trigger ) ) continue;
+
+                //check if any trigger jet threshold must be applied
+                if( stringTools::stringContains( trigger, "PFJet" ) ){
+                    event.selectGoodJets();
+                    if( event.numberOfJets() < 1 ) continue;
+                    event.sortJetsByPt();
+                    if( event.jet(0).pt() <= triggerJetPtCut( trigger ) ) continue;
+                }
                 
                 if( treeReader.isData() ){
                     data_map[trigger]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), event.weight() );
@@ -231,9 +151,8 @@ void fillPrescaleMeasurementHistograms(){
 }
 
 
-
 //function to fill MT shape histogram for numerator and denominator
-void makeFakeRateHistograms( const std::string& leptonFlavor, const std::string& year ){
+void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const std::string& year ){
 
     //make sure year and leptonFlavor are OK
     checkLeptonFlavorString( leptonFlavor );
@@ -259,12 +178,12 @@ void makeFakeRateHistograms( const std::string& leptonFlavor, const std::string&
     HistInfo mtHistInfo( "mT", "m_{T}( GeV )", numberOfMTBins, 0, 200 );
 
     //make 2D RangedMap mapping each bin to a histogram
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, leptonFlavor + "_prompt_numerator" );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, leptonFlavor + "_prompt_denominator" );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, leptonFlavor + "_nonprompt_numerator" );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, leptonFlavor + "_nonprompt_denominator" );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, leptonFlavor +  "_data_numerator" );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, leptonFlavor + "_data_denominator" );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "prompt_numerator_mT_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "prompt_denominator_mT_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "nonprompt_numerator_mT_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "nonprompt_denominator_mT_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "data_numerator_mT_" + leptonFlavor);
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "data_denominator_mT_" + leptonFlavor );
 
     //initialize TreeReader
     //ADAPT SAMPLE LIST TO USE DATA FOR CORRECT YEAR
@@ -276,7 +195,7 @@ void makeFakeRateHistograms( const std::string& leptonFlavor, const std::string&
 
         //loop over events in sample
         for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
-            Event event = treeReader.buildEvent( entry );
+            Event event = treeReader.buildEvent( entry, true, true );
 
 			//apply event selection, note that event is implicitly modified (lepton selection etc)
 			if( !passFakeRateEventSelection( event, isMuonMeasurement, false, true, 1 ) ) continue;
@@ -321,7 +240,6 @@ void makeFakeRateHistograms( const std::string& leptonFlavor, const std::string&
     write2DHistogramMap( data_denominator_map );
 
     histogram_file->Close();
-    
 }
 
 
@@ -359,41 +277,58 @@ std::vector< std::string > listPtEtaBinsInFile( const TFile* filePtr ){
 }
 
 
+void printDataCard( TFile* filePtr, const std::string& identifier, const bool promptSignal ){
+
+	//each datacard should contain the three following processes
+	static std::vector< std::string > processNames = { "data", "prompt", "nonprompt" };
+
+	//map each process to a histogram
+	std::map< std::string, std::shared_ptr< TH1D > > processHistogramMap;
+	for( auto& p : processNames ){
+	    processHistogramMap[p] = std::shared_ptr< TH1D >( (TH1D*) filePtr->Get( ( p + "_" + identifier ).c_str() ) );
+	}
+
+    //prompt or nonprompt can be considered the signal process 
+    std::string signalProcess;
+    std::string backgroundProcess;
+    if( promptSignal ){
+        signalProcess = "prompt";
+        backgroundProcess = "nonprompt";
+    } else {
+        signalProcess = "nonprompt";
+        backgroundProcess = "prompt";
+    }
+	
+	//prepare necessary arguments to print datacard 
+	double observedYield = processHistogramMap["data"]->GetSumOfWeights();
+	double signalYield = processHistogramMap[signalProcess]->GetSumOfWeights();
+	double bkgYield[1] = { processHistogramMap[backgroundProcess]->GetSumOfWeights() };
+	std::string bkgNames[1] = { backgroundProcess };
+	
+	//name of the file that will contain the histograms 
+	std::string shapeFileName = "shapeFile_" + identifier + ".root";
+	TFile* shapeFilePtr = TFile::Open( ( "datacards/" + shapeFileName ).c_str(), "RECREATE" );
+	for( auto& p : processNames ){
+	    processHistogramMap[p]->Write( p.c_str() );
+	}
+	shapeFilePtr->Close();
+	
+	analysisTools::printDataCard( "datacards/datacard_" + identifier + ".txt", observedYield, signalYield, signalProcess , bkgYield, 1, bkgNames, std::vector< std::vector< double > >(), 0, nullptr, nullptr, true, shapeFileName, true );
+}
+	
+
+
 void printDataCardsForBin( TFile* filePtr, const std::string& ptEtaBinName ){
 
-	//GENERALIZE THE EXTRACTION OF THE NAMES HERE 
-
 	for( auto& term : std::vector< std::string >( { "numerator", "denominator" } ) ){
-		std::vector< std::string > processNames = { "data", "prompt", "nonprompt" };
-
-		std::map< std::string, std::shared_ptr< TH1D > > processHistogramMap;
-		for( auto& p : processNames ){
-			processHistogramMap[p] = std::shared_ptr< TH1D >( (TH1D*) filePtr->Get( ("mTmuon_" + p + "_" + term + "_" + ptEtaBinName ).c_str() ) );
-		}
-
-		//prepare necessary arguments to print datacard 
-		double observedYield = processHistogramMap["data"]->GetSumOfWeights();
-		double signalYield = processHistogramMap["nonprompt"]->GetSumOfWeights();
-		double bkgYield[1] = { processHistogramMap["prompt"]->GetSumOfWeights() };
-		std::string bkgNames[1] = { "prompt" };
-
-		//name of the file that will contain the histograms 
-		std::string shapeFileName = "shapeFile_" + term + "_muon_" + ptEtaBinName + ".root";
-		TFile* shapeFilePtr = TFile::Open( ( "datacards/" + shapeFileName ).c_str(), "RECREATE" );
-		for( auto& p : processNames ){
-			processHistogramMap[p]->Write( p.c_str() ); 
-		}
-		shapeFilePtr->Close();
-
-		analysisTools::printDataCard( "datacards/datacard_" + term + "_muon_" + ptEtaBinName + ".txt", observedYield, signalYield, "nonprompt", bkgYield, 1, bkgNames, std::vector< std::vector< double > >(), 0, nullptr, nullptr, true, shapeFileName, true );
-
+		std::string identifier = term + "_mT_muon_" + ptEtaBinName;
+		printDataCard( filePtr, identifier, false );
 	}
 }
 
-
-
+	
 //function to read MT histogram for numerator/denominator of each bin, produce a datacard
-void printDataCards( const std::string& fileName ){
+void printDataCardsFakeRateMeasurement( const std::string& fileName ){
     
     //open file containing all histograms 
     TFile* histogram_file = TFile::Open( fileName.c_str() );
@@ -410,17 +345,64 @@ void printDataCards( const std::string& fileName ){
 
     //close ROOT file
     histogram_file->Close();
-
 }
+
+
+std::vector< std::string > listTriggersInFile( const TFile* filePtr ){
+    std::vector< std::string > histogramNameVector = listHistogramsInFile( filePtr );
+    std::set< std::string > triggerSet;
+    for( const auto& name : histogramNameVector ){
+        if( stringTools::stringContains( name, "HLT" ) ){
+            auto beginPos = name.find( "HLT" );
+            triggerSet.insert( name.substr( beginPos ) );
+        }
+    }
+    return std::vector< std::string >( triggerSet.cbegin(), triggerSet.cend() );
+}
+
+
+//function to submit combine express jobs 
+void submitDataCardJob( const std::string& dataCardPath, const std::string& CMSSWDirectory ){
+    std::string cardName = stringTools::fileNameWithoutExtension( stringTools::fileNameFromPath( dataCardPath ) );
+    std::string scriptName = "job_" + cardName + ".sh";
+    std::ofstream jobScript( scriptName );
+    systemTools::initScript( jobScript, CMSSWDirectory );
+    std::string outputFileName = "output_" + cardName + ".txt";
+    jobScript << "combine -M FitDiagnostics " << dataCardPath << " > " << outputFileName << " 2>> " << outputFileName << "\n";
+    jobScript.close();
+    //systemTools::submitScript( scriptName, "00:20:00", "express" );
+    systemTools::system( "cat " + scriptName );
+}
+
+
+void printDataCardsPrescaleMeasurement( const std::string& fileName ){
+    
+    //open file containing all histograms
+    TFile* histogram_file = TFile::Open( fileName.c_str() );
+
+    //print datacards for the measurement of each trigger 
+    for( const auto& trigger : listTriggersInFile( histogram_file ) ){
+        printDataCard( histogram_file, "mT_" + trigger, true );
+
+        //measure the prescale 
+        submitDataCardJob( "datacards/datacard_" + ( "mT_" + trigger ) + ".txt", "/user/wverbeke/CMSSW_8_1_0/" );
+    }
+
+    histogram_file->Close();
+}
+
+//run over datacards for fakerate measurement 
 
 
 //function to run combine on datacards and measure nonprompt yield in each bin 
 
 
-int main(){
+int main( int argc, char* argv[] ){
+    std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
 
-    //makeFakeRateHistograms( "muon", "2016" );
-    //printDataCards( "muon_2016_fakeRate_mT_histograms.root" );
+    //fillFakeRateMeasurementHistograms( "muon", "2016" );
+    //printDataCardsFakeRateMeasurement( "muon_2016_fakeRate_mT_histograms.root" );
 	fillPrescaleMeasurementHistograms();
+    printDataCardsPrescaleMeasurement( "prescaleMeasurement_mT_histograms.root" );
     return 0;
 }
