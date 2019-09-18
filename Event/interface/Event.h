@@ -85,6 +85,7 @@ class Event{
         MuonCollection muonCollection() const{ return _leptonCollectionPtr->muonCollection(); }
         ElectronCollection electronCollection() const{ return _leptonCollectionPtr->electronCollection(); }
         TauCollection tauCollection() const{ return _leptonCollectionPtr->tauCollection(); }
+        LightLeptonCollection lightLeptonCollection() const{ return _leptonCollectionPtr->lightLeptonCollection(); }
         LeptonCollection::size_type numberOfMuons() const{ return _leptonCollectionPtr->numberOfMuons(); }
         LeptonCollection::size_type numberOfElectrons() const{ return _leptonCollectionPtr->numberOfElectrons(); }
         LeptonCollection::size_type numberOfTaus() const{ return _leptonCollectionPtr->numberOfTaus(); }

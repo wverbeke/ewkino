@@ -16,7 +16,7 @@
 //call std::system with std::string argyment
 void systemTools::system( const std::string& command ){
     int response = std::system(command.c_str() );
-    if( response <= 0 ){
+    if( response < 0 ){
         throw std::runtime_error( "system command '" + command + " failed." );
     }
 }

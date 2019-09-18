@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wextra
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= Tau_test.cc ../../objects/src/LorentzVector.cc ../../objects/src/PhysicsObject.cc ../../objects/src/Lepton.cc ../../objects/src/Tau.cc ../../objects/src/LeptonGeneratorInfo.cc ../../TreeReader/src/TreeReader.cc  ../../Tools/src/Sample.cc ../../TreeReader/src/TreeReaderErrors.cc ../../Tools/src/stringTools.cc ../../objects/src/TauSelector.cc
+SOURCES= Tau_test.cc ../../objects/src/LorentzVector.cc ../../objects/src/PhysicsObject.cc ../../objects/src/Lepton.cc ../../objects/src/Tau.cc ../../objects/src/LeptonGeneratorInfo.cc ../../TreeReader/src/TreeReader.cc  ../../Tools/src/Sample.cc ../../TreeReader/src/TreeReaderErrors.cc ../../Tools/src/stringTools.cc ../../objects/src/LeptonSelector.cc ../../objectSelection/TauSelector.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= Tau_test
 

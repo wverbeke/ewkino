@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wextra
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= Jet_test.cc ../../objects/src/LorentzVector.cc ../../objects/src/PhysicsObject.cc ../../objects/src/Jet.cc ../../TreeReader/src/TreeReader.cc  ../../Tools/src/Sample.cc ../../TreeReader/src/TreeReaderErrors.cc ../../Tools/src/stringTools.cc ../../objects/src/JetSelector.cc
+SOURCES= Jet_test.cc ../../objects/src/LorentzVector.cc ../../objects/src/PhysicsObject.cc ../../objects/src/Jet.cc ../../TreeReader/src/TreeReader.cc  ../../Tools/src/Sample.cc ../../TreeReader/src/TreeReaderErrors.cc ../../Tools/src/stringTools.cc ../../objectSelection/JetSelector.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE= Jet_test
 

@@ -36,7 +36,7 @@ int main(){
     std::chrono::duration< double > getEntryTimer( 0. );
     std::chrono::duration< double > buildEventTimer( 0. );
 
-    for(unsigned i = 0; i < treeReader.nEntries; ++i){
+    for(unsigned i = 0; i < treeReader.numberOfEntries(); ++i){
 
         auto getEntry_begin = std::chrono::high_resolution_clock::now();
         treeReader.GetEntry(i);

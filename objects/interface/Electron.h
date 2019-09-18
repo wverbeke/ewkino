@@ -34,6 +34,8 @@ class Electron : public LightLepton{
         bool isMediumPOGElectron() const{ return _isMediumPOGElectron; }
         bool isTightPOGElectron() const{ return _isTightPOGElectron; }
 
+        virtual std::ostream& print( std::ostream& os = std::cout ) const override;
+
     private:
         bool _passChargeConsistency = false;
         bool _passDoubleEGEmulation = false;

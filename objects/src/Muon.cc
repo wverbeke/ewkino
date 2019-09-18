@@ -35,3 +35,20 @@ Muon::Muon( Muon&& rhs ) noexcept:
     _isMediumPOGMuon( rhs._isMediumPOGMuon ),
     _isTightPOGMuon( rhs._isTightPOGMuon )
     {}    
+
+
+std::ostream& Muon::print( std::ostream& os ) const{
+    os << "Muon : ";
+    LightLepton::print( os );
+    os << " / segmentCompatibility = " << _segmentCompatibility << " / trackPt = " << _trackPt << " / trackPtError = " << _trackPtError;
+    if( _isTightPOGMuon ){
+        os << " / tight POG muon";
+    } else if( _isMediumPOGMuon ){
+        os << " / medium POG muon";
+    } else if( _isLoosePOGMuon ){
+        os << " / loose POG muon";
+    } else {
+        os << " / fails POG muon selection";
+    }
+    return os;
+}

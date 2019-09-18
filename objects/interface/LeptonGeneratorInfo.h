@@ -15,6 +15,7 @@ class LeptonGeneratorInfo{
 
         bool isPrompt() const{ return _isPrompt; }
         int matchPdgId() const{ return _matchPdgId; }
+        int matchCharge() const{ return _matchCharge; }
         int momPdgId() const{ return _momPdgId; }
         unsigned provenance() const{ return _provenance; }
         unsigned provenanceCompressed() const{ return _provenanceCompressed; }
@@ -22,7 +23,7 @@ class LeptonGeneratorInfo{
 
     private:
         bool _isPrompt;
-        int _matchPdgId, _momPdgId;
+        int _matchPdgId, _matchCharge, _momPdgId;
         unsigned _provenance, _provenanceCompressed, _provenanceConversion;
 
 }; 

@@ -39,3 +39,11 @@ Met Met::MetUnclusteredDown() const{
 Met Met::MetUnclusteredUp() const{
     return variedMet( _pt_UnclUp, _phi_UnclUp );
 }
+
+
+std::ostream& Met::print( std::ostream& os ) const{
+    os << "Met : ";
+    os << "(pt = " << pt() << ", phi = " << phi() << ")";
+    os << " / pt_JECDown = " << _pt_JECDown << " / phi_JECDown = " << _phi_JECDown << " / pt_JECUp = " << _pt_JECUp << " / phi_JECUp = " << _phi_JECUp << " / pt_UnclDown = " << _pt_UnclDown << " / phi_UnclDown = " << _phi_UnclDown << " / pt_UnclUp = " << _pt_UnclUp << " / phi_UnclUp = " << _phi_UnclUp;
+    return os;
+}

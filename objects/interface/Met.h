@@ -18,6 +18,9 @@ class Met : public PhysicsObject {
         Met MetUnclusteredDown() const;
         Met MetUnclusteredUp() const;
 
+        //print met information
+        virtual std::ostream& print( std::ostream& ) const override;
+
     private:
 
         //JEC uncertainties

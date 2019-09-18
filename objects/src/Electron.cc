@@ -56,3 +56,24 @@ Electron::Electron( Electron&& rhs ) noexcept :
     _isMediumPOGElectron( rhs._isMediumPOGElectron ),
     _isTightPOGElectron( rhs._isTightPOGElectron )
     {}
+
+
+std::ostream& Electron::print( std::ostream& os ) const{
+    os << "Electron : ";
+    LightLepton::print( os );
+    os << " / passChargeConsistency = " << _passChargeConsistency << " / passDoubleEGEmulation = " << _passDoubleEGEmulation << " / passConversionVeto = " << _passConversionVeto <<
+        " / numberOfMissingHits = " << _numberOfMissingHits << " / electronMVASummer16GP = " << _electronMVASummer16GP << " / electronMVASummer16HZZ = " << _electronMVASummer16HZZ <<
+        " / electronMVAFall17Iso = " << _electronMVAFall17Iso << " / electronMVAFall17NoIso = " << _electronMVAFall17NoIso << " / etaSuperCluster = " << _etaSuperCluster;
+    if( _isTightPOGElectron ){
+        os << " / tight POG electron";
+    } else if( _isMediumPOGElectron ){
+        os << " / medium POG electron";
+    } else if( _isLoosePOGElectron ){
+        os << " / loose POG electron";
+    } else if( _isVetoPOGElectron ){
+        os << " / veto POG electron";
+    } else{
+        os << " / fails POG electron selection";
+    }
+    return os;    
+}

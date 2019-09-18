@@ -25,6 +25,8 @@ class Muon : public LightLepton {
         double trackPt() const{ return _trackPt; }
         double trackPtError() const{ return _trackPtError; }
 
+        virtual std::ostream& print( std::ostream& os = std::cout ) const override;
+
     private:
         double _segmentCompatibility = 0;
         double _trackPt = 0;
