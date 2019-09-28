@@ -118,7 +118,7 @@ std::string stringTools::fileNameFromPath( const std::string& path ){
 //remove all occurences of a substring from a string
 std::string stringTools::removeOccurencesOf( const std::string& s, const std::string& substring ){
     std::string ret( s );
-    auto pos = ret.size();
+    std::string::size_type pos;
     while( ( pos = ret.find( substring ) ) != std::string::npos ){
         ret.erase( pos, substring.size() );
     }
