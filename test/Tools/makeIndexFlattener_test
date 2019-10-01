@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= IndexFlattener_test.cc ../../Tools/src/IndexFlattener.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=IndexFlattener_test
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
