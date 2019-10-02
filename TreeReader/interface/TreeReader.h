@@ -257,7 +257,6 @@ class TreeReader {
 
         //access current file and tree 
         std::shared_ptr< TFile > getCurrentFilePtr(){ return currentFilePtr; }
-        std::shared_ptr< TTree > getCurrentTreePtr(){ return currentTreePtr; }
 
 
         //functions for event selection
@@ -352,7 +351,7 @@ class TreeReader {
         std::shared_ptr< TFile > currentFilePtr;
 
         //TTree associated to current sample 
-        std::shared_ptr< TTree > currentTreePtr = std::shared_ptr< TTree >( nullptr );
+        TTree* currentTreePtr = nullptr;
 
         //check whether current sample is initialized, throw an error if it is not 
         void checkCurrentSample() const;

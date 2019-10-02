@@ -115,12 +115,12 @@ bool treeHasBranchWithName( TTree* treePtr, const std::string& nameToFind ){
 
 
 bool TreeReader::containsGeneratorInfo() const{
-    return treeHasBranchWithName( currentTreePtr.get(), "_gen_" );
+    return treeHasBranchWithName( currentTreePtr, "_gen_" );
 }
 
 
 bool TreeReader::containsSUSYMassInfo() const{
-    return treeHasBranchWithName( currentTreePtr.get(), "_mChi" );
+    return treeHasBranchWithName( currentTreePtr, "_mChi" );
 }
 
 
@@ -193,7 +193,10 @@ void TreeReader::initSample( const Sample& samp ){
     //update current sample
     currentSamplePtr = &samp;
     currentFilePtr = samp.filePtr();
-    currentTreePtr = std::shared_ptr< TTree >( (TTree*) currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" ) );
+
+    //Warning: this pointer is overwritten, but it is not a memory leak. ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
+    //The previous TFile is closed by the std::shared_ptr destructor, implicitly called above when opening a new TFile.
+    currentTreePtr = (TTree*) currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" );
     initTree();
     if( !samp.isData() ){
 
@@ -228,7 +231,10 @@ void TreeReader::initSample(){
 void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018 ){
 
     currentFilePtr = std::shared_ptr< TFile >( new TFile( pathToFile.c_str() ) );
-    currentTreePtr = std::shared_ptr< TTree >( (TTree*) currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" ) );
+
+    //Warning: this pointer is overwritten, but it is not a memory leak. ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
+    //The previous TFile is closed by the std::shared_ptr destructor, implicitly called above when opening a new TFile.
+    currentTreePtr = (TTree*) currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" );
 
     //make a new sample, and make sure the pointer remains valid
     //new is no option here since this would also require a destructor for the class which does not work for the other initSample case
@@ -477,12 +483,12 @@ void TreeReader::initTree(){
 	}
 
     //add all individually stored triggers 
-    initializeTriggerMap( currentTreePtr.get() );
-    setMapBranchAddresses( currentTreePtr.get(), _triggerMap, b__triggerMap );
+    initializeTriggerMap( currentTreePtr );
+    setMapBranchAddresses( currentTreePtr, _triggerMap, b__triggerMap );
 
     //add all individually stored MET filters
-    initializeMetFilterMap( currentTreePtr.get() );
-    setMapBranchAddresses( currentTreePtr.get(), _MetFilterMap, b__MetFilterMap );
+    initializeMetFilterMap( currentTreePtr );
+    setMapBranchAddresses( currentTreePtr, _MetFilterMap, b__MetFilterMap );
 }
 
 

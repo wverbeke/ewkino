@@ -98,8 +98,8 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
     if( mvaThreshold < 0.6 && mvaThreshold > -0.6 ){
 
         //try determining magic factor with a fit 
-        TF1* f_aboveThreshold = new TF1( "f_aboveThreshold", "[0]*x + [1]" );
-        TF1* f_belowThreshold = new TF1( "f_belowThreshold", "[0]*x + [1]" );
+        std::shared_ptr< TF1 > f_aboveThreshold = std::shared_ptr< TF1 >( new TF1("f_aboveThreshold", "[0]*x + [1]" ) );
+        std::shared_ptr< TF1 > f_belowThreshold = std::shared_ptr< TF1 >( new TF1("f_belowThreshold", "[0]*x + [1]" ) );
 
         pTWeightedLeptonMVAHistogram->Fit( "f_aboveThreshold", "", "", mvaThreshold, 0.6  );
         pTWeightedLeptonMVAHistogram->Fit( "f_belowThreshold", "", "", -0.6, mvaThreshold );
