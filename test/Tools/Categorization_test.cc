@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+//include test functions
+#include "../copyMoveTest.h"
+
 int main(){
 
     
@@ -23,6 +26,9 @@ int main(){
             }
         }
     }
+
+    //test copy and move behavior for leaks
+    copyMoveTest( categ );
 
     return 0;
 }

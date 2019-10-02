@@ -5,6 +5,9 @@
 #include <string> 
 #include <vector>
 
+//include test function
+#include "../copyMoveTest.h"
+
 
 template< typename T > std::string vectorToString( const std::vector< T >& vec ){
     std::string vecString = "{";
@@ -66,6 +69,9 @@ int main(){
             }
         }
     }
+
+    //test copy and move behavior for leaks
+    copyMoveTest( indexFlattener );
 
     return 0;
 }

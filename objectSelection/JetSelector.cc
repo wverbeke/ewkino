@@ -1,5 +1,8 @@
 #include "../objects/interface/JetSelector.h"
 
+//b-tagging working points
+#include "bTagWP.h"
+
 /*
 Jet ID selection
 */
@@ -40,45 +43,45 @@ bool JetSelector::inBTagAcceptance() const{
 
 
 bool JetSelector::isBTaggedLoose2016() const{
-    return ( jetPtr->deepCSV() > 0.2217 );
+    return ( jetPtr->deepFlavor() > bTagWP::looseDeepFlavor2016()  );
 }
 
 
 bool JetSelector::isBTaggedLoose2017() const{
-    return ( jetPtr->deepCSV() > 0.5803 ); 
+    return ( jetPtr->deepFlavor() > bTagWP::looseDeepFlavor2017() ); 
 }
 
 
 bool JetSelector::isBTaggedLoose2018() const{
-    return ( jetPtr->deepCSV() > 0.1241  );
+    return ( jetPtr->deepFlavor() > bTagWP::looseDeepFlavor2018() );
 }
         
 
 bool JetSelector::isBTaggedMedium2016() const{
-    return ( jetPtr->deepCSV() > 0.6321 );
+    return ( jetPtr->deepFlavor() > bTagWP::mediumDeepFlavor2016() );
 }
 
 
 bool JetSelector::isBTaggedMedium2017() const{
-    return ( jetPtr->deepCSV() > 0.8838 );
+    return ( jetPtr->deepFlavor() > bTagWP::mediumDeepFlavor2017() );
 }
 
 
 bool JetSelector::isBTaggedMedium2018() const{
-    return ( jetPtr->deepCSV() > 0.4184 );
+    return ( jetPtr->deepFlavor() > bTagWP::mediumDeepFlavor2018() );
 }
 
 
 bool JetSelector::isBTaggedTight2016() const{
-    return ( jetPtr->deepCSV() > 0.8953 );
+    return ( jetPtr->deepFlavor() > bTagWP::tightDeepFlavor2016() );
 }
 
 
 bool JetSelector::isBTaggedTight2017() const{
-    return ( jetPtr->deepCSV() > 0.9693 );
+    return ( jetPtr->deepFlavor() > bTagWP::tightDeepFlavor2017() );
 }
 
 
 bool JetSelector::isBTaggedTight2018() const{
-    return ( jetPtr->deepCSV() >  0.7527 );
+    return ( jetPtr->deepFlavor() > bTagWP::tightDeepFlavor2018() );
 }
