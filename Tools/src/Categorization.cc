@@ -29,14 +29,14 @@ Categorization::Categorization( const std::vector < std::vector <std::string> >&
 }
 
 
-Categorization::size_type Categorization::index( const std::vector< size_type >& indices ) const{
-    return flattenerPtr->index( indices );
-}
+//Categorization::size_type Categorization::index( const std::vector< size_type >& indices ) const{
+//    return flattenerPtr->index( indices );
+//}
 
 
-std::string Categorization::name(const std::vector< size_type >& indices) const{
-    return categories[ index(indices) ];
-}
+//std::string Categorization::name(const std::vector< size_type >& indices) const{
+//    return categories[ index(indices) ];
+//}
 
 
 std::vector< size_t > Categorization::findCategoriesByName(const std::string& nameToFind) const{

@@ -3,6 +3,7 @@
 //include c++ library classes 
 #include <fstream>
 #include <iostream>
+#include <typeinfo>
 
 //include other parts of analysis framework
 #include "../../Tools/interface/analysisTools.h"
@@ -149,6 +150,13 @@ void TreeReader::checkCurrentTree() const{
     if( !currentTreePtr ){
         throw std::domain_error( "pointer to current TTree is nullptr." );
     }
+}
+
+
+void TreeReader::checkCurrentFile() const{
+	if( !currentFilePtr ){
+		throw std::domain_error( "pointer to current TFile is nullptr." );
+	}
 }
 
 
@@ -681,3 +689,41 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     //write individual MET filters to output tree
     setMapOutputBranches( outputTree, _MetFilterMap );
 }
+
+
+//get object from current file 
+TObject* TreeReader::getFromCurrentFile( const std::string& name ) const{
+	checkCurrentFile();
+	return currentFilePtr->Get( name.c_str() );
+}
+
+
+//Get list of histograms stored in current file
+std::vector< std::shared_ptr< TH1 > > TreeReader::getHistogramsFromCurrentFile() const{
+
+	checkCurrentFile();
+
+	//vector containing all histograms in current file
+	std::vector< std::shared_ptr< TH1 > > histogramVector;
+
+	//loop over keys in blackJackAndHookers directory
+    //this directory gets implicitly deleted by root when the current root file gets deleted. This can NOT be a shared_ptr since this directory will also make the root file inaccessible upon deletion (DIRTY ROOT!!!)
+	TDirectory* dir = (TDirectory*) currentFilePtr->Get("blackJackAndHookers");
+
+    //this is not a memory leak since this object will implicitly be deleted when 'dir' gets deleted (DIRTY ROOT!!!)
+    TList* keyList = dir->GetListOfKeys();
+
+    for( const auto objectPtr : *keyList ){
+
+		//try if a dynamic_cast to a histogram works to check if object is histogram
+		TH1* histPtr = dynamic_cast< TH1* >( dir->Get( objectPtr->GetName() ) );
+		if( histPtr ){
+
+            //make sure histograms don't get deleted by root upon deletion of TDirectory above
+            histPtr->SetDirectory( gROOT );
+			histogramVector.emplace_back( histPtr );
+		}
+    }
+	return histogramVector;
+}
+

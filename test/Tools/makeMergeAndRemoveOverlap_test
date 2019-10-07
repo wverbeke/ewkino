@@ -1,9 +1,9 @@
-CC=g++ -Wall -Wextra -O3
+CC=g++ -Wall -Wextra
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= skimmer.cc src/skimSelections.cc ../codeLibrary.o 
+SOURCES= mergeAndRemoveOverlap_test.cc ../../codeLibrary.o 
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=skimmer
+EXECUTABLE= mergeAndRemoveOverlap_test
 
 all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)

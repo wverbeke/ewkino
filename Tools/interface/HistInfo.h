@@ -13,6 +13,7 @@
 #include "stringTools.h"
 
 class HistInfo{
+
     public:
         HistInfo() = default;
 
@@ -41,6 +42,7 @@ class HistInfo{
 
     
             std::shared_ptr<TH1D> hist = std::make_shared<TH1D>( histName.c_str(), ( histName + ";" + xLabel + ";" + yLabel).c_str(),  nBins, xMin, xMax);
+            hist->Sumw2();
 
             //set bin labels if they were initialized 
             if( !( binLabels.empty() ) ){
@@ -54,6 +56,7 @@ class HistInfo{
 
         std::string name() const { return fileName; }
         double maxBinCenter() const { return maxBinC; }
+
     private:
         std::string fileName;
         std::string xLabel;

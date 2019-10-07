@@ -24,13 +24,14 @@ class Categorization{
         //Constructor takes a 2D vector of strings, every vectory is an independent categorization layer, leading to a multidimensional cateogirization structure.
         Categorization( const std::vector < std::vector <std::string> >& );
         
-        size_type index( const std::vector< size_type >& ) const;
+        size_type index( const std::vector< size_type >& indices ) const{ return flattenerPtr->index( indices ); }
+        std::vector< size_type > indices( const size_type index ) const{ return flattenerPtr->indices( index ); }
         
         size_type range( size_type ind ) const { return flattenerPtr->range( ind ); }
         
         size_type size() const { return categories.size(); }
         
-        std::string name( const std::vector< size_type >& ) const;
+        std::string name( const std::vector< size_type >& indices ) const{ return categories[ index( indices ) ]; }
         
         std::string name( size_type ind ) const { return categories[ind]; }
         

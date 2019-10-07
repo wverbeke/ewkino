@@ -258,6 +258,11 @@ class TreeReader {
         //access current file and tree 
         std::shared_ptr< TFile > getCurrentFilePtr(){ return currentFilePtr; }
 
+        //get object from current file 
+        TObject* getFromCurrentFile( const std::string& name ) const;//{ return currentFilePtr->Get( name.c_str() ); }
+
+        //Get list of histograms stored in current file
+        std::vector< std::shared_ptr< TH1 > > getHistogramsFromCurrentFile() const;
 
         //functions for event selection
         /*
@@ -358,6 +363,9 @@ class TreeReader {
 
         //check whether current Tree is initialized, throw an error if it is not 
         void checkCurrentTree() const;
+
+        //check whether current File is initialized, throw an error if it is not
+        void checkCurrentFile() const;
 
         //current index in samples vector
         int currentSampleIndex = -1;

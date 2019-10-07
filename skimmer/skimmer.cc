@@ -33,20 +33,20 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
     treeReader.initSampleFromFile( pathToFile, is2017, is2018 );
 
     //input ROOT file 
-    std::shared_ptr< TFile > inputFilePtr = treeReader.getCurrentFilePtr();
+    //std::shared_ptr< TFile > inputFilePtr = treeReader.getCurrentFilePtr();
 
     //read histograms from input tree
-    std::shared_ptr< TH1D > nVertices( (TH1D*) inputFilePtr->Get( "blackJackAndHookers/nVertices" ) );
+    std::shared_ptr< TH1D > nVertices( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/nVertices" ) );
     std::shared_ptr< TH1D > hCounter;
     std::shared_ptr< TH1D > lheCounter;
     std::shared_ptr< TH1D > nTrueInteractions;
     std::shared_ptr< TH1D> psCounter;
     
     if( treeReader.isMC() ){
-        hCounter = std::shared_ptr< TH1D >( (TH1D*) inputFilePtr->Get( "blackJackAndHookers/hCounter" ) );
-        lheCounter = std::shared_ptr< TH1D >( (TH1D*) inputFilePtr->Get( "blackJackAndHookers/lheCounter" ) );
-        nTrueInteractions = std::shared_ptr< TH1D >( (TH1D*) inputFilePtr->Get( "blackJackAndHookers/nTrueInteractions" ) );
-        psCounter = std::shared_ptr< TH1D >( (TH1D*) inputFilePtr->Get( "blackJackAndHookers/psCounter" ) );
+        hCounter = std::shared_ptr< TH1D >( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/hCounter" ) );
+        lheCounter = std::shared_ptr< TH1D >( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/lheCounter" ) );
+        nTrueInteractions = std::shared_ptr< TH1D >( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/nTrueInteractions" ) );
+        psCounter = std::shared_ptr< TH1D >( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/psCounter" ) );
     }
 
     //make output ROOT file

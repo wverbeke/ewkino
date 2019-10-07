@@ -14,6 +14,7 @@
 #include "objectSelection/ElectronSelector.cc"
 #include "objectSelection/TauSelector.cc"
 #include "objectSelection/JetSelector.cc"
+#include "objectSelection/bTagWP.cc"
 
 //include Event code 
 #include "Event/src/LeptonCollection.cc"
@@ -30,6 +31,7 @@
 #include "Tools/src/IndexFlattener.cc"
 #include "Tools/src/Categorization.cc"
 #include "Tools/src/Sample.cc"
+#include "Tools/src/mergeAndRemoveOverlap.cc"
 
 //include TreeReader code 
 #include "TreeReader/src/TreeReader.cc"
