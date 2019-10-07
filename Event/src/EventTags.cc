@@ -40,6 +40,16 @@ bool operator==( const EventTags& lhs, const EventTags& rhs ){
 }
 
 
+bool operator <( const EventTags& lhs, const EventTags& rhs ){
+    if( lhs._runNumber != rhs._runNumber ){
+        return ( lhs._runNumber < rhs._runNumber );
+    } else if( lhs._luminosityBlock != rhs._luminosityBlock ){
+        return ( lhs._luminosityBlock < rhs._luminosityBlock );
+    } 
+    return ( lhs._eventNumber < rhs._eventNumber );
+}
+
+
 std::ostream& operator<<( std::ostream& os, const EventTags& eventTags ){
     os << "run number/luminosity block/event number : " << eventTags._runNumber << "/" << eventTags._luminosityBlock << "/" << eventTags._eventNumber;
     return os;

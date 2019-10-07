@@ -10,6 +10,7 @@ class TreeReader;
 class EventTags{
 
     friend bool operator==( const EventTags&, const EventTags& );
+    friend bool operator<( const EventTags&, const EventTags& );
     friend std::ostream& operator<<( std::ostream&, const EventTags& );
 
     public:
