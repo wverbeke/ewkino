@@ -32,36 +32,16 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
     TreeReader treeReader;
     treeReader.initSampleFromFile( pathToFile, is2017, is2018 );
 
-    //input ROOT file 
-    //std::shared_ptr< TFile > inputFilePtr = treeReader.getCurrentFilePtr();
-
-    //read histograms from input tree
-    std::shared_ptr< TH1D > nVertices( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/nVertices" ) );
-    std::shared_ptr< TH1D > hCounter;
-    std::shared_ptr< TH1D > lheCounter;
-    std::shared_ptr< TH1D > nTrueInteractions;
-    std::shared_ptr< TH1D> psCounter;
-    
-    if( treeReader.isMC() ){
-        hCounter = std::shared_ptr< TH1D >( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/hCounter" ) );
-        lheCounter = std::shared_ptr< TH1D >( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/lheCounter" ) );
-        nTrueInteractions = std::shared_ptr< TH1D >( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/nTrueInteractions" ) );
-        psCounter = std::shared_ptr< TH1D >( (TH1D*) treeReader.getFromCurrentFile( "blackJackAndHookers/psCounter" ) );
-    }
-
     //make output ROOT file
     std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory ) + stringTools::removeOccurencesOf( pathToFile, "/" );
     TFile* outputFilePtr = TFile::Open( outputFilePath.c_str() , "RECREATE" );
     outputFilePtr->mkdir( "blackJackAndHookers" );
     outputFilePtr->cd( "blackJackAndHookers" );
 
-    //write histograms to new tree
-    nVertices->Write( "nVertices" );
-    if( treeReader.isMC() ){
-        hCounter->Write( "hCounter" );
-        lheCounter->Write( "lheCounter" );
-        nTrueInteractions->Write( "nTrueInteractions" );
-        psCounter->Write( "psCounter" );
+    //read histograms from input file and write them to the new file
+    std::vector< std::shared_ptr< TH1 > > histVector = treeReader.getHistogramsFromCurrentFile();
+    for( const auto& histPtr : histVector ){
+        histPtr->Write();
     }
 
     //make output tree
@@ -100,9 +80,9 @@ int main( int argc, char* argv[] ){
     }
 
     std::string& input_file_path = argvStr[0];
-    std::string& output_file_path = argvStr[1];
+    std::string& output_directory = argvStr[1];
     std::string& skimCondition = argvStr[2];
-    skimFile( input_file_path, output_file_path, skimCondition );
+    skimFile( input_file_path, output_directory, skimCondition );
 
     return 0;
 }
