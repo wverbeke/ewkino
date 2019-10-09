@@ -21,6 +21,9 @@ namespace systemTools{
     //make file of given name
     void makeFile( const std::string& );
 
+    //make directory of given name 
+    void makeDirectory( const std::string& );
+
     //check if file exists
     bool fileExists( const std::string& );
 
@@ -49,7 +52,7 @@ namespace systemTools{
     std::string CMSSWDirectory();
 
     //initialize a submission script
-    std::ostream& initScript( std::ostream&, const std::string& CMSSWDir = "" );
+    std::ostream& initJobScript( std::ostream&, const std::string& CMSSWDir = "" );
 
     //submit script of given name and catch submission errors
     void submitScript( const std::string&, const std::string&, const std::string& queue = "", const unsigned numberOfThreads = 1 );

@@ -4,7 +4,7 @@ The goal of the tuning is having a fake-rate (tight/FO) that is equal for light 
 */
 
 //include c++ library classes
-#include <limits>
+#include <fstream>
 
 //include ROOT classes
 #include "TF1.h"
@@ -17,9 +17,11 @@ The goal of the tuning is having a fake-rate (tight/FO) that is equal for light 
 #include "../Event/interface/Event.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
+#include "interface/CutsFitInfo.h"
+#include "../Tools/interface/systemTools.h"
 
 
-void tuneFOSelection( const std::string& leptonFlavor ){
+void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, const std::string& sampleDirectory ){
 
     bool isMuon;
     if( leptonFlavor == "muon" ){
@@ -29,7 +31,7 @@ void tuneFOSelection( const std::string& leptonFlavor ){
     } else {
         throw std::invalid_argument( "leptonFlavor string should be either 'muon' or 'electron'." );
     }
-   
+
     const double minPtRatioCut = 0;
     const double maxPtRatioCut = 1;
     const unsigned numberOfPtRatioCuts = 100;
@@ -75,7 +77,8 @@ void tuneFOSelection( const std::string& leptonFlavor ){
     }
 
     //loop over samples and fill histograms
-	TreeReader treeReader( "samples_magicFactor.txt", "../test/testData");
+    std::string sampleListFile = "samples_tuneFOSelection_" + leptonFlavor + "_" + year + ".txt";
+    TreeReader treeReader( sampleListFile, sampleDirectory );
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
         //load next sample
@@ -158,43 +161,90 @@ void tuneFOSelection( const std::string& leptonFlavor ){
         lightFlavorNumerator[ c ]->Divide( lightFlavorDenominator[ c ].get() );
     }
 
-    //divide light and heavy flavor histograms and fit the ratio
-    std::vector< std::shared_ptr< TH1D > > frRatios( categories.size() );
+    
+    //std::vector< CutsFitInfo > fakeRateFitInfoVec;
+    CutsFitInfoCollection fitInfoCollection;
     for( Categorization::size_type c = 0; c < categories.size(); ++c ){
-        frRatios[ c ] = std::shared_ptr< TH1D >( (TH1D*) heavyFlavorNumerator[ c ]->Clone() );
-        frRatios[ c ]->GetYaxis()->SetTitle("heavy-flavor/light-flavor fake-rate");
-        frRatios[ c ]->Divide( lightFlavorNumerator[ c ].get() );
+        std::map< std::string, double > cutMap;
+        auto indices = categories.indices( c );
+        cutMap["pTRatio"] =  ptRatioCuts[ indices[ 0 ] ];
+        cutMap["deepFlavor"] = ptRatioCuts[ indices[ 1 ] ];
+        fitInfoCollection.push_back( CutsFitInfo( heavyFlavorNumerator[ c ], lightFlavorNumerator[ c ], cutMap ) );
     }
 
-    std::shared_ptr< TF1 > constFunc = std::make_shared< TF1 >( "constFunc", "[0]", minPt, maxPt );
 
-    //look for the constant fit with the smallest deviation from 1
-    double minDiff = std::numeric_limits< double >::max();
-    Categorization::size_type bestIndex = 0;
-    for( Categorization::size_type c = 0; c < categories.size(); ++c ){
-        frRatios[ c ]->Fit( "constFunc", "Q" ); //Q = quiet mode 
+    //we will try 3 different optimization metrics for the fit: 
+    //1 : minimum difference between fit value and 1 
+    //2 : smallest Chi2 of constant fit
+    //3 : define a loss function as | fitValue - 1 + epsilon | * | chi2 - min( 1, chi2 ) + epsilon | and minimize it
 
-        double fitValue = constFunc->GetParameter( 0 );
-        double diff = fabs( (fitValue - 1.)/fitValue );
+    std::string plotDirectory = "tuningPlots_" + leptonFlavor + "_" + year + "/";
 
-        if( diff < minDiff ){
-            minDiff = diff;
-            bestIndex = c;
-        }
-    }
+    //make plotting directory if it does not already exist
+    systemTools::makeDirectory( plotDirectory );
 
-    //set plotting style and plot histogram
-    setTDRStyle();
-    plotHistograms(frRatios[ bestIndex ].get(), "light/heavy fake-rate", "fakeRateRatio_" + categories[ bestIndex ], false);
-
-    //print out best ptRatio and deepFlavor cut
-    auto bestIndices = categories.indices( bestIndex );
-    std::cout << "best ptRatio lower limit is " << ptRatioCuts[ bestIndices[0] ] << std::endl;
-    std::cout << "best deepFlavor upper limit is " << ptRatioCuts[ bestIndices[1] ] << std::endl;
+    fitInfoCollection.sortByDiffFromUnity();
+    fitInfoCollection.printBestCuts( 5 );
+    fitInfoCollection.plotBestCuts( 5, plotDirectory );
+    std::cout << "--------------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------------------------------------------------------" << std::endl;
+    fitInfoCollection.sortByChi2();
+    fitInfoCollection.printBestCuts( 5 );
+    fitInfoCollection.plotBestCuts( 5, plotDirectory );
+    std::cout << "--------------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------------------------------------------------------" << std::endl;
+    constexpr double epsilon = 0.01;
+    fitInfoCollection.sortByLossFunction( epsilon );
+    fitInfoCollection.printBestCuts( 5 );
+    fitInfoCollection.plotBestCuts( 5, plotDirectory );
 }
 
 
-int main(){
-    tuneFOSelection( "muon" );
+void runTuningAsJob( const std::string& flavor, const std::string& year ){
+	std::string scriptName = "tuneFOSelection_" + flavor + "_" + year + ".sh";
+    std::ofstream jobScript( scriptName );
+    systemTools::initJobScript( jobScript );
+    jobScript << "./tuneFOSelection " << flavor << year << "\n";
+    jobScript.close();
+    systemTools::submitScript( scriptName, "100:00:00" );
+}
+
+
+int main( int argc, char* argv[] ){
+
+    std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
+
+    std::string sampleDirectory = "../test/testData/";
+    if( argc == 3 ){
+        std::string flavor = argvStr[1];
+        std::string year = argvStr[2]; 
+
+        if( !( flavor == "muon" || flavor == "electron" ) ){
+            throw std::invalid_argument( "Given flavor argument is '" + flavor + "' while it must be either 'muon' or 'electron'" );
+        }
+        
+        if( !( year == "2016" || year == "2017" || year == "2018" ) ){
+            throw std::invalid_argument( "Given year argument is '" + year + "' while it must be either '2016', '2017' or '2018'" );
+        }
+
+        tuneFOSelection( flavor, year, sampleDirectory );
+    } else if( argc == 1 ){
+        for( auto& year : std::vector< std::string >( { "2016", "2017", "2018" } ) ){
+            for( auto& flavor : std::vector< std::string >( {"muon", "electron"} ) ){
+				runTuningAsJob( flavor, year );
+            }
+        }
+    } else if( argc == 2 ){
+		std::string year = argvStr[1];
+        if( !( year == "2016" || year == "2017" || year == "2018" ) ){
+            throw std::invalid_argument( "Given year argument is '" + year + "' while it must be either '2016', '2017' or '2018'" );
+        }
+		
+        for( auto& flavor : std::vector< std::string >( {"muon", "electron"} ) ){
+			runTuningAsJob( flavor, year );
+        }
+	}
     return 0;
 }

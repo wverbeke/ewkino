@@ -32,6 +32,11 @@ void systemTools::makeFile( const std::string& fileName ){
 }
 
 
+void systemTools::makeDirectory( const std::string& directoryName ){
+    systemTools::system( "mkdir -p " + directoryName );
+}
+
+
 void systemTools::sleep( unsigned seconds ){
     std::this_thread::sleep_for(std::chrono::milliseconds(seconds*1000));
 }
@@ -153,7 +158,7 @@ std::string systemTools::CMSSWDirectory(){
 
 
 //initialize a submission script for running on cluster
-std::ostream& systemTools::initScript(std::ostream& os, const std::string& CMSSWDir ){
+std::ostream& systemTools::initJobScript(std::ostream& os, const std::string& CMSSWDir ){
     if( CMSSWDir == "" ){
         os << "cd " << systemTools::CMSSWDirectory() << "\n";
     } else {
