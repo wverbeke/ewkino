@@ -17,20 +17,17 @@ The goal of the tuning is having a fake-rate (tight/FO) that is equal for light 
 #include "../Event/interface/Event.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
-#include "interface/CutsFitInfo.h"
 #include "../Tools/interface/systemTools.h"
+#include "interface/CutsFitInfo.h"
+#include "interface/fakeRateTools.h"
 
 
 void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, const std::string& sampleDirectory ){
 
-    bool isMuon;
-    if( leptonFlavor == "muon" ){
-        isMuon = true;
-    } else if( leptonFlavor == "electron" ){
-        isMuon = false;
-    } else {
-        throw std::invalid_argument( "leptonFlavor string should be either 'muon' or 'electron'." );
-    }
+    fakeRate::checkFlavorString( leptonFlavor );
+    bool isMuon = ( leptonFlavor == "muon" );
+
+    fakeRate::checkYearString( year );
 
     const double minPtRatioCut = 0;
     const double maxPtRatioCut = 1;
@@ -221,13 +218,8 @@ int main( int argc, char* argv[] ){
         std::string flavor = argvStr[1];
         std::string year = argvStr[2]; 
 
-        if( !( flavor == "muon" || flavor == "electron" ) ){
-            throw std::invalid_argument( "Given flavor argument is '" + flavor + "' while it must be either 'muon' or 'electron'" );
-        }
-        
-        if( !( year == "2016" || year == "2017" || year == "2018" ) ){
-            throw std::invalid_argument( "Given year argument is '" + year + "' while it must be either '2016', '2017' or '2018'" );
-        }
+        fakeRate::checkFlavorString( flavor );
+        fakeRate::checkYearString( year );
 
         tuneFOSelection( flavor, year, sampleDirectory );
     } else if( argc == 1 ){
@@ -238,10 +230,7 @@ int main( int argc, char* argv[] ){
         }
     } else if( argc == 2 ){
 		std::string year = argvStr[1];
-        if( !( year == "2016" || year == "2017" || year == "2018" ) ){
-            throw std::invalid_argument( "Given year argument is '" + year + "' while it must be either '2016', '2017' or '2018'" );
-        }
-		
+        fakeRate::checkYearString( year );
         for( auto& flavor : std::vector< std::string >( {"muon", "electron"} ) ){
 			runTuningAsJob( flavor, year );
         }

@@ -224,6 +224,7 @@ class TreeReader {
 
         //initialize the current sample directly from a root file
         void initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018 );
+        void initSampleFromFile( const std::string& pathToFile );
 
         //Get entry from Tree, should not be used except for test purposes
         void GetEntry(const Sample&, long unsigned );

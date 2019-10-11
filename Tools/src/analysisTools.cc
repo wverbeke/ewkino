@@ -5,6 +5,10 @@
 #include <string>
 #include <fstream>
 
+//include other parts of framework
+#include "../interface/stringTools.h"
+
+
 void analysisTools::printProgress( double progress ){
     const unsigned barWidth = 100;
     std::cout << "[";
@@ -101,4 +105,42 @@ void analysisTools::printDataCard(const std::string& cardName, const double obsY
     }
     
     card.close();		
+}
+
+
+//check what year a sample file corresponds to
+bool analysisTools::fileIs2017( const std::string& filePath ){
+    return ( stringTools::stringContains( filePath, "MiniAOD2017" ) 
+        || stringTools::stringContains( filePath, "Run2017" ) 
+        || stringTools::stringContains( filePath, "Fall17" )
+        || stringTools::stringEndsWith( filePath, "2017.root" )
+        || stringTools::stringStartsWith( stringTools::fileNameFromPath( filePath ), "2017" )
+    );
+}
+
+
+bool analysisTools::fileIs2018( const std::string& filePath ){
+    return ( stringTools::stringContains( filePath, "MiniAOD2018" ) 
+        || stringTools::stringContains( filePath, "Run2018" ) 
+        || stringTools::stringContains( filePath, "Autumn18" )
+        || stringTools::stringEndsWith( filePath, "2018.root" )
+        || stringTools::stringStartsWith( stringTools::fileNameFromPath( filePath ), "2018" )
+    );
+}
+
+
+bool analysisTools::fileIs2016( const std::string& filePath ){
+    return !( analysisTools::fileIs2017( filePath ) || analysisTools::fileIs2018( filePath ) );
+}
+
+
+std::pair< bool, bool > analysisTools::fileIs2017Or2018( const std::string& filePath ){
+    bool is2017 = fileIs2017( filePath );
+    bool is2018 = fileIs2018( filePath );
+
+    //check consistency
+    if( is2017 && is2018 ){
+        throw std::invalid_argument( "File '" + filePath + "' is flagged as both 2017 and 2018, and should only be one of the two." );
+    }
+    return { is2017, is2018 };
 }

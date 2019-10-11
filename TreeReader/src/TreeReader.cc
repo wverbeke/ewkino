@@ -9,6 +9,7 @@
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/systemTools.h"
+#include "../../Tools/interface/analysisTools.h"
 #include "../../Event/interface/Event.h"
 
 
@@ -261,6 +262,15 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
 }
 
 
+//automatically determine whether sample is 2017 or 2018 from file name 
+void TreeReader::initSampleFromFile( const std::string& pathToFile ){
+    
+    std::pair< bool, bool > is2017Or2018 = analysisTools::fileIs2017Or2018( pathToFile );
+    
+    initSampleFromFile( pathToFile, is2017Or2018.first, is2017Or2018.second );
+}
+
+
 void TreeReader::GetEntry( const Sample& samp, long unsigned entry ){
     checkCurrentTree();
 
@@ -454,7 +464,7 @@ void TreeReader::initTree(){
     currentTreePtr->SetBranchAddress("_metPhiUnclDown", &_metPhiUnclDown, &b__metPhiUnclDown);
     currentTreePtr->SetBranchAddress("_metPhiUnclUp", &_metPhiUnclUp, &b__metPhiUnclUp);
     currentTreePtr->SetBranchAddress("_metSignificance", &_metSignificance, &b__metSignificance);
-
+    
     if( containsGeneratorInfo() ){
         currentTreePtr->SetBranchAddress("_weight", &_weight, &b__weight);
         currentTreePtr->SetBranchAddress("_nLheWeights", &_nLheWeights, &b__nLheWeights);
