@@ -74,14 +74,11 @@ int main( int argc, char* argv[] ){
         return -1;
     }
 
-    std::vector< std::string > argvStr;
-    for( int i = 1; i < argc; ++i ){
-        argvStr.push_back( argv[i] );
-    }
+    std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
 
-    std::string& input_file_path = argvStr[0];
-    std::string& output_directory = argvStr[1];
-    std::string& skimCondition = argvStr[2];
+    std::string& input_file_path = argvStr[1];
+    std::string& output_directory = argvStr[2];
+    std::string& skimCondition = argvStr[3];
     skimFile( input_file_path, output_directory, skimCondition );
 
     return 0;
