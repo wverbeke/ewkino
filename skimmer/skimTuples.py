@@ -9,9 +9,9 @@ from fileListing import *
 
 
 def yearIdentifierFromPath( sample_path ):
-    if 'MiniAOD2018' in sample_path :
+    if 'MiniAOD2018' in sample_path or 'Run2018' in sample_path :
         return 'Autumn18'
-    elif 'MiniAOD2017' in sample_path :
+    elif 'MiniAOD2017' in sample_path or 'Run2017' in sample_path :
         return 'Fall17'
     else :
         return 'Summer16'
