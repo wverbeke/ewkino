@@ -22,8 +22,8 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
     std::cout << "skimming " << pathToFile << std::endl;
 
     //check which year the file belongs to 
-    bool is2017 = stringTools::stringContains( pathToFile, "MiniAOD2017" );
-    bool is2018 = stringTools::stringContains( pathToFile, "MiniAOD2018" );
+    bool is2017 = stringTools::stringContains( pathToFile, "MiniAOD2017" ) || stringTools::stringContains( pathToFile, "Run2017" );
+    bool is2018 = stringTools::stringContains( pathToFile, "MiniAOD2018" ) || stringTools::stringContains( pathToFile, "Run2018" );
     if( is2017 && is2018 ){
         throw std::logic_error( "is2017 and is2018 are both true, which is not allowed." );
     }
