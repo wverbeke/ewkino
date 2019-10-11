@@ -8,6 +8,7 @@
 //include other parts of analysis framework
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Tools/interface/stringTools.h"
+#include "../../Tools/interface/systemTools.h"
 #include "../../Event/interface/Event.h"
 
 
@@ -237,6 +238,11 @@ void TreeReader::initSample(){
 
 //initialize the current Sample directly from a root file, this is used when skimming
 void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018 ){
+
+    //check if file exists 
+    if( !systemTools::fileExists( pathToFile ) ){
+        throw std::invalid_argument( "File '" + pathToFile + "' does not exist." );
+    }
 
     currentFilePtr = std::shared_ptr< TFile >( new TFile( pathToFile.c_str() ) );
 
