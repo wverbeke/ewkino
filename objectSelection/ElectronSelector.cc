@@ -53,6 +53,17 @@ double WP80MVACut( const Electron& electron ){
 }
 
 
+double WP90MVACut( const Electron& electron ){
+    unsigned category = electronMVACategory( electron );
+    if( category == 0 ) return 2.84704783417 - std::exp( -electron.pt() / 3.32529515837 ) * 9.38050947827;
+    else if( category == 1 ) return 2.03833922005 - std::exp( -electron.pt() / 1.93288758682 ) * 15.364588247;
+    else if( category == 2 ) return 1.82704158461 - std::exp( -electron.pt() / 1.89796754399 ) * 19.1236071158;
+    else if( category == 3 ) return 6.12931925263 - std::exp( -electron.pt() / 13.281753835 ) * 8.71138432196;
+    else if( category == 4 ) return 5.26289004857 - std::exp( -electron.pt() / 13.2154971491 ) * 8.0997882835;
+    else return 4.37338792902 - std::exp( -electron.pt() / 14.0776094696 ) * 8.48513324496;
+}
+
+
 bool passMVALoose( const Electron& electron ){
 	double rawMVA = rawElectronMVA( electron.electronMVAFall17NoIso() );
     return rawMVA > looseMVACut( electron );
@@ -63,6 +74,13 @@ bool passMVAWP80( const Electron& electron ){
 	double rawMVA = rawElectronMVA( electron.electronMVAFall17NoIso() );
     return rawMVA > WP80MVACut( electron );
 }
+
+
+bool passMVAWP90( const Electron& electron ){
+    double rawMVA = rawElectronMVA( electron.electronMVAFall17NoIso() );
+    return rawMVA > WP90MVACut( electron );
+}
+
 
 double leptonMVACutElectron(){
     return 0.8;
