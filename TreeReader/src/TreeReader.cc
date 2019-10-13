@@ -9,6 +9,7 @@
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/systemTools.h"
+#include "../../Tools/interface/analysisTools.h"
 #include "../../Event/interface/Event.h"
 
 
@@ -127,7 +128,7 @@ bool TreeReader::containsSUSYMassInfo() const{
 
 
 bool TreeReader::isData() const{
-    if( currentSamplePtr != nullptr ){
+    if( currentSamplePtr ){
         return currentSamplePtr->isData();
     } else {
         return !containsGeneratorInfo();
@@ -141,7 +142,7 @@ bool TreeReader::isMC() const{
 
 
 void TreeReader::checkCurrentSample() const{
-    if( currentSamplePtr == nullptr ){
+    if( !currentSamplePtr ){
         throw std::domain_error( "pointer to current Sample is nullptr." );
     }
 }
@@ -200,7 +201,8 @@ long unsigned TreeReader::numberOfEntries() const{
 void TreeReader::initSample( const Sample& samp ){ 
 
     //update current sample
-    currentSamplePtr = &samp;
+    //I wonder if the extra copy can be avoided here, its however hard if we want to keep the functionality of reading the sample vector, and also having the function initSampleFromFile. It's not clear how we can make a new sample in one of them and refer to an existing one in the other. It can be done with a static Sample in 'initSampleFromFile', but this makes the entire TreeReader class unthreadsafe, so no parallel sample processing in one process can be done 
+    currentSamplePtr = std::make_shared< Sample >( samp );
     currentFilePtr = samp.filePtr();
 
     //Warning: this pointer is overwritten, but it is not a memory leak. ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
@@ -252,12 +254,19 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
 
     //make a new sample, and make sure the pointer remains valid
     //new is no option here since this would also require a destructor for the class which does not work for the other initSample case
-    static Sample samp;
-    samp = Sample( pathToFile, is2017, is2018, isData() );
-    currentSamplePtr = &samp;
+    currentSamplePtr = std::make_shared< Sample >( pathToFile, is2017, is2018, isData() );
 
     //initialize tree
     initTree();
+}
+
+
+//automatically determine whether sample is 2017 or 2018 from file name 
+void TreeReader::initSampleFromFile( const std::string& pathToFile ){
+    
+    std::pair< bool, bool > is2017Or2018 = analysisTools::fileIs2017Or2018( pathToFile );
+    
+    initSampleFromFile( pathToFile, is2017Or2018.first, is2017Or2018.second );
 }
 
 
@@ -454,7 +463,7 @@ void TreeReader::initTree(){
     currentTreePtr->SetBranchAddress("_metPhiUnclDown", &_metPhiUnclDown, &b__metPhiUnclDown);
     currentTreePtr->SetBranchAddress("_metPhiUnclUp", &_metPhiUnclUp, &b__metPhiUnclUp);
     currentTreePtr->SetBranchAddress("_metSignificance", &_metSignificance, &b__metSignificance);
-
+    
     if( containsGeneratorInfo() ){
         currentTreePtr->SetBranchAddress("_weight", &_weight, &b__weight);
         currentTreePtr->SetBranchAddress("_nLheWeights", &_nLheWeights, &b__nLheWeights);

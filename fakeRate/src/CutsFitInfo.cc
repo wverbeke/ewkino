@@ -79,11 +79,6 @@ std::string CutsFitInfo::cutsString() const{
 
 
 void CutsFitInfo::makePlots( const std::string& outputDirectory ) const{
-    static bool tdrStyleSet = false;
-    if( !tdrStyleSet ){
-        setTDRStyle();
-        tdrStyleSet = true;
-    }
 
     //plot ratio of fake-rates
     fakeRateRatio->GetYaxis()->SetTitle("heavy-flavor/light-flavor fake-rate");

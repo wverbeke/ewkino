@@ -1,9 +1,9 @@
-CC=g++ -Wall -Wextra
+CC=g++ -Wall -Wextra -O3
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= determineMagicFactor.cc ../codeLibrary.o src/fakeRateTools.cc
+SOURCES= combinePD.cc ../codeLibrary.o 
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=determineMagicFactor
+EXECUTABLE=combinePD
 
 all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)

@@ -1,9 +1,9 @@
-CC=g++ -Wall -Wextra
-CFLAGS= -Wl,--no-as-needed
+CC=g++ -Wall -Wextra -O3
+CFLAGS= -Wl,--no-as-needed,-lpthread
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= determineMagicFactor.cc ../codeLibrary.o src/fakeRateTools.cc
+SOURCES= sync.cc ../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=determineMagicFactor
+EXECUTABLE=sync
 
 all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)

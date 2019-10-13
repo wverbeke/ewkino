@@ -17,7 +17,7 @@ void histcol(TH1D*, const Color_t);
 void StackCol(TH1D*, const Color_t);
 
 //Set Histogram labelsizes
-void HistLabelSizes(TH1D* h, const double xLabel = 0.045, const double xTitle = 0.05, const double yLabel = 0.045, const double yTitle = 0.045);
+void HistLabelSizes(TH1* h, const double xLabel = 0.045, const double xTitle = 0.05, const double yLabel = 0.045, const double yTitle = 0.045);
 
 //Order histograms in terms of yields (biggest first)
 void yieldOrder(TH1D**);
@@ -32,5 +32,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized = false, const bool log = false);
 void plotHistograms(TH1D* hist, const std::string& name, const std::string& file, const bool log = false);
 void plotHistograms(std::vector<TH1D*>& histos, const std::string* names, const std::string& file, const bool normalized = false, const bool log = false);
+
+//plot 2D histogram
+void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::string& drawOption = "colztexte" );
 
 #endif

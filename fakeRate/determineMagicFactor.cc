@@ -17,19 +17,13 @@ The border between FO and tight is a lepton MVA cut, and we want to avoid a disc
 #include "../Event/interface/Event.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
+#include "interface/fakeRateTools.h"
 
 
 void determineMagicFactor( const std::string& leptonFlavor, const double mvaThreshold ){
 
-    bool isMuon;
-    if( leptonFlavor == "muon" ){
-        isMuon = true;
-    } else if( leptonFlavor == "electron" ){
-        isMuon = false;
-    } else {
-        throw std::invalid_argument( "leptonFlavor string should be either 'muon' or 'electron'." );
-    }
-    
+    fakeRate::checkFlavorString( leptonFlavor );
+    bool isMuon = ( leptonFlavor == "muon" );
 
     const unsigned numberOfBins = 80;
     std::shared_ptr< TH1D > pTWeightedLeptonMVAHistogram = std::make_shared< TH1D >( "pTLeptonMVA", "pTLeptonMVA;lepton MVA;Average p_{T}^{cone} (GeV)", numberOfBins, -1, 1 );
@@ -76,9 +70,7 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
     }
     pTWeightedLeptonMVAHistogram->Divide( LeptonMVAHistogram.get() );
 
-    //set CMS plotting style 
-   	setTDRStyle();
-
+    //don't draw statistics information
     pTWeightedLeptonMVAHistogram.get()->SetStats( 0 );
     plotHistograms(pTWeightedLeptonMVAHistogram.get(), "", "averagePTVSLeptonMVA_" + leptonFlavor, false);
 

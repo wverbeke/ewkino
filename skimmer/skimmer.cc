@@ -21,16 +21,9 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
 
     std::cout << "skimming " << pathToFile << std::endl;
 
-    //check which year the file belongs to 
-    bool is2017 = stringTools::stringContains( pathToFile, "MiniAOD2017" ) || stringTools::stringContains( pathToFile, "Run2017" );
-    bool is2018 = stringTools::stringContains( pathToFile, "MiniAOD2018" ) || stringTools::stringContains( pathToFile, "Run2018" );
-    if( is2017 && is2018 ){
-        throw std::logic_error( "is2017 and is2018 are both true, which is not allowed." );
-    }
-
     //initialize TreeReader
     TreeReader treeReader;
-    treeReader.initSampleFromFile( pathToFile, is2017, is2018 );
+    treeReader.initSampleFromFile( pathToFile );
 
     //make output ROOT file
     std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory ) + stringTools::removeOccurencesOf( pathToFile, "/" );
@@ -74,14 +67,11 @@ int main( int argc, char* argv[] ){
         return -1;
     }
 
-    std::vector< std::string > argvStr;
-    for( int i = 1; i < argc; ++i ){
-        argvStr.push_back( argv[i] );
-    }
+    std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
 
-    std::string& input_file_path = argvStr[0];
-    std::string& output_directory = argvStr[1];
-    std::string& skimCondition = argvStr[2];
+    std::string& input_file_path = argvStr[1];
+    std::string& output_directory = argvStr[2];
+    std::string& skimCondition = argvStr[3];
     skimFile( input_file_path, output_directory, skimCondition );
 
     return 0;

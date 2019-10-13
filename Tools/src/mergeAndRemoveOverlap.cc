@@ -5,19 +5,20 @@
 
 //include other parts of framework
 #include "../../Tools/interface/stringTools.h"
+#include "../../Tools/interface/analysisTools.h"
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../Event/interface/EventTags.h"
 #include "../../Event/interface/Event.h"
 
 
-bool is2017FilePath( const std::string& filePath ){
-    return ( stringTools::stringContains( filePath, "2017" ) || stringTools::stringContains( filePath, "Fall17" ) );
-}
-
-
-bool is2018FilePath( const std::string& filePath ){
-    return ( stringTools::stringContains( filePath, "2018" ) || stringTools::stringContains( filePath, "Autumn18" ) );
-}
+//bool is2017FilePath( const std::string& filePath ){
+//    return ( stringTools::stringContains( filePath, "2017" ) || stringTools::stringContains( filePath, "Fall17" ) );
+//}
+//
+//
+//bool is2018FilePath( const std::string& filePath ){
+//    return ( stringTools::stringContains( filePath, "2018" ) || stringTools::stringContains( filePath, "Autumn18" ) );
+//}
 
 
 bool yearsAreConsistent( const std::vector< std::string >& inputPathVector ){
@@ -25,12 +26,12 @@ bool yearsAreConsistent( const std::vector< std::string >& inputPathVector ){
     //index specifying the year of the previous file 
     int previousYearIndex = -1;
     for( const auto& inputFilePath : inputPathVector ){
-        bool is2017 = is2017FilePath( inputFilePath );
-        bool is2018 = is2018FilePath( inputFilePath );
+        
+        std::pair< bool, bool > is2017Or2018 = analysisTools::fileIs2017Or2018( inputFilePath );
 
         //from the second file onwards, check that all files have the same year 
         if( previousYearIndex != -1 ){
-            int yearIndex = 1*( is2017 ) + 2*( is2018 );
+            int yearIndex = 1*( is2017Or2018.first ) + 2*( is2017Or2018.second );
             if( yearIndex != previousYearIndex ){
                 return false;
             }
@@ -93,14 +94,8 @@ void mergeAndRemoveOverlap( const std::vector< std::string >& inputPathVector, c
 
         const auto& inputFilePath = *inputPathIt;
 
-        bool is2017 = is2017FilePath( inputFilePath );
-        bool is2018 = is2018FilePath( inputFilePath );
-        if( is2017 && is2018 ){
-            throw std::logic_error( "is2017 and is2018 are both true, which is not allowed." );
-        }
-
         //open next sample
-        treeReader.initSampleFromFile( inputFilePath, is2017, is2018 );
+        treeReader.initSampleFromFile( inputFilePath );
         outputTreePtr->SetDirectory( outputFilePtr );
 
         //set output histograms and output tree for first file
