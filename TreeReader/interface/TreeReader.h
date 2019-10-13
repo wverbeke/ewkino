@@ -351,7 +351,7 @@ class TreeReader {
         std::vector< Sample > samples2018;
 
         //current sample
-        const Sample* currentSamplePtr = nullptr;                                      
+        std::shared_ptr< const Sample > currentSamplePtr;
 
         //TFile associated to current sample
         std::shared_ptr< TFile > currentFilePtr;
