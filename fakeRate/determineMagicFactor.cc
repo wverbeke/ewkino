@@ -37,7 +37,7 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
     std::shared_ptr< TH1D > LeptonMVAHistogram = std::make_shared< TH1D >( "leptonMVA", "leptonMVA;lepton MVA;Events", numberOfBins, -1, 1 );
     LeptonMVAHistogram->Sumw2();
 
-	TreeReader treeReader( "samples_magicFactor.txt", "../test/testData");
+	TreeReader treeReader( "samples_magicFactor.txt", "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate/");
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
         //load next sample
@@ -52,10 +52,6 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
             event.selectLooseLeptons();
         
             for( const auto& leptonPtr : event.lightLeptonCollection() ){
-
-                //only consider nonprompt leptons not from photons 
-                if( leptonPtr->isPrompt() ) continue;
-                if( leptonPtr->matchPdgId() == 22 ) continue;
 
                 //select correct lepton flavor
                 if( isMuon && !leptonPtr->isMuon() ) continue;

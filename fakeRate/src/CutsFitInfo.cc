@@ -32,6 +32,7 @@ CutsFitInfo::CutsFitInfo( const std::shared_ptr< TH1D >& heavyFlavorFakeRateHist
     double maxBin = heavyFlavorFakeRate->GetBinLowEdge( heavyFlavorFakeRate->GetNbinsX() ) + heavyFlavorFakeRate->GetBinWidth( heavyFlavorFakeRate->GetNbinsX() );
     std::shared_ptr< TF1 > constFunc = std::make_shared< TF1 >( "constFunc", "[0]", minBin, maxBin );
     fakeRateRatio->Fit( "constFunc", "Q" ); //Q = quiet mode
+    fakeRateRatio->Fit( "constFunc", "Q" ); // hack : fit twice for a better result
 
     //extract fit value and normalized chi2
     fitVal = constFunc->GetParameter( 0 );
@@ -120,6 +121,7 @@ void CutsFitInfoCollection::sortByLossFunction( const double epsilon ){
 
 void CutsFitInfoCollection::printBestCuts( size_type numberOfCuts, std::ostream& os ) const{
     if( numberOfCuts == 0 ) numberOfCuts = size();
+    if( numberOfCuts > size() ) numberOfCuts = size();
     for( size_type i = 0; i < numberOfCuts; ++i ){
         os << collection[i] << std::endl;
     }
@@ -128,6 +130,7 @@ void CutsFitInfoCollection::printBestCuts( size_type numberOfCuts, std::ostream&
 
 void CutsFitInfoCollection::plotBestCuts( size_type numberOfCuts, const std::string& outputDirectory ) const{
     if( numberOfCuts == 0 ) numberOfCuts = size();
+    if( numberOfCuts > size() ) numberOfCuts = size();
     for( size_type i = 0; i < numberOfCuts; ++i ){
         collection[i].makePlots( outputDirectory );
     }

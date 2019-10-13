@@ -9,7 +9,7 @@ Jet ID selection
 
 bool JetSelector::isGoodBase() const{
     if( jetPtr->pt() < 25 ) return false;
-    if( fabs( jetPtr->eta() ) > 5 ) return false;
+    if( fabs( jetPtr->eta() ) > 2.4 ) return false;
     if( !jetPtr->isTight() ) return false;
     return true;
 }
