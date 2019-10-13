@@ -41,7 +41,7 @@ void StackCol(TH1D* h, const Color_t color){
 
 
 //set histogram axis and label sizes simulataneously
-void HistLabelSizes(TH1D* h, const double xLabel, const double xTitle, const double yLabel, const double yTitle){
+void HistLabelSizes(TH1* h, const double xLabel, const double xTitle, const double yLabel, const double yTitle){
     h->GetXaxis()->SetLabelSize(xLabel);
     h->GetXaxis()->SetTitleSize(xTitle);
     h->GetYaxis()->SetLabelSize(yLabel);
@@ -614,15 +614,28 @@ void plotHistograms(std::vector<TH1D*>& histos, const std::string* names, const 
 
 void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::string& drawOption ){
     
+    //threading lock since root seems to misbehave when plotting multithreaded!
+    //is there a lockless solution for this? Try to find out!
+    static std::mutex plotMutex;
     initializeTDRStyle();
 
+    plotMutex.lock();
     static constexpr double width = 500;
     static constexpr double height = 500;
     std::shared_ptr< TCanvas > c = std::make_shared< TCanvas >( outputFileName.c_str(), outputFileName.c_str(), width, height );
+
+    //set offset and label size 
+    hist->GetXaxis()->SetTitleOffset( 0.75 );
+	hist->GetXaxis()->SetTitleSize( 0.07 );
+    hist->GetYaxis()->SetTitleOffset( 1 );
+    hist->GetYaxis()->SetTitleSize( 0.07 );
+
     hist->Draw( drawOption.c_str() );
-        
+
     //make sure that the pdf file extension is always added, and not double added in case it was given as an argument
     std::string outputPath = stringTools::fileNameWithoutExtension( outputFileName ) + ".pdf";
     c->SaveAs( outputPath.c_str() );
+
+    plotMutex.unlock();
 }
 

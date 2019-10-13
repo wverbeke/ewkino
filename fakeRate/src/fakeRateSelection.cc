@@ -122,7 +122,8 @@ bool passFakeRateEventSelection( Event& event, bool isMuonMeasurement, bool only
     //Require the presence of just one lepton, and veto a second loose lepton
     event.cleanElectronsFromLooseMuons();
     event.cleanTausFromLooseLightLeptons();
-    if( event.numberOfLooseLeptons() != 1 ){
+    event.selectLooseLeptons();
+    if( event.numberOfLightLeptons() != 1 ){
         return false;
     }
 
@@ -132,14 +133,14 @@ bool passFakeRateEventSelection( Event& event, bool isMuonMeasurement, bool only
     } else {
         event.selectFOLeptons();
     }
-    if( event.numberOfLeptons() != 1 ){
+    if( event.numberOfLightLeptons() != 1 ){
         return false;
     }
 
     //IMPORTANT : apply cone correction
     event.applyLeptonConeCorrection();
 
-    Lepton& lepton = event.lepton( 0 );
+    Lepton& lepton = event.lightLeptonCollection()[ 0 ];
 
     //select correct lepton flavor
     if( isMuonMeasurement ){

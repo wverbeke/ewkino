@@ -17,7 +17,7 @@ void histcol(TH1D*, const Color_t);
 void StackCol(TH1D*, const Color_t);
 
 //Set Histogram labelsizes
-void HistLabelSizes(TH1D* h, const double xLabel = 0.045, const double xTitle = 0.05, const double yLabel = 0.045, const double yTitle = 0.045);
+void HistLabelSizes(TH1* h, const double xLabel = 0.045, const double xTitle = 0.05, const double yLabel = 0.045, const double yTitle = 0.045);
 
 //Order histograms in terms of yields (biggest first)
 void yieldOrder(TH1D**);

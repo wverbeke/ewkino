@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra -O3
+CFLAGS= -Wl,--no-as-needed,-lpthread
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= fakeRateMeasurement_MC.cc ../codeLibrary.o src/fakeRateTools.cc src/fakeRateSelection.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=fakeRateMeasurement_MC
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
