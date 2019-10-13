@@ -1,19 +1,27 @@
-//include c++ library classesQ
+
+//include c++ library classes
 #include <algorithm>
 #include <math.h>
 #include <iterator>
 #include <utility>
 #include <iostream>
+#include <mutex>
+
 //include Root classes
 #include "TCanvas.h"
 #include "TLine.h"
 #include "TGraphAsymmErrors.h"
+
 //Include other parts of the code
 #include "plotCode.h"
 #include "drawLumi.h"
+#include "tdrStyle.h"
+#include "../Tools/interface/stringTools.h"
+
 
 //fraction of height of canvas allocated to the ratio plot
-const double xPad = 0.25;
+constexpr double xPad = 0.25;
+
 
 //set color of histogram to be plotted separately
 void histcol(TH1D* h, const Color_t color){
@@ -21,6 +29,8 @@ void histcol(TH1D* h, const Color_t color){
     h->SetMarkerColor(color);
     h->SetLineWidth(2);
 }
+
+
 //set color of histogram to be plotted in a stack
 void StackCol(TH1D* h, const Color_t color){
     histcol(h,color);
@@ -28,6 +38,8 @@ void StackCol(TH1D* h, const Color_t color){
     h->SetLineWidth(1);
     h->SetLineColor(kBlack); //black line between the stack elements
 }
+
+
 //set histogram axis and label sizes simulataneously
 void HistLabelSizes(TH1D* h, const double xLabel, const double xTitle, const double yLabel, const double yTitle){
     h->GetXaxis()->SetLabelSize(xLabel);
@@ -35,6 +47,8 @@ void HistLabelSizes(TH1D* h, const double xLabel, const double xTitle, const dou
     h->GetYaxis()->SetLabelSize(yLabel);
     h->GetYaxis()->SetTitleSize(yTitle);
 }
+
+
 //Order an array of histograms by yield
 void yieldOrder(TH1D** hists, const unsigned nHist, const bool* isSMSignal){
     if(isSMSignal == nullptr){  //No SM signal that has to be stacked on top
@@ -56,6 +70,7 @@ void yieldOrder(TH1D** hists, const unsigned nHist, const bool* isSMSignal){
     }
 }
 
+
 Color_t bkgColorEWK(const std::string& bkgName){
     if(bkgName == "non-prompt") return kAzure + 1;
     else if(bkgName == "WZ") return kOrange;
@@ -66,6 +81,7 @@ Color_t bkgColorEWK(const std::string& bkgName){
     else if(bkgName == "T + X") return kCyan + 1;
     else return kBlack;
 }
+
 
 Color_t bkgColorEWKDilept(const std::string bkgName){
     if(bkgName == "DY") return kAzure + 1;
@@ -78,6 +94,7 @@ Color_t bkgColorEWKDilept(const std::string bkgName){
     else if(bkgName == "T + X") return kMagenta -7;
     else return kBlack;
 }
+
 
 Color_t bkgColorHNL(const std::string& bkgName){
     if(bkgName == "non-prompt") return kAzure + 1;
@@ -181,8 +198,17 @@ double minBinContentPlusError(TH1D** histos, const unsigned nHistos){
 }
 
 
+//call setTDRStyle exactly once, and ensure it is thread-safe
+void initializeTDRStyle(){
+    static std::once_flag flag;
+    std::call_once( flag, setTDRStyle );
+}
+
+
 //plot a stack of backgrounds and compare it to data
 void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D* bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
+
+    initializeTDRStyle();
     
     //do not make empty plots
     bool isEmpty = true;
@@ -497,6 +523,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
 void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized, const bool log){
 
+    initializeTDRStyle();
+
 	if( nHistos < 1){
 		std::cerr << "Error in plot function : argument smaller than 1 given for number of histograms! Returning control." << std::endl;
 		return;
@@ -528,8 +556,8 @@ void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* na
     double minBinValue = minBinContentPlusError( histoClones, nHistos );
 
 	//make canvas
-	static const double width = 500;
-	static const double height = 500;
+	static constexpr double width = 500;
+	static constexpr double height = 500;
 	TCanvas* c = new TCanvas( file.c_str() ,"" , width, height);
 
 	//set range on first histogram
@@ -553,8 +581,8 @@ void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* na
     }
 
     //make and draw legend
+	TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
     if( nHistos > 1 ){
-	    TLegend legend = TLegend(0.2,0.8,0.95,0.9,NULL,"brNDC");
         legend.SetNColumns(4);
         legend.SetFillStyle(0); //avoid legend box
 	    for(unsigned h = 0; h < nHistos; ++h){
@@ -581,5 +609,20 @@ void plotHistograms(TH1D* hist, const std::string& name, const std::string& file
     
 void plotHistograms(std::vector<TH1D*>& histos, const std::string* names, const std::string& file, const bool normalized, const bool log){
     return plotHistograms( &histos[0], histos.size(), names, file, normalized, log);
+}
+
+
+void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::string& drawOption ){
+    
+    initializeTDRStyle();
+
+    static constexpr double width = 500;
+    static constexpr double height = 500;
+    std::shared_ptr< TCanvas > c = std::make_shared< TCanvas >( outputFileName.c_str(), outputFileName.c_str(), width, height );
+    hist->Draw( drawOption.c_str() );
+        
+    //make sure that the pdf file extension is always added, and not double added in case it was given as an argument
+    std::string outputPath = stringTools::fileNameWithoutExtension( outputFileName ) + ".pdf";
+    c->SaveAs( outputPath.c_str() );
 }
 

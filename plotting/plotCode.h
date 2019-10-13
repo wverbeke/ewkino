@@ -33,4 +33,7 @@ void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* na
 void plotHistograms(TH1D* hist, const std::string& name, const std::string& file, const bool log = false);
 void plotHistograms(std::vector<TH1D*>& histos, const std::string* names, const std::string& file, const bool normalized = false, const bool log = false);
 
+//plot 2D histogram
+void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::string& drawOption = "colztexte" );
+
 #endif

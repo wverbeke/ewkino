@@ -74,9 +74,7 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
     }
     pTWeightedLeptonMVAHistogram->Divide( LeptonMVAHistogram.get() );
 
-    //set CMS plotting style 
-   	setTDRStyle();
-
+    //don't draw statistics information
     pTWeightedLeptonMVAHistogram.get()->SetStats( 0 );
     plotHistograms(pTWeightedLeptonMVAHistogram.get(), "", "averagePTVSLeptonMVA_" + leptonFlavor, false);
 
