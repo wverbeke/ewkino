@@ -366,7 +366,7 @@ void submitDataCardJob( const std::string& dataCardPath, const std::string& CMSS
     std::string cardName = stringTools::fileNameWithoutExtension( stringTools::fileNameFromPath( dataCardPath ) );
     std::string scriptName = "job_" + cardName + ".sh";
     std::ofstream jobScript( scriptName );
-    systemTools::initScript( jobScript, CMSSWDirectory );
+    systemTools::initJobScript( jobScript, CMSSWDirectory );
     std::string outputFileName = "output_" + cardName + ".txt";
     jobScript << "combine -M FitDiagnostics " << dataCardPath << " > " << outputFileName << " 2>> " << outputFileName << "\n";
     jobScript.close();
