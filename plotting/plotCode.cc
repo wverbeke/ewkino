@@ -504,8 +504,9 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     line.Draw("same");
 
     //save canvas to file
-    c->SaveAs((const TString&) file + ".pdf");
-    c->SaveAs((const TString&) file + ".png");
+    std::string outputPath = stringTools::fileNameWithoutExtension( file );
+    c->SaveAs( ( outputPath + ".pdf" ).c_str() );
+    c->SaveAs( ( outputPath + ".png" ).c_str() );
     
     //Clean up memory 
     delete dataGraph;
@@ -592,8 +593,9 @@ void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* na
     }
 
 	//save canvas
-    c->SaveAs( std::string(file + ".pdf").c_str() );
-    c->SaveAs( std::string(file + ".png").c_str() );
+    std::string outputPath = stringTools::fileNameWithoutExtension( file );
+    c->SaveAs( ( outputPath + ".pdf" ).c_str() );
+    c->SaveAs( ( outputPath + ".png" ).c_str() );
 
     for(unsigned h = 0; h < nHistos; ++h){
         delete histoClones[h];
