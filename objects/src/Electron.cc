@@ -19,7 +19,14 @@ Electron::Electron( const TreeReader& treeReader, const unsigned leptonIndex ):
     _isLoosePOGElectron( treeReader._lPOGLoose[leptonIndex] ),
     _isMediumPOGElectron( treeReader._lPOGMedium[leptonIndex] ),
     _isTightPOGElectron( treeReader._lPOGTight[leptonIndex] )
-    {}
+{
+    
+    //apply electron energy correction
+    setLorentzVector( treeReader._lPtCorr[ leptonIndex ], eta(), phi(), treeReader._lECorr[ leptonIndex ] );
+
+    //make sure also non-cone-corrected pt is set to the corrected value
+    _uncorrectedPt = pt();
+}
 
 
 Electron::Electron( const Electron& rhs ) :

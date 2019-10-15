@@ -37,6 +37,9 @@ class LightLepton : public Lepton {
         double leptonMVAtZq() const{ return _leptonMVAtZq; }
         double leptonMVAttH() const{ return _leptonMVAttH; }
 
+        //pT without cone-correction
+        double uncorrectedPt() const{ return _uncorrectedPt; }
+
         //check lepton type
         virtual bool isLightLepton() const override{ return true; }
         virtual bool isTau() const override{ return false; }
@@ -67,6 +70,10 @@ class LightLepton : public Lepton {
         double _leptonMVAttH = 0;
 
     protected: 
+
+        //pT of the lepton before applying cone-correction
+        double _uncorrectedPt;
+
         LightLepton( const LightLepton&, LeptonSelector* );
         LightLepton( LightLepton&&, LeptonSelector* );
         
