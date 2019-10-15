@@ -115,12 +115,27 @@ std::string stringTools::fileNameFromPath( const std::string& path ){
 }
 
 
+//replace all occurences of a substring with another string
+std::string stringTools::replace( const std::string& s, const std::string& oldstring, const std::string& newstring ){
+    std::string ret( s );
+    std::string::size_type pos;
+    while( ( pos = ret.find( oldstring ) ) != std::string::npos ){
+        ret.erase( pos, oldstring.size() );
+        ret.insert( pos, newstring );
+    }
+    return ret;
+}
+
+
 //remove all occurences of a substring from a string
 std::string stringTools::removeOccurencesOf( const std::string& s, const std::string& substring ){
+    return stringTools::replace( s, substring, "" );
+    /*
     std::string ret( s );
     std::string::size_type pos;
     while( ( pos = ret.find( substring ) ) != std::string::npos ){
         ret.erase( pos, substring.size() );
     }
     return ret;
+    */
 }
