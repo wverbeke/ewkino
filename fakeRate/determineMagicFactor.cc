@@ -47,10 +47,6 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
         
             for( const auto& leptonPtr : event.lightLeptonCollection() ){
 
-                //only consider nonprompt leptons not from photons 
-                if( leptonPtr->isPrompt() ) continue;
-                if( leptonPtr->matchPdgId() == 22 ) continue;
-
                 //select correct lepton flavor
                 if( isMuon && !leptonPtr->isMuon() ) continue;
                 if( !isMuon && !leptonPtr->isElectron() ) continue;
