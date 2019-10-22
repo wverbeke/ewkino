@@ -130,12 +130,56 @@ std::string stringTools::replace( const std::string& s, const std::string& oldst
 //remove all occurences of a substring from a string
 std::string stringTools::removeOccurencesOf( const std::string& s, const std::string& substring ){
     return stringTools::replace( s, substring, "" );
-    /*
-    std::string ret( s );
+}
+
+
+//split a string at every occurence of a substring
+std::vector< std::string > stringTools::split( const std::string& s, const std::string& substring ){
+    std::vector< std::string > ret;
+    std::string remainingString( s );
     std::string::size_type pos;
-    while( ( pos = ret.find( substring ) ) != std::string::npos ){
-        ret.erase( pos, substring.size() );
-    }
+    do{
+        pos = remainingString.find( substring );
+        ret.push_back( remainingString.substr( 0, pos ) );
+
+        //if the split string occurs several times in a row all occurences should be removed
+        while( ( pos != std::string::npos ) && ( remainingString.substr( pos + substring.size(), substring.size() ) == substring ) ){
+            remainingString.erase( 0, pos + substring.size() );
+            pos = remainingString.find( substring );
+        }
+
+        remainingString.erase( 0, pos + substring.size() );
+    } while( pos != std::string::npos );
+
     return ret;
-    */
+}
+
+
+//split a string at every occurence of a vector of substring 
+std::vector< std::string > stringTools::split( const std::string& s, const std::vector< std::string >& subStrings ){
+
+    if( subStrings.size() == 0 ){
+        return stringTools::split( s );
+    }
+    
+    //start by replacing each of the substrings with the first one  
+    std::string modifiedInput( s );
+    if( subStrings.size() > 1 ){
+        for( std::vector< std::string >::size_type i = 1; i < subStrings.size(); ++i ){
+            modifiedInput = stringTools::replace( modifiedInput, subStrings[i], subStrings[0] );
+        }
+    }
+
+    //now split on the first substring
+    return stringTools::split( modifiedInput, subStrings[0] );
+}
+
+
+std::vector< std::string > stringTools::split( const std::string& s, std::initializer_list< std::string > subStrings ){
+    return stringTools::split( s, std::vector< std::string >( subStrings ) );
+}
+
+
+std::vector< std::string > stringTools::split( const std::string& s ){
+    return stringTools::split( s, {"\t", " "} );
 }

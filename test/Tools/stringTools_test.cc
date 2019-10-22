@@ -4,6 +4,17 @@
 //include c++ library classes 
 #include <string>
 #include <iostream>
+#include <vector>
+
+std::string vectorToString( const std::vector< std::string >& vec ){
+    std::string ret = "{";
+    for( const auto& entry : vec ){
+        ret += "'" + entry + "', ";
+    }
+    ret = ret.substr( 0, ret.size() - 2 );
+    ret += "}";
+    return ret;
+}
 
 
 int main(){
@@ -32,6 +43,19 @@ int main(){
     result = stringTools::removeOccurencesOf( replace_test, "lillehammer" );
     if( result != "__" ){
         throw std::runtime_error( "result is '" + result + "' while it should be '__'.");
+    }
+
+
+    std::string split_test = "__oslo___kristiansand_stavanger_";
+    std::vector< std::string > split_string = stringTools::split( split_test, "_" );
+    if( split_string != std::vector< std::string >( { "", "oslo", "kristiansand", "stavanger", "" } ) ){
+        throw std::runtime_error( "result is " + vectorToString( split_string ) + " while it should be { 'oslo', 'stavanger', 'kristiansand', '' }. ");
+    }
+
+    split_test = "_x_y__xoslo__xkristiansand_x__y_stavanger_x_y___x";
+    split_string = stringTools::split( split_test, {"_", "_x", "_y"} );
+    if( split_string != std::vector< std::string >( { "", "oslo", "kristiansand", "stavanger", "" } ) ){
+        throw std::runtime_error( "result is " + vectorToString( split_string ) + " while it should be { 'oslo', 'stavanger', 'kristiansand', '' }. ");
     }
 
     return 0;
