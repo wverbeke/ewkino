@@ -88,7 +88,7 @@ double leptonMVACutElectron(){
 
 
 bool ElectronSelector::isLooseBase() const{
-    if( electronPtr->uncorrectedPt() < 10 ) return false;
+    if( electronPtr->uncorrectedPt() < 7 ) return false;
     if( fabs( electronPtr->eta() ) >= 2.5 ) return false;
     if( fabs( electronPtr->dxy() ) >= 0.05 ) return false;
     if( fabs( electronPtr->dz() ) >= 0.1 ) return false;
@@ -122,6 +122,7 @@ FO electron selection
 
 bool ElectronSelector::isFOBase() const{
     if( !isLoose() ) return false;
+    if( electronPtr->pt() <= 10 ) return false;
     if( electronPtr->numberOfMissingHits() > 0 ) return false;
     if( !electronPtr->passDoubleEGEmulation() ) return false;
     if( electronPtr->leptonMVAttH() <= leptonMVACutElectron() ){
