@@ -13,6 +13,7 @@
 #include "../Tools/interface/HistInfo.h"
 #include "interface/fakeRateTools.h"
 #include "../plotting/plotCode.h"
+#include "../plotting/tdrStyle.h"
 #include "../Tools/interface/systemTools.h"
 #include "../Tools/interface/stringTools.h"
 //#include "../objects/interface/PhysicsObject.h"
@@ -54,13 +55,13 @@ std::shared_ptr< TH2D > readFRMap( const std::string& flavor, const std::string&
 
 
 bool passClosureTestEventSelection( Event& event ){
+    event.applyLeptonConeCorrection();
     event.cleanElectronsFromLooseMuons();
     event.selectFOLeptons();
     if( event.numberOfLightLeptons() != 3 ) return false;
     event.selectGoodJets();
     event.cleanJetsFromFOLeptons();
     event.sortLeptonsByPt();
-    event.applyLeptonConeCorrection();
     
     size_t numberOfNonPromptLeptons = 0;
     size_t numberOfPromptLeptons = 0;
@@ -88,7 +89,7 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
             } else {
                 fr = frMap_electron->GetBinContent( frMap_electron->FindBin( croppedPt, croppedAbsEta ) );
             }
-            weight *= ( fr / ( 1. - fr ) );
+            weight *= ( - fr / ( 1. - fr ) );
         }
     }
     return weight;
@@ -153,7 +154,13 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
             };
                 
             //event is 'observed' if all leptons are tight 
-            bool isObserved = ( event.numberOfTightLeptons() == event.numberOfLightLeptons() );
+            //bool isObserved = ( event.numberOfTightLeptons() == event.numberOfLightLeptons() );
+            bool isObserved = true;
+            for( const auto& leptonPtr : lightLeptons ){
+                if( !leptonPtr->isTight() ){
+                    isObserved = false;
+                }
+            }
 
             if( isObserved ){
                 for( std::vector< double >::size_type v = 0; v < variables.size(); ++v ){
@@ -177,15 +184,29 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
     
     //make plots 
     for( std::vector< HistInfo >::size_type v = 0; v < histInfoVec.size(); ++v ){
-		std::string names[1] = {"fake-rate prediction"};
+		std::string names[2] = {"MC observed", "fake-rate prediction"};
         std::vector< TH1D* > predicted = { predictedHists[v].get() };
-       	plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, stringTools::formatDirectoryName( outputDirectory_name ) + histInfoVec[v].name() + "_" + process + "_" + year + ".pdf");
+        std::string header;
+        if( year == "2016" ){
+            header = "35.9 fb^{-1}";
+        } else if( year == "2017" ){
+            header = "41.5 fb^{-1}";
+        } else{
+            header = "59.7 fb^{-1}";
+        }
+        TH1D* systUnc = dynamic_cast< TH1D* >( predictedHists[v]->Clone() );
+        for( int b = 1; b < systUnc->GetNbinsX() + 1; ++b ){
+            systUnc->SetBinContent( b , systUnc->GetBinContent(b)*0.3 );
+        }
+       	plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, stringTools::formatDirectoryName( outputDirectory_name ) + histInfoVec[v].name() + "_" + process + "_" + year + ".pdf", "", false, false, header, systUnc);
     }
 }
 
 
 int main(){
-    //closureTest_MC( "2016", "samples_fakeRateMeasurement.txt", "../test/testData/" );
+
+    setTDRStyle();
+    //closureTest_MC( "DY", "2016", "~/Work/ntuples_ewkino_new/" );
 
    	//make sure ROOT behaves itself when running multithreaded
     ROOT::EnableThreadSafety();
@@ -195,7 +216,7 @@ int main(){
     threadVector.reserve( 2 );
     for( const auto& process : {"TT", "DY" } ){
         for( const auto& year : {"2016", "2017", "2018" } ){
-            threadVector.emplace_back( closureTest_MC, process, year, "../test/testData/" );
+            threadVector.emplace_back( closureTest_MC, process, year, "~/Work/ntuples_ewkino_new/" );
         }
     }
 
