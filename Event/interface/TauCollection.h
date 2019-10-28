@@ -8,7 +8,7 @@
 
 class LeptonCollection;
 
-class TauCollection : PhysicsObjectCollection< Tau > {
+class TauCollection : public PhysicsObjectCollection< Tau > {
 
     friend class LeptonCollection;
     
