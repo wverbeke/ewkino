@@ -24,6 +24,7 @@ class Muon : public LightLepton {
         double segmentCompatibility() const{ return _segmentCompatibility; }
         double trackPt() const{ return _trackPt; }
         double trackPtError() const{ return _trackPtError; }
+        double relIso0p4DeltaBeta() const{ return _relIso0p4DeltaBeta; }
 
         virtual std::ostream& print( std::ostream& os = std::cout ) const override;
 
@@ -31,6 +32,7 @@ class Muon : public LightLepton {
         double _segmentCompatibility = 0;
         double _trackPt = 0;
         double _trackPtError = 0;
+        double _relIso0p4DeltaBeta = 0;
 
         //cut based POG ID working points ( do not include isolation )
         bool _isLoosePOGMuon = false;

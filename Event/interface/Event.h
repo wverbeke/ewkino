@@ -48,6 +48,7 @@ class Event{
         Lepton& lepton( const LeptonCollection::size_type leptonIndex ) const{ return (*_leptonCollectionPtr)[ leptonIndex ]; }
         Jet& jet( const JetCollection::size_type jetIndex ) const{ return (*_jetCollectionPtr)[ jetIndex ]; }
 
+
         void sortLeptonsByPt() const{ _leptonCollectionPtr->sortByPt(); }
         void sortJetsByPt() const{ _jetCollectionPtr->sortByPt(); }
 
@@ -90,6 +91,12 @@ class Event{
         LeptonCollection::size_type numberOfElectrons() const{ return _leptonCollectionPtr->numberOfElectrons(); }
         LeptonCollection::size_type numberOfTaus() const{ return _leptonCollectionPtr->numberOfTaus(); }
         LeptonCollection::size_type numberOfLightLeptons() const{ return _leptonCollectionPtr->numberOfLightLeptons(); }
+
+        //consider making these functions more efficient at some point with caching of the collections that are now generated every time
+        LightLepton& lightLepton( const LightLeptonCollection::size_type leptonIndex ) const{ return lightLeptonCollection()[ leptonIndex ]; }
+        Muon& muon( const MuonCollection::size_type muonIndex ) const{ return muonCollection()[ muonIndex ]; }
+        Electron& electron( const ElectronCollection::size_type electronIndex ) const{ return electronCollection()[ electronIndex ]; }
+        Tau& tau( const TauCollection::size_type tauIndex ) const{ return tauCollection()[ tauIndex ]; }
 
         //lepton collections based on selection
         LeptonCollection looseLeptonCollection() const{ return _leptonCollectionPtr->looseLeptonCollection(); }
@@ -177,6 +184,11 @@ class Event{
         bool is2016(){ return !( _is2017 || _is2018 ); }
         bool is2017(){ return _is2017; }
         bool is2018(){ return _is2018; }
+
+        //event tags
+        long unsigned eventNumber(){ return eventTags().eventNumber(); }
+        long unsigned luminosityBlock(){ return eventTags().luminosityBlock(); }
+        long unsigned runNumber(){ return eventTags().runNumber(); }
 
 
     private:

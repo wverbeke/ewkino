@@ -16,6 +16,9 @@ This is used for finding the cuts which give the best fake-rate closure
 //include ROOT classes 
 #include "TH1D.h"
 
+//include other parts of framework
+#include "ConstantFit.h"
+
 
 class CutsFitInfo{
 
@@ -25,8 +28,8 @@ class CutsFitInfo{
         CutsFitInfo( const std::shared_ptr< TH1D >& heavyFlavorFakeRateHist, const std::shared_ptr< TH1D >& lightFlavorFakeRateHist, const std::map< std::string, double >& cutMap );
 
         double cut( const std::string& ) const;
-        double normalizedChi2() const{ return fitNormalizedChi2; }
-        double fitValue() const{ return fitVal; }
+        double normalizedChi2() const{ return fitInfo.normalizedChi2(); }
+        double fitValue() const{ return fitInfo.value(); }
     
         std::shared_ptr< TH1D > heavyFlavorFakeRateHist() const{ return heavyFlavorFakeRate; }
         std::shared_ptr< TH1D > lightFlavorFakeRateHist() const{ return lightFlavorFakeRate; }
@@ -39,8 +42,7 @@ class CutsFitInfo{
         std::shared_ptr< TH1D > heavyFlavorFakeRate;
         std::shared_ptr< TH1D > lightFlavorFakeRate;
         std::shared_ptr< TH1D > fakeRateRatio;
-        double fitNormalizedChi2;
-        double fitVal;
+        ConstantFit fitInfo;
         std::map< std::string, double > cutValueMap;
 };
 

@@ -243,6 +243,9 @@ class TreeReader {
         //check whether SUSY mass info is present in the current sample ( this is the case for SUSY signal scans )
         bool containsSUSYMassInfo() const;
 
+        //check whether a particular trigger is present 
+        bool containsTriggerInfo( const std::string& triggerPath ) const;
+
         //check which year the current sample belongs to
         bool is2016() const;
         bool is2017() const;

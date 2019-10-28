@@ -127,6 +127,11 @@ bool TreeReader::containsSUSYMassInfo() const{
 }
 
 
+bool TreeReader::containsTriggerInfo( const std::string& triggerPath ) const{
+    return treeHasBranchWithName( currentTreePtr, triggerPath );
+}
+
+
 bool TreeReader::isData() const{
     if( currentSamplePtr ){
         return currentSamplePtr->isData();

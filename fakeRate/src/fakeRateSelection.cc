@@ -9,26 +9,33 @@
 #include "../../Event/interface/Event.h"
 
 
+bool isMuonTrigger( const std::string& triggerPath ){
+    return stringTools::stringContains( triggerPath, "Mu" );
+}
+
+
+bool isElectronTrigger( const std::string& triggerPath ){
+    return stringTools::stringContains( triggerPath, "Ele" );
+}
+
+
 double extractPtCut( const std::string& triggerPath, const std::string& objectIdentifier ){
-	if( triggerPath.find( objectIdentifier ) == std::string::npos ){
+
+    //check that the requested object identifier is present
+    if( !stringTools::stringContains( triggerPath, objectIdentifier ) ){
 		throw std::invalid_argument( "object identifier " + objectIdentifier + " not found in trigger path " + triggerPath );
 	}
-	auto cutBegin = triggerPath.find( objectIdentifier ) + objectIdentifier.size();
-	auto cutEnd = triggerPath.find( "_", cutBegin );
-	if( cutEnd == std::string::npos ){
-		cutEnd = triggerPath.size();
-	}
-	std::string cutString = triggerPath.substr( cutBegin, cutEnd - cutBegin );
-	
+
+    std::string cutString = stringTools::split( stringTools::split( triggerPath, objectIdentifier ).back(), "_" ).front();
 	return std::stod( cutString );
 }
 
 
 double extractLeptonPtCut( const std::string& triggerPath ){
     std::string flavorIdentifier;
-    if( stringTools::stringContains( triggerPath, "Mu") ){
+    if( isMuonTrigger( triggerPath ) ){
         flavorIdentifier = "Mu";
-    } else if( stringTools::stringContains( triggerPath, "Ele" ) ){
+    } else if( isElectronTrigger( triggerPath ) ){
         flavorIdentifier = "Ele";
     } else {
         throw std::invalid_argument( "can not extract electron or muon pT threshold from trigger path " + triggerPath + "." );
@@ -44,7 +51,54 @@ double extractJetPtCut( const std::string& triggerPath ){
 }
 
 
+double muonPtThreshold( double triggerThreshold ){
+    static constexpr double offset = 1.; //trigger plateau reached 1 GeV above the threshold 
+    return ( triggerThreshold + offset );
+}
 
+
+double electronPtThreshold( double triggerThreshold ){
+    static constexpr double offset = 2.; //trigger plateau reached about 3 GeV above the threshold
+    return ( triggerThreshold + offset );
+}
+
+
+double jetPtThreshold( double triggerThreshold ){
+    static constexpr double offset = 10.;
+    return ( triggerThreshold + offset ); 
+}
+
+
+std::map< std::string, double > fakeRate::mapTriggerToLeptonPtThreshold( const std::vector< std::string >& triggerNames ){
+
+    //map each trigger to their pT cut + offset to reach plateau
+    std::map< std::string, double > cutMap;
+    for( const auto& trigger : triggerNames ){
+        if( isMuonTrigger( trigger ) ){
+            cutMap[ trigger ] = muonPtThreshold( extractLeptonPtCut( trigger ) );
+        } else if( isElectronTrigger( trigger ) ){
+            cutMap[ trigger ] = electronPtThreshold( extractLeptonPtCut( trigger ) );
+        } else {
+            throw std::invalid_argument( "Can't make pT threshold for trigger '" + trigger + "' since it is neither a muon nor electron trigger" );
+        }
+    }
+    return cutMap;
+}
+
+
+std::map< std::string, double > fakeRate::mapTriggerToJetPtThreshold( const std::vector< std::string >& triggerNames ){
+    
+    std::map< std::string, double > cutMap; 
+    for( const auto& trigger : triggerNames ){
+        if( !stringTools::stringContains( trigger, "PFJet" ) ) continue;
+        cutMap[ trigger ] = jetPtThreshold( extractJetPtCut( trigger ) );
+    }
+    return cutMap;
+}
+    
+
+
+/*
 double triggerObjectPtCut( const std::string& triggerPath, std::map< std::string, double >& cutMap, double (&extractCut)( const std::string& ) ){
     auto it = cutMap.find( triggerPath );
     if( it != cutMap.cend() ){
@@ -57,20 +111,22 @@ double triggerObjectPtCut( const std::string& triggerPath, std::map< std::string
 }
 
 
+//WARNING : NOT THREAD SAFE because of static 
 
-double triggerLeptonPtCut( const std::string& triggerPath ){
+double fakeRate::triggerLeptonPtCut( const std::string& triggerPath ){
     static std::map< std::string, double > ptCutMap;
     return triggerObjectPtCut( triggerPath, ptCutMap, extractLeptonPtCut );
 }
 
 
-double triggerJetPtCut( const std::string& triggerPath ){
+double fakeRate::triggerJetPtCut( const std::string& triggerPath ){
     static std::map< std::string, double > ptCutMap;
     return triggerObjectPtCut( triggerPath, ptCutMap, extractJetPtCut );
 }
+*/
 
-
-std::string muonPtToTriggerName( const double pt ){
+/*
+std::string fakeRate::muonPtToTriggerName( const double pt ){
     if( pt < 8 ){
         return "HLT_Mu3_PFJet40";
     } else if( pt < 17 ){
@@ -87,7 +143,7 @@ std::string muonPtToTriggerName( const double pt ){
 }
 
 
-std::string electronPtToTriggerName( const double pt ){
+std::string fakeRate::electronPtToTriggerName( const double pt ){
     if( pt < 17 ){
         return "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30";
     } else if( pt < 23 ){
@@ -96,28 +152,41 @@ std::string electronPtToTriggerName( const double pt ){
         return "HLT_Ele23_CaloIdM_TrackIdM_PFJet30";
     }
 }
+*/
 
+/*
+bool fakeRate::passFakeRateTrigger( const Event& event, RangedMap< std::string >& ptToTriggerMap ){
 
-bool passFakeRateTrigger( const Event& event ){
+    if( ptToTriggerMap.empty() ){
+        throw std::invalid_argument( "Trying to check trigger decision for empty map of trigger thresholds." );
+    }
 
-    //leading selected lepton
-    Lepton& lepton = event.lepton( 0 );
+    //check if the threshold map contains muon or electron triggers 
+    auto firstTrigger = ptToTriggerMap.begin()->second;
+    bool isMuon = isMuonTrigger( firstTrigger );
 
-    //WARNING: There must be a ptRatio cut-off in the cone_correction 
-    //IMPLEMENT MAXIMUM CONE CORRECTION BASED ON ISFO DEFINITION
-    double ptRatioCutoff = 0.75;
+    //if the trigger is not a muon trigger it should be an electron trigger
+    if( !isMuon && !isElectronTrigger( firstTrigger ) ){
+        throw std::invalid_argument( "Trigger '" + firstTrigger + "' is neither a muon nor electron trigger." );
+    }
 
-    double maximumConeCorrection = 1./ptRatioCutoff;
+    LightLepton& lepton = event.lightLepton( 0 );
 
-    double effectivePt = lepton.pt()/maximumConeCorrection;
+    //check that the lepton flavor and trigger type match
+    if( isMuon && !lepton.isMuon() ){
+        throw std::invalid_argument( std::string( "Checking " ) + ( isMuon ? "muon" : "electron" ) + " trigger decision for a " + ( lepton.isMuon() ? "muon" : "electron" ) + "." );
+    }
+    
+    //use uncorrected lepton pT to select the trigger 
+    std::string triggerToPass = ptToTriggerMap[ lepton.uncorrectedPt() ];
 
-    std::string trigger_to_use = lepton.isMuon() ? muonPtToTriggerName( effectivePt ) : electronPtToTriggerName( effectivePt );
-    return event.passTrigger( trigger_to_use );
+    return event.passTrigger( triggerToPass );
 }
+*/
 
 
 //event selection for fake-rate measurement 
-bool passFakeRateEventSelection( Event& event, bool isMuonMeasurement, bool onlyTightLeptons, bool requireJet, double jetDeltaRCut ){
+bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool onlyElectrons, bool onlyTightLeptons, bool requireJet, double jetDeltaRCut ){
 
     //Require the presence of just one lepton, and veto a second loose lepton
     event.cleanElectronsFromLooseMuons();
@@ -140,14 +209,13 @@ bool passFakeRateEventSelection( Event& event, bool isMuonMeasurement, bool only
     //IMPORTANT : apply cone correction
     event.applyLeptonConeCorrection();
 
-    Lepton& lepton = event.lightLeptonCollection()[ 0 ];
+    Lepton& lepton = event.lightLepton( 0 );
 
     //select correct lepton flavor
-    if( isMuonMeasurement ){
-        if( !lepton.isMuon() ) return false;
-    } else {
-        if( !lepton.isElectron() ) return false;
-    }
+    if( onlyMuons && !lepton.isMuon() ) return false;
+    else if( onlyElectrons && !lepton.isElectron() ) return false;
+
+    //apply pT thresholds on leptons 
 
     //optionally require the presence of at least one good jet
     if( requireJet ){
@@ -166,4 +234,59 @@ bool passFakeRateEventSelection( Event& event, bool isMuonMeasurement, bool only
         if( maxDeltaR < jetDeltaRCut ) return false;
     }
     return true;
+}
+
+
+
+RangedMap< std::string > fakeRate::mapLeptonPtToTriggerName( const std::vector< std::string >& triggerNames, const bool isMuon ){
+
+    //make an std::map that maps the lower bounds of the RangedMap to strings, this will be used to initialize the RangedMap
+    std::map< double, std::string > initializerMap; 
+    for( const auto& trigger : triggerNames ){
+
+        //check that the trigger contains the correct lepton flavor
+        if( isMuon && !isMuonTrigger( trigger ) ) continue;
+        if( !isMuon && !isElectronTrigger( trigger ) ) continue;
+
+        //add trigger pT cut to map, and make sure it is above the plateau by calling one of the 'PtThreshold' functions
+        double threshold;
+        if( isMuon ){
+            threshold = muonPtThreshold( extractLeptonPtCut( trigger ) );
+        } else {
+            threshold = electronPtThreshold( extractLeptonPtCut( trigger ) );
+        }
+        initializerMap[ threshold ] = trigger;
+    }
+
+    return RangedMap< std::string >( initializerMap );
+}
+
+
+RangedMap< std::string > fakeRate::mapMuonPtToTriggerName( const std::vector< std::string >& triggerNames ){
+    return fakeRate::mapLeptonPtToTriggerName( triggerNames, true );
+}
+
+
+RangedMap< std::string > fakeRate::mapElectronPtToTriggerName( const std::vector< std::string >& triggerNames ){
+    return fakeRate::mapLeptonPtToTriggerName( triggerNames, false );
+}
+
+
+bool fakeRate::passTriggerJetSelection( Event& event, const std::string& trigger, std::map< std::string, double >& triggerToJetPtMap ){
+    if( !stringTools::stringContains( trigger, "PFJet" ) ){
+        return true;
+    } else{
+		event.selectGoodJets();
+		event.cleanJetsFromLooseLeptons();
+		if( event.numberOfJets() < 1 ) return false; 
+       	event.sortJetsByPt();
+
+		//require central jet 
+		if( event.jet(0).absEta() >= 2.4 ) return false;
+
+		//apply offline pT threshold to be on the trigger plateau
+        if( event.jet(0).pt() <= triggerToJetPtMap[ trigger ] ) return false;
+		
+		return true;
+	}
 }
