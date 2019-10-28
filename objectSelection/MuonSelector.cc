@@ -4,6 +4,11 @@
 #include "bTagWP.h"
 
 
+double leptonMVACutMuon(){
+    return 0.85;
+}
+
+
 /*
 loose muon selection
 */
@@ -56,7 +61,9 @@ double slidingDeepFlavorThreshold( const double looseWP, const double mediumWP, 
 bool MuonSelector::isFOBase() const{
     if( !isLoose() ) return false;
     if( muonPtr->uncorrectedPt() <= 10 ) return false;
-    if( muonPtr->ptRatio() <= 0.65 ) return false;
+    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ){
+        if( muonPtr->ptRatio() <= 0.65 ) return false;
+    }
     return true;
 }
 
@@ -89,7 +96,7 @@ tight muon selection
 bool MuonSelector::isTightBase() const{
     if( !isFO() ) return false;
     if( !muonPtr->isMediumPOGMuon() ) return false;
-    if( muonPtr->leptonMVAttH() <= 0.85 ) return false;
+    if( muonPtr->leptonMVAttH() <= leptonMVACutMuon() ) return false;
     return true;
 }
 

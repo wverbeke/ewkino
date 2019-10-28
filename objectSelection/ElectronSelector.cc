@@ -127,6 +127,7 @@ bool ElectronSelector::isFOBase() const{
     if( !electronPtr->passDoubleEGEmulation() ) return false;
     if( electronPtr->leptonMVAttH() <= leptonMVACutElectron() ){
         if( !passMVAWP80( *electronPtr ) ) return false;
+        if( electronPtr->ptRatio() <= 0.7 ) return false;
     } else {
         if( !passMVALoose( *electronPtr ) ) return false;
     }
