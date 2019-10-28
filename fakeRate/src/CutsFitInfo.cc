@@ -27,7 +27,6 @@ CutsFitInfo::CutsFitInfo( const std::shared_ptr< TH1D >& heavyFlavorFakeRateHist
     fakeRateRatio = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >( heavyFlavorFakeRate->Clone() ) );
     fakeRateRatio->Divide( lightFlavorFakeRateHist.get() );
 
-
     fitInfo = ConstantFit( fakeRateRatio );
 }
 
@@ -100,6 +99,7 @@ void CutsFitInfoCollection::sortByLossFunction( const double epsilon ){
 
 void CutsFitInfoCollection::printBestCuts( size_type numberOfCuts, std::ostream& os ) const{
     if( numberOfCuts == 0 ) numberOfCuts = size();
+    if( numberOfCuts > size() ) numberOfCuts = size();
     for( size_type i = 0; i < numberOfCuts; ++i ){
         os << collection[i] << std::endl;
     }
@@ -108,6 +108,7 @@ void CutsFitInfoCollection::printBestCuts( size_type numberOfCuts, std::ostream&
 
 void CutsFitInfoCollection::plotBestCuts( size_type numberOfCuts, const std::string& outputDirectory ) const{
     if( numberOfCuts == 0 ) numberOfCuts = size();
+    if( numberOfCuts > size() ) numberOfCuts = size();
     for( size_type i = 0; i < numberOfCuts; ++i ){
         collection[i].makePlots( outputDirectory );
     }
