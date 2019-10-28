@@ -16,7 +16,6 @@
 #include "../plotting/tdrStyle.h"
 #include "../Tools/interface/systemTools.h"
 #include "../Tools/interface/stringTools.h"
-//#include "../objects/interface/PhysicsObject.h"
 
 
 std::vector< HistInfo > makeDistributionInfo(){
@@ -154,7 +153,6 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
             };
                 
             //event is 'observed' if all leptons are tight 
-            //bool isObserved = ( event.numberOfTightLeptons() == event.numberOfLightLeptons() );
             bool isObserved = true;
             for( const auto& leptonPtr : lightLeptons ){
                 if( !leptonPtr->isTight() ){
@@ -205,6 +203,7 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
 
 int main(){
 
+    //TO-DO : check why plotting style was not OK when not calling this here!
     setTDRStyle();
 
    	//make sure ROOT behaves itself when running multithreaded

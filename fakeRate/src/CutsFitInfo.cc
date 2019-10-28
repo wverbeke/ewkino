@@ -27,24 +27,7 @@ CutsFitInfo::CutsFitInfo( const std::shared_ptr< TH1D >& heavyFlavorFakeRateHist
     fakeRateRatio = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >( heavyFlavorFakeRate->Clone() ) );
     fakeRateRatio->Divide( lightFlavorFakeRateHist.get() );
 
-    //fit a constant function to the ratio of the histograms 
-    double minBin = heavyFlavorFakeRate->GetBinLowEdge( 1 );
-    double maxBin = heavyFlavorFakeRate->GetBinLowEdge( heavyFlavorFakeRate->GetNbinsX() ) + heavyFlavorFakeRate->GetBinWidth( heavyFlavorFakeRate->GetNbinsX() );
-    std::shared_ptr< TF1 > constFunc = std::make_shared< TF1 >( "constFunc", "[0]", minBin, maxBin );
-    fakeRateRatio->Fit( "constFunc", "Q" ); //Q = quiet mode
-    fakeRateRatio->Fit( "constFunc", "Q" ); // hack : fit twice for a better result
-
-    //extract fit value and normalized chi2
-    fitVal = constFunc->GetParameter( 0 );
-    fitNormalizedChi2 = constFunc->GetChisquare() / constFunc->GetNDF();
-
-    //set high sentinel values for fit value and chi2 in case of empty data amd/or failed fit
-    bool emptyData = ( fakeRateRatio->GetSumOfWeights() < 1e-6 );
-    bool fitFailed = ( std::isnan( fitVal ) ||  std::isinf( fitVal )  || std::isnan( fitNormalizedChi2 ) || std::isinf( fitNormalizedChi2 ) );
-    if( emptyData || fitFailed ){
-        fitVal = std::numeric_limits<double>::max();
-        fitNormalizedChi2 = std::numeric_limits<double>::max();
-    }
+    fitInfo = ConstantFit( fakeRateRatio );
 }
 
 

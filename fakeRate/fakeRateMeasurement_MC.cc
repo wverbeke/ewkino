@@ -50,7 +50,7 @@ void determineMCFakeRate( const std::string& flavor, const std::string& year, co
             Event event = treeReader.buildEvent( entry );
 
             //apply fake-rate selection
-            if( !passFakeRateEventSelection( event, isMuon, false, true, 0.7) ) continue;
+            if( !fakeRate::passFakeRateEventSelection( event, isMuon, !isMuon, false, true, 0.7) ) continue;
 
             LightLepton& lepton = event.lightLeptonCollection()[ 0 ];
 

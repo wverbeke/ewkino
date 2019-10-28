@@ -9,6 +9,7 @@ methods for std::string formatting
 //include c++ library classes
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace stringTools{
 
@@ -54,7 +55,16 @@ namespace stringTools{
     //convert double to string, with given precision
     std::string doubleToString(const double, const unsigned precision = 0);
 
+    //replace all occurences of a substring with another string
+    std::string replace( const std::string& s, const std::string& oldstring, const std::string& newstring );
+
     //remove occurences of substring 
     std::string removeOccurencesOf( const std::string& s, const std::string& substring );
+
+    //split string on every occurence of the substring
+    std::vector< std::string > split( const std::string& s, const std::string& substring );
+    std::vector< std::string > split( const std::string& s, const std::vector< std::string >& substring );
+    std::vector< std::string > split( const std::string& s, std::initializer_list< std::string > );
+    std::vector< std::string > split( const std::string& s );
 }
 #endif

@@ -127,6 +127,11 @@ bool TreeReader::containsSUSYMassInfo() const{
 }
 
 
+bool TreeReader::containsTriggerInfo( const std::string& triggerPath ) const{
+    return treeHasBranchWithName( currentTreePtr, triggerPath );
+}
+
+
 bool TreeReader::isData() const{
     if( currentSamplePtr ){
         return currentSamplePtr->isData();
@@ -348,10 +353,12 @@ void TreeReader::initTree(){
     currentTreePtr->SetBranchAddress("_nLight", &_nLight, &b__nLight);
     currentTreePtr->SetBranchAddress("_nTau", &_nTau, &b__nTau);
     currentTreePtr->SetBranchAddress("_lPt", _lPt, &b__lPt);
+    currentTreePtr->SetBranchAddress("_lPtCorr", _lPtCorr, &b__lPtCorr);
     currentTreePtr->SetBranchAddress("_lEta", _lEta, &b__lEta);
     currentTreePtr->SetBranchAddress("_lEtaSC", _lEtaSC, &b__lEtaSC);
     currentTreePtr->SetBranchAddress("_lPhi", _lPhi, &b__lPhi);
     currentTreePtr->SetBranchAddress("_lE", _lE, &b__lE);
+    currentTreePtr->SetBranchAddress("_lECorr", _lECorr, &b__lECorr);
     currentTreePtr->SetBranchAddress("_lFlavor", _lFlavor, &b__lFlavor);
     currentTreePtr->SetBranchAddress("_lCharge", _lCharge, &b__lCharge);
     currentTreePtr->SetBranchAddress("_dxy", _dxy, &b__dxy);
@@ -551,10 +558,12 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_nLight",                       &_nLight,                       "_nLight/i");
     outputTree->Branch("_nTau",                         &_nTau,                         "_nTau/i");
     outputTree->Branch("_lPt",                          &_lPt,                          "_lPt[_nL]/D");
+    outputTree->Branch("_lPtCorr",                      &_lPtCorr,                      "_lPtCorr[_nLight]/D");
     outputTree->Branch("_lEta",                         &_lEta,                         "_lEta[_nL]/D");
     outputTree->Branch("_lEtaSC",                       &_lEtaSC,                       "_lEtaSC[_nLight]/D");
     outputTree->Branch("_lPhi",                         &_lPhi,                         "_lPhi[_nL]/D");
     outputTree->Branch("_lE",                           &_lE,                           "_lE[_nL]/D");
+    outputTree->Branch("_lECorr",                       &_lECorr,                       "_lECorr[_nLight]/D");
     outputTree->Branch("_lFlavor",                      &_lFlavor,                      "_lFlavor[_nL]/i");
     outputTree->Branch("_lCharge",                      &_lCharge,                      "_lCharge[_nL]/I");
     outputTree->Branch("_dxy",                          &_dxy,                          "_dxy[_nL]/D");

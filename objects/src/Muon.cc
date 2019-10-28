@@ -9,6 +9,7 @@ Muon::Muon( const TreeReader& treeReader, const unsigned leptonIndex ):
     _segmentCompatibility( treeReader._lMuonSegComp[leptonIndex] ),
     _trackPt( treeReader._lMuonTrackPt[leptonIndex] ),
     _trackPtError( treeReader._lMuonTrackPtErr[leptonIndex] ),
+    _relIso0p4DeltaBeta( treeReader._relIso0p4MuDeltaBeta[leptonIndex] ),
     _isLoosePOGMuon( treeReader._lPOGLoose[leptonIndex] ),
     _isMediumPOGMuon( treeReader._lPOGMedium[leptonIndex] ),
     _isTightPOGMuon( treeReader._lPOGTight[leptonIndex] )
@@ -20,6 +21,7 @@ Muon::Muon( const Muon& rhs ):
     _segmentCompatibility( rhs._segmentCompatibility ),
     _trackPt( rhs._trackPt ),
     _trackPtError( rhs._trackPtError ),
+    _relIso0p4DeltaBeta( rhs._relIso0p4DeltaBeta ),
     _isLoosePOGMuon( rhs._isLoosePOGMuon ),
     _isMediumPOGMuon( rhs._isMediumPOGMuon ),
     _isTightPOGMuon( rhs._isTightPOGMuon )
@@ -31,6 +33,7 @@ Muon::Muon( Muon&& rhs ) noexcept:
     _segmentCompatibility( rhs._segmentCompatibility ),
     _trackPt( rhs._trackPt ),
     _trackPtError( rhs._trackPtError ),
+    _relIso0p4DeltaBeta( rhs._relIso0p4DeltaBeta ),
     _isLoosePOGMuon( rhs._isLoosePOGMuon ),
     _isMediumPOGMuon( rhs._isMediumPOGMuon ),
     _isTightPOGMuon( rhs._isTightPOGMuon )

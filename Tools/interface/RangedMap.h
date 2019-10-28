@@ -36,6 +36,8 @@ template < typename T > class RangedMap {
         const_iterator end() const{ return lowerBoundMap.cend(); }
         const_iterator cend() const{ return lowerBoundMap.cend(); }
 
+        bool empty() const{ return lowerBoundMap.empty(); }
+
     private:
         std::map< double, T > lowerBoundMap;
 };
@@ -55,7 +57,7 @@ template< typename T > RangedMap< T >::RangedMap( const std::map< double, T >& b
 template< typename T > T& RangedMap< T >::operator[]( const double value ){
 
     //make sure the map is not empty
-    if( lowerBoundMap.empty() ){
+    if( empty() ){
         throw std::out_of_range( "Trying to index empty RangedMap." );
     }
 
@@ -71,5 +73,6 @@ template< typename T > T& RangedMap< T >::operator[]( const double value ){
     --it;
     return (*it).second;
 }
+
 
 #endif

@@ -21,24 +21,9 @@ bool passSyncSelection( Event& event ){
 
 void makeSyncDump( const std::string& inputFilePath, const std::string& outputFilePath, const std::string& eventListPath ){
 
-    std::pair< bool, bool > is2017Or2018 = analysisTools::fileIs2017Or2018( inputFilePath );
-
     TreeReader treeReader;
     treeReader.initSampleFromFile( inputFilePath );
 
-    /*
-
-    if( (!treeReader.is2018()) && stringTools::stringContains( inputFilePath, "2018" ) ){
-        throw std::runtime_error("bug");
-    }
-    if( (!treeReader.is2017()) && stringTools::stringContains( inputFilePath, "2017" ) ){
-        throw std::runtime_error("bug");
-    }
-    if( (!treeReader.is2016()) && stringTools::stringContains( inputFilePath, "2016" ) ){
-        throw std::runtime_error("bug");
-    }
-    */
-    
     //output file for all event tags
     std::ofstream eventTag_dump( eventListPath );
 
@@ -55,7 +40,7 @@ void makeSyncDump( const std::string& inputFilePath, const std::string& outputFi
         sync_dump << event.eventTags() << "\n";
         for( auto& muonPtr : event.muonCollection() ){
             Muon& muon = *muonPtr;
-            sync_dump << "muon : pt = " << muon.pt() << "\teta = " << muon.eta() << "\tptratio = " << muon.ptRatio() << "\tptrel = " << muon.ptRel() << "\tclosestjetdeepflavor = " << muon.closestJetDeepFlavor() << "\tsip3d = " << muon.sip3d() <<"\tdxy = " << muon.dxy() << "\tdz = " << muon.dz() << "\tminiiso = " << muon.miniIso() << "\tsegmentcompatibility = " << muon.segmentCompatibility() << "\tleptonmva = " << muon.leptonMVAttH() << "\n";
+            sync_dump << std::setprecision(5) << "muon : pt = " << muon.pt() << "\teta = " << muon.eta() << "\tptratio = " << muon.ptRatio() << "\tptrel = " << muon.ptRel() << "\tclosestjetdeepflavor = " << muon.closestJetDeepFlavor() << "\tsip3d = " << muon.sip3d() <<"\tdxy = " << muon.dxy() << "\tdz = " << muon.dz() << "\tminiiso = " << muon.miniIso() << "\tsegmentcompatibility = " << muon.segmentCompatibility() << "\tleptonmva = " << muon.leptonMVAttH() << "\n";
         }
         for( auto& electronPtr : event.electronCollection() ){
             Electron& electron = *electronPtr;
@@ -67,10 +52,6 @@ void makeSyncDump( const std::string& inputFilePath, const std::string& outputFi
 
 
 int main(){
-
-    //makeSyncDump( "WZ_2016.root", "sync_2016.txt", "event_list_2016.txt" );
-    //makeSyncDump( "WZ_2017.root", "sync_2017.txt", "event_list_2017.txt" );
-    //makeSyncDump( "WZ_2018.root", "sync_2018.txt", "event_list_2018.txt" );
 
     //make sure ROOT behaves itself when running multithreaded
     ROOT::EnableThreadSafety();

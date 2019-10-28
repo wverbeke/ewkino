@@ -76,10 +76,12 @@ class TreeReader {
         UInt_t          _nLight;
         UInt_t          _nTau;
         Double_t        _lPt[nL_max];   
+        Double_t        _lPtCorr[nL_max];
         Double_t        _lEta[nL_max];   
         Double_t        _lEtaSC[nL_max];   
         Double_t        _lPhi[nL_max];   
         Double_t        _lE[nL_max];   
+        Double_t        _lECorr[nL_max];
         UInt_t          _lFlavor[nL_max];   
         Int_t           _lCharge[nL_max];   
         Double_t        _dxy[nL_max];   
@@ -240,6 +242,9 @@ class TreeReader {
 
         //check whether SUSY mass info is present in the current sample ( this is the case for SUSY signal scans )
         bool containsSUSYMassInfo() const;
+
+        //check whether a particular trigger is present 
+        bool containsTriggerInfo( const std::string& triggerPath ) const;
 
         //check which year the current sample belongs to
         bool is2016() const;
@@ -503,10 +508,12 @@ class TreeReader {
         TBranch        *b__nLight;   
         TBranch        *b__nTau;   
         TBranch        *b__lPt;   
+        TBranch        *b__lPtCorr;
         TBranch        *b__lEta;   
         TBranch        *b__lEtaSC;   
         TBranch        *b__lPhi;   
         TBranch        *b__lE;   
+        TBranch        *b__lECorr;
         TBranch        *b__lFlavor;   
         TBranch        *b__lCharge;   
         TBranch        *b__dxy;   
