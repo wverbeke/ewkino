@@ -4,6 +4,8 @@
 //include c++ library classes 
 #include <stdexcept>
 #include <iostream>
+#include <set>
+#include <algorithm>
 
 //include ROOT classes 
 #include "TH1.h"
