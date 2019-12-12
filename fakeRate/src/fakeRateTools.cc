@@ -89,7 +89,7 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
     std::vector< std::string > triggerNames = listTriggersWithHistogramInFile( filePtr );
     std::vector< std::string > histogramNames = listHistogramNamesInFile( filePtr );
 
-    //check which year the histograms belong too, and check the consistency
+    //check which year the histograms belong to, and check the consistency
     std::string year = extractYear( histogramNames.front() );
     for( const auto& histogram : histogramNames ){
         if( !stringTools::stringContains( histogram, year ) ){
@@ -240,6 +240,9 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
 	std::vector< std::string > ptEtaBinNames = listPtEtaBinsInFile( filePtr );
     std::vector< std::string > histogramNames = fakeRate::listHistogramNamesInFile( filePtr );
 
+    //check which year the histograms belong to
+    std::string year = extractYear( histogramNames.front() );
+
     //check whether the fake-rate is for muons or electrons
     bool isMuon = stringTools::stringContains( histogramNames.front(), "muon" );
     if( !isMuon && !stringTools::stringContains( histogramNames.back(), "electron" ) ){
@@ -288,11 +291,11 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
        	//plot numerator
         TH1D* predictedHists_numerator[1] = { prompt_hist_numerator.get() };
         std::string predictedNames[2] = {"data", "prompt"};
-        plotDataVSMC( data_hist_numerator.get(), predictedHists_numerator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + ( isMuon ? "muon_" : "electron_" ) + bin + "_numerator_fakeRateMeasurement.pdf", "", false, false, "(13 TeV)" ); 
+        plotDataVSMC( data_hist_numerator.get(), predictedHists_numerator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + ( isMuon ? "muon_" : "electron_" ) + bin + "_numerator_fakeRateMeasurement" + year + ".pdf", "", false, false, "(13 TeV)" ); 
         
 		//plot denominator
         TH1D* predictedHists_denominator[1] = { prompt_hist_denominator.get() };
-        plotDataVSMC( data_hist_numerator.get(), predictedHists_denominator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + ( isMuon ? "muon_" : "electron_" ) + bin + "_denominator_fakeRateMeasurement.pdf", "", false, false, "(13 TeV)" ); 
+        plotDataVSMC( data_hist_numerator.get(), predictedHists_denominator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + ( isMuon ? "muon_" : "electron_" ) + bin + "_denominator_fakeRateMeasurement" + year + ".pdf", "", false, false, "(13 TeV)" ); 
 		
 
         //subtract prompt contamination from data

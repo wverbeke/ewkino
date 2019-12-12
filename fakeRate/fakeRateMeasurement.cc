@@ -292,13 +292,17 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
             
 
 
-
-
-
-
 int main( int argc, char* argv[] ){
 
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
+    
+    //either take 2 command line arguments, flavor and year, or none, in which case everything will be run
+    if( !( argvStr.size() == 3 || argvStr.size() == 1 ) ){
+        std::cerr << argc - 1 << " command line arguments given, while 2 or 0 are expected." << std::endl;
+        std::cerr << "Usage ( to measure fake-rate for all flavors and years ): ./fakeRateMeasurement" << std::endl;
+        std::cerr << "Or ( to measure fake-rate a single flavor and year ): ./fakeRateMeasurement flavor year" << std::endl;
+        return 1;
+    }
 
     //configuration
     const double metLowerCut_prescaleMeasurement = 20;
@@ -309,8 +313,20 @@ int main( int argc, char* argv[] ){
     const double mTUpperCut_fakeRateMeasurement = 160;
     const double maxFitValue = 20;
     const bool use_mT = true;
-    const std::vector< std::string > years = { "2016", "2017", "2018" };
-    const std::vector< std::string > flavors = { "muon", "electron" };
+
+    std::vector< std::string > years;
+    std::vector< std::string > flavors;
+
+    //run for all flavors and years 
+    if( argvStr.size() == 1 ){
+        years = { "2016", "2017", "2018" };
+        flavors = { "muon", "electron" };
+
+    //run for one flavor and year
+    } else{
+        years = { argvStr[2] };
+        flavors = { argvStr[1] };
+    }
 
     //trigger to use in fake-rate measurement 
     std::map< std::string, std::vector< std::string > > triggerVectorMap = {
