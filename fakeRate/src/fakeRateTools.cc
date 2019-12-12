@@ -46,6 +46,8 @@ std::vector< std::string > fakeRate::listHistogramNamesInFile( TFile* filePtr ){
 
 
 std::string extractTriggerName( const std::string& histogramName ){
+
+    //assumes histogram names that end with the trigger name
     auto beginPos = histogramName.find( "HLT" );
     return histogramName.substr( beginPos );
 }
@@ -68,9 +70,30 @@ std::vector< std::string > fakeRate::listTriggersWithHistogramInFile( TFile* fil
 }
 
 
+std::string extractYear( const std::string& histogramName ){
+    if( stringTools::stringContains( histogramName, "2016" ) ){
+        return "2016";
+    } else if( stringTools::stringContains( histogramName, "2017" ) ){
+        return "2017";
+    } else if( stringTools::stringContains( histogramName, "2018" ) ){
+        return "2018";
+    } else{
+        throw std::invalid_argument( "histogram name '" + histogramName + "' does not contain a year (2016, 2017 or 2018)" );
+    }
+}
+
+
 std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* filePtr, const double min, const double max ){
     std::vector< std::string > triggerNames = listTriggersWithHistogramInFile( filePtr );
     std::vector< std::string > histogramNames = listHistogramNamesInFile( filePtr );
+
+    //check which year the histograms belong too, and check the consistency
+    std::string year = extractYear( histogramNames.front() );
+    for( const auto& histogram : histogramNames ){
+        if( !stringTools::stringContains( histogram, year ) ){
+            throw std::invalid_argument( "histogram name '" + histogram + "' does not contain year '" + year + "'" );
+        }
+    }
     
     std::map< std::string, std::shared_ptr< TH1D > > prompt_histograms;
     std::map< std::string, std::shared_ptr< TH1D > > data_histograms;
@@ -95,6 +118,7 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
     for( const auto& trigger: triggerNames ){
 
         //divide data by the prompt contribution and then fit it
+        //clone data histogram so the original can still be plotted later on
 		std::shared_ptr< TH1D > ratio_histogram( dynamic_cast< TH1D* >( data_histograms[trigger]->Clone() ) );
         ratio_histogram->Divide( prompt_histograms[ trigger ].get() );
 
@@ -102,7 +126,6 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
         ConstantFit fitInfo( ratio_histogram, min, max );
         
         prescaleMap[trigger] = Prescale( fitInfo );
-
     }
 
 	//plot the prescale measurements 
@@ -124,10 +147,9 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
         }
 
 		std::string predictedNames[2] = {"data", "prompt"};
-        plotDataVSMC( data_histograms[trigger].get(), predictedHists, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + trigger + "_prescaleMeasurement.pdf", "", false, false, "35.9 fb^{-1}", systUnc); 
+        plotDataVSMC( data_histograms[trigger].get(), predictedHists, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + trigger + "_prescaleMeasurement_" + year + ".pdf", "", false, false, "(13 TeV)", systUnc ); 
 		
 	}
-
     return prescaleMap;
 }
 
@@ -136,8 +158,9 @@ std::string extractPtEtaString( const std::string& histName ){
 
     //string is expected to end in _pT_x_eta_y
     //find last occurence of pT and cut off string there
-    auto pos = histName.find_last_of( "pT" );
-    return histName.substr( pos - 1, histName.size() );
+    //auto pos = histName.find_last_of( "pT" );
+    auto pos = histName.rfind( "pT" );
+    return histName.substr( pos, histName.size() );
 }
 
 
@@ -158,12 +181,12 @@ std::vector< std::string > listPtEtaBinsInFile( TFile* filePtr ){
 
 
 double ptBorder( const std::string& ptEtaBinName ){
-    return std::stod( stringTools::split( stringTools::split( ptEtaBinName, "pT" )[1], "_" )[1] );
+    return std::stod( stringTools::split( ptEtaBinName, "_" )[1] );
 }
 
 
 double etaBorder( const std::string& ptEtaBinName ){
-    return std::stod( stringTools::split( stringTools::split( ptEtaBinName, "eta" )[1], "_")[1] );
+    return std::stod( stringTools::replace( stringTools::split( stringTools::split( ptEtaBinName, "eta" )[1], "_")[1], "p", "." ) );
 }
 
 
@@ -209,14 +232,7 @@ bool histIsDenominator( const std::string& histName ){
 }
 
 
-//std::shared_ptr< TH1D > getHistogram( TFile* filePtr, const std::string& name ){
-//    auto hist = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >( filePtr->Get( name ) ) );
-//    hist->SetDirectory( gROOT );
-//    return hist;
-//}
-
-
-std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr ){
+std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const double maxValue ){
 
     //histogram and pt/eta bins present in the file
 	std::vector< std::string > ptEtaBinNames = listPtEtaBinsInFile( filePtr );
@@ -230,13 +246,11 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr ){
 
     //initialize 2D histogram
     std::pair< std::vector< double >, std::vector< double > > ptEtaBins = ptEtaBinNamesToBinVectors( ptEtaBinNames, isMuon );
-    std::shared_ptr<TH2D> fakeRateMap = std::make_shared< TH2D >( "fake-rate", "fake-rate", ptEtaBins.first.size() - 1, &ptEtaBins.first[0], ptEtaBins.second.size() - 1, &ptEtaBins.second[0] );
+    std::shared_ptr<TH2D> fakeRateMap = std::make_shared< TH2D >( "fake-rate", "fake-rate; p_{T} (GeV); |#eta|", ptEtaBins.first.size() - 1, &ptEtaBins.first[0], ptEtaBins.second.size() - 1, &ptEtaBins.second[0] );
     fakeRateMap->SetDirectory( gROOT );
 
-	//measure fakerate for each pT and eta bin 
+	//measure fake-rate for each pT and eta bin 
 	for( const auto& bin : ptEtaBinNames ){
-
-        //if( stringTools::stringContains( bin, "pT_0_" ) ) continue;
 
 		//extract data and prompt histogram for this bin
 		std::shared_ptr< TH1D > data_hist_numerator;
@@ -259,8 +273,25 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr ){
                 } else if( histIsPrompt( name ) ){
                     prompt_hist_denominator = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >( filePtr->Get( name.c_str() ) ) );
                 }
+            } else {
+                throw std::invalid_argument( "histogram " + name + " is neither numerator nor denominator" );
             }
         }
+
+        //plot data and prompt histogram for both numerator and denominator before computing fakerate 
+		//make plot directory if it does not already exist 
+		std::string outputDirectory_name = "fakeRateMeasurementPlots";
+		systemTools::makeDirectory( outputDirectory_name );
+
+       	//plot numerator
+        TH1D* predictedHists_numerator[1] = { prompt_hist_numerator.get() };
+        std::string predictedNames[2] = {"data", "prompt"};
+        plotDataVSMC( data_hist_numerator.get(), predictedHists_numerator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + ( isMuon ? "muon_" : "electron_" ) + bin + "_numerator_fakeRateMeasurement.pdf", "", false, false, "(13 TeV)" ); 
+        
+		//plot denominator
+        TH1D* predictedHists_denominator[1] = { prompt_hist_denominator.get() };
+        plotDataVSMC( data_hist_numerator.get(), predictedHists_denominator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + ( isMuon ? "muon_" : "electron_" ) + bin + "_denominator_fakeRateMeasurement.pdf", "", false, false, "(13 TeV)" ); 
+		
 
         //subtract prompt contamination from data
         data_hist_numerator->Add( prompt_hist_numerator.get(), -1. );
@@ -272,9 +303,10 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr ){
             fakeRate = 0.;
             fakeRateUncertainty = 0.;
         } else{ 
+
             //divide remaining numerator and denominator and fit their ratio
             data_hist_numerator->Divide( data_hist_denominator.get() );
-            ConstantFit fit( data_hist_numerator );
+            ConstantFit fit( data_hist_numerator, 0, maxValue );
             fakeRate = fit.value();
             fakeRateUncertainty = fit.uncertainty();
         }

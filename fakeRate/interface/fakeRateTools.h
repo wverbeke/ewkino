@@ -24,7 +24,7 @@ namespace fakeRate{
     std::map< std::string, Prescale > fitTriggerPrescales_cut( TFile* filePtr, const double min, const double max );
     std::map< std::string, Prescale > fitTriggerPrescales_shape( TFile* filePtr );
 
-    std::shared_ptr< TH2D > produceFakeRateMap_cut( TFile* filePtr );
+    std::shared_ptr< TH2D > produceFakeRateMap_cut( TFile* filePtr, const double maxValue );
     
 }
 
