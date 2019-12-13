@@ -629,7 +629,7 @@ void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::
     //threading lock since root seems to misbehave when plotting multithreaded!
     //is there a lockless solution for this? Try to find out!
     static std::mutex plotMutex;
-    initializeTDRStyle();
+    //initializeTDRStyle();
 
     plotMutex.lock();
     static constexpr double width = 500;

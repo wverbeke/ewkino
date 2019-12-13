@@ -65,6 +65,9 @@ class Event{
         void cleanJetsFromFOLeptons( const double coneSize = 0.4 ) const{ _jetCollectionPtr->cleanJetsFromFOLeptons( *_leptonCollectionPtr, coneSize ); }
         void cleanJetsFromTightLeptons( const double coneSize = 0.4 ) const{ _jetCollectionPtr->cleanJetsFromTightLeptons( *_leptonCollectionPtr, coneSize ); }
 
+        //user specified jet selection
+        void selectJets( bool (&passSelection)( const Jet& ) ){ _jetCollectionPtr->selectObjects( passSelection ); }
+
         //b-tag collections
         JetCollection looseBTagCollection() const{ return _jetCollectionPtr->looseBTagCollection(); }
         JetCollection mediumBTagCollection() const{ return _jetCollectionPtr->mediumBTagCollection(); }
@@ -78,9 +81,6 @@ class Event{
         void cleanElectronsFromFOMuons( const double coneSize = 0.05 ){ _leptonCollectionPtr->cleanElectronsFromFOMuons( coneSize ); }
         void cleanTausFromLooseLightLeptons( const double coneSize = 0.4 ){ _leptonCollectionPtr->cleanTausFromLooseLightLeptons( coneSize ); }
         void cleanTausFromFOLightLeptons( const double coneSize = 0.4 ){ _leptonCollectionPtr->cleanTausFromFOLightLeptons( coneSize ); }
-
-        //apply lepton cone correction for fake-rate prediction
-        void applyLeptonConeCorrection() const{ _leptonCollectionPtr->applyConeCorrection(); }
 
         //separate lepton flavor collections
         MuonCollection muonCollection() const{ return _leptonCollectionPtr->muonCollection(); }
@@ -105,6 +105,16 @@ class Event{
         LeptonCollection::size_type numberOfLooseLeptons() const{ return _leptonCollectionPtr->numberOfLooseLeptons(); }
         LeptonCollection::size_type numberOfFOLeptons() const{ return _leptonCollectionPtr->numberOfFOLeptons(); }
         LeptonCollection::size_type numberOfTightLeptons() const{ return _leptonCollectionPtr->numberOfTightLeptons(); }
+
+        //user specified lepton selection
+        void selectLeptons( bool (&passSelection)( const Lepton& ) ){ _leptonCollectionPtr->selectObjects( passSelection ); }
+        void selectLightLeptons( bool (&passSelection)( const LightLepton& ) ){ lightLeptonCollection().selectObjects( passSelection ); }
+        void selectElectrons( bool (&passSelection)( const Electron& ) ){ electronCollection().selectObjects( passSelection ); }
+        void selectMuons( bool (&passSelection)( const Muon& ) ){ muonCollection().selectObjects( passSelection ); }
+        void selectTaus( bool (&passSelection)( const Tau& ) ){ tauCollection().selectObjects( passSelection ); }
+
+        //apply lepton cone correction for fake-rate prediction
+        void applyLeptonConeCorrection() const{ _leptonCollectionPtr->applyConeCorrection(); }
         
 
         //Trigger information

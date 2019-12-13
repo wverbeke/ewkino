@@ -45,6 +45,7 @@ class Lepton : public PhysicsObject {
         unsigned provenance() const;
         unsigned provenanceCompressed() const;
         unsigned provenanceConversion() const;
+        bool isChargeFlip() const{ return ( charge() != matchCharge() ); }
 
         //lepton id decisions 
         bool isLoose() const{ return selector->isLoose(); }

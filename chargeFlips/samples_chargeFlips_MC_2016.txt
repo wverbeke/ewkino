@@ -1,0 +1,3 @@
+DY              DYJetsToLL_M-50_TuneCUETP8M1_1_Summer16.root                         1   
+DY              DYJetsToLL_M-50_TuneCUETP8M1_2_Summer16.root                         1   
+DY              DYJetsToLL_M-50_TuneCUETP8M1_3_Summer16.root                         1   

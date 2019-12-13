@@ -150,7 +150,7 @@ int Lepton::matchPdgId() const{
 
 int Lepton::matchCharge() const{
     if( checkGeneratorInfo() ){
-        return generatorInfo->matchPdgId();
+        return generatorInfo->matchCharge();
     } else {
         return 0;
     }

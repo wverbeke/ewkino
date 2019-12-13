@@ -40,6 +40,9 @@ template< typename ObjectType > class PhysicsObjectCollection {
         double mass() const;
         double scalarPtSum() const;
 
+        //apply a user specified selection
+        void selectObjects( bool (&passSelection)( const ObjectType& ) );
+
         ~PhysicsObjectCollection() = default;
 
     protected:
@@ -82,6 +85,17 @@ template< typename ObjectType > template< typename IteratorType > IteratorType P
 template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::selectObjects( bool (ObjectType::*passSelection)() const ){
     for( const_iterator it = cbegin(); it != cend(); ){
         if( !( (**it).*passSelection)() ){
+            it = erase( it );
+        } else {
+            ++it;
+        }
+    }
+}
+
+
+template< typename ObjectType > void PhysicsObjectCollection< ObjectType >::selectObjects( bool (&passSelection)( const ObjectType& ) ){
+    for( const_iterator it = cbegin(); it != cend(); ){
+        if( !passSelection( **it ) ){
             it = erase( it );
         } else {
             ++it;
