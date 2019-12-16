@@ -1,0 +1,3 @@
+DY              DYJetsToLL_M-50_TuneCP5_1_Fall17.root                             1   
+DY              DYJetsToLL_M-50_TuneCP5_2_Fall17.root                             1   
+DY              DYJetsToLL_M-50_TuneCP5_3_Fall17.root                             1   

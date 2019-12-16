@@ -255,7 +255,10 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //Replace data by TGRaphAsymmErrors for plotting
     TGraphAsymmErrors* dataGraph = new TGraphAsymmErrors(data);
     for(int b = 1; b < data->GetNbinsX() + 1; ++b){
-        dataGraph->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b), (data->GetBinContent(b) == 0 ) ? 0 : data->GetBinErrorUp(b) );
+        dataGraph->SetPointError(b - 1, 0, 0, (data->GetBinContent( b ) <= 0. ) ? 0. : data->GetBinErrorLow(b), (data->GetBinContent(b) <= 0. ) ? 0. : data->GetBinErrorUp(b) );
+
+		//avoid negative bins in observed ( can occur when plotting total background instead of data and using NLO samples )
+		if( data->GetBinContent(b) <= 0. ) dataGraph->GetY()[ b - 1 ] = 0.;
     }
 
     
@@ -469,7 +472,9 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     for(int b = 1; b < data->GetNbinsX() + 1; ++b){
         obsRatio->GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
         obsRatio->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), data->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
-        if(data->GetBinContent(b) == 0) obsRatio->GetY()[b - 1] += 5;
+
+		//hack to avoid plotting points at 0 with large errors
+        if(data->GetBinContent(b) <= 0.) obsRatio->GetY()[b - 1] += 1e6;
     }
 
     //legend for uncertainties

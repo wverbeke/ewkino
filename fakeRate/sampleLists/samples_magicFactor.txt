@@ -1,0 +1,5 @@
+#VV		        WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root					                        0.2086
+#VV		        WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_Fall17.root              					                    0.2086
+#TTHH		    TTHH_TuneCP5_13TeV-madgraph-pythia8.root                  					                        1               forceIs2018
+WJets           WJets_TuneCP5_Autumn18.root                                                                         1
+WJets           WJets_TuneCP5_Autumn18_small.root                                                                   1

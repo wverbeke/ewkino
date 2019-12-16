@@ -97,100 +97,14 @@ std::map< std::string, double > fakeRate::mapTriggerToJetPtThreshold( const std:
 }
     
 
-
-/*
-double triggerObjectPtCut( const std::string& triggerPath, std::map< std::string, double >& cutMap, double (&extractCut)( const std::string& ) ){
-    auto it = cutMap.find( triggerPath );
-    if( it != cutMap.cend() ){
-        return it->second;
-    } else {
-        double cut = extractCut( triggerPath );
-        cutMap.insert( { triggerPath, cut } );
-        return cut;
-    }
-}
-
-
-//WARNING : NOT THREAD SAFE because of static 
-
-double fakeRate::triggerLeptonPtCut( const std::string& triggerPath ){
-    static std::map< std::string, double > ptCutMap;
-    return triggerObjectPtCut( triggerPath, ptCutMap, extractLeptonPtCut );
-}
-
-
-double fakeRate::triggerJetPtCut( const std::string& triggerPath ){
-    static std::map< std::string, double > ptCutMap;
-    return triggerObjectPtCut( triggerPath, ptCutMap, extractJetPtCut );
-}
-*/
-
-/*
-std::string fakeRate::muonPtToTriggerName( const double pt ){
-    if( pt < 8 ){
-        return "HLT_Mu3_PFJet40";
-    } else if( pt < 17 ){
-        return "HLT_Mu8";
-    } else if( pt < 20 ){
-        return "HLT_Mu17";
-    } else if( pt < 27 ){
-        return "HLT_Mu20";
-    } else if( pt < 50 ){
-        return "HLT_Mu27";
-    } else {
-        return "HLT_Mu50";
-    }
-}
-
-
-std::string fakeRate::electronPtToTriggerName( const double pt ){
-    if( pt < 17 ){
-        return "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30";
-    } else if( pt < 23 ){
-        return "HLT_Ele17_CaloIdM_TrackIdM_PFJet30";
-    } else {
-        return "HLT_Ele23_CaloIdM_TrackIdM_PFJet30";
-    }
-}
-*/
-
-/*
-bool fakeRate::passFakeRateTrigger( const Event& event, RangedMap< std::string >& ptToTriggerMap ){
-
-    if( ptToTriggerMap.empty() ){
-        throw std::invalid_argument( "Trying to check trigger decision for empty map of trigger thresholds." );
-    }
-
-    //check if the threshold map contains muon or electron triggers 
-    auto firstTrigger = ptToTriggerMap.begin()->second;
-    bool isMuon = isMuonTrigger( firstTrigger );
-
-    //if the trigger is not a muon trigger it should be an electron trigger
-    if( !isMuon && !isElectronTrigger( firstTrigger ) ){
-        throw std::invalid_argument( "Trigger '" + firstTrigger + "' is neither a muon nor electron trigger." );
-    }
-
-    LightLepton& lepton = event.lightLepton( 0 );
-
-    //check that the lepton flavor and trigger type match
-    if( isMuon && !lepton.isMuon() ){
-        throw std::invalid_argument( std::string( "Checking " ) + ( isMuon ? "muon" : "electron" ) + " trigger decision for a " + ( lepton.isMuon() ? "muon" : "electron" ) + "." );
-    }
-    
-    //use uncorrected lepton pT to select the trigger 
-    std::string triggerToPass = ptToTriggerMap[ lepton.uncorrectedPt() ];
-
-    return event.passTrigger( triggerToPass );
-}
-*/
-
-
 //event selection for fake-rate measurement 
 bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool onlyElectrons, bool onlyTightLeptons, bool requireJet, double jetDeltaRCut ){
 
+    //ignore taus here since we are measuring light lepton fake-rate
+    event.removeTaus();
+
     //Require the presence of just one lepton, and veto a second loose lepton
     event.cleanElectronsFromLooseMuons();
-    event.cleanTausFromLooseLightLeptons();
     event.selectLooseLeptons();
     if( event.numberOfLightLeptons() != 1 ){
         return false;

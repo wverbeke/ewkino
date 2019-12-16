@@ -7,6 +7,7 @@
 #include "../../objects/interface/Muon.h"
 #include "../../objects/interface/Electron.h"
 #include "../../objects/interface/Tau.h"
+#include "../../constants/particleMasses.h"
 
 
 LeptonCollection::LeptonCollection( const TreeReader& treeReader ){
@@ -316,7 +317,6 @@ LeptonCollection::size_type LeptonCollection::numberOfUniqueOSPairs() const{
 
 
 std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >, double > LeptonCollection::bestZBosonCandidateIndicesAndMass() const{
-    static const double mZ = 91.1876;
 
     //currently the code only works when an OSSF pair is present 
     if( !hasLightOSSFPair() ){
@@ -330,11 +330,15 @@ std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >
 
     for( const_iterator l1It = cbegin(); l1It != cend() - 1; ++l1It ){
         Lepton& l1 = **l1It;
+        
+        //only consider light leptons
+        if( l1.isTau() ) continue;
         for( const_iterator l2It = l1It + 1; l2It != cend(); ++l2It ){
             Lepton& l2 = **l2It; 
+            if( !oppositeSignSameFlavor( l1, l2 ) ) continue;
 
             double mass = ( l1 + l2 ).mass();
-            double massDifference = ( mass - mZ );
+            double massDifference = ( mass - particle::mZ );
             if( massDifference < minDiff ){
                 minDiff = massDifference;
                 bestMass = mass;
@@ -354,4 +358,9 @@ std::pair< LeptonCollection::size_type, LeptonCollection::size_type > LeptonColl
 
 double LeptonCollection::bestZBosonCandidateMass() const{
     return bestZBosonCandidateIndicesAndMass().second;
+}
+
+
+void LeptonCollection::removeTaus(){
+    selectObjects( &Lepton::isLightLepton );
 }

@@ -44,9 +44,7 @@ void determineMCChargeFlipRate( const std::string& year, const std::string& samp
             Event event = treeReader.buildEvent( entry );
 
             //apply electron selection
-            event.cleanElectronsFromLooseMuons();
-            event.selectTightLeptons();
-            event.selectElectrons( chargeFlips::passChargeRequirements );
+            if( ! chargeFlips::passChargeFlipEventSelection( event, true, false, false) ) continue;
 
             for( auto& electronPtr : event.electronCollection() ){
 
@@ -99,28 +97,12 @@ int main(){
     std::vector< std::thread > threadVector;
     threadVector.reserve( 3 );
     for( const auto& year : {"2016", "2017", "2018" } ){
-        threadVector.emplace_back( determineMCChargeFlipRate, year, std::string( "samples_chargeFlips_MC_" ) + year + ".txt", "../test/testData/" );
+        threadVector.emplace_back( determineMCChargeFlipRate, year, std::string( "sampleLists/samples_chargeFlips_MC_" ) + year + ".txt", "../test/testData/" );
     }
 
     for( auto& t : threadVector ){
         t.join();
     }
     
-
-    //TODO : expand implementation here to use job submission!
-    //determineMCChargeFlipRate( "2016", "samples_chargeFlips_MC_2016.txt", "../test/testData" );
-
-
-    
-
-    
-    //    std::string sampleListFile = std::string( "samples_tuneFOSelection_" ) + flavor + "_" + year + ".txt";
-	//    threadVector.emplace_back( determineMCFakeRate, flavor, year, sampleListFile, "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate/" );
-    //}
-
-    //for( auto& t : threadVector ){
-    //    t.join();
-    //}
-	
     return 0;
 }

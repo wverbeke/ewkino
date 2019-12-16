@@ -72,7 +72,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
     std::map< std::string, double > jetPtCutMap = fakeRate::mapTriggerToJetPtThreshold( triggerVector );
 
 	//in this function we will loop over events and fill histograms for each trigger 
-   	TreeReader treeReader( "samples_fakeRateMeasurement_" + year + ".txt", sampleDirectoryPath);
+   	TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt", sampleDirectoryPath);
 
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
@@ -217,7 +217,7 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
 
     //initialize TreeReader
     //ADAPT SAMPLE LIST TO USE DATA FOR CORRECT YEAR
-    TreeReader treeReader( "samples_fakeRateMeasurement_" + year + ".txt" , sampleDirectory );
+    TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt" , sampleDirectory );
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
         //load next sample

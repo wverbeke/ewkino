@@ -3,6 +3,7 @@
 
 //include other pars of framework
 #include "../../TreeReader/interface/TreeReader.h"
+#include "../../constants/particleMasses.h"
 
 
 Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , const bool readIndividualMetFilters ) : 
@@ -147,7 +148,7 @@ GeneratorInfo& Event::generatorInfo() const{
 
 
 void Event::initializeZBosonCandidate(){
-    if( !ZisInitialized ){
+    if( !ZIsInitialized ){
 
         //check that there are at least two leptons is performed automatically in LeptonCollection
 
@@ -158,21 +159,54 @@ void Event::initializeZBosonCandidate(){
 
         //leading lepton not used in this pairing is considered to be from the W decay (in trilepton events )
         //WARNING : LEPTON ORDERING MUST HAPPEN HERE!
+        sortLeptonsByPt();
+
+        //note that the third lepton can also be a tau in this case!
         if( numberOfLeptons() >= 3 ){
             for( LeptonCollection::size_type leptonIndex = 0; leptonIndex < numberOfLeptons(); ++leptonIndex ){
                 if( !( leptonIndex == _bestZBosonCandidateIndices.first || leptonIndex == _bestZBosonCandidateIndices.second ) ){
                     _WLeptonIndex = leptonIndex;
+                    break;
                 }
             }
         }
 
-        ZisInitialized = true;
+        ZIsInitialized = true;
     }
 }
 
 
-std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >, double > Event::bestZBosonCandidateIndicesAndMass() const{
-    if( !ZisInitialized ){
-        
-    }
+std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >, double > Event::bestZBosonCandidateIndicesAndMass(){
+    initializeZBosonCandidate();    
+    return { _bestZBosonCandidateIndices, _bestZBosonCandidateMass };
+}
+
+
+std::pair< LeptonCollection::size_type, LeptonCollection::size_type > Event::bestZBosonCandidateIndices(){
+    initializeZBosonCandidate();
+    return _bestZBosonCandidateIndices;
+}
+
+
+double Event::bestZBosonCandidateMass(){
+    initializeZBosonCandidate();
+    return _bestZBosonCandidateMass;
+}
+
+
+bool Event::hasZTollCandidate( const double oneSidedMassWindow ){
+    initializeZBosonCandidate();
+    return ( fabs( bestZBosonCandidateMass() - particle::mZ ) < oneSidedMassWindow );
+}
+
+
+LeptonCollection::size_type Event::WLeptonIndex(){
+    initializeZBosonCandidate();
+    return _WLeptonIndex;
+}
+
+
+double Event::mtW(){
+    initializeZBosonCandidate();
+    return mt( lepton( WLeptonIndex() ), met() );
 }
