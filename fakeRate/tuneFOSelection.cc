@@ -17,21 +17,64 @@ The goal of the tuning is having a fake-rate (tight/FO) that is equal for light 
 #include "../Event/interface/Event.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
-#include "../Tools/interface/systemTools.h"
 #include "interface/CutsFitInfo.h"
-#include "interface/fakeRateTools.h"
+#include "../Tools/interface/systemTools.h"
+
+
+unsigned numberOfEmptyBins( const TH1* hist ){
+    unsigned counter = 0;
+    for( int b = 1; b < hist->GetNbinsX(); ++b ){
+        if(  hist->GetBinContent(b) < 1e-8 ){
+            ++counter;
+        }
+    }
+    return counter;
+}
+
+
+bool ratioHasPathologicalBin( const TH1* hist ){
+   for( int b = 1; b < hist->GetNbinsX() + 1; ++b ){
+        if( hist->GetBinContent(b) > 50 && hist->GetBinError(b)/hist->GetBinContent(b) > 0.5 ){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool binIsLowStat( double content, double error ){
+    return ( error/content >= 1. );
+}
+
+
+bool isLowStatistics( const TH1* hist ){
+    const double maxLowStatFraction = 0.2;
+    int nLowStatBins = 0;
+    for( int b = 1; b < hist->GetNbinsX() + 1; ++b ){
+        if( binIsLowStat( hist->GetBinContent(b), hist->GetBinError(b) ) ){
+            ++nLowStatBins;
+        }
+    }
+    double ret = static_cast<double>(nLowStatBins)/hist->GetNbinsX();
+    return ret > maxLowStatFraction;
+}
+
 
 
 void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, const std::string& sampleDirectory ){
 
-    fakeRate::checkFlavorString( leptonFlavor );
-    bool isMuon = ( leptonFlavor == "muon" );
-
-    fakeRate::checkYearString( year );
+    bool isMuon;
+    if( leptonFlavor == "muon" ){
+        isMuon = true;
+    } else if( leptonFlavor == "electron" ){
+        isMuon = false;
+    } else {
+        throw std::invalid_argument( "leptonFlavor string should be either 'muon' or 'electron'." );
+    }
 
     const double minPtRatioCut = 0;
-    const double maxPtRatioCut = 1;
-    const unsigned numberOfPtRatioCuts = 100;
+    const double maxPtRatioCut = 0.9;
+    const unsigned numberOfPtRatioCuts = 90;
     std::vector< double > ptRatioCuts;
     std::vector< std::string > ptRatioNames;
     for( unsigned c = 0; c < numberOfPtRatioCuts; ++c ){
@@ -41,8 +84,8 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     }
 
     const double minDeepFlavorCut = 0.1;
-    const double maxDeepFlavorCut = 1; 
-    const unsigned numberOfDeepFlavorCuts = 90;
+    const double maxDeepFlavorCut = 0.8; 
+    const unsigned numberOfDeepFlavorCuts = 70;
     std::vector< double > deepFlavorCuts;
     std::vector< std::string > deepFlavorNames;
     for( unsigned c = 0; c < numberOfDeepFlavorCuts; ++c ){
@@ -55,9 +98,9 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     Categorization categories( { ptRatioNames, deepFlavorNames } );
         
     //binning of fakerate as a function of pT 
-    const unsigned numberOfPtBins = 50; 
+    const unsigned numberOfPtBins = 10; 
     const double minPt = 10;
-    const double maxPt = 150;
+    const double maxPt = 70;
     HistInfo ptHistInfo( "pT", "p_{T} (GeV)", numberOfPtBins, minPt, maxPt );
 
     //initialize histograms for heavy- and light flavor, they will be compared in the end to select the optimal FO cuts 
@@ -162,6 +205,18 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     //std::vector< CutsFitInfo > fakeRateFitInfoVec;
     CutsFitInfoCollection fitInfoCollection;
     for( Categorization::size_type c = 0; c < categories.size(); ++c ){
+
+        //make sure the fit under consideration has decent statistics 
+        //double error;
+        //double integral = ratio->IntegralAndError(1, ratio->GetNbinsX(), error );
+        //if( fabs( error/integral ) > 0.5 ) continue;
+        if( numberOfEmptyBins( heavyFlavorNumerator[ c ].get() ) > 0 || numberOfEmptyBins( lightFlavorNumerator[ c ].get() ) > 0 ) continue;
+        if( isLowStatistics( heavyFlavorNumerator[ c ].get() ) || isLowStatistics( lightFlavorNumerator[ c ].get() ) ) continue;
+        std::shared_ptr< TH1 > ratio( dynamic_cast< TH1*>( heavyFlavorNumerator[ c ]->Clone() ) );
+        ratio->Divide( lightFlavorNumerator[ c ].get() );
+        if( ratioHasPathologicalBin( ratio.get() ) ) continue;
+        
+
         std::map< std::string, double > cutMap;
         auto indices = categories.indices( c );
         cutMap["pTRatio"] =  ptRatioCuts[ indices[ 0 ] ];
@@ -181,21 +236,21 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     systemTools::makeDirectory( plotDirectory );
 
     fitInfoCollection.sortByDiffFromUnity();
-    fitInfoCollection.printBestCuts( 5 );
-    fitInfoCollection.plotBestCuts( 5, plotDirectory );
+    fitInfoCollection.printBestCuts( 10 );
+    fitInfoCollection.plotBestCuts( 10, plotDirectory );
     std::cout << "--------------------------------------------------------------------" << std::endl;
     std::cout << "--------------------------------------------------------------------" << std::endl;
     std::cout << "--------------------------------------------------------------------" << std::endl;
     fitInfoCollection.sortByChi2();
-    fitInfoCollection.printBestCuts( 5 );
-    fitInfoCollection.plotBestCuts( 5, plotDirectory );
+    fitInfoCollection.printBestCuts( 10 );
+    fitInfoCollection.plotBestCuts( 10, plotDirectory );
     std::cout << "--------------------------------------------------------------------" << std::endl;
     std::cout << "--------------------------------------------------------------------" << std::endl;
     std::cout << "--------------------------------------------------------------------" << std::endl;
     constexpr double epsilon = 0.01;
     fitInfoCollection.sortByLossFunction( epsilon );
-    fitInfoCollection.printBestCuts( 5 );
-    fitInfoCollection.plotBestCuts( 5, plotDirectory );
+    fitInfoCollection.printBestCuts( 10 );
+    fitInfoCollection.plotBestCuts( 10, plotDirectory );
 }
 
 
@@ -203,7 +258,7 @@ void runTuningAsJob( const std::string& flavor, const std::string& year ){
 	std::string scriptName = "tuneFOSelection_" + flavor + "_" + year + ".sh";
     std::ofstream jobScript( scriptName );
     systemTools::initJobScript( jobScript );
-    jobScript << "./tuneFOSelection " << flavor << year << "\n";
+    jobScript << "./tuneFOSelection " << flavor << " " << year << "\n";
     jobScript.close();
     systemTools::submitScript( scriptName, "100:00:00" );
 }
@@ -213,13 +268,18 @@ int main( int argc, char* argv[] ){
 
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
 
-    std::string sampleDirectory = "../test/testData/";
+    std::string sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate/";
     if( argc == 3 ){
         std::string flavor = argvStr[1];
         std::string year = argvStr[2]; 
 
-        fakeRate::checkFlavorString( flavor );
-        fakeRate::checkYearString( year );
+        if( !( flavor == "muon" || flavor == "electron" ) ){
+            throw std::invalid_argument( "Given flavor argument is '" + flavor + "' while it must be either 'muon' or 'electron'" );
+        }
+        
+        if( !( year == "2016" || year == "2017" || year == "2018" ) ){
+            throw std::invalid_argument( "Given year argument is '" + year + "' while it must be either '2016', '2017' or '2018'" );
+        }
 
         tuneFOSelection( flavor, year, sampleDirectory );
     } else if( argc == 1 ){
@@ -230,7 +290,10 @@ int main( int argc, char* argv[] ){
         }
     } else if( argc == 2 ){
 		std::string year = argvStr[1];
-        fakeRate::checkYearString( year );
+        if( !( year == "2016" || year == "2017" || year == "2018" ) ){
+            throw std::invalid_argument( "Given year argument is '" + year + "' while it must be either '2016', '2017' or '2018'" );
+        }
+		
         for( auto& flavor : std::vector< std::string >( {"muon", "electron"} ) ){
 			runTuningAsJob( flavor, year );
         }
