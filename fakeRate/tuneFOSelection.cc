@@ -117,7 +117,7 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     }
 
     //loop over samples and fill histograms
-    std::string sampleListFile = "samples_tuneFOSelection_" + leptonFlavor + "_" + year + ".txt";
+    std::string sampleListFile = "sampleLists/samples_tuneFOSelection_" + leptonFlavor + "_" + year + ".txt";
     TreeReader treeReader( sampleListFile, sampleDirectory );
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 

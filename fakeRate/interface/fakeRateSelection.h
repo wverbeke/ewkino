@@ -11,11 +11,6 @@
 class Event;
 
 namespace fakeRate{
-    //double triggerJetPtCut( const std::string& );
-    //std::string muonPtToTriggerName( const double );
-    //std::string electronPtToTriggerName( const double );
-    //double muonPtTheshold( cons );
-    //double electronPtThreshold( const std::string& );
     
     std::map< std::string, double > mapTriggerToLeptonPtThreshold( const std::vector< std::string >& triggerNames );
     std::map< std::string, double > mapTriggerToJetPtThreshold( const std::vector< std::string >& triggerNames );

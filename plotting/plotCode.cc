@@ -115,7 +115,7 @@ Color_t bkgColorHNL(const std::string& bkgName){
 //FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
 Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
-    static const Color_t colors[9] = {kBlue + 1, kRed - 7, kGreen - 7, kMagenta -7, kAzure + 1, kOrange + 6, kCyan + 1, kMagenta +3, kBlue -3};
+    static const Color_t colors[9] = { kMagenta -7 , kBlue + 1, kRed - 7, kGreen - 7, kMagenta + 3, kAzure + 1, kOrange + 6, kCyan + 1,kBlue -3 };
     if(!reset){
         Color_t output = colors[counter];
         ++counter;
@@ -208,6 +208,9 @@ void initializeTDRStyle(){
 //plot a stack of backgrounds and compare it to data
 void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D* bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
 
+   	static std::mutex plotLock;
+    plotLock.lock(); 
+
     initializeTDRStyle();
     
     //do not make empty plots
@@ -223,6 +226,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     } 
     if(isEmpty){
         std::cerr << "attempting to print empty plot, returning control" << std::endl;
+	    plotLock.unlock();
         return;
     }
 
@@ -230,6 +234,10 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     for(unsigned h = 0; h < nBkg; ++h){
         StackCol(bkg[h], bkgColor(names[h + 1], analysis) ); //first name is data
     }    
+
+	//reset internal coloring counter
+    if( analysis == "" ) bkgColorGeneral(true);
+
     //color signal histgrams if they are to be plotted
     if(signal != nullptr){
         for(unsigned s = 0; s < nSig; ++s){
@@ -247,7 +255,10 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     //Replace data by TGRaphAsymmErrors for plotting
     TGraphAsymmErrors* dataGraph = new TGraphAsymmErrors(data);
     for(int b = 1; b < data->GetNbinsX() + 1; ++b){
-        dataGraph->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b), (data->GetBinContent(b) == 0 ) ? 0 : data->GetBinErrorUp(b) );
+        dataGraph->SetPointError(b - 1, 0, 0, (data->GetBinContent( b ) <= 0. ) ? 0. : data->GetBinErrorLow(b), (data->GetBinContent(b) <= 0. ) ? 0. : data->GetBinErrorUp(b) );
+
+		//avoid negative bins in observed ( can occur when plotting total background instead of data and using NLO samples )
+		if( data->GetBinContent(b) <= 0. ) dataGraph->GetY()[ b - 1 ] = 0.;
     }
 
     
@@ -461,7 +472,9 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     for(int b = 1; b < data->GetNbinsX() + 1; ++b){
         obsRatio->GetY()[b - 1] *= 1./bkgTotE->GetBinContent(b);
         obsRatio->SetPointError(b - 1, 0, 0, data->GetBinErrorLow(b)/bkgTotE->GetBinContent(b), data->GetBinErrorUp(b)/bkgTotE->GetBinContent(b));
-        if(data->GetBinContent(b) == 0) obsRatio->GetY()[b - 1] += 5;
+
+		//hack to avoid plotting points at 0 with large errors
+        if(data->GetBinContent(b) <= 0.) obsRatio->GetY()[b - 1] += 1e6;
     }
 
     //legend for uncertainties
@@ -520,6 +533,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     for(unsigned bkg = 0; bkg < nBkg; ++bkg){
         delete bkgClones[bkg];
     }
+
+	plotLock.unlock();
 }
 
 void plotHistograms(TH1D** histos, const unsigned nHistos, const std::string* names, const std::string& file, const bool normalized, const bool log){
@@ -619,7 +634,7 @@ void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::
     //threading lock since root seems to misbehave when plotting multithreaded!
     //is there a lockless solution for this? Try to find out!
     static std::mutex plotMutex;
-    initializeTDRStyle();
+    //initializeTDRStyle();
 
     plotMutex.lock();
     static constexpr double width = 500;

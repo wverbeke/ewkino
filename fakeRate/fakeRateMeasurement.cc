@@ -7,6 +7,7 @@
 #include <string>
 #include <iterator>
 #include <fstream>
+#include <thread>
 
 //include ROOT classes 
 #include "TH1D.h"
@@ -22,6 +23,8 @@
 #include "interface/fakeRateSelection.h"
 #include "interface/fakeRateTools.h"
 #include "interface/Prescale.h"
+#include "../plotting/tdrStyle.h"
+#include "../plotting/plotCode.h"
 
 
 HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, const double max, const bool useMT = true){
@@ -59,9 +62,9 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
     
     //initialize histograms
     for( const auto& trigger : triggerVector ){
-        prompt_map[trigger] = histInfo.makeHist( "prompt_mT_" + trigger );
-        nonprompt_map[trigger] = histInfo.makeHist( "nonprompt_mT_" + trigger );
-        data_map[trigger] = histInfo.makeHist( "data_mT_" + trigger );
+        prompt_map[trigger] = histInfo.makeHist( "prompt_mT_" + year + "_" + trigger );
+        nonprompt_map[trigger] = histInfo.makeHist( "nonprompt_mT_" + year + "_" + trigger );
+        data_map[trigger] = histInfo.makeHist( "data_mT_" + year + "_" + trigger );
     }
 
     //set up map of triggers to pt thresholds
@@ -69,7 +72,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
     std::map< std::string, double > jetPtCutMap = fakeRate::mapTriggerToJetPtThreshold( triggerVector );
 
 	//in this function we will loop over events and fill histograms for each trigger 
-   	TreeReader treeReader( "samples_fakeRateMeasurement_" + year + ".txt", sampleDirectoryPath);
+   	TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt", sampleDirectoryPath);
 
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
@@ -145,7 +148,7 @@ RangedMap< RangedMap< std::shared_ptr< TH1D > > > build2DHistogramMap( const std
         std::map< double, std::shared_ptr< TH1D > > histMapTemp;
 
         for( auto etaBinBorder : etaBinBorders ){ 
-            histMapTemp[etaBinBorder] = mtHistInfo.makeHist( name + "_pT_" + std::to_string( int( ptBinBorder ) ) + "_eta_" + stringTools::doubleToString( etaBinBorder, 2 ) );
+            histMapTemp[etaBinBorder] = mtHistInfo.makeHist( name + "_pT_" + std::to_string( int( ptBinBorder ) ) + "_eta_" + stringTools::replace( stringTools::doubleToString( etaBinBorder, 2 ), ".", "p" ) );
         }
         histMap2DTemp.insert( { ptBinBorder, RangedMap< std::shared_ptr< TH1D > >( histMapTemp ) } );
     }
@@ -164,7 +167,7 @@ void write2DHistogramMap( const RangedMap< RangedMap< std::shared_ptr< TH1D > > 
 
 
 //function to fill MT shape histogram for numerator and denominator
-void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const std::string& year, const std::string& sampleDirectory, const std::vector< std::string >& triggerVector, std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet){
+void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const std::string& year, const std::string& sampleDirectory, const std::vector< std::string >& triggerVector, const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet){
 
     //make sure year and leptonFlavor are OK
     fakeRate::checkFlavorString( leptonFlavor );
@@ -186,23 +189,23 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
     //MODIFY THIS BINNING AS NEEDED
     if( isMuonMeasurement ){
         etaBinBorders = {0., 1.2, 2.1};
-        ptBinBorders = { 0, 10, 20, 30, 45, 65 };
+        ptBinBorders = { 10, 20, 30, 45, 65 };
     } else{
         etaBinBorders = {0., 0.8, 1.442};
-        ptBinBorders = { 0, 10, 20, 30, 45, 65 };
+        ptBinBorders = { 10, 20, 30, 45, 65 };
     }
 
     //MAKE THE NUMBER OF MT OR MET BINS ADAPTIVE
     unsigned numberOfMTBins = 100; 
-    HistInfo mtHistInfo( "mT", "m_{T}( GeV )", numberOfMTBins, 0, 200 );
+    HistInfo mtHistInfo( "mT", "m_{T}( GeV )", numberOfMTBins, 0., 160. );
 
     //make 2D RangedMap mapping each bin to a histogram
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "prompt_numerator_mT_" + leptonFlavor );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "prompt_denominator_mT_" + leptonFlavor );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "nonprompt_numerator_mT_" + leptonFlavor );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "nonprompt_denominator_mT_" + leptonFlavor );
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "data_numerator_mT_" + leptonFlavor);
-    RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "data_denominator_mT_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "prompt_numerator_mT_" + year + "_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "prompt_denominator_mT_" + year + "_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "nonprompt_numerator_mT_" + year + "_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "nonprompt_denominator_mT_" + year + "_" + leptonFlavor );
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_numerator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "data_numerator_mT_" + year + "_" + leptonFlavor);
+    RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_denominator_map = build2DHistogramMap( ptBinBorders, etaBinBorders, mtHistInfo, "data_denominator_mT_" + year + "_" + leptonFlavor );
 
 
     //map lepton pT to trigger 
@@ -214,7 +217,7 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
 
     //initialize TreeReader
     //ADAPT SAMPLE LIST TO USE DATA FOR CORRECT YEAR
-    TreeReader treeReader( "samples_fakeRateMeasurement_" + year + ".txt" , sampleDirectory );
+    TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt" , sampleDirectory );
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
         //load next sample
@@ -228,6 +231,9 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
             if( !fakeRate::passFakeRateEventSelection( event, isMuonMeasurement, !isMuonMeasurement, false, true, 1 ) ) continue;
 
             LightLepton& lepton = event.lightLepton( 0 );
+            
+            //apply cone-corrected pT cut
+            if( lepton.pt() < 10 ) continue;
 
             //compute mT for event binning
             double mT = mt( lepton, event.met() );
@@ -246,7 +252,8 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
             if( !fakeRate::passTriggerJetSelection( event, triggerToUse, triggerToJetPtMap ) ) continue;
 
             //set correct weight corresponding to this trigger prescale 
-            double weight = event.weight()*prescaleMap[ triggerToUse ].value();
+            const Prescale& prescale = prescaleMap.find( triggerToUse )->second;
+            double weight = event.weight()*prescale.value();
 
             //fill numerator
             if( lepton.isTight() ){
@@ -285,41 +292,114 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
             
 
 
-
-
-
-
 int main( int argc, char* argv[] ){
 
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-
-    std::vector< std::string > triggerVector = { "HLT_Mu3_PFJet40", "HLT_Mu8", "HLT_Mu17", "HLT_Mu20", "HLT_Mu27", "HLT_Mu50", "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30", "HLT_Ele17_CaloIdM_TrackIdM_PFJet30", "HLT_Ele23_CaloIdM_TrackIdM_PFJet30"};
-
-    //fillPrescaleMeasurementHistograms( "2016", "../test/testData/", triggerVector, true, 0, 20 );
-    //fillPrescaleMeasurementHistograms( "2016", "../test/testData/", triggerVector, false, 0, 20 );
-
-    TFile* filePtr = TFile::Open( "prescaleMeasurement_mT_histograms_2016.root" );
-
-    std::map< std::string, Prescale > prescaleMap = fakeRate::fitTriggerPrescales_cut( filePtr, 80, 160);
-    filePtr->Close();
-
-    /*
-    fillFakeRateMeasurementHistograms( "muon", "2016", "../test/testData/", triggerVector, prescaleMap, 20, 20 );
-    fillFakeRateMeasurementHistograms( "electron", "2016", "../test/testData/", triggerVector, prescaleMap, 20, 20 );
-
-
-    filePtr = TFile::Open( "fakeRateMeasurement_muon_2016_mT_histograms.root" );
-    std::shared_ptr< TH2D > frMap = fakeRate::produceFakeRateMap_cut( filePtr );
-    filePtr->Close();
-
-    TFile* writeFile = TFile::Open( "test.root", "RECREATE" );
-    frMap->Write("fake-rate-test" );
-    writeFile->Close();
-    */
     
+    //either take 2 command line arguments, flavor and year, or none, in which case everything will be run
+    if( !( argvStr.size() == 3 || argvStr.size() == 1 ) ){
+        std::cerr << argc - 1 << " command line arguments given, while 2 or 0 are expected." << std::endl;
+        std::cerr << "Usage ( to measure fake-rate for all flavors and years ): ./fakeRateMeasurement" << std::endl;
+        std::cerr << "Or ( to measure fake-rate a single flavor and year ): ./fakeRateMeasurement flavor year" << std::endl;
+        return 1;
+    }
+
+    //configuration
+    const double metLowerCut_prescaleMeasurement = 20;
+    const double mTLowerCut_prescaleMeasurement = 0;
+    const double mTLowerCut_prescaleFit = 80;
+    const double mTUpperCut_prescaleFit = 160;
+    const double metUpperCut_fakeRateMeasurement = 20;
+    const double mTUpperCut_fakeRateMeasurement = 160;
+    const double maxFitValue = 20;
+    const bool use_mT = true;
+
+    std::vector< std::string > years;
+    std::vector< std::string > flavors;
+
+    //run for all flavors and years 
+    if( argvStr.size() == 1 ){
+        years = { "2016", "2017", "2018" };
+        flavors = { "muon", "electron" };
+
+    //run for one flavor and year
+    } else{
+        years = { argvStr[2] };
+        flavors = { argvStr[1] };
+    }
+
+    //trigger to use in fake-rate measurement 
+    std::map< std::string, std::vector< std::string > > triggerVectorMap = {
+        { "2016", std::vector< std::string >( {"HLT_Mu3_PFJet40", "HLT_Mu8", "HLT_Mu17", "HLT_Mu20", "HLT_Mu27", "HLT_Ele8_CaloIdM_TrackIdM_PFJet30", "HLT_Ele12_CaloIdM_TrackIdM_PFJet30", "HLT_Ele17_CaloIdM_TrackIdM_PFJet30", "HLT_Ele23_CaloIdM_TrackIdM_PFJet30" } ) },
+        { "2017", std::vector< std::string >( { "HLT_Mu3_PFJet40", "HLT_Mu8", "HLT_Mu17", "HLT_Mu20", "HLT_Mu27", "HLT_Ele8_CaloIdM_TrackIdM_PFJet30", "HLT_Ele17_CaloIdM_TrackIdM_PFJet30", "HLT_Ele23_CaloIdM_TrackIdM_PFJet30" } ) },
+        { "2018", std::vector< std::string >( { "HLT_Mu3_PFJet40", "HLT_Mu8", "HLT_Mu17", "HLT_Mu20", "HLT_Mu27", "HLT_Ele8_CaloIdM_TrackIdM_PFJet30", "HLT_Ele17_CaloIdM_TrackIdM_PFJet30", "HLT_Ele23_CaloIdM_TrackIdM_PFJet30" } ) }
+    };
+
+	//make sure ROOT behaves itself when running multithreaded
+    ROOT::EnableThreadSafety();
+
+    //set histogram style
+    setTDRStyle();
+
+    //fill all prescale histograms in a multithreaded manner
+    std::vector< std::thread > threadVector_prescale;
+    threadVector_prescale.reserve( 3 );
+    for( const auto& year : years ){
+        threadVector_prescale.emplace_back( fillPrescaleMeasurementHistograms, year, "../test/testData/", triggerVectorMap[ year ], use_mT, metLowerCut_prescaleMeasurement, mTLowerCut_prescaleMeasurement );
+    }
+
+    //join the threads
+    for( auto& t : threadVector_prescale ){
+        t.join();
+    }
     
+    //map years to prescale measurement map
+    std::map< std::string, std::map< std::string, Prescale > > prescaleMaps;
+    for( const auto& year : years ){
+        std::string file_name = std::string( "prescaleMeasurement_" ) + ( use_mT ? "mT" : "met" ) + "_histograms_" + year + ".root";
+        TFile* prescale_filePtr = TFile::Open( file_name.c_str() );
+        prescaleMaps[ year ] = fakeRate::fitTriggerPrescales_cut( prescale_filePtr, mTLowerCut_prescaleFit, mTUpperCut_prescaleFit );
+        prescale_filePtr->Close();
+    }
 
+    //fill all fake-rate measurement histograms in a multithreaded manner 
+    //use cuts on MET and MT ( though the cut on the fitting variable can also be set later on in the fit )
+    std::vector< std::thread > threadVector_measurement;
+    threadVector_measurement.reserve( 6 );
+    for( const auto& year : years ){
+        for( const auto& flavor : flavors ){
+            threadVector_measurement.emplace_back( fillFakeRateMeasurementHistograms, flavor, year, "../test/testData/", triggerVectorMap[ year ], prescaleMaps[ year ], mTUpperCut_fakeRateMeasurement, metUpperCut_fakeRateMeasurement );
+        }
+    }
 
+    //join the threads
+    for( auto& t : threadVector_measurement ){
+        t.join();
+    }
+
+    //make output directory if it did not already exist
+    systemTools::makeDirectory( "fakeRateMaps" );
+
+    //plot fake-rate maps and write them to a root file
+    for( const auto& year : years ){
+        for( const auto& flavor : flavors ){
+
+            std::string instanceName = flavor + "_" + year + "_" + ( use_mT ? "mT" : "met" );
+            
+            //measure the fake-rate, using bins up to the specified cut in the fitting variable
+            TFile* measurement_filePtr = TFile::Open( ( "fakeRateMeasurement_" + instanceName + "_histograms.root" ).c_str() );
+            std::shared_ptr< TH2D > frMap = fakeRate::produceFakeRateMap_cut( measurement_filePtr, maxFitValue );
+            measurement_filePtr->Close();
+
+            //plot the fake-rate measurement
+            plot2DHistogram( frMap.get(), ( "fakeRateMaps/fakeRateMap_" + instanceName + ".pdf").c_str() );
+
+            //write fake-rate measurement to file
+            TFile* writeFile = TFile::Open( ( "fakeRateMaps/fakeRateMap_data_" + instanceName + ".root" ).c_str(), "RECREATE" );
+            frMap->Write( ("fakeRate_" + flavor + "_" + year ).c_str() );
+            writeFile->Close();
+        }
+    }
     return 0;
 }
 

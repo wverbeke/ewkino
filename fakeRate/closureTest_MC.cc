@@ -26,8 +26,8 @@ std::vector< HistInfo > makeDistributionInfo(){
 		HistInfo( "leptonPtTrailing", "P_{T}^{trailing lepton} (GeV)", 10, 15, 150 ),
 
 		HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
-		HistInfo( "leptonEtaSubLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
-		HistInfo( "leptonEtaTrailing", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
+		HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
+		HistInfo( "leptonEtaTrailing", "|#eta|^{trailing lepton}", 10, 0, 2.5 ),
 		
 		HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 300 ),
         HistInfo( "mt", "M_{T}^{W} (GeV)", 10, 0, 300 ),
@@ -39,7 +39,7 @@ std::vector< HistInfo > makeDistributionInfo(){
 
 		HistInfo( "nJets", "number of jets", 8, 0, 8 ),
 		HistInfo( "nBJets", "number of b-jets (medium deep CSV)", 4, 0, 4 ),
-		HistInfo( "nVertex", "number of vertices", 10, 0, 100 )
+		HistInfo( "nVertex", "number of vertices", 10, 0, 70 )
     };
     return histInfoVec;
 }
@@ -55,6 +55,7 @@ std::shared_ptr< TH2D > readFRMap( const std::string& flavor, const std::string&
 
 
 bool passClosureTestEventSelection( Event& event ){
+    event.removeTaus();
     event.applyLeptonConeCorrection();
     event.cleanElectronsFromLooseMuons();
     event.selectFOLeptons();
@@ -96,7 +97,6 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
 }
 
 
-//void closureTest_MC( const std::string& year, const std::string& sampleListFile, const std::string& sampleDirectory ){
 void closureTest_MC( const std::string& process, const std::string& year, const std::string& sampleDirectory ){
 
     fakeRate::checkYearString( year );
@@ -123,7 +123,7 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
 
 
 	//loop over samples to fill histograms
-    std::string sampleListFile = "samples_closureTest_" + process + "_" + year + ".txt";
+    std::string sampleListFile = "sampleLists/samples_closureTest_" + process + "_" + year + ".txt";
     TreeReader treeReader( sampleListFile, sampleDirectory );
     for( unsigned i = 0; i < treeReader.numberOfSamples(); ++i ){
         treeReader.initSample();
@@ -138,6 +138,13 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
             LightLeptonCollection lightLeptons = event.lightLeptonCollection();
 
             double mll = 0, mtW = 0;
+            if( event.hasOSSFLightLeptonPair() ){
+                mll = event.bestZBosonCandidateMass();
+                mtW = event.mtW();
+            } else{
+                mll = ( lightLeptons[0] + lightLeptons[1] ).mass();
+                mtW = mt( lightLeptons[2], event.met() );
+            }
             //compute plotting variables 
             std::vector< double > variables = { lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
                 lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta(),
@@ -212,7 +219,7 @@ int main(){
 
 	//make threads to run different closure tests 
     std::vector< std::thread > threadVector;
-    threadVector.reserve( 2 );
+    threadVector.reserve( 6 );
     for( const auto& process : {"TT", "DY" } ){
         for( const auto& year : {"2016", "2017", "2018" } ){
             threadVector.emplace_back( closureTest_MC, process, year, "~/Work/ntuples_ewkino_new/" );

@@ -58,5 +58,11 @@ int main(){
         throw std::runtime_error( "result is " + vectorToString( split_string ) + " while it should be { 'oslo', 'stavanger', 'kristiansand', '' }. ");
     }
 
+    split_test = "trondheim";
+    split_string = stringTools::split( split_test, "oslo" );
+    if( split_string != std::vector< std::string >( { "trondheim" } ) ){
+        throw std::runtime_error( "result is " + vectorToString( split_string ) + " while it should be { 'trondheim' }." );
+    }
+
     return 0;
 }

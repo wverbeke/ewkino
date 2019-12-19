@@ -25,11 +25,11 @@ double getXMax( TH1* histogram ){
 
 ConstantFit::ConstantFit( TH1* histogram, const double min, const double max ){
 
-	if( ( min < getXMin( histogram ) ) || ( max < getXMax( histogram ) ) ){
+	if( ( min < getXMin( histogram ) ) || ( max > getXMax( histogram ) ) ){
 		throw std::invalid_argument( "Given range for ConstantFit falls outside of the given histogram's range." );
 	} 
 
-	TF1 constFunc( "constFunc", "[0]", min, max );
+    TF1 constFunc( "constFunc", "[0]", min, max );
 
     //fit the function twice (hack to improve the result in root ), in quiet mode ('Q')
     histogram->Fit( "constFunc", "Q" );
@@ -46,7 +46,7 @@ ConstantFit::ConstantFit( TH1* histogram, const double min, const double max ){
         _value = std::numeric_limits< double >::max();
         _uncertainty = std::numeric_limits< double >::max();
         _normalizedChi2 = std::numeric_limits< double >::max();
-    } 
+    }
 }
 
 
