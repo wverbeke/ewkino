@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <exception>
-
 #include <iostream>
 
 //include ROOT classes 
@@ -21,9 +20,14 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
 
     std::cout << "skimming " << pathToFile << std::endl;
 
-    //initialize TreeReader
+    //initialize TreeReader, input files might be corrupt in rare cases
     TreeReader treeReader;
-    treeReader.initSampleFromFile( pathToFile );
+    try{
+        treeReader.initSampleFromFile( pathToFile );
+    } catch( std::domain_error& ){
+        std::cerr << "Can not read file. Returning." << std::endl;
+        return;
+    }
 
     //make output ROOT file
     std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory ) + stringTools::removeOccurencesOf( pathToFile, "/" );
