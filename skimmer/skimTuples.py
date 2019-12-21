@@ -8,13 +8,28 @@ from jobSubmission import submitQsubJob, initializeJobScript
 from fileListing import *
 
 
+def is2017( sample_path ):
+	return ( ( 'MiniAOD2017' in sample_path )
+		or ( 'Run2017' in sample_path )
+		or ( 'Fall17' in sample_path )
+	)
+
+
+def is2018( sample_path ):
+	return ( ( 'MiniAOD2018' in sample_path )
+		or ( 'Run2018' in sample_path )
+		or ( 'Autumn18' in sample_path )
+	)
+
+
 def yearIdentifierFromPath( sample_path ):
-    if 'MiniAOD2018' in sample_path or 'Run2018' in sample_path :
+    if is2018( sample_path ):
         return 'Autumn18'
-    elif 'MiniAOD2017' in sample_path or 'Run2017' in sample_path :
+    elif is2017( sample_path ):
         return 'Fall17'
     else :
         return 'Summer16'
+
 
 
 if __name__ == '__main__' :
@@ -29,7 +44,7 @@ if __name__ == '__main__' :
     files_per_job = int(sys.argv[5]) if len( sys.argv ) >= 6 else 50
     wall_time = sys.argv[6] if len( sys.argv ) >= 7 else '24:00:00' 
     if len( sys.argv ) <= 4:
-    	print( 'Error: skimTuples.py requires additional command-line arguments.' )
+        print( 'Error: skimTuples.py requires additional command-line arguments.' )
         print( 'Usage: python skimTuples.py < input_directory > < ntuple_version > < output_directory > < skim_condition > < files_per_job > < wall_time >' )
         print( 'files_per_job and wall_time have default values of 50 and 24:00:00' )
         sys.exit()
@@ -52,7 +67,7 @@ if __name__ == '__main__' :
     
     
     for sample_directory, sub_directory, output_directory in zip( sample_directories, sample_sub_directories, sample_output_directories ):
-
+    
         #identify locations of files to process for a given sample 
         root_files = list( listFiles( os.path.join( sample_directory, sub_directory ), '.root' ) )
         
