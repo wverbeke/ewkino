@@ -213,6 +213,7 @@ void TreeReader::initSample( const Sample& samp ){
     //Warning: this pointer is overwritten, but it is not a memory leak. ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
     //The previous TFile is closed by the std::shared_ptr destructor, implicitly called above when opening a new TFile.
     currentTreePtr = (TTree*) currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" );
+    checkCurrentTree();
     initTree();
     if( !samp.isData() ){
 
@@ -256,6 +257,7 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
     //Warning: this pointer is overwritten, but it is not a memory leak. ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
     //The previous TFile is closed by the std::shared_ptr destructor, implicitly called above when opening a new TFile.
     currentTreePtr = (TTree*) currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" );
+    checkCurrentTree();
 
     //make a new sample, and make sure the pointer remains valid
     //new is no option here since this would also require a destructor for the class which does not work for the other initSample case
