@@ -32,6 +32,7 @@
 #include "Tools/src/Categorization.cc"
 #include "Tools/src/Sample.cc"
 #include "Tools/src/mergeAndRemoveOverlap.cc"
+#include "Tools/src/histogramTools.cc"
 
 //include TreeReader code 
 #include "TreeReader/src/TreeReader.cc"
