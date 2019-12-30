@@ -37,7 +37,7 @@ def initializeJobScript( script ):
 
    	#TO DO : make code to extract CMSSW directory in a general way
     #this is already available in DeepLearning repository, submodule would be a good solution 
-    current_CMSSW_version = 'CMSSW_10_2_16'
+    current_CMSSW_version = 'CMSSW_10_2_20'
     script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
     script.write('cd {}/src\n'.format( current_CMSSW_version ) )
     script.write('eval `scram runtime -sh`\n')
