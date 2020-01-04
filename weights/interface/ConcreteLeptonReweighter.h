@@ -12,38 +12,30 @@
 
 class ElectronIDReweighter : public LeptonReweighter< Electron > {
 
+    using LeptonReweighter< Electron >::LeptonReweighter;
+
     public:
-        ElectronIDReweighter( const std::shared_ptr< TH2 >& scaleFactors, LeptonSelectionHelper* selector ) :
-            LeptonReweighter< Electron >( scaleFactors, selector ) {}
         virtual double etaVariable( const Electron& electron ) const override{ return fabs( electron.etaSuperCluster() ); }
 };
 
 
 class ElectronReweighter : public LeptonReweighter< Electron > {
 
-    public:
-        ElectronReweighter( const std::shared_ptr< TH2 >& scaleFactors, LeptonSelectionHelper* selector ) :
-            LeptonReweighter< Electron >( scaleFactors, selector ) {}
+    using LeptonReweighter< Electron >::LeptonReweighter;
 };
 
 
 
 class MuonReweighter : public LeptonReweighter< Muon > {
     
-    public:
-        MuonReweighter( const std::shared_ptr< TH2 >& scaleFactors, LeptonSelectionHelper* selector ) :
-            LeptonReweighter< Muon >( scaleFactors, selector ) {}
-
+    using LeptonReweighter< Muon >::LeptonReweighter;
 };
 
 
 
 class TauReweighter : public LeptonReweighter< Tau > {
 
-    public:
-        TauReweighter( const std::shared_ptr< TH2 >& scaleFactors, LeptonSelectionHelper* selector ) :
-            LeptonReweighter< Tau >( scaleFactors, selector ) {}
-
+    using LeptonReweighter< Tau >::LeptonReweighter;
 };
 
 #endif 
