@@ -25,13 +25,6 @@ void fakeRate::checkFlavorString( const std::string& flavorString ){
 }
 
 
-void fakeRate::checkYearString( const std::string& yearString ){
-    if( !( yearString == "2016" || yearString == "2017" || yearString == "2018" ) ){
-        throw std::invalid_argument( "Year string is '" + yearString + "' while it must be either '2016', '2017' or '2018'" );
-    }
-}
-
-
 std::vector< std::string > fakeRate::listHistogramNamesInFile( TFile* filePtr ){
     std::vector< std::string > histogramNameList;
     for( const auto& key : *filePtr->GetListOfKeys() ){

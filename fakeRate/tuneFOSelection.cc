@@ -18,6 +18,7 @@ The goal of the tuning is having a fake-rate (tight/FO) that is equal for light 
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 #include "../Tools/interface/systemTools.h"
+#include "../Tools/interface/analysisTools.h"
 #include "interface/CutsFitInfo.h"
 #include "interface/fakeRateTools.h"
 
@@ -27,7 +28,7 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     fakeRate::checkFlavorString( leptonFlavor );
     bool isMuon = ( leptonFlavor == "muon" );
 
-    fakeRate::checkYearString( year );
+    analysisTools::checkYearString( year );
 
     const double minPtRatioCut = 0;
     const double maxPtRatioCut = 1;
@@ -219,7 +220,7 @@ int main( int argc, char* argv[] ){
         std::string year = argvStr[2]; 
 
         fakeRate::checkFlavorString( flavor );
-        fakeRate::checkYearString( year );
+        analysisTools::checkYearString( year );
 
         tuneFOSelection( flavor, year, sampleDirectory );
     } else if( argc == 1 ){
@@ -230,7 +231,7 @@ int main( int argc, char* argv[] ){
         }
     } else if( argc == 2 ){
 		std::string year = argvStr[1];
-        fakeRate::checkYearString( year );
+        analysisTools::checkYearString( year );
         for( auto& flavor : std::vector< std::string >( {"muon", "electron"} ) ){
 			runTuningAsJob( flavor, year );
         }

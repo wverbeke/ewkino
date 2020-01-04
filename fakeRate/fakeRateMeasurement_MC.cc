@@ -13,14 +13,16 @@
 #include "interface/fakeRateTools.h"
 #include "interface/fakeRateSelection.h"
 #include "../Tools/interface/systemTools.h"
+#include "../Tools/interface/analysisTools.h"
 #include "../plotting/plotCode.h"
+#include "../plotting/tdrStyle.h"
 
 
 void determineMCFakeRate( const std::string& flavor, const std::string& year, const std::string& sampleListFile, const std::string& sampleDirectory ){
 
     
     fakeRate::checkFlavorString( flavor );
-    fakeRate::checkYearString( year );
+    analysisTools::checkYearString( year );
     const bool isMuon =  ( flavor == "muon" );
     
     std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};

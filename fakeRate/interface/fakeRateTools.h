@@ -17,7 +17,6 @@
 namespace fakeRate{
     
     void checkFlavorString( const std::string& flavorString );
-    void checkYearString( const std::string& yearString );
     std::vector< std::string > listHistogramNamesInFile( TFile* filePtr );
 	std::vector< std::string > listTriggersWithHistogramInFile( TFile* filePtr );
 
