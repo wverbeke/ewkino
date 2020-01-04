@@ -42,11 +42,18 @@ class GeneratorInfo{
         double partonLevelHT() const{ return _partonLevelHT; }
         float numberOfTrueInteractions() const{ return _numberOfTrueInteractions; }
 
+        double prefireWeight() const{ return _prefireWeight; }
+        double prefireWeightDown() const{ return _prefireWeightDown; }
+        double prefireWeightUp() const{ return _prefireWeightUp; }
+
     private:
         unsigned _numberOfLheWeights;
         double _lheWeights[110];
         unsigned _numberOfPsWeights;
         double _psWeights[14];
+        double _prefireWeight;
+        double _prefireWeightDown;
+        double _prefireWeightUp;
 
         unsigned _ttgEventType;
         unsigned _zgEventType;

@@ -2,7 +2,8 @@
 #define histogramTools_H
 
 //include ROOT classes
-#include "TH1D.h"
+#include "TH1.h"
+#include "TH2.h"
 
 namespace histogram{
     double minBinCenter( const TH1* );
