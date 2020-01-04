@@ -17,9 +17,9 @@ template < typename LeptonType > class LeptonReweighter{
     public:
         LeptonReweighter( const std::shared_ptr< TH2 >&, LeptonSelectionHelper* );
 
-        double weight( const LeptonType& lepton ) const;
-        double weightDown( const LeptonType& lepton ) const;
-        double weightUp( const LeptonType& lepton ) const;
+        double weight( const LeptonType& ) const;
+        double weightDown( const LeptonType& ) const;
+        double weightUp( const LeptonType& ) const;
 
         virtual double ptVariable( const LeptonType& lepton ) const{ return lepton.pt(); }
         virtual double etaVariable( const LeptonType& lepton ) const{ return lepton.absEta(); }
@@ -50,10 +50,8 @@ template < typename LeptonType > LeptonReweighter< LeptonType >::LeptonReweighte
 template < typename LeptonType > double LeptonReweighter< LeptonType >::weight( const LeptonType& lepton, double (&retrieveValue)( TH2*, const double, const double ) ) const{
     if( selector->passSelection( lepton ) ){
         if( ptOnXAxis ){
-            //return histogram::contentAtValues( weightMap.get(), ptVariable( lepton ), etaVariable( lepton ) );
             return retrieveValue( weightMap.get(), ptVariable( lepton ), etaVariable( lepton ) );
         } else {
-            //return histogram::contentAtValues( weightMap.get(), etaVariable( lepton ), ptVariable( lepton ) );
             return retrieveValue( weightMap.get(), etaVariable( lepton ), ptVariable( lepton ) );
         }
     } else {
