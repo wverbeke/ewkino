@@ -95,11 +95,11 @@ void computeBTagEff( const std::string& year, const std::string& sampleDirectory
 
                     //check that jet passes specified working point for numerator
                     if( ( jet.*workingPointFunctions[wp] )() ){
-                        histogram::fillValue( bTagEfficiencyMaps[ 0 ][ flavorIndex ][ wp ].get(), jet.pt(), jet.absEta(), weight );
+                        histogram::fillValues( bTagEfficiencyMaps[ 0 ][ flavorIndex ][ wp ].get(), jet.pt(), jet.absEta(), weight );
                     }
 
                     //denominator
-                    histogram::fillValue( bTagEfficiencyMaps[ 1 ][ flavorIndex ][ wp ].get(), jet.pt(), jet.absEta(), weight );
+                    histogram::fillValues( bTagEfficiencyMaps[ 1 ][ flavorIndex ][ wp ].get(), jet.pt(), jet.absEta(), weight );
                 }
             }
         }
