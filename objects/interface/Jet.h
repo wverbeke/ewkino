@@ -34,6 +34,7 @@ class Jet : public PhysicsObject{
 
         //analysis-specific jet selection
         virtual bool isGood() const override;
+        bool inBTagAcceptance() const;
         bool isBTaggedLoose() const;
         bool isBTaggedMedium() const;
         bool isBTaggedTight() const;

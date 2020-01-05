@@ -2,6 +2,8 @@
 
 //include c++ library classes 
 #include <cmath>
+#include <stdexcept>
+#include <string>
 
 //include other parts of framework
 #include "../interface/JetSelector.h"
@@ -34,7 +36,11 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
     } else if( _deepFlavor < 0 ){
         _deepFlavor = 0.;
     }
-    
+
+    //check that _hadronFlavor has a known value
+    if( ! ( ( _hadronFlavor == 0 ) || ( _hadronFlavor == 4 ) || ( _hadronFlavor == 5 ) ) ){
+        throw std::invalid_argument( "jet hadronFlavor is '" + std::to_string( _hadronFlavor ) + "' while it should be 0, 4 or 5." );
+    }
 }
 
 
@@ -124,6 +130,11 @@ Jet Jet::JetJECUp() const{
 
 bool Jet::isGood() const{
     return selector->isGood();
+}
+
+
+bool Jet::inBTagAcceptance() const{
+    return selector->inBTagAcceptance();
 }
 
 

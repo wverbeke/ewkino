@@ -21,7 +21,7 @@ template < typename LeptonType > class LeptonReweighter{
         double weightDown( const LeptonType& ) const;
         double weightUp( const LeptonType& ) const;
 
-        virtual double ptVariable( const LeptonType& lepton ) const{ return lepton.pt(); }
+        virtual double ptVariable( const LeptonType& lepton ) const{ return lepton.uncorrectedPt(); }
         virtual double etaVariable( const LeptonType& lepton ) const{ return lepton.absEta(); }
 
     private:

@@ -55,6 +55,9 @@ class Lepton : public PhysicsObject {
 
         //cone-correction for fake-rate prediction
         void applyConeCorrection();
+        
+        //pT before cone correction
+        double uncorrectedPt() const{ return _uncorrectedPt; }
 
         //check what type of lepton the object is
         virtual bool isMuon() const = 0;
@@ -94,6 +97,10 @@ class Lepton : public PhysicsObject {
         bool isConeCorrected = false;
 
     protected :
+
+        //pT before cone correction
+        double _uncorrectedPt;
+
         Lepton( const Lepton&, LeptonSelector* );
         Lepton( Lepton&&, LeptonSelector* ) noexcept;
 };
