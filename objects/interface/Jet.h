@@ -42,6 +42,11 @@ class Jet : public PhysicsObject{
         //create new Jet with JEC varied within uncertainties
         Jet JetJECDown() const;
         Jet JetJECUp() const;
+        Jet JetJERDown() const;
+        Jet JetJERUp() const;
+
+        //check if any of the jet variations passes the selection
+        bool isGoodAnyVariation() const;
 
         //print jet information
         virtual std::ostream& print( std::ostream& ) const override;
@@ -57,6 +62,8 @@ class Jet : public PhysicsObject{
         //JEC uncertainties 
         double _pt_JECDown = 0;
         double _pt_JECUp = 0;
+        double _pt_JERDown = 0;
+        double _pt_JERUp = 0;
 
         //jet selector 
         JetSelector* selector;

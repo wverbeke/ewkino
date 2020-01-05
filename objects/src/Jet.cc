@@ -10,7 +10,14 @@
 
 
 Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
-    PhysicsObject( treeReader._jetPt[jetIndex], treeReader._jetEta[jetIndex], treeReader._jetPhi[jetIndex], treeReader._jetE[jetIndex], treeReader.is2016(), treeReader.is2017() ),
+    PhysicsObject( 
+        treeReader._jetSmearedPt[jetIndex], 
+        treeReader._jetEta[jetIndex], 
+        treeReader._jetPhi[jetIndex], 
+        treeReader._jetE[jetIndex] * ( treeReader._jetSmearedPt[jetIndex] / treeReader._jetPt[jetIndex] ),
+        treeReader.is2016(), 
+        treeReader.is2017() 
+    ),
     _deepCSV( treeReader._jetDeepCsv_b[jetIndex] + treeReader._jetDeepCsv_bb[jetIndex] ),
     _deepFlavor( treeReader._jetDeepFlavor_b[jetIndex] + treeReader._jetDeepFlavor_bb[jetIndex] + treeReader._jetDeepFlavor_lepb[jetIndex] ),
     _isTight( treeReader._jetIsTight[jetIndex] ),
@@ -18,8 +25,10 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
 
     //WARNING : is hadron flavor defined for jets in data?
     _hadronFlavor( treeReader._jetHadronFlavor[jetIndex] ),
-    _pt_JECDown( treeReader._jetPt_JECDown[jetIndex] ),
-    _pt_JECUp( treeReader._jetPt_JECUp[jetIndex] ),
+    _pt_JECDown( treeReader._jetSmearedPt_JECDown[jetIndex] ),
+    _pt_JECUp( treeReader._jetSmearedPt_JECUp[jetIndex] ),
+    _pt_JERDown( treeReader._jetSmearedPt_JERDown[jetIndex] ),
+    _pt_JERUp( treeReader._jetSmearedPt_JERUp[jetIndex] ),
     selector( new JetSelector( this ) )
 {
     //catch potential invalid values of deepCSV and deepFlavor
@@ -53,6 +62,8 @@ Jet::Jet( const Jet& rhs ) :
     _hadronFlavor( rhs._hadronFlavor ),
     _pt_JECDown( rhs._pt_JECDown ),
     _pt_JECUp( rhs._pt_JECUp ),
+    _pt_JERDown( rhs._pt_JERDown ),
+    _pt_JERUp( rhs._pt_JERUp ),
     selector( new JetSelector( this ) )
     {}
 
@@ -66,6 +77,8 @@ Jet::Jet( Jet&& rhs ) noexcept :
     _hadronFlavor( rhs._hadronFlavor ),
     _pt_JECDown( rhs._pt_JECDown ),
     _pt_JECUp( rhs._pt_JECUp ),
+    _pt_JERDown( rhs._pt_JERDown ),
+    _pt_JERUp( rhs._pt_JERUp ),
 	selector( new JetSelector( this ) )
 {}
 
@@ -83,6 +96,8 @@ void Jet::copyNonPointerAttributes( const Jet& rhs ){
     _hadronFlavor = rhs._hadronFlavor;
     _pt_JECDown = rhs._pt_JECDown;
     _pt_JECUp = rhs._pt_JECUp;
+    _pt_JERDown = rhs._pt_JERDown;
+    _pt_JERUp = rhs._pt_JERUp;
 }
 
 
@@ -128,8 +143,29 @@ Jet Jet::JetJECUp() const{
 }
 
 
+Jet Jet::JetJERDown() const{
+    return variedJet( _pt_JERDown );
+}
+
+
+Jet Jet::JetJERUp() const{
+    return variedJet( _pt_JERUp );
+}
+
+
 bool Jet::isGood() const{
     return selector->isGood();
+}
+
+
+bool Jet::isGoodAnyVariation() const{
+    return (
+        isGood() ||
+        JetJECDown().isGood() ||
+        JetJECUp().isGood() ||
+        JetJERDown().isGood() ||
+        JetJERUp().isGood()
+    );
 }
 
 

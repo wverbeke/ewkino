@@ -17,10 +17,8 @@ void JetCollection::selectGoodJets(){
 }
 
 
-JetCollection JetCollection::goodJetCollection() const{
-    JetCollection jetCol( *this );
-    jetCol.selectGoodJets();
-    return jetCol;
+void JetCollection::selectGoodAnyVariationJets(){
+    selectObjects( &Jet::isGoodAnyVariation );
 }
 
 
@@ -55,10 +53,22 @@ JetCollection JetCollection::buildSubCollection( bool (Jet::*passSelection)() co
     std::vector< std::shared_ptr< Jet > > jetVector;
     for( const auto& jetPtr : *this ){
         if( ( *jetPtr.*passSelection )() ){
+
+            //jets are shared between collections!
             jetVector.push_back( jetPtr );
         }
     }
     return JetCollection( jetVector );
+}
+
+
+JetCollection JetCollection::goodJetCollection() const{
+    return buildSubCollection( &Jet::isGood );
+}
+
+
+JetCollection JetCollection::goodAnyVariationJetCollection() const{
+    return buildSubCollection( &Jet::isGoodAnyVariation );
 }
 
 
@@ -74,6 +84,37 @@ JetCollection JetCollection::mediumBTagCollection() const{
 
 JetCollection JetCollection::tightBTagCollection() const{
     return buildSubCollection( &Jet::isBTaggedTight );
+}
+
+
+JetCollection JetCollection::buildVariedCollection( Jet (Jet::*variedJet)() const ) const{
+    std::vector< std::shared_ptr< Jet > > jetVector;
+    for( const auto& jetPtr : *this ){
+
+        //jets are NOT shared between collections!
+        jetVector.push_back( std::make_shared< Jet >( (*jetPtr.*variedJet)() ) );
+    }
+    return JetCollection( jetVector );
+}
+
+
+JetCollection JetCollection::JECDownCollection() const{
+    return buildVariedCollection( &Jet::JetJECDown );
+}
+
+
+JetCollection JetCollection::JECUpCollection() const{
+    return buildVariedCollection( &Jet::JetJECUp );
+}
+
+
+JetCollection JetCollection::JERDownCollection() const{
+    return buildVariedCollection( &Jet::JetJERDown );
+}
+
+
+JetCollection JetCollection::JERUpCollection() const{
+    return buildVariedCollection( &Jet::JetJERUp );
 }
 
 
@@ -94,6 +135,11 @@ JetCollection::size_type JetCollection::numberOfTightBTaggedJets() const{
 
 JetCollection::size_type JetCollection::numberOfGoodJets() const{
     return count( &Jet::isGood );
+}
+
+
+JetCollection::size_type JetCollection::numberOfGoodAnyVariationJets() const{
+    return count( &Jet::isGoodAnyVariation );
 }
 
 

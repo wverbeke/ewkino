@@ -26,15 +26,24 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
         JetCollection mediumBTagCollection() const;
         JetCollection tightBTagCollection() const;
 
+        //make varied collections of jets
+        JetCollection JECDownCollection() const;
+        JetCollection JECUpCollection() const;
+        JetCollection JERDownCollection() const;
+        JetCollection JERUpCollection() const;
+
         //select jets
         void selectGoodJets();
         JetCollection goodJetCollection() const;
+        void selectGoodAnyVariationJets();
+        JetCollection goodAnyVariationJetCollection() const;
 
         //count jets passing criteria
         size_type numberOfLooseBTaggedJets() const;
         size_type numberOfMediumBTaggedJets() const;
         size_type numberOfTightBTaggedJets() const;
         size_type numberOfGoodJets() const;
+        size_type numberOfGoodAnyVariationJets() const;
 
         //clean jets 
         void cleanJetsFromLooseLeptons( const LeptonCollection&, const double coneSize = 0.4 );
@@ -50,9 +59,9 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
         //build JetCollection of jets satisfying a certain requirement
         JetCollection buildSubCollection( bool (Jet::*passSelection)() const ) const;
         JetCollection( const std::vector< std::shared_ptr< Jet > >& jetVector ) : PhysicsObjectCollection< Jet >( jetVector ) {}
-
-        
-
+    
+        //build JetCollection of varied Jets
+        JetCollection buildVariedCollection( Jet (Jet::*variedJet)() const ) const;
 };
 
 #endif 
