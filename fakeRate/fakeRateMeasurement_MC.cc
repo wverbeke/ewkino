@@ -14,6 +14,7 @@
 #include "interface/fakeRateSelection.h"
 #include "../Tools/interface/systemTools.h"
 #include "../Tools/interface/analysisTools.h"
+#include "../Tools/interface/histogramTools.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 
@@ -25,15 +26,13 @@ void determineMCFakeRate( const std::string& flavor, const std::string& year, co
     analysisTools::checkYearString( year );
     const bool isMuon =  ( flavor == "muon" );
     
-    std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};
+    const std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};
     std::vector< double > etaBins;
     if( isMuon ){
         etaBins = { 0., 1.2, 2.1, 2.4 }; 
     } else {
 		etaBins = { 0., 0.8, 1.442, 2.5 };
     }
-    const double maxPtBin = ( ptBins[ ptBins.size() - 1 ]  +  ptBins[ ptBins.size() - 2 ] )/2.;
-    const double maxEtaBin = ( etaBins[ etaBins.size() - 1 ] + etaBins[ etaBins.size() - 2 ] )/2.;
 
 	//initialize 2D histograms for numerator and denominator
 	std::string numerator_name = "fakeRate_" + flavor + "_" + year;
@@ -63,11 +62,11 @@ void determineMCFakeRate( const std::string& flavor, const std::string& year, co
             if( lepton.matchPdgId() == 22 ) continue;
 
             //fill denominator histogram 
-            denominatorMap->Fill( std::min( lepton.pt(), maxPtBin ), std::min( lepton.absEta(), maxEtaBin ), event.weight() );
+            histogram::fillValues( denominatorMap.get(), lepton.pt(), lepton.absEta(), event.weight() );
     
             //fill numerator histogram
             if( lepton.isTight() ){
-                numeratorMap->Fill( std::min( lepton.pt(), maxPtBin ), std::min( lepton.absEta(), maxEtaBin ), event.weight() );
+                histogram::fillValues( numeratorMap.get(), lepton.pt(), lepton.absEta(), event.weight() );
             }
         }
     }

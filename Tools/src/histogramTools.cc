@@ -144,7 +144,7 @@ void histogram::fillValue( TH1* histPtr, const double value, const double weight
 }
 
 
-void histogram::fillValue( TH2* histPtr, const double valueX, const double valueY, const double weight ){
+void histogram::fillValues( TH2* histPtr, const double valueX, const double valueY, const double weight ){
 	histPtr->Fill( boundedXValue( histPtr, valueX ), boundedYValue( histPtr, valueY ), weight );
 }
 

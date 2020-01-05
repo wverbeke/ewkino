@@ -13,6 +13,7 @@
 #include "../Event/interface/Event.h"
 #include "../Tools/interface/systemTools.h"
 #include "../Tools/interface/stringTools.h"
+#include "../Tools/interface/histogramTools.h"
 #include "interface/chargeFlipSelection.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
@@ -20,11 +21,8 @@
 
 void determineMCChargeFlipRate( const std::string& year, const std::string& sampleListFile, const std::string& sampleDirectory ){
 
-    std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};
-    std::vector< double > etaBins = { 0., 0.8, 1.442, 2.5 };
-
-    const double maxPtBin = ( ptBins[ ptBins.size() - 1 ]  +  ptBins[ ptBins.size() - 2 ] )/2.;
-    const double maxEtaBin = ( etaBins[ etaBins.size() - 1 ] + etaBins[ etaBins.size() - 2 ] )/2.;
+    const std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};
+    const std::vector< double > etaBins = { 0., 0.8, 1.442, 2.5 };
 
 	//initialize 2D histograms for numerator and denominator
 	std::string numerator_name = "chargeFlipRate_electron_" + year;
@@ -56,11 +54,11 @@ void determineMCChargeFlipRate( const std::string& year, const std::string& samp
                 if( !( electron.isPrompt() ) ) continue;
 
                 //fill denominator histogram 
-                denominatorMap->Fill( std::min( electron.pt(), maxPtBin ), std::min( electron.absEta(), maxEtaBin ), event.weight() );
+                histogram::fillValues( denominatorMap.get(), electron.pt(), electron.absEta(), event.weight() );
     
                 //fill numerator histogram
                 if( electron.isChargeFlip() ){
-                    numeratorMap->Fill( std::min( electron.pt(), maxPtBin ), std::min( electron.absEta(), maxEtaBin ), event.weight() );
+                    histogram::fillValues( numeratorMap.get(), electron.pt(), electron.absEta(), event.weight() );
                 }
             }
         }

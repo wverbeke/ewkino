@@ -36,7 +36,7 @@ namespace histogram{
     double contentUpAtValues( TH2*, const double valueX, const double valueY );
 
     void fillValue( TH1*, const double value, const double weight );
-    void fillValue( TH2*, const double valueX, const double valueY, const double weight );
+    void fillValues( TH2*, const double valueX, const double valueY, const double weight );
 }
 
 #endif
