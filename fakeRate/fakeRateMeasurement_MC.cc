@@ -13,14 +13,16 @@
 #include "interface/fakeRateTools.h"
 #include "interface/fakeRateSelection.h"
 #include "../Tools/interface/systemTools.h"
+#include "../Tools/interface/analysisTools.h"
 #include "../plotting/plotCode.h"
+#include "../plotting/tdrStyle.h"
 
 
 void determineMCFakeRate( const std::string& flavor, const std::string& year, const std::string& sampleListFile, const std::string& sampleDirectory ){
 
     
     fakeRate::checkFlavorString( flavor );
-    fakeRate::checkYearString( year );
+    analysisTools::checkYearString( year );
     const bool isMuon =  ( flavor == "muon" );
     
     std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};
@@ -36,8 +38,10 @@ void determineMCFakeRate( const std::string& flavor, const std::string& year, co
 	//initialize 2D histograms for numerator and denominator
 	std::string numerator_name = "fakeRate_" + flavor + "_" + year;
     std::shared_ptr< TH2D > numeratorMap( new TH2D( numerator_name.c_str(), ( numerator_name+ "; p_{T} (GeV); |#eta|").c_str(), ptBins.size() - 1, &ptBins[0], etaBins.size() - 1, &etaBins[0] ) );
+    numeratorMap->Sumw2();
 	std::string denominator_name = "fakeRate_denominator_" + flavor + "_" + year;
     std::shared_ptr< TH2D > denominatorMap( new TH2D( denominator_name.c_str(), denominator_name.c_str(), ptBins.size() - 1, &ptBins[0], etaBins.size() - 1, &etaBins[0] ) );
+    denominatorMap->Sumw2();
 
 
 	//loop over samples to fill histograms

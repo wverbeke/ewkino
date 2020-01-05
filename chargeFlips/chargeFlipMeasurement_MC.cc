@@ -29,9 +29,11 @@ void determineMCChargeFlipRate( const std::string& year, const std::string& samp
 	//initialize 2D histograms for numerator and denominator
 	std::string numerator_name = "chargeFlipRate_electron_" + year;
     std::shared_ptr< TH2D > numeratorMap( new TH2D( numerator_name.c_str(), ( numerator_name+ "; p_{T} (GeV); |#eta|").c_str(), ptBins.size() - 1, &ptBins[0], etaBins.size() - 1, &etaBins[0] ) );
+    numeratorMap->Sumw2();
 
 	std::string denominator_name = "chargeFlipRate_denominator_electron_" + year;
     std::shared_ptr< TH2D > denominatorMap( new TH2D( denominator_name.c_str(), denominator_name.c_str(), ptBins.size() - 1, &ptBins[0], etaBins.size() - 1, &etaBins[0] ) );
+    denominatorMap->Sumw2();
 
 
 	//loop over samples to fill histograms

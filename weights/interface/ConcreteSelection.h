@@ -5,7 +5,7 @@
 
 
 
-class LooseSelector : public LeptonSelectionHelper{
+class LooseSelector : public LeptonSelectionHelper {
     
     public:
         virtual bool passSelection( const Lepton& lepton ) const override{ return lepton.isLoose(); }
@@ -13,7 +13,7 @@ class LooseSelector : public LeptonSelectionHelper{
 
 
 
-class FOSelector : public LeptonSelectionHelper{
+class FOSelector : public LeptonSelectionHelper {
     
     public: 
         virtual bool passSelection( const Lepton& lepton ) const override{ return lepton.isFO(); }
@@ -21,7 +21,7 @@ class FOSelector : public LeptonSelectionHelper{
 
 
 
-class TightSelector : public LeptonSelectionHelper{
+class TightSelector : public LeptonSelectionHelper {
 
     public:
         virtual bool passSelection( const Lepton& lepton ) const override{ return lepton.isTight(); }
@@ -29,7 +29,7 @@ class TightSelector : public LeptonSelectionHelper{
 
 
 
-class LooseNotTightSelector : public LeptonSelectionHelper{
+class LooseNotTightSelector : public LeptonSelectionHelper {
     
     public:
         virtual bool passSelection( const Lepton& lepton ) const override{ return ( lepton.isLoose() && ( ! lepton.isTight() ) ); }
@@ -37,20 +37,32 @@ class LooseNotTightSelector : public LeptonSelectionHelper{
 
 
 
-class FONotTightSelector : public LeptonSelectionHelper{
+class FONotTightSelector : public LeptonSelectionHelper {
 
     public:
         virtual bool passSelection( const Lepton& lepton ) const override{ return ( lepton.isFO() && ( ! lepton.isTight() ) ); }
 };
 
 
-class LooseNotFOSelector : public LeptonSelectionHelper{
+class LooseNotFOSelector : public LeptonSelectionHelper {
 
     public:
         virtual bool passSelection( const Lepton& lepton ) const override{ return ( lepton.isLoose() && ( ! lepton.isFO() ) ); }
-
 };
 
 
+//extra selectors including pT cuts for use with electron reconstruction scale factors 
+template< int maximumPt > class LooseMaxPtSelector: public LeptonSelectionHelper {
+
+    public:
+        virtual bool passSelection( const Lepton& lepton ) const override{ return ( lepton.isLoose() && ( lepton.uncorrectedPt() <= static_cast<double>( maximumPt ) ) ); }
+};
+
+
+template< int minimumPt > class LooseMinPtSelector: public LeptonSelectionHelper {
+
+    public:
+        virtual bool passSelection( const Lepton& lepton ) const override{ return ( lepton.isLoose() && ( lepton.uncorrectedPt() > static_cast<double>( minimumPt ) ) ); }
+};
 
 #endif 

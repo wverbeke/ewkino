@@ -13,7 +13,7 @@
 class ReweighterBTag : public Reweighter {
 
     public:
-        ReweighterBTag( const std::string& sfFilePath, const std::string& workingPoint, const std::shared_ptr< TH2 >&, const std::shared_ptr< TH2 >&, const std::shared_ptr< TH2 >& );
+        ReweighterBTag( const std::string& weightDirectory, const std::string& sfFilePath, const std::string& workingPoint, const std::shared_ptr< TH2 >&, const std::shared_ptr< TH2 >&, const std::shared_ptr< TH2 >& );
 
         virtual double weight( const Event& ) const override;
         virtual double weightDown( const Event& ) const override;

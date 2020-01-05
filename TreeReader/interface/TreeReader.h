@@ -258,11 +258,13 @@ class TreeReader {
         bool isNewPhysicsSignal() const;
 
         //access number of samples and current sample
-        const Sample& currentSample(){ return *currentSamplePtr; }
+        const Sample& currentSample() const{ return *_currentSamplePtr; }
+        const Sample* currentSamplePtr() const{ return _currentSamplePtr.get(); }
         std::vector< Sample >::size_type numberOfSamples() const{ return samples.size(); }
+        std::vector< Sample > sampleVector() const{ return samples; }
 
         //access current file and tree 
-        std::shared_ptr< TFile > getCurrentFilePtr(){ return currentFilePtr; }
+        std::shared_ptr< TFile > currentFilePtr(){ return _currentFilePtr; }
 
         //get object from current file 
         TObject* getFromCurrentFile( const std::string& name ) const;//{ return currentFilePtr->Get( name.c_str() ); }
@@ -356,13 +358,13 @@ class TreeReader {
         std::vector< Sample > samples2018;
 
         //current sample
-        std::shared_ptr< const Sample > currentSamplePtr;
+        std::shared_ptr< const Sample > _currentSamplePtr;
 
         //TFile associated to current sample
-        std::shared_ptr< TFile > currentFilePtr;
+        std::shared_ptr< TFile > _currentFilePtr;
 
         //TTree associated to current sample 
-        TTree* currentTreePtr = nullptr;
+        TTree* _currentTreePtr = nullptr;
 
         //check whether current sample is initialized, throw an error if it is not 
         void checkCurrentSample() const;

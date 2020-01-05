@@ -15,15 +15,15 @@
 
 
 class TreeReader;
-//class LeptonCollection;
-//class JetCollection;
 class MuonCollection;
 class ElectronCollection;
 class TauCollection;
 class Met;
 class TriggerInfo;
 class GeneratorInfo;
-//class EventTags;
+class Sample;
+
+
 
 class Event{
 
@@ -191,11 +191,12 @@ class Event{
         PhysicsObject leptonJetMetSystem() const{ return ( leptonJetSystem() + met() ); }
 
         //check what year event corresponds to and whether it is a data or MC event
-        bool isData(){ return _isData; }
-        bool isMC(){ return !_isData; }
-        bool is2016(){ return !( _is2017 || _is2018 ); }
-        bool is2017(){ return _is2017; }
-        bool is2018(){ return _is2018; }
+        bool isData() const{ return _samplePtr->isData(); }
+        bool isMC() const{ return _samplePtr->isMC(); }
+        bool is2016() const{ return _samplePtr->is2016(); }
+        bool is2017() const{ return _samplePtr->is2017(); }
+        bool is2018() const{ return _samplePtr->is2018(); }
+        const Sample& sample() const{ return *_samplePtr; }
 
         //event tags
         long unsigned eventNumber(){ return eventTags().eventNumber(); }
@@ -212,9 +213,7 @@ class Event{
         GeneratorInfo* _generatorInfoPtr = nullptr;
         unsigned _numberOfVertices = 0;
         double _weight = 1;
-        bool _isData;
-        bool _is2017;
-        bool _is2018;
+        const Sample* _samplePtr = nullptr;
 
         //presence of Z boson
         bool ZIsInitialized = false;

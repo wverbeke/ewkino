@@ -31,5 +31,8 @@ namespace analysisTools{
     
     //first bool checks whether file is 2017, second whether it is 2018
     std::pair< bool, bool > fileIs2017Or2018( const std::string& filePath );
+
+    //check if a string is either 2016, 2017 or 2018, if not throw an error
+    void checkYearString( const std::string& );
 }
 #endif

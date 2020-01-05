@@ -1,6 +1,8 @@
 #ifndef ConcreteReweighterBTag_H
 #define ConcreteReweighterBTag_H
 
+#include "ReweighterBTag.h"
+
 class ReweighterBTagDeepCSV : public ReweighterBTag {
 
     using ReweighterBTag::ReweighterBTag;

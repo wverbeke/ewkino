@@ -25,13 +25,6 @@ void fakeRate::checkFlavorString( const std::string& flavorString ){
 }
 
 
-void fakeRate::checkYearString( const std::string& yearString ){
-    if( !( yearString == "2016" || yearString == "2017" || yearString == "2018" ) ){
-        throw std::invalid_argument( "Year string is '" + yearString + "' while it must be either '2016', '2017' or '2018'" );
-    }
-}
-
-
 std::vector< std::string > fakeRate::listHistogramNamesInFile( TFile* filePtr ){
     std::vector< std::string > histogramNameList;
     for( const auto& key : *filePtr->GetListOfKeys() ){
@@ -253,6 +246,7 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
     std::pair< std::vector< double >, std::vector< double > > ptEtaBins = ptEtaBinNamesToBinVectors( ptEtaBinNames, isMuon );
     std::shared_ptr<TH2D> fakeRateMap = std::make_shared< TH2D >( "fake-rate", "fake-rate; p_{T} (GeV); |#eta|", ptEtaBins.first.size() - 1, &ptEtaBins.first[0], ptEtaBins.second.size() - 1, &ptEtaBins.second[0] );
     fakeRateMap->SetDirectory( gROOT );
+    fakeRateMap->Sumw2();
 
 	//measure fake-rate for each pT and eta bin 
 	for( const auto& bin : ptEtaBinNames ){

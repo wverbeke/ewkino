@@ -61,6 +61,7 @@ class JetSelector{
             }
         }
 
+        bool inBTagAcceptance() const;
 
     private:
         Jet* jetPtr;
@@ -69,8 +70,6 @@ class JetSelector{
         bool isGood2016() const;
         bool isGood2017() const;
         bool isGood2018() const;
-
-        bool inBTagAcceptance() const;
 
         bool isBTaggedLoose2016() const;
         bool isBTaggedLoose2017() const;

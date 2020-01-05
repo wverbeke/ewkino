@@ -5,9 +5,10 @@
 
 //include other parts of framework
 #include "../../Tools/interface/histogramTools.h"
+#include "../../Tools/interface/stringTools.h"
 
 
-ReweighterBTag::ReweighterBTag( const std::string& sfFilePath, const std::string& workingPoint, const std::shared_ptr< TH2 >& efficiencyUDSG, const std::shared_ptr< TH2 >& efficiencyC, const std::shared_ptr< TH2 >& efficiencyB ) :
+ReweighterBTag::ReweighterBTag( const std::string& weightDirectory, const std::string& sfFilePath, const std::string& workingPoint, const std::shared_ptr< TH2 >& efficiencyUDSG, const std::shared_ptr< TH2 >& efficiencyC, const std::shared_ptr< TH2 >& efficiencyB ) :
     bTagEfficiencyUDSG( efficiencyUDSG ),
     bTagEfficiencyC( efficiencyC ),
     bTagEfficiencyB( efficiencyB )
@@ -39,7 +40,7 @@ ReweighterBTag::ReweighterBTag( const std::string& sfFilePath, const std::string
     std::string methodLight = ( workingPoint == "reshaping" ) ? "iterativefit" : "incl";
 
     //calibrate the reader
-    bTagSFCalibration = std::shared_ptr< BTagCalibration >( new BTagCalibration( "", sfFilePath ) );
+    bTagSFCalibration = std::shared_ptr< BTagCalibration >( new BTagCalibration( "", stringTools::formatDirectoryName( weightDirectory ) + sfFilePath ) );
     bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_B, methodHeavy );
     bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_C, methodHeavy );
     bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_UDSG, methodLight );

@@ -42,3 +42,11 @@
 #include "plotting/drawLumi.cc"
 #include "plotting/tdrStyle.cc"
 #include "plotting/plotCode.cc"
+
+//include Reweighter code 
+#include "weights/bTagSFCode/BTagCalibrationStandalone.cc"
+#include "weights/src/ReweighterBTag.cc"
+#include "weights/src/ReweighterPileup.cc"
+#include "weights/src/ReweighterPrefire.cc"
+#include "weights/src/CombinedReweighter.cc"
+#include "weights/src/ConcreteReweighterFactory.cc"

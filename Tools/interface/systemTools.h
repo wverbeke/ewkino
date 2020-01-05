@@ -57,6 +57,9 @@ namespace systemTools{
     //submit script of given name and catch submission errors
     void submitScript( const std::string&, const std::string&, const std::string& queue = "", const unsigned numberOfThreads = 1 );
 
+    //directly submit given command string as a job
+    void submitCommandAsJob( const std::string& commandString, const std::string& scriptName, const std::string& walltime, const std::string& queue = "", const unsigned numberOfThreads = 1 );
+
     //check whether there are running jobs
     bool runningJobs( const std::string& jobName = "" );
 }

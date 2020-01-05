@@ -225,6 +225,22 @@ void systemTools::submitScript( const std::string& scriptName, const std::string
 }
 
 
+void systemTools::submitCommandAsJob( const std::string& commandString, const std::string& scriptName, const std::string& walltime, const std::string& queue, const unsigned numberOfThreads ){
+    
+    //make script to submit
+	std::ofstream scriptToSubmit( scriptName );
+	systemTools::initJobScript( scriptToSubmit );
+	scriptToSubmit << ( commandString  );
+	scriptToSubmit.close();
+
+	//submit job
+	systemTools::submitScript( scriptName, walltime, queue, numberOfThreads );
+
+	//clean up
+	systemTools::deleteFile( scriptName );
+}
+
+
 //check whether there are running jobs
 bool systemTools::runningJobs( const std::string& jobName ){
     std::string job;

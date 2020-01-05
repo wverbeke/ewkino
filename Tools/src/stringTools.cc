@@ -76,7 +76,11 @@ bool stringTools::stringStartsWith( const std::string& s, const std::string& beg
 
 std::pair< std::string, std::string > stringTools::splitFileExtension( const std::string& fileName ){
     size_t dotPosition = fileName.find_last_of( "." );
-    return { fileName.substr( 0, dotPosition ),  fileName.substr( dotPosition, fileName.size() ) };
+    if( dotPosition == std::string::npos ){
+        return { fileName, "" };
+    } else{
+        return { fileName.substr( 0, dotPosition ),  fileName.substr( dotPosition, fileName.size() ) };
+    }
 }
 
 

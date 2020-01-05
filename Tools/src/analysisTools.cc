@@ -144,3 +144,11 @@ std::pair< bool, bool > analysisTools::fileIs2017Or2018( const std::string& file
     }
     return { is2017, is2018 };
 }
+
+
+void analysisTools::checkYearString( const std::string& yearString ){
+    if( !( yearString == "2016" || yearString == "2017" || yearString == "2018" ) ){
+        throw std::invalid_argument( "Year string is '" + yearString + "' while it must be either '2016', '2017' or '2018'" );
+    }
+}
+

@@ -12,7 +12,8 @@ Lepton::Lepton( const TreeReader& treeReader, const unsigned leptonIndex, Lepton
     _dz( treeReader._dz[leptonIndex] ), 
     _sip3d( treeReader._3dIPSig[leptonIndex] ),
     generatorInfo( treeReader.isMC() ? new LeptonGeneratorInfo( treeReader, leptonIndex ) : nullptr ),
-    selector( leptonSelector )
+    selector( leptonSelector ),
+    _uncorrectedPt( pt() )
     {}
 
 
@@ -29,7 +30,8 @@ Lepton::Lepton( const Lepton& rhs, LeptonSelector* leptonSelector ) :
     selector( leptonSelector ),
 
     //make sure to copy "isConeCorrected" so a cone-correction can not be re-applied even after copying a lepton
-    isConeCorrected( rhs.isConeCorrected )
+    isConeCorrected( rhs.isConeCorrected ),
+    _uncorrectedPt( rhs._uncorrectedPt )
     {}
 
 
@@ -45,7 +47,8 @@ Lepton::Lepton( Lepton&& rhs, LeptonSelector* leptonSelector ) noexcept :
     selector( leptonSelector ),
 
     //make sure to copy "isConeCorrected" so a cone-correction can not be re-applied even after copying a lepton
-    isConeCorrected( rhs.isConeCorrected )
+    isConeCorrected( rhs.isConeCorrected ),
+    _uncorrectedPt( rhs._uncorrectedPt )
 {
     rhs.generatorInfo = nullptr;
 }
@@ -67,6 +70,7 @@ void Lepton::copyNonPointerAttributes( const Lepton& rhs ){
 
     //make sure to copy "isConeCorrected" so a cone-correction can not be re-applied even after copying a lepton
     isConeCorrected = rhs.isConeCorrected;
+    _uncorrectedPt = rhs._uncorrectedPt;
 }
 
 
@@ -216,6 +220,6 @@ bool oppositeSignSameFlavor( const Lepton& lhs, const Lepton& rhs ){
 
 std::ostream& Lepton::print( std::ostream& os) const{
     PhysicsObject::print( os );
-    os << " / charge = " << ( _charge > 0 ? "+" : "-" ) << " / dxy = " << _dxy << " / dz = " << _dz << " / sip3d = " << _sip3d;
+    os << " / charge = " << ( _charge > 0 ? "+" : "-" ) << " / dxy = " << _dxy << " / dz = " << _dz << " / sip3d = " << _sip3d << " / uncorrectedPt = " << _uncorrectedPt;
     return os;
 }

@@ -137,3 +137,14 @@ double histogram::contentDownAtValues( TH2* histPtr, const double valueX, const 
 double histogram::contentUpAtValues( TH2* histPtr, const double valueX, const double valueY ){
     return ( histogram::contentAtValues( histPtr, valueX, valueY ) + histogram::uncertaintyUpAtValues( histPtr, valueX, valueY ) );
 }
+
+
+void histogram::fillValue( TH1* histPtr, const double value, const double weight ){
+	histPtr->Fill( boundedValue( histPtr, value ), weight );
+}
+
+
+void histogram::fillValue( TH2* histPtr, const double valueX, const double valueY, const double weight ){
+	histPtr->Fill( boundedXValue( histPtr, valueX ), boundedYValue( histPtr, valueY ), weight );
+}
+

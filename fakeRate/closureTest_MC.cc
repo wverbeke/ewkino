@@ -16,7 +16,7 @@
 #include "../plotting/tdrStyle.h"
 #include "../Tools/interface/systemTools.h"
 #include "../Tools/interface/stringTools.h"
-//#include "../objects/interface/PhysicsObject.h"
+#include "../Tools/interface/analysisTools.h"
 
 
 std::vector< HistInfo > makeDistributionInfo(){
@@ -99,7 +99,7 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
 
 void closureTest_MC( const std::string& process, const std::string& year, const std::string& sampleDirectory ){
 
-    fakeRate::checkYearString( year );
+    analysisTools::checkYearString( year );
 
     //check process string
     if( ! (process == "TT" || process == "DY" ) ){

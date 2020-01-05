@@ -44,7 +44,7 @@ HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, const d
 
 void fillPrescaleMeasurementHistograms( const std::string& year, const std::string& sampleDirectoryPath, const std::vector< std::string >& triggerVector, const bool useMT = true, const double metCut = 0, double mtCut = 0){
 
-    fakeRate::checkYearString( year );
+    analysisTools::checkYearString( year );
 
     static constexpr unsigned numberOfBins = 80;
     static constexpr double maxBin = 160;
@@ -171,7 +171,7 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
 
     //make sure year and leptonFlavor are OK
     fakeRate::checkFlavorString( leptonFlavor );
-    fakeRate::checkYearString( year );
+    analysisTools::checkYearString( year );
 
     //make sure we have prescale values for each trigger 
     for( const auto& trigger : triggerVector ){
