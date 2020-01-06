@@ -50,8 +50,6 @@ class Sample{
 
     private:
         void setIsData(); 
-        void setIs2017();
-        void setIs2018();
         void setOptions(const std::string&);
 
         std::string _fileName;
