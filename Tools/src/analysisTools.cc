@@ -113,7 +113,10 @@ bool analysisTools::fileIs2017( const std::string& filePath ){
     return ( stringTools::stringContains( filePath, "MiniAOD2017" ) 
         || stringTools::stringContains( filePath, "Run2017" ) 
         || stringTools::stringContains( filePath, "Fall17" )
-        || stringTools::stringEndsWith( filePath, "2017.root" )
+        || stringTools::stringEndsWith( filePath, "data_2017.root" )
+        || stringTools::stringEndsWith( filePath, "combined_2017.root" )
+        || stringTools::stringEndsWith( filePath, "combined_2018.root" )
+        || stringTools::stringContains( filePath, "_2017_v" )
         || stringTools::stringStartsWith( stringTools::fileNameFromPath( filePath ), "2017" )
     );
 }
@@ -123,7 +126,9 @@ bool analysisTools::fileIs2018( const std::string& filePath ){
     return ( stringTools::stringContains( filePath, "MiniAOD2018" ) 
         || stringTools::stringContains( filePath, "Run2018" ) 
         || stringTools::stringContains( filePath, "Autumn18" )
-        || stringTools::stringEndsWith( filePath, "2018.root" )
+        || stringTools::stringEndsWith( filePath, "data_2018.root" )
+        || stringTools::stringEndsWith( filePath, "combined_2018.root" )
+        || stringTools::stringContains( filePath, "_2018_v" )
         || stringTools::stringStartsWith( stringTools::fileNameFromPath( filePath ), "2018" )
     );
 }
