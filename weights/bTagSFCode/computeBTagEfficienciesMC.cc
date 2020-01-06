@@ -151,7 +151,7 @@ int main(int argc, char* argv[]){
        	for( const auto & year : { "2016", "2017", "2018" } ){
             for( const auto& cleaning : { "looseLeptons", "FOLeptons", "uncleaned" } ){
 	
-                std::string command = ( "./bTagEff " + sampleDirectory + " " + year + " " + cleaning );
+                std::string command = ( "./computeBTagEfficienciesMC " + sampleDirectory + " " + year + " " + cleaning );
                 std::string scriptName = ( std::string( "bTagEff_" ) + year + "_" + cleaning + ".sh" );
                 systemTools::submitCommandAsJob( command, scriptName, "169:00:00" );
             }

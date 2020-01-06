@@ -47,7 +47,7 @@ int main( int argc, char* argv[] ){
             for( const auto& input : filesToMerge ){
                 mergeCommand += ( " " + input );
             }
-            systemTools::submitCommandAsJob( mergeCommand, std::string( "combinedPD_" ) + year + ".sh", "169:00" );
+            systemTools::submitCommandAsJob( mergeCommand, std::string( "combinePD_" ) + year + ".sh", "169:00:00" );
         }
 
 

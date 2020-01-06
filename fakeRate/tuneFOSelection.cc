@@ -20,6 +20,7 @@ The goal of the tuning is having a fake-rate (tight/FO) that is equal for light 
 #include "../Tools/interface/systemTools.h"
 #include "../Tools/interface/analysisTools.h"
 #include "interface/CutsFitInfo.h"
+#include "interface/fakeRateTools.h"
 
 
 unsigned numberOfEmptyBins( const TH1* hist ){
@@ -49,7 +50,7 @@ bool binIsLowStat( double content, double error ){
 
 
 bool isLowStatistics( const TH1* hist ){
-    const double maxLowStatFraction = 0.2;
+    const double maxLowStatFraction = 0.3;
     int nLowStatBins = 0;
     for( int b = 1; b < hist->GetNbinsX() + 1; ++b ){
         if( binIsLowStat( hist->GetBinContent(b), hist->GetBinError(b) ) ){
@@ -204,15 +205,11 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     }
 
     
-    //std::vector< CutsFitInfo > fakeRateFitInfoVec;
     CutsFitInfoCollection fitInfoCollection;
     for( Categorization::size_type c = 0; c < categories.size(); ++c ){
 
         //make sure the fit under consideration has decent statistics 
-        //double error;
-        //double integral = ratio->IntegralAndError(1, ratio->GetNbinsX(), error );
-        //if( fabs( error/integral ) > 0.5 ) continue;
-        if( numberOfEmptyBins( heavyFlavorNumerator[ c ].get() ) > 0 || numberOfEmptyBins( lightFlavorNumerator[ c ].get() ) > 0 ) continue;
+        if( numberOfEmptyBins( heavyFlavorNumerator[ c ].get() ) > 1 || numberOfEmptyBins( lightFlavorNumerator[ c ].get() ) > 1 ) continue;
         if( isLowStatistics( heavyFlavorNumerator[ c ].get() ) || isLowStatistics( lightFlavorNumerator[ c ].get() ) ) continue;
         std::shared_ptr< TH1 > ratio( dynamic_cast< TH1*>( heavyFlavorNumerator[ c ]->Clone() ) );
         ratio->Divide( lightFlavorNumerator[ c ].get() );
@@ -238,31 +235,28 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     systemTools::makeDirectory( plotDirectory );
 
     fitInfoCollection.sortByDiffFromUnity();
-    fitInfoCollection.printBestCuts( 10 );
-    fitInfoCollection.plotBestCuts( 10, plotDirectory );
+    fitInfoCollection.printBestCuts( 20 );
+    fitInfoCollection.plotBestCuts( 20, plotDirectory );
     std::cout << "--------------------------------------------------------------------" << std::endl;
     std::cout << "--------------------------------------------------------------------" << std::endl;
     std::cout << "--------------------------------------------------------------------" << std::endl;
     fitInfoCollection.sortByChi2();
-    fitInfoCollection.printBestCuts( 10 );
-    fitInfoCollection.plotBestCuts( 10, plotDirectory );
+    fitInfoCollection.printBestCuts( 20 );
+    fitInfoCollection.plotBestCuts( 20, plotDirectory );
     std::cout << "--------------------------------------------------------------------" << std::endl;
     std::cout << "--------------------------------------------------------------------" << std::endl;
     std::cout << "--------------------------------------------------------------------" << std::endl;
     constexpr double epsilon = 0.01;
     fitInfoCollection.sortByLossFunction( epsilon );
-    fitInfoCollection.printBestCuts( 10 );
-    fitInfoCollection.plotBestCuts( 10, plotDirectory );
+    fitInfoCollection.printBestCuts( 20 );
+    fitInfoCollection.plotBestCuts( 20, plotDirectory );
 }
 
 
 void runTuningAsJob( const std::string& flavor, const std::string& year ){
 	std::string scriptName = "tuneFOSelection_" + flavor + "_" + year + ".sh";
-    std::ofstream jobScript( scriptName );
-    systemTools::initJobScript( jobScript );
-    jobScript << "./tuneFOSelection " << flavor << " " << year << "\n";
-    jobScript.close();
-    systemTools::submitScript( scriptName, "100:00:00" );
+    std::string command = "./tuneFOSelection " + flavor + " " + year + "\n";
+    systemTools::submitCommandAsJob( command, scriptName, "169:00:00" );
 }
 
 

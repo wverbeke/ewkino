@@ -1,0 +1,3 @@
+TT      TTToSemilepton_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_Summer16.root      1
+TT      TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_Summer16.root           1
+TT      TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_Summer16.root               1
