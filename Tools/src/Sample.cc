@@ -8,6 +8,7 @@
 //include other parts of code 
 #include "../interface/stringTools.h"
 #include "../interface/systemTools.h"
+#include "../interface/analysisTools.h"
 
 
 Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
@@ -28,8 +29,9 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
     _xSec = ( xSecString == "" ? 0 : std::stod( xSecString ) );
 
     setIsData();
-    setIs2017();
-    setIs2018();
+    auto is2017Or2018 = analysisTools::fileIs2017Or2018( _fileName );
+    _is2017 = is2017Or2018.first;
+    _is2018 = is2017Or2018.second;
 
     //unique name is equal to fileName without file extension
     _uniqueName = stringTools::fileNameWithoutExtension( _fileName );
@@ -128,22 +130,12 @@ Sample::Sample( std::istream& is, const std::string& directory ){
 
 void Sample::setIsData(){
     _isData = false;
-    static std::vector<std::string> dataNames = { "data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG", "EGamma" };
+    static std::vector<std::string> dataNames = { "data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG", "EGamma", "JetHT", "MET" };
     for( auto it = dataNames.cbegin(); it != dataNames.cend(); ++it ){
         if( _fileName.find( *it ) != std::string::npos ){
             _isData = true;
         }
     }
-}
-
-
-void Sample::setIs2017(){
-    _is2017 = ( stringTools::stringContains( _fileName, "Fall17" ) || stringTools::stringContains( _fileName, "2017" ) );
-}
-
-
-void Sample::setIs2018(){
-    _is2018 = ( stringTools::stringContains( _fileName, "Autumn18" ) || stringTools::stringContains( _fileName, "2018" ) );
 }
 
 
