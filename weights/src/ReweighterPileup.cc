@@ -73,6 +73,10 @@ ReweighterPileup::ReweighterPileup( const std::vector< Sample >& sampleList, con
     
     //read each of the pileup weights into the maps
     for( const auto& sample : sampleList ){
+
+        //skip data samples!
+        if( sample.isData() ) continue;
+
         std::string pileupWeightPath = ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/pileupWeights/pileupWeights_" + sample.fileName() );
 
         //for each sample check if the necessary pileup weights are available, and produce them if not 
