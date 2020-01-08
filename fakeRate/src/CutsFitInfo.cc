@@ -57,6 +57,7 @@ std::string CutsFitInfo::cutsString() const{
         name += ( cut + "_" );
     }
     name = name.substr(0, name.size() - 1);
+    name = stringTools::replace( name, ".", "p" );
     return name;
 }
 

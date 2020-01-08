@@ -25,6 +25,7 @@
 #include "interface/Prescale.h"
 #include "../plotting/tdrStyle.h"
 #include "../plotting/plotCode.h"
+#include "../weights/interface/ConcreteReweighterFactory.h"
 
 
 HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, const double max, const bool useMT = true){
@@ -46,7 +47,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
 
     analysisTools::checkYearString( year );
 
-    static constexpr unsigned numberOfBins = 80;
+    static constexpr unsigned numberOfBins = 16;
     static constexpr double maxBin = 160;
     HistInfo histInfo;
     if( useMT ){
@@ -74,6 +75,10 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
 	//in this function we will loop over events and fill histograms for each trigger 
    	TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt", sampleDirectoryPath);
 
+    //build a reweighter for scaling MC events
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
+
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
         //load next sample
@@ -92,6 +97,12 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
 
             if( mT < mtCut ) continue;
             if( event.metPt() < metCut ) continue;
+
+            //compute event weight
+            double weight = event.weight();
+            if( event.isMC() ){
+                weight *= reweighter.totalWeight( event );
+            }
 
             for( const auto& trigger : triggerVector ){
 
@@ -114,13 +125,14 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
                 if( !fakeRate::passTriggerJetSelection( event, trigger, jetPtCutMap ) ) continue;
                 
                 double valueToFill = ( useMT ? mT : event.metPt() );
-                if( treeReader.isData() ){
-                    data_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), event.weight() );
+
+                if( event.isData() ){
+                    data_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight );
                 } else {
                     if( lepton.isPrompt() ){
-                        prompt_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), event.weight() ); 
+                        prompt_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight ); 
                     } else {
-                        nonprompt_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), event.weight() );
+                        nonprompt_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight );
                     }
                 }
             }
@@ -216,8 +228,12 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
     std::map< std::string, double > triggerToJetPtMap = fakeRate::mapTriggerToJetPtThreshold( triggerVector );
 
     //initialize TreeReader
-    //ADAPT SAMPLE LIST TO USE DATA FOR CORRECT YEAR
     TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt" , sampleDirectory );
+
+    //build a reweighter for scaling MC events
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
+
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
         //load next sample
@@ -251,9 +267,13 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
             //check if any trigger jet threshold must be applied and apply it
             if( !fakeRate::passTriggerJetSelection( event, triggerToUse, triggerToJetPtMap ) ) continue;
 
-            //set correct weight corresponding to this trigger prescale 
-            const Prescale& prescale = prescaleMap.find( triggerToUse )->second;
-            double weight = event.weight()*prescale.value();
+            //set correct weight corresponding to this trigger prescale for MC
+            double weight = event.weight();
+            if( event.isMC() ){
+                const Prescale& prescale = prescaleMap.find( triggerToUse )->second;
+                weight *= prescale.value();
+                weight *= reweighter.totalWeight( event );
+            }
 
             //fill numerator
             if( lepton.isTight() ){
@@ -308,11 +328,12 @@ int main( int argc, char* argv[] ){
     const double metLowerCut_prescaleMeasurement = 20;
     const double mTLowerCut_prescaleMeasurement = 0;
     const double mTLowerCut_prescaleFit = 80;
-    const double mTUpperCut_prescaleFit = 160;
+    const double mTUpperCut_prescaleFit = 130;
     const double metUpperCut_fakeRateMeasurement = 20;
     const double mTUpperCut_fakeRateMeasurement = 160;
     const double maxFitValue = 20;
     const bool use_mT = true;
+    const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate";
 
     std::vector< std::string > years;
     std::vector< std::string > flavors;
@@ -345,7 +366,7 @@ int main( int argc, char* argv[] ){
     std::vector< std::thread > threadVector_prescale;
     threadVector_prescale.reserve( 3 );
     for( const auto& year : years ){
-        threadVector_prescale.emplace_back( fillPrescaleMeasurementHistograms, year, "../test/testData/", triggerVectorMap[ year ], use_mT, metLowerCut_prescaleMeasurement, mTLowerCut_prescaleMeasurement );
+        threadVector_prescale.emplace_back( fillPrescaleMeasurementHistograms, year, sampleDirectory, triggerVectorMap[ year ], use_mT, metLowerCut_prescaleMeasurement, mTLowerCut_prescaleMeasurement );
     }
 
     //join the threads
@@ -368,7 +389,7 @@ int main( int argc, char* argv[] ){
     threadVector_measurement.reserve( 6 );
     for( const auto& year : years ){
         for( const auto& flavor : flavors ){
-            threadVector_measurement.emplace_back( fillFakeRateMeasurementHistograms, flavor, year, "../test/testData/", triggerVectorMap[ year ], prescaleMaps[ year ], mTUpperCut_fakeRateMeasurement, metUpperCut_fakeRateMeasurement );
+            threadVector_measurement.emplace_back( fillFakeRateMeasurementHistograms, flavor, year, sampleDirectory, triggerVectorMap[ year ], prescaleMaps[ year ], mTUpperCut_fakeRateMeasurement, metUpperCut_fakeRateMeasurement );
         }
     }
 

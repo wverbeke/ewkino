@@ -122,5 +122,5 @@ cone correction
 
 
 double MuonSelector::coneCorrection() const{
-    return ( 0.8 / muonPtr->ptRatio() );
+    return ( 0.75 / muonPtr->ptRatio() );
 }
