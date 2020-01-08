@@ -86,17 +86,18 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
 
         //loop over events in sample
         for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
-            Event event = treeReader.buildEvent( entry, true, true);
+            Event event = treeReader.buildEvent( entry, true, false );
 
 			//apply event selection, note that event is implicitly modified (lepton selection etc)
             //cone-correction is applied
-            if( !fakeRate::passFakeRateEventSelection( event, false, false, false, false) ) continue;
+            //select tight leptons for prescale measurement : onlyMuons = false / onlyElectrons = false / onlyTightLeptons = true / requireJet = false
+            if( !fakeRate::passFakeRateEventSelection( event, false, false, true, false ) ) continue;
 
             LightLepton& lepton = event.lightLepton(0);
             double mT = mt( lepton, event.met() );
 
-            if( mT < mtCut ) continue;
-            if( event.metPt() < metCut ) continue;
+            if( mT <= mtCut ) continue;
+            if( event.metPt() <= metCut ) continue;
 
             //compute event weight
             double weight = event.weight();
@@ -105,6 +106,9 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
             }
 
             for( const auto& trigger : triggerVector ){
+
+                //event must pass trigger
+                if( !event.passTrigger( trigger ) ) continue;
 
                 //check lepton flavor corresponding to this trigger
 				if( stringTools::stringContains( trigger, "Mu" ) ){
@@ -115,9 +119,6 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
                     throw std::invalid_argument( "Can not measure prescale for trigger " + trigger + " since it is neither a muon nor electron trigger." );
                 }
 
-                //event must pass trigger
-                if( !event.passTrigger( trigger ) ) continue;
-
                 //apply offline pT threshold to be on the trigger plateau
                 if( lepton.uncorrectedPt() <= leptonPtCutMap[ trigger ] ) continue;
 
@@ -127,12 +128,12 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
                 double valueToFill = ( useMT ? mT : event.metPt() );
 
                 if( event.isData() ){
-                    data_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight );
+                    data_map[ trigger ]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight );
                 } else {
                     if( lepton.isPrompt() ){
-                        prompt_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight ); 
+                        prompt_map[ trigger ]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight ); 
                     } else {
-                        nonprompt_map[trigger]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight );
+                        nonprompt_map[ trigger ]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight );
                     }
                 }
             }
@@ -142,9 +143,9 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
 	//write histograms to TFile 
     TFile* histogram_file = TFile::Open( ( std::string("prescaleMeasurement_") + ( useMT ? "mT" : "met" ) + "_histograms_" + year + ".root" ).c_str(), "RECREATE" );
 	for( const auto& trigger : triggerVector ){
-		data_map[trigger]->Write();
-		prompt_map[trigger]->Write();
-		nonprompt_map[trigger]->Write();
+		data_map[ trigger ]->Write();
+		prompt_map[ trigger ]->Write();
+		nonprompt_map[ trigger ]->Write();
 	}
     histogram_file->Close();
 }
@@ -241,7 +242,7 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
 
         //loop over events in sample
         for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
-            Event event = treeReader.buildEvent( entry, true, true );
+            Event event = treeReader.buildEvent( entry, true, false );
 
             //apply event selection, note that event is implicitly modified (lepton selection etc)
             if( !fakeRate::passFakeRateEventSelection( event, isMuonMeasurement, !isMuonMeasurement, false, true, 1 ) ) continue;

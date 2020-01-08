@@ -32,6 +32,12 @@ double extractPtCut( const std::string& triggerPath, const std::string& objectId
 
 
 double extractLeptonPtCut( const std::string& triggerPath ){
+
+    //check for possible errors
+    if( isMuonTrigger( triggerPath ) && isElectronTrigger( triggerPath ) ){
+        throw std::invalid_argument( "Trigger '" + triggerPath + "' is flagged as both muon and electron trigger, which should not happen." );
+    }
+
     std::string flavorIdentifier;
     if( isMuonTrigger( triggerPath ) ){
         flavorIdentifier = "Mu";
@@ -129,15 +135,13 @@ bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool on
     if( onlyMuons && !lepton.isMuon() ) return false;
     else if( onlyElectrons && !lepton.isElectron() ) return false;
 
-    //apply pT thresholds on leptons 
-
     //optionally require the presence of at least one good jet
     if( requireJet ){
         event.selectGoodJets();
         event.cleanJetsFromLooseLeptons();
         if( event.numberOfJets() < 1 ) return false;
 
-        //require deltaR of at least 1 between lepton and any of the selected jets 
+        //apply cut on deltaR between lepton and any of the selected jets 
         double maxDeltaR = 0;
         for( auto jetPtr : event.jetCollection() ){
             double currentDeltaR = deltaR( lepton, *jetPtr );
