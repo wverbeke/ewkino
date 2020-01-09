@@ -27,7 +27,14 @@ class Electron : public LightLepton{
         float electronMVAFall17Iso() const{ return _electronMVAFall17Iso; }
         float electronMVAFall17NoIso() const{ return _electronMVAFall17NoIso; }
 
+        bool passElectronMVAFall17NoIsoLoose() const{ return _passElectronMVAFall17NoIsoLoose; }
+        bool passElectronMVAFall17NoIsoWP90() const{ return _passElectronMVAFall17NoIsoWP90; }
+        bool passElectronMVAFall17NoIsoWP80() const{ return _passElectronMVAFall17NoIsoWP80; }
+
         double etaSuperCluster() const{ return _etaSuperCluster; }
+        double hOverE() const{ return _hOverE; }
+        double inverseEMinusInverseP() const{ return _inverseEMinusInverseP; }
+        double sigmaIEtaEta() const{ return _sigmaIEtaEta; }
 
         bool isVetoPOGElectron() const{ return _isVetoPOGElectron; }
         bool isLoosePOGElectron() const{ return _isLoosePOGElectron; }
@@ -48,8 +55,18 @@ class Electron : public LightLepton{
         float _electronMVAFall17Iso = 0;
         float _electronMVAFall17NoIso = 0;
 
+        //precomputed electron MVA decisions
+        bool _passElectronMVAFall17NoIsoLoose;
+        bool _passElectronMVAFall17NoIsoWP90;
+        bool _passElectronMVAFall17NoIsoWP80;
+
         //pseudorapidity of the supercluster
         double _etaSuperCluster = 0;
+
+        //cluster id values
+        double _hOverE = 0;
+        double _inverseEMinusInverseP = 0;
+        double _sigmaIEtaEta = 0;
 
         //cut based POG ID working points (include isolation) 
         bool _isVetoPOGElectron = false;

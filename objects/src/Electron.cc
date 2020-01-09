@@ -14,7 +14,13 @@ Electron::Electron( const TreeReader& treeReader, const unsigned leptonIndex ):
     _electronMVASummer16HZZ( treeReader._lElectronSummer16MvaHZZ[leptonIndex] ),
     _electronMVAFall17Iso( treeReader._lElectronMvaFall17Iso[leptonIndex] ),
     _electronMVAFall17NoIso( treeReader._lElectronMvaFall17NoIso[leptonIndex] ),
+    _passElectronMVAFall17NoIsoLoose( treeReader._lElectronPassMVAFall17NoIsoWPLoose[leptonIndex] ), 
+    _passElectronMVAFall17NoIsoWP90( treeReader._lElectronPassMVAFall17NoIsoWP90[leptonIndex] ),
+    _passElectronMVAFall17NoIsoWP80( treeReader._lElectronPassMVAFall17NoIsoWP80[leptonIndex] ),
     _etaSuperCluster( treeReader._lEtaSC[leptonIndex] ),
+    _hOverE( treeReader._lElectronHOverE[leptonIndex] ),
+    _inverseEMinusInverseP( treeReader._lElectronEInvMinusPInv[leptonIndex] ),
+    _sigmaIEtaEta( treeReader._lElectronSigmaIetaIeta[leptonIndex] ),
     _isVetoPOGElectron( treeReader._lPOGVeto[leptonIndex] ),
     _isLoosePOGElectron( treeReader._lPOGLoose[leptonIndex] ),
     _isMediumPOGElectron( treeReader._lPOGMedium[leptonIndex] ),
@@ -39,7 +45,13 @@ Electron::Electron( const Electron& rhs ) :
 	_electronMVASummer16HZZ( rhs._electronMVASummer16HZZ ),
 	_electronMVAFall17Iso( rhs._electronMVAFall17Iso ),
 	_electronMVAFall17NoIso( rhs._electronMVAFall17NoIso ),
+    _passElectronMVAFall17NoIsoLoose( rhs._passElectronMVAFall17NoIsoLoose ),
+    _passElectronMVAFall17NoIsoWP90( rhs._passElectronMVAFall17NoIsoWP90 ),
+    _passElectronMVAFall17NoIsoWP80( rhs._passElectronMVAFall17NoIsoWP80 ),
 	_etaSuperCluster( rhs._etaSuperCluster ),
+    _hOverE( rhs._hOverE ),
+    _inverseEMinusInverseP( rhs._inverseEMinusInverseP ),
+    _sigmaIEtaEta( rhs._sigmaIEtaEta ),
 	_isVetoPOGElectron( rhs._isVetoPOGElectron ),
 	_isLoosePOGElectron( rhs._isLoosePOGElectron ),
 	_isMediumPOGElectron( rhs._isMediumPOGElectron ),
@@ -57,7 +69,13 @@ Electron::Electron( Electron&& rhs ) noexcept :
     _electronMVASummer16HZZ( rhs._electronMVASummer16HZZ ),
     _electronMVAFall17Iso( rhs._electronMVAFall17Iso ),
     _electronMVAFall17NoIso( rhs._electronMVAFall17NoIso ),
+    _passElectronMVAFall17NoIsoLoose( rhs._passElectronMVAFall17NoIsoLoose ),
+    _passElectronMVAFall17NoIsoWP90( rhs._passElectronMVAFall17NoIsoWP90 ),
+    _passElectronMVAFall17NoIsoWP80( rhs._passElectronMVAFall17NoIsoWP80 ),
     _etaSuperCluster( rhs._etaSuperCluster ),
+    _hOverE( rhs._hOverE ),
+    _inverseEMinusInverseP( rhs._inverseEMinusInverseP ),
+    _sigmaIEtaEta( rhs._sigmaIEtaEta ),
     _isVetoPOGElectron( rhs._isVetoPOGElectron ),
     _isLoosePOGElectron( rhs._isLoosePOGElectron ),
     _isMediumPOGElectron( rhs._isMediumPOGElectron ),
@@ -70,7 +88,9 @@ std::ostream& Electron::print( std::ostream& os ) const{
     LightLepton::print( os );
     os << " / passChargeConsistency = " << _passChargeConsistency << " / passDoubleEGEmulation = " << _passDoubleEGEmulation << " / passConversionVeto = " << _passConversionVeto <<
         " / numberOfMissingHits = " << _numberOfMissingHits << " / electronMVASummer16GP = " << _electronMVASummer16GP << " / electronMVASummer16HZZ = " << _electronMVASummer16HZZ <<
-        " / electronMVAFall17Iso = " << _electronMVAFall17Iso << " / electronMVAFall17NoIso = " << _electronMVAFall17NoIso << " / etaSuperCluster = " << _etaSuperCluster;
+        " / electronMVAFall17Iso = " << _electronMVAFall17Iso << " / electronMVAFall17NoIso = " << _electronMVAFall17NoIso << " / passElectronMVAFall17NoIsoLoose = " << _passElectronMVAFall17NoIsoLoose <<
+        " / passElectronMVAFall17NoIsoWP90 = " << _passElectronMVAFall17NoIsoWP90 << " / passElectronMVAFall17NoIsoWP80 = " << _passElectronMVAFall17NoIsoWP80 << " / etaSuperCluster = " << _etaSuperCluster <<
+        " / hOverE = " << _hOverE << " / inverseEMinusInverseP = " << _inverseEMinusInverseP << " / sigmaIEtaEta = " << _sigmaIEtaEta;
     if( _isTightPOGElectron ){
         os << " / tight POG electron";
     } else if( _isMediumPOGElectron ){
