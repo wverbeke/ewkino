@@ -122,7 +122,7 @@ bool TreeReader::containsGeneratorInfo() const{
 }
 
 
-bool TreeReader::containsSUSYMassInfo() const{
+bool TreeReader::containsSusyMassInfo() const{
     return treeHasBranchWithName( _currentTreePtr, "_mChi" );
 }
 
@@ -235,6 +235,9 @@ void TreeReader::initSample( const Sample& samp ){
         }
         scale = samp.xSec()*dataLumi*1000 / sumSimulatedEventWeights;
     }
+
+    //check whether current sample is a SUSY sample
+    _isSusy = containsSusyMassInfo();
 }
 
 
@@ -265,6 +268,9 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
 
     //initialize tree
     initTree();
+
+    //check whether current sample is a SUSY sample
+    _isSusy = containsSusyMassInfo();
 }
 
 
@@ -515,7 +521,7 @@ void TreeReader::initTree(){
         _currentTreePtr->SetBranchAddress("_prefireWeightUp", &_prefireWeightUp, &b__prefireWeightUp);
     }
 
-	if( containsSUSYMassInfo() ){
+	if( containsSusyMassInfo() ){
 		_currentTreePtr->SetBranchAddress("_mChi1", &_mChi1, &b__mChi1);
 		_currentTreePtr->SetBranchAddress("_mChi2", &_mChi2, &b__mChi2);
 	}
@@ -716,7 +722,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_prefireWeightDown",         &_prefireWeightDown,         "_prefireWeightDown/F"); 
     }
 
-    if( containsSUSYMassInfo() ){
+    if( containsSusyMassInfo() ){
 		outputTree->Branch("_mChi1", &_mChi1, "_mChi1/D");
 		outputTree->Branch("_mChi2", &_mChi2, "_mChi2/D");
     }
