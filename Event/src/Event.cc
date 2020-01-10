@@ -142,15 +142,15 @@ void Event::initializeZBosonCandidate(){
     if( !ZIsInitialized ){
 
         //check that there are at least two leptons is performed automatically in LeptonCollection
+        
+        //leading lepton not used in this pairing is considered to be from the W decay (in trilepton events )
+        //BUT in order to have consistent indices, sort leptons by pT already here.
+        sortLeptonsByPt();
 
         //reconstruct the best Z boson
         std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >, double > ZBosonCandidateIndicesAndMass = _leptonCollectionPtr->bestZBosonCandidateIndicesAndMass();
         _bestZBosonCandidateIndices = ZBosonCandidateIndicesAndMass.first;
         _bestZBosonCandidateMass = ZBosonCandidateIndicesAndMass.second;
-
-        //leading lepton not used in this pairing is considered to be from the W decay (in trilepton events )
-        //WARNING : LEPTON ORDERING MUST HAPPEN HERE!
-        sortLeptonsByPt();
 
         //note that the third lepton can also be a tau in this case!
         if( numberOfLeptons() >= 3 ){
