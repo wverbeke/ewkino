@@ -247,7 +247,7 @@ class TreeReader {
         bool containsGeneratorInfo() const;
 
         //check whether SUSY mass info is present in the current sample ( this is the case for SUSY signal scans )
-        bool containsSUSYMassInfo() const;
+        bool containsSusyMassInfo() const;
 
         //check whether a particular trigger is present 
         bool containsTriggerInfo( const std::string& triggerPath ) const;
@@ -262,6 +262,7 @@ class TreeReader {
         bool isMC() const;
         bool isSMSignal() const;
         bool isNewPhysicsSignal() const;
+        bool isSusy() const{ return _isSusy; }
 
         //access number of samples and current sample
         const Sample& currentSample() const{ return *_currentSamplePtr; }
@@ -371,6 +372,9 @@ class TreeReader {
 
         //TTree associated to current sample 
         TTree* _currentTreePtr = nullptr;
+
+        //cache whether current sample is SUSY to avoid having to check the branch names for each event
+        bool _isSusy = false;
 
         //check whether current sample is initialized, throw an error if it is not 
         void checkCurrentSample() const;

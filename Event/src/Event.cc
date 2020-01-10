@@ -13,6 +13,7 @@ Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , 
     _triggerInfoPtr( new TriggerInfo( treeReader, readIndividualTriggers, readIndividualMetFilters ) ),
     _eventTagsPtr( new EventTags( treeReader ) ),
     _generatorInfoPtr( treeReader.isMC() ? new GeneratorInfo( treeReader ) : nullptr ),
+    _susyMassInfoPtr( treeReader.isSusy() ? new SusyMassInfo( treeReader ) : nullptr ),
     _numberOfVertices( treeReader._nVertex ),
 
     //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes
@@ -30,6 +31,9 @@ Event::~Event(){
     if( hasGeneratorInfo() ){
         delete _generatorInfoPtr;
     }
+    if( hasSusyMassInfo() ){
+        delete _susyMassInfoPtr;
+    }
 }
 
 
@@ -40,6 +44,7 @@ Event::Event( const Event& rhs ) :
     _triggerInfoPtr( new TriggerInfo( *rhs._triggerInfoPtr ) ),
     _eventTagsPtr( new EventTags( *rhs._eventTagsPtr ) ),
     _generatorInfoPtr( rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr ),
+    _susyMassInfoPtr( rhs.hasSusyMassInfo() ? new SusyMassInfo( *rhs._susyMassInfoPtr ) : nullptr ),
     _numberOfVertices( rhs._numberOfVertices ),
     _weight( rhs._weight ),
     _samplePtr( rhs._samplePtr )
@@ -53,6 +58,7 @@ Event::Event( Event&& rhs ) noexcept :
     _triggerInfoPtr( rhs._triggerInfoPtr ),
     _eventTagsPtr( rhs._eventTagsPtr ),
     _generatorInfoPtr( rhs._generatorInfoPtr ),
+    _susyMassInfoPtr( rhs._susyMassInfoPtr ),
     _numberOfVertices( rhs._numberOfVertices ),
     _weight( rhs._weight ),
     _samplePtr( rhs._samplePtr )
@@ -63,6 +69,7 @@ Event::Event( Event&& rhs ) noexcept :
     rhs._triggerInfoPtr = nullptr;
     rhs._eventTagsPtr = nullptr;
     rhs._generatorInfoPtr = nullptr;
+    rhs._susyMassInfoPtr = nullptr;
     rhs._samplePtr = nullptr;
 }
     
@@ -77,6 +84,9 @@ Event& Event::operator=( const Event& rhs ){
         if( hasGeneratorInfo() ){
             delete _generatorInfoPtr;
         }
+        if( hasSusyMassInfo() ){
+            delete _susyMassInfoPtr;
+        }
 
         _leptonCollectionPtr = new LeptonCollection( *rhs._leptonCollectionPtr );
         _jetCollectionPtr = new JetCollection( *rhs._jetCollectionPtr );
@@ -84,6 +94,7 @@ Event& Event::operator=( const Event& rhs ){
         _triggerInfoPtr = new TriggerInfo( *rhs._triggerInfoPtr );
         _eventTagsPtr = new EventTags( *rhs._eventTagsPtr );
         _generatorInfoPtr = rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr;
+        _susyMassInfoPtr = rhs.hasSusyMassInfo() ? new SusyMassInfo( *rhs._susyMassInfoPtr ) : nullptr;
 
         _numberOfVertices = rhs._numberOfVertices;
         _weight = rhs._weight;
@@ -103,6 +114,9 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         if( hasGeneratorInfo() ){
             delete _generatorInfoPtr;
         }
+        if( hasSusyMassInfo() ){
+            delete _susyMassInfoPtr;
+        }
 
         _leptonCollectionPtr = rhs._leptonCollectionPtr;
         rhs._leptonCollectionPtr = nullptr;
@@ -116,6 +130,8 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         rhs._eventTagsPtr = nullptr;
         _generatorInfoPtr = rhs._generatorInfoPtr;
         rhs._generatorInfoPtr = nullptr;
+        _susyMassInfoPtr = rhs._susyMassInfoPtr;
+        rhs._susyMassInfoPtr = nullptr;
 
         _numberOfVertices = rhs._numberOfVertices;
         _weight = rhs._weight;
@@ -135,6 +151,19 @@ void Event::checkGeneratorInfo() const{
 GeneratorInfo& Event::generatorInfo() const{
     checkGeneratorInfo();
     return *_generatorInfoPtr;
+}
+
+
+void Event::checkSusyMassInfo() const{
+    if( !hasSusyMassInfo() ){
+        std::domain_error( "Trying to access SUSY mass info for a non-SUSY event!" );
+    }
+}
+
+
+SusyMassInfo& Event::susyMassInfo() const{
+    checkSusyMassInfo();
+    return *_susyMassInfoPtr;
 }
 
 

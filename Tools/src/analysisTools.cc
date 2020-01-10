@@ -157,3 +157,9 @@ void analysisTools::checkYearString( const std::string& yearString ){
     }
 }
 
+
+bool analysisTools::sampleIsSusy( const std::string& filePath ){
+    return ( stringTools::stringContains( filePath, "SMS-T")
+        || stringTools::stringContains( filePath, "TChi" )
+    );
+}
