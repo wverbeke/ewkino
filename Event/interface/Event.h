@@ -10,6 +10,7 @@
 #include "GeneratorInfo.h"
 #include "TriggerInfo.h"
 #include "EventTags.h"
+#include "SusyMassInfo.h"
 #include "../../objects/interface/Met.h"
 #include "../../objects/interface/PhysicsObject.h"
 
@@ -44,6 +45,7 @@ class Event{
         TriggerInfo& triggerInfo() const{ return *_triggerInfoPtr; }
         EventTags& eventTags() const{ return *_eventTagsPtr; }
         GeneratorInfo& generatorInfo() const;
+        SusyMassInfo& susyMassInfo() const;
 
         Lepton& lepton( const LeptonCollection::size_type leptonIndex ) const{ return (*_leptonCollectionPtr)[ leptonIndex ]; }
         Jet& jet( const JetCollection::size_type jetIndex ) const{ return (*_jetCollectionPtr)[ jetIndex ]; }
@@ -211,6 +213,7 @@ class Event{
         TriggerInfo* _triggerInfoPtr = nullptr;
         EventTags* _eventTagsPtr = nullptr;
         GeneratorInfo* _generatorInfoPtr = nullptr;
+        SusyMassInfo* _susyMassInfoPtr = nullptr;
         unsigned _numberOfVertices = 0;
         double _weight = 1;
         const Sample* _samplePtr = nullptr;
@@ -229,6 +232,10 @@ class Event{
         //check the presence of generator information
         bool hasGeneratorInfo() const{ return ( _generatorInfoPtr != nullptr ); }
         void checkGeneratorInfo() const;
+
+        //check the presence of susy information
+        bool hasSusyMassInfo() const{ return ( _susyMassInfoPtr != nullptr ); }
+        void checkSusyMassInfo() const;
 };
 
 #endif

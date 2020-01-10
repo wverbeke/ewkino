@@ -21,6 +21,7 @@
 #include "Event/src/JetCollection.cc"
 #include "Event/src/TriggerInfo.cc"
 #include "Event/src/GeneratorInfo.cc"
+#include "Event/src/SusyMassInfo.cc"
 #include "Event/src/EventTags.cc"
 #include "Event/src/Event.cc"
 
@@ -33,6 +34,7 @@
 #include "Tools/src/Sample.cc"
 #include "Tools/src/mergeAndRemoveOverlap.cc"
 #include "Tools/src/histogramTools.cc"
+#include "Tools/src/SusyScan.cc"
 
 //include TreeReader code 
 #include "TreeReader/src/TreeReader.cc"
