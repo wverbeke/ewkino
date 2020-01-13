@@ -11,15 +11,6 @@
 #include "../../Event/interface/Event.h"
 
 
-//bool is2017FilePath( const std::string& filePath ){
-//    return ( stringTools::stringContains( filePath, "2017" ) || stringTools::stringContains( filePath, "Fall17" ) );
-//}
-//
-//
-//bool is2018FilePath( const std::string& filePath ){
-//    return ( stringTools::stringContains( filePath, "2018" ) || stringTools::stringContains( filePath, "Autumn18" ) );
-//}
-
 
 bool yearsAreConsistent( const std::vector< std::string >& inputPathVector ){
 
@@ -95,14 +86,14 @@ void mergeAndRemoveOverlap( const std::vector< std::string >& inputPathVector, c
         const auto& inputFilePath = *inputPathIt;
 
         //open next sample
-        treeReader.initSampleFromFile( inputFilePath );
+        //DO NOT reset triggers because this will invalidate the addresses set by setOutputTree and trigger decisions in output file will be wrong!
+        treeReader.initSampleFromFile( inputFilePath, false );
         outputTreePtr->SetDirectory( outputFilePtr );
 
         //set output histograms and output tree for first file
         if( inputPathIt == inputPathVector.cbegin() ){
 
             for( const auto& histPtr : treeReader.getHistogramsFromCurrentFile() ){
-                //outputHistogramMap[ histPtr->GetName() ] = std::shared_ptr< TH1 >( dynamic_cast< TH1* >( histPtr->Clone() ) );
                 outputHistogramMap[ histPtr->GetName() ] = histPtr;
             }
 
