@@ -19,7 +19,7 @@ int main( int argc, char* argv[] ){
     if( argc == 3 && !stringTools::stringContains( argvStr[2], ".root" ) ){
         const std::string input_directory = argvStr[1];
         const std::string output_directory = argvStr[2];
-        const std::vector< std::string > dataIdentifiers = { "DoubleEG", "DoubleMuon", "MuonEG", "SingleElectron", "SingleMuon", "MET", "JetHT" };
+        const std::vector< std::string > dataIdentifiers = { "DoubleEG", "DoubleMuon", "MuonEG", "SingleElectron", "SingleMuon", "MET", "JetHT", "EGamma" };
         const std::vector< std::string > presentFiles = systemTools::listFiles( input_directory, "", ".root" );
 
         for( const auto& year : { "Summer16", "Fall17", "Autumn18" } ){
