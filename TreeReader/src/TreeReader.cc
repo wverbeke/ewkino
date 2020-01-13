@@ -528,14 +528,14 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
 
     //add all individually stored triggers 
     //always reset triggers instead of rare case of combining primary datasets to prevent invalidating addresses set by setOutputTree
-    if( resetTriggersAndFilters ){
+    if( resetTriggersAndFilters || _triggerMap.empty() ){
         initializeTriggerMap( _currentTreePtr );
     }
     setMapBranchAddresses( _currentTreePtr, _triggerMap, b__triggerMap );
 
     //add all individually stored MET filters
     //always reset filters instead of rare case of combining primary datasets to prevent invalidating addresses set by setOutputTree
-    if( resetTriggersAndFilters ){
+    if( resetTriggersAndFilters || _MetFilterMap.empty() ){
         initializeMetFilterMap( _currentTreePtr );
     }
     setMapBranchAddresses( _currentTreePtr, _MetFilterMap, b__MetFilterMap );
