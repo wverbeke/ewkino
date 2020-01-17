@@ -216,7 +216,8 @@ class TreeReader {
         double          _scaledWeight;
 
         //set up tree for reading and writing
-        void initTree();
+        //always reset triggers instead of rare case of combining primary datasets!
+        void initTree( const bool resetTriggersAndFilters = true);
         void setOutputTree( TTree* );
 
         //void combinePD(std::vector<std::string>& datasets, const bool is2017, std::string outputDirectory = "");
@@ -231,8 +232,9 @@ class TreeReader {
         void readSamples(const std::string& list, const std::string& directory);
 
         //initialize the current sample directly from a root file
-        void initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018 );
-        void initSampleFromFile( const std::string& pathToFile );
+        //always reset triggers instead of rare case of combining primary datasets to prevent invalidating addresses set by setOutputTree
+        void initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018, const bool resetTriggersAndFilters = true );
+        void initSampleFromFile( const std::string& pathToFile, const bool resetTriggersAndFilters = true );
 
         //Get entry from Tree, should not be used except for test purposes
         void GetEntry(const Sample&, long unsigned );

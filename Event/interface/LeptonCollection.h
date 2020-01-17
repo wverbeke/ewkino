@@ -34,6 +34,9 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
         LeptonCollection FOLeptonCollection() const;
         LeptonCollection tightLeptonCollection() const;
 
+        //build collection of the X leading leptons 
+        LeptonCollection leadingLeptonCollection( const size_type );
+
         //clean electrons and taus 
         void cleanElectronsFromLooseMuons( const double coneSize = 0.05 );
         void cleanElectronsFromFOMuons( const double coneSize = 0.05 );
@@ -82,6 +85,8 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
 
         //build collection of objects passing given selection
         LeptonCollection selectedCollection( void (LeptonCollection::*applySelection)() ) const;
+
+        LeptonCollection( const std::vector< std::shared_ptr< Lepton > >& leptonVector ) : PhysicsObjectCollection< Lepton >( leptonVector ) {}
 
         //determine the flavor + charge combination of the leptons
         enum FlavorCharge : unsigned int;

@@ -4,17 +4,23 @@
 #include "../../Event/interface/Event.h"
 
 int main(){
-	TreeReader treeReader("../testData/samples_test.txt", "../testData");
+	// arguments to TreeReader constructor:
+	// - sample list (see TreeReader constructor for proper formatting)
+	// - folder where to find the files mentioned in the sample list
+	TreeReader treeReader("../testData/testsamplelist.txt", "../testData");
 	for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
-		//load next sample
+	    //load next sample
 		treeReader.initSample();
 
 		//loop over events in sample
 		for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
-
-			//build next event
-			Event event = treeReader.buildEvent( entry ); 
+            
+            if(entry%100==0){
+                std::cout<<"processing event "<<entry+1<<" of "<<treeReader.numberOfEntries()<<std::endl;
+			}
+            //build next event
+            Event event = treeReader.buildEvent( entry ); 
 
             //clean electrons from muon overlap
             event.cleanElectronsFromLooseMuons();
@@ -34,6 +40,7 @@ int main(){
             //....fill histograms....
             
 		}
+        std::cout<<"event loop finished for sample "<<sampleIndex+1<<" of "<<treeReader.numberOfSamples()<<std::endl;
 	}
 	return 0;
 }

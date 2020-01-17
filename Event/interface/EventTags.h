@@ -29,6 +29,7 @@ class EventTags{
 };
 
 bool operator==( const EventTags&, const EventTags& );
+bool operator<( const EventTags&, const EventTags& );
 std::ostream& operator<<( std::ostream&, const EventTags& );
 
 #endif

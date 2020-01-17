@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra -O3 -g
+CFLAGS= -Wl,--no-as-needed,-lpthread
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= produceNNTrainingTrees.cc ../codeLibrary.o src/ewkinoSelection.cc src/ewkinoCategorization.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=produceNNTrainingTrees
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
