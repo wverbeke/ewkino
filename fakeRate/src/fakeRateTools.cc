@@ -125,7 +125,7 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
 
 	//plot the prescale measurements 
 	//make plot directory if it does not already exist 
-	std::string outputDirectory_name = "prescaleMeasurementPlots";
+	std::string outputDirectory_name = "prescaleMeasurementPlots_" + year;
 	systemTools::makeDirectory( outputDirectory_name );
 
 	for( const auto& trigger : triggerNames ){
@@ -242,6 +242,8 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
         throw std::invalid_argument( histogramNames.front() + " corresponds to neither electrons nor muons" );
     }
 
+    std::string flavorString = ( isMuon ? "muon" : "electron" );
+
     //initialize 2D histogram
     std::pair< std::vector< double >, std::vector< double > > ptEtaBins = ptEtaBinNamesToBinVectors( ptEtaBinNames, isMuon );
     std::shared_ptr<TH2D> fakeRateMap = std::make_shared< TH2D >( "fake-rate", "fake-rate; p_{T} (GeV); |#eta|", ptEtaBins.first.size() - 1, &ptEtaBins.first[0], ptEtaBins.second.size() - 1, &ptEtaBins.second[0] );
@@ -259,7 +261,8 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
 		std::shared_ptr< TH1D > prompt_hist_denominator;
 
         for( const auto& name : histogramNames ){
-            if( !stringTools::stringContains( name, bin ) ) continue;
+            std::string binName = stringTools::split( name, "_" + flavorString + "_" ).back();
+            if( binName != bin ) continue;
             if( histIsNumerator( name ) ){
                 if( histIsData( name ) ){
                     data_hist_numerator = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >( filePtr->Get( name.c_str() ) ) );
@@ -279,17 +282,17 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
 
         //plot data and prompt histogram for both numerator and denominator before computing fakerate 
 		//make plot directory if it does not already exist 
-		std::string outputDirectory_name = "fakeRateMeasurementPlots";
+		std::string outputDirectory_name = std::string( "fakeRateMeasurementPlots_" ) + flavorString + "_" + year;
 		systemTools::makeDirectory( outputDirectory_name );
 
        	//plot numerator
         TH1D* predictedHists_numerator[1] = { prompt_hist_numerator.get() };
         std::string predictedNames[2] = {"data", "prompt"};
-        plotDataVSMC( data_hist_numerator.get(), predictedHists_numerator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + ( isMuon ? "muon_" : "electron_" ) + bin + "_numerator_fakeRateMeasurement" + year + ".pdf", "", false, false, "(13 TeV)" ); 
+        plotDataVSMC( data_hist_numerator.get(), predictedHists_numerator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + flavorString + "_" + bin + "_numerator_fakeRateMeasurement" + year + ".pdf", "", false, false, "(13 TeV)" ); 
         
 		//plot denominator
         TH1D* predictedHists_denominator[1] = { prompt_hist_denominator.get() };
-        plotDataVSMC( data_hist_numerator.get(), predictedHists_denominator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + ( isMuon ? "muon_" : "electron_" ) + bin + "_denominator_fakeRateMeasurement" + year + ".pdf", "", false, false, "(13 TeV)" ); 
+        plotDataVSMC( data_hist_denominator.get(), predictedHists_denominator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + flavorString + "_" + bin + "_denominator_fakeRateMeasurement" + year + ".pdf", "", false, false, "(13 TeV)" ); 
 		
 
         //subtract prompt contamination from data
