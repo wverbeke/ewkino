@@ -9,7 +9,7 @@ TT                  TTToSemilepton_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8
 WZ                  WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8_Summer16.root                                            4.42965
 WZ                  WZTo3LNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16.root                                      5.063
 WZ                  WZTo3LNu_mllmin01_13TeV-powheg-pythia8_Summer16.root                                                38.20068
-#WZ                  WZJJ_EWK_13TeV-madgraph-pythia8_Summer16.root                                                       
+WZ                  WZJJ_EWK_13TeV-madgraph-pythia8_Summer16.root                                                       3.485e-02
 
 XGamma              ZGToLLG_01J_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16.root                                50.2
 XGamma              WGToLNuG_01J_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16.root                               203.3
@@ -41,7 +41,7 @@ TTX                 ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_Summer16.root  
 TTX                 ST_tWll_5f_LO_13TeV-MadGraph-pythia8_Summer16.root                                                  1.103e-02
 
 VVV                 WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                                               0.05565
-#VVV                 WWW_4F_DiLeptonFilter_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                             
+VVV                 WWW_4F_DiLeptonFilter_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                             6.623e-03
 VVV                 WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                                               0.1651
 VVV                 WWTo2L2Nu_13TeV-powheg_Summer16.root                                                                12.178
 VVV                 ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                                               0.01398
