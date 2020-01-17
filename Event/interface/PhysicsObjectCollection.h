@@ -18,6 +18,7 @@ template< typename ObjectType > class PhysicsObjectCollection {
         using size_type = typename collection_type::size_type;
 
         PhysicsObjectCollection() {}
+        ~PhysicsObjectCollection() = default;
 
         void push_back( const ObjectType& );
         void push_back( ObjectType&& );
@@ -43,7 +44,8 @@ template< typename ObjectType > class PhysicsObjectCollection {
         //apply a user specified selection
         void selectObjects( bool (&passSelection)( const ObjectType& ) );
 
-        ~PhysicsObjectCollection() = default;
+        //return a vector of all possible object pairs
+        std::vector< std::pair< ObjectType*, ObjectType* > > pairCollection() const;
 
     protected:
         PhysicsObjectCollection( const collection_type& col ) : collection( col ) {}
@@ -135,6 +137,17 @@ template< typename ObjectType > double PhysicsObjectCollection< ObjectType >::sc
         ptSum += object->pt();
     }
     return ptSum;
+}
+
+
+template< typename ObjectType > std::vector< std::pair< ObjectType*, ObjectType* > > PhysicsObjectCollection< ObjectType >::pairCollection() const{
+    std::vector< std::pair< ObjectType*, ObjectType* > > pairVector;
+    for( const_iterator it1 = cbegin(); it1 != ( cend() - 1 ); ++it1 ){
+        for( const_iterator it2 = it1 + 1; it2 != cend(); ++it2 ){
+            pairVector.push_back( {it1->get(), it2->get()} );
+        }
+    }
+    return pairVector;
 }
 
 

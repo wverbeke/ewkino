@@ -38,6 +38,9 @@ class Jet : public PhysicsObject{
         bool isBTaggedLoose() const;
         bool isBTaggedMedium() const;
         bool isBTaggedTight() const;
+        bool isBTaggedLooseAnyVariation() const;
+        bool isBTaggedMediumAnyVariation() const;
+        bool isBTaggedTightAnyVariation() const;
 
         //create new Jet with JEC varied within uncertainties
         Jet JetJECDown() const;
@@ -74,6 +77,7 @@ class Jet : public PhysicsObject{
         Jet* clone() && { return new Jet( std::move( *this ) ); }
 
         void copyNonPointerAttributes( const Jet& );
+        bool isBTaggedAnyVariation( bool ( Jet::*isBTaggedWP )() const ) const;
 };
 
 #endif

@@ -45,6 +45,13 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
         size_type numberOfGoodJets() const;
         size_type numberOfGoodAnyVariationJets() const;
 
+        size_type minNumberOfLooseBTaggedJetsAnyVariation() const;
+        size_type maxNumberOfLooseBTaggedJetsAnyVariation() const;
+        size_type minNumberOfMediumBTaggedJetsAnyVariation() const;
+        size_type maxNumberOfMediumBTaggedJetsAnyVariation() const;
+        size_type minNumberOfTightBTaggedJetsAnyVariation() const;
+        size_type maxNumberOfTightBTaggedJetsAnyVariation() const;
+
         //clean jets 
         void cleanJetsFromLooseLeptons( const LeptonCollection&, const double coneSize = 0.4 );
         void cleanJetsFromFOLeptons( const LeptonCollection&, const double coneSize = 0.4 );
@@ -62,6 +69,11 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
     
         //build JetCollection of varied Jets
         JetCollection buildVariedCollection( Jet (Jet::*variedJet)() const ) const;
+
+        //number of b-taged jets with variation
+        std::vector< size_type > countsAnyVariation( bool ( Jet::*passSelection )() const ) const;
+        size_type minCountAnyVariation( bool ( Jet::*passSelection )() const ) const;
+        size_type maxCountAnyVariation( bool ( Jet::*passSelection )() const ) const;
 };
 
 #endif 
