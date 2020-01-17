@@ -1,5 +1,11 @@
 #include "../interface/ewkinoSelection.h"
 
+
+//include other parts of framework
+#include "../../Tools/interface/histogramTools.h"
+
+
+
 void ewkino::applyBaselineObjectSelection( Event& event, const bool allowUncertainties ){
 
     event.selectLooseLeptons();
@@ -108,4 +114,42 @@ bool ewkino::passPtCuts( const Event& event ){
     if( event.lepton( 1 ).isMuon() && event.lepton( 1 ).pt() < 10 ) return false;
     if( event.lepton( 1 ).isElectron() && event.lepton( 1 ).pt() < 15 ) return false;
     return true;
+}
+
+
+bool ewkino::leptonsArePrompt( const Event& event ){
+    for( const auto& leptonPtr : event.leptonCollection() ){
+        if( leptonPtr->isFO() && !leptonPtr->isPrompt() ) return false;
+    }
+    return true;
+}
+
+
+bool ewkino::leptonsAreTight( const Event& event ){
+    for( const auto& leptonPtr : event.leptonCollection() ){
+        if( leptonPtr->isFO() && !leptonPtr->isTight() ) return false;
+    }
+    return true;
+}
+
+
+double ewkino::fakeRateWeight( const Event& event, const std::shared_ptr< TH2 >& muonMap, const std::shared_ptr< TH2 >& electronMap ){
+    static constexpr double maxPt = 44.;
+
+    double weight = -1.;
+    for( const auto& leptonPtr : event.leptonCollection() ){
+        if( !leptonPtr->isFO() ) continue;
+        if( leptonPtr->isTight() ) continue;
+        double fr;
+        double pt = std::min( leptonPtr->pt(), maxPt );
+        if( leptonPtr->isMuon() ){
+            fr = histogram::contentAtValues( muonMap.get(), pt, leptonPtr->absEta() );
+        } else if( leptonPtr->isElectron() ){
+            fr = histogram::contentAtValues( electronMap.get(), pt, leptonPtr->absEta() );
+        } else {
+            throw std::invalid_argument( "we are not considering taus for now" );
+        }
+        weight *= - fr / ( 1. - fr );
+    }
+    return weight;
 }

@@ -37,6 +37,32 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
     //build TreeReader and loop over samples
     TreeReader treeReader( "sampleLists/samples_NNTraining_" + year + ".txt", sampleDirectoryPath );
 
+
+    //use several WZTo3LNu samples at the same time for more statistics
+    //to make sure the relative weights to other samples are correct, each sample must be weighted by its sum of weights divided by the total sum of weights of all 3 WZ samples
+    std::map< std::string, double > WZWeightModifier;
+    double totalSumOfWeights = 0.; 
+    for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
+        treeReader.initSampleFromFile( stringTools::formatDirectoryName( sampleDirectoryPath ) + treeReader.sampleVector()[sampleIndex].fileName() );
+
+        //sum of weights
+        double sumOfWeights = dynamic_cast< TH1D* >( treeReader.currentFilePtr()->Get("hCounter") )->GetSumOfWeights();
+
+        //determine weight scale 
+        treeReader.GetEntry(0);
+        double weightScale = fabs( treeReader._weight );
+
+        totalSumOfWeights += sumOfWeights/weightScale;
+        WZWeightModifier[ treeReader.currentSample().uniqueName() ] = sumOfWeights/weightScale;
+    }
+    for( const auto& entry : WZWeightModifier ){
+        WZWeightModifier[ entry.first ] /= totalSumOfWeights;
+    }
+    for( const auto& entry : WZWeightModifier ){
+        std::cout << "modifier for " << entry.first << " = " << entry.second << std::endl;
+    }
+
+    /*
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
         treeReader.initSample();
 
@@ -91,6 +117,7 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
         trainingFile->Write();
         trainingFile->Close();
     }
+    */
 }
 
 
