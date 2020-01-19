@@ -1,9 +1,11 @@
 #include "../interface/ewkinoSelection.h"
 
+//include c++ library classes
+#include <stdexcept>
 
 //include other parts of framework
 #include "../../Tools/interface/histogramTools.h"
-
+#include "../../Tools/interface/stringTools.h"
 
 
 void ewkino::applyBaselineObjectSelection( Event& event, const bool allowUncertainties ){
@@ -60,6 +62,38 @@ bool ewkino::passBaselineSelection( Event& event, const bool allowUncertainties,
         }
     }
     return true;
+}
+
+
+bool ewkino::passVariedSelection( const Event& event, const std::string& uncertainty ){
+    constexpr double metCut = 50;
+    if( uncertainty == "nominal" ){
+        if( event.metPt() < metCut ) return false;
+        if( event.jetCollection().numberOfTightBTaggedJets() > 0 ) return false;
+	} else if( uncertainty == "JECDown" ){
+        if( event.met().MetJECDown().pt() < metCut ) return false;
+        if( event.jetCollection().JECDownCollection().numberOfTightBTaggedJets() > 0 ) return false;
+    } else if( uncertainty == "JECUp" ){
+        if( event.met().MetJECUp().pt() < metCut ) return false;
+        if( event.jetCollection().JECUpCollection().numberOfTightBTaggedJets() > 0 ) return false;
+    } else if( uncertainty == "JERDown" ){
+        if( event.metPt() < metCut ) return false;
+        if( event.jetCollection().JERDownCollection().numberOfTightBTaggedJets() > 0 ) return false;
+    } else if( uncertainty == "JERUp" ){
+        if( event.metPt() < metCut ) return false;
+        if( event.jetCollection().JERUpCollection().numberOfTightBTaggedJets() > 0 ) return false;
+    } else if( uncertainty == "UnclDown" ){
+        if( event.met().MetUnclusteredDown().pt() < metCut ) return false;
+        if( event.jetCollection().numberOfTightBTaggedJets() > 0 ) return false;
+    } else if( uncertainty == "UnclUp" ){
+        if( event.met().MetUnclusteredUp().pt() < metCut ) return false;
+        if( event.jetCollection().numberOfTightBTaggedJets() > 0 ) return false;
+	} else {
+        throw std::invalid_argument( "Uncertainty source " + uncertainty + " is unknown." );
+    }
+    return true;
+ 
+
 }
 
 
@@ -128,6 +162,17 @@ bool ewkino::leptonsArePrompt( const Event& event ){
 bool ewkino::leptonsAreTight( const Event& event ){
     for( const auto& leptonPtr : event.leptonCollection() ){
         if( leptonPtr->isFO() && !leptonPtr->isTight() ) return false;
+    }
+    return true;
+}
+
+
+bool ewkino::passPhotonOverlapRemoval( const Event& event ){
+    std::string sampleName = event.sample().fileName();
+    if( stringTools::stringContains( sampleName, "DYJetsToLL" ) ){
+        return ( event.generatorInfo().zgEventType() < 3 );
+    } else if( stringTools::stringContains( sampleName, "TTTo" ) ){
+        return ( event.generatorInfo().ttgEventType() < 3 );
     }
     return true;
 }
