@@ -44,7 +44,6 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
     std::map< std::string, double > WZWeightModifier;
     double totalSumOfWeights = 0.; 
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
-        std::cout << "checking sample " << sampleIndex << std::endl;
         if( !stringTools::stringContains( treeReader.sampleVector()[sampleIndex].fileName(), "WZTo3LNu" ) ) continue;
         treeReader.initSampleFromFile( stringTools::formatDirectoryName( sampleDirectoryPath ) + treeReader.sampleVector()[sampleIndex].fileName() );
 
@@ -58,14 +57,10 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
         totalSumOfWeights += sumOfWeights/weightScale;
         WZWeightModifier[ treeReader.currentSample().uniqueName() ] = sumOfWeights/weightScale;
     }
+
     for( const auto& entry : WZWeightModifier ){
         WZWeightModifier[ entry.first ] /= totalSumOfWeights;
     }
-    /*
-    for( const auto& entry : WZWeightModifier ){
-        std::cout << "modifier for " << entry.first << " = " << entry.second << std::endl;
-    }
-    */
 
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
         treeReader.initSample();
@@ -137,7 +132,16 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
 }
 
 
-int main(){
-    produceNNTrainingTrees( "2016", "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino" );
+int main( int argc, char* argv[] ){
+    std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
+    if( argc == 2 ){
+        std::string year = argvStr[1];
+        produceNNTrainingTrees( year, "/user/wverbeke/Work/ntuples_ewkino_new/" );
+    } else {
+        for( const auto& year : { "2016", "2017", "2018" } ){
+            std::string command = std::string( "./produceNNTrainingTrees " ) + year;
+            systemTools::submitCommandAsJob( command, std::string( "produceNNTrainingTrees_" ) + year + ".sh", "169:00:00" );
+        }
+    }
     return 0;
 }

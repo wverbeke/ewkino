@@ -356,7 +356,7 @@ std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >
             if( !oppositeSignSameFlavor( l1, l2 ) ) continue;
 
             double mass = ( l1 + l2 ).mass();
-            double massDifference = ( mass - particle::mZ );
+            double massDifference = std::abs( mass - particle::mZ );
             if( massDifference < minDiff ){
                 minDiff = massDifference;
                 bestMass = mass;
