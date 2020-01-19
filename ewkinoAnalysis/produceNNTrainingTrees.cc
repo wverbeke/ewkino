@@ -27,6 +27,7 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
         { "LTPlusMET", 0. },
         { "m3l", 0. },
         { "mt3l", 0. },
+        { "HT", 0. },
         { "eventWeight", 0. }
     };
 
@@ -43,10 +44,11 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
     std::map< std::string, double > WZWeightModifier;
     double totalSumOfWeights = 0.; 
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
+        if( !stringTools::stringContains( treeReader.sampleVector()[sampleIndex].fileName(), "WZTo3LNu" ) ) continue;
         treeReader.initSampleFromFile( stringTools::formatDirectoryName( sampleDirectoryPath ) + treeReader.sampleVector()[sampleIndex].fileName() );
 
         //sum of weights
-        double sumOfWeights = dynamic_cast< TH1D* >( treeReader.currentFilePtr()->Get("hCounter") )->GetSumOfWeights();
+        double sumOfWeights = dynamic_cast< TH1D* >( treeReader.currentFilePtr()->Get("blackJackAndHookers/hCounter") )->GetSumOfWeights();
 
         //determine weight scale 
         treeReader.GetEntry(0);
@@ -55,14 +57,11 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
         totalSumOfWeights += sumOfWeights/weightScale;
         WZWeightModifier[ treeReader.currentSample().uniqueName() ] = sumOfWeights/weightScale;
     }
+
     for( const auto& entry : WZWeightModifier ){
         WZWeightModifier[ entry.first ] /= totalSumOfWeights;
     }
-    for( const auto& entry : WZWeightModifier ){
-        std::cout << "modifier for " << entry.first << " = " << entry.second << std::endl;
-    }
 
-    /*
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
         treeReader.initSample();
 
@@ -93,6 +92,12 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
             event.removeTaus();
 
             if( !ewkino::passBaselineSelection( event, false, true, false ) ) continue;
+
+            //met requirement 
+            if( event.metPt() < 50 ) continue;
+
+            //veto fourth leptons
+            if( event.numberOfLightLeptons() != 3 ) continue;
             
             //select tight leptons and require OSSF pair
             event.selectTightLeptons();
@@ -107,7 +112,14 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
             PhysicsObject leptonSum = event.leptonCollection().objectSum();
             trainingVariables["m3l"] = leptonSum.mass();
             trainingVariables["mt3l"] = mt( leptonSum, event.met() );
+            trainingVariables["HT"] = event.jetCollection().scalarPtSum();
+            
             trainingVariables["eventWeight"] = event.weight();
+
+            //modifier for WZ to combine samples
+            if( stringTools::stringContains( event.sample().fileName(), "WZTo3LNu_" ) ){
+                trainingVariables["eventWeight"] *= WZWeightModifier[ event.sample().uniqueName() ];
+            }
 
             if( treeReader.isSusy() ){
                 trainingVariables["susyMassSplitting"] = ( event.susyMassInfo().massNLSP() - event.susyMassInfo().massLSP() );
@@ -117,13 +129,19 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
         trainingFile->Write();
         trainingFile->Close();
     }
-    */
 }
 
 
-int main(){
-    produceNNTrainingTrees( "2016", "../test/testData/" );
-    produceNNTrainingTrees( "2017", "../test/testData/" );
-    produceNNTrainingTrees( "2018", "../test/testData/" );
+int main( int argc, char* argv[] ){
+    std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
+    if( argc == 2 ){
+        std::string year = argvStr[1];
+        produceNNTrainingTrees( year, "/user/wverbeke/Work/ntuples_ewkino_new/" );
+    } else {
+        for( const auto& year : { "2016", "2017", "2018" } ){
+            std::string command = std::string( "./produceNNTrainingTrees " ) + year;
+            systemTools::submitCommandAsJob( command, std::string( "produceNNTrainingTrees_" ) + year + ".sh", "169:00:00" );
+        }
+    }
     return 0;
 }

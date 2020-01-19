@@ -1,4 +1,4 @@
-data                data_combined_Fall17.root
+#data                data_combined_Fall17.root
 
 DY                  DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_Fall17.root                           18610
 DY                  DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root                              6077.22
@@ -8,6 +8,8 @@ TT                  TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_Fall
 
 #MISSING SAMPLES
 WZ                  WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root                                     5.063
+WZ                  WZTo3LNu_mllmin01_NNPDF31_TuneCP5_13TeV_powheg_pythia8_Fall17.root                          38.20068
+WZ                  WZTo3LNu_13TeV-powheg-pythia8_Fall17.root                                                   4.42965
 WZ                  WZJJToLNu_EWK_QCD_TuneCP5_13TeV-madgraph-pythia8_Fall17.root                                3.485e-02
 
 XGamma              ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8_Fall17.root                               50.2
@@ -16,6 +18,7 @@ XGamma              TTGamma_Dilept_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall
 XGamma              TTGamma_SingleLeptFromT_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17.root                1.560049999938
 XGamma              TTGamma_SingleLeptFromTbar_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17.root             1.560049999938
 
+ZZH                 ZZTo4L_13TeV_powheg_pythia8_Fall17.root                                                     1.256
 ZZH                 GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8_Fall17.root                                 0.006699
 ZZH                 GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8_Fall17.root                                0.006699
 ZZH                 GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8_Fall17.root                               0.006699
@@ -37,22 +40,19 @@ TTX                 TTWZ_TuneCP5_13TeV-madgraph-pythia8_Fall17.root             
 
 TTX                 TTZZ_TuneCP5_13TeV-madgraph-pythia8_Fall17.root                                             1.563e-03
 #TTX                TTZH_TuneCP5_13TeV-madgraph-pythia8_Fall17.root
-
-#MISSING!!!
-#TTX                 tZq_ll_4f_13TeV-amcatnlo-pythia8_Summer16.root                                             0.0942
+TTX                 tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_Fall17.root                      0.0942
 TTX                 ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_Fall17.root                                    0.215
 TTX                 ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8_Fall17.root                          1.103e-02
 
-#MISSING!!!
-#VVV                 WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                                      0.05565
+VVV                 WZZ_TuneCP5_13TeV-amcatnlo-pythia8_Fall17.root                                              0.05565
 VVV                 WWW_4F_DiLeptonFilter_TuneCP5_13TeV-amcatnlo-pythia8_Fall17.root                            6.623e-03
 VVV                 WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8_Fall17.root                                           0.1651
 VVV                 WWTo2L2Nu_NNPDF31_TuneCP5_PSweights_13TeV-powheg-pythia8_Fall17.root                        12.178
 
 #MISSING
-#VVV                 ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root                                      0.01398
+VVV                 ZZZ_TuneCP5_13TeV-amcatnlo-pythia8_Fall17.root                                              0.01398
 
-TChiSlepSnu          SMS-TChiSlepSnu_x0p05_TuneCP2_13TeV-madgraphMLM-pythia8_Fall17.root                        1
+TChiSlepSnu         SMS-TChiSlepSnu_x0p05_TuneCP2_13TeV-madgraphMLM-pythia8_Fall17.root                         1
 TChiSlepSnu         SMS-TChiSlepSnu_x0p5_TuneCP2_13TeV-madgraphMLM-pythia8_Fall17.root                          1
 TChiSlepSnu         SMS-TChiSlepSnu_x0p95_TuneCP2_13TeV-madgraphMLM-pythia8_Fall17.root                         1
 TChiWZ              SMS-TChiWZ_ZToLL_mZMin-0p1_TuneCP2_13TeV-madgraphMLM-pythia8_Fall17.root                    1
