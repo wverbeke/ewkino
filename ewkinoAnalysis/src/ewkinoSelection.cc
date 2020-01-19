@@ -46,9 +46,9 @@ bool ewkino::passBaselineSelection( Event& event, const bool allowUncertainties,
     if( event.numberOfLeptons() < 3 ) return false;
     if( mllVeto && !passLowMllVeto( event, 12 ) ) return false;
     event.selectFOLeptons();
+    if( event.numberOfLeptons() < 3 ) return false;
     event.applyLeptonConeCorrection();
     event.sortLeptonsByPt();
-    if( event.numberOfLeptons() < 3 ) return false;
     if( event.numberOfTaus() > 2 ) return false;
     if( bVeto ){
         if( allowUncertainties ){
@@ -141,12 +141,12 @@ bool ewkino::passPtCuts( const Event& event ){
     //assume leptons were ordered while applying baseline selection
     
     //leading lepton
-    if( event.lepton( 0 ).isMuon() && event.lepton( 0 ).pt() < 20 ) return false;
-    if( event.lepton( 0 ).isElectron() && event.lepton( 0 ).pt() < 25 ) return false;
+    if( event.lepton( 0 ).isMuon() && event.lepton( 0 ).pt() <= 20 ) return false;
+    if( event.lepton( 0 ).isElectron() && event.lepton( 0 ).pt() <= 25 ) return false;
 
     //subleading lepton
-    if( event.lepton( 1 ).isMuon() && event.lepton( 1 ).pt() < 10 ) return false;
-    if( event.lepton( 1 ).isElectron() && event.lepton( 1 ).pt() < 15 ) return false;
+    if( event.lepton( 1 ).isMuon() && event.lepton( 1 ).pt() <= 10 ) return false;
+    if( event.lepton( 1 ).isElectron() && event.lepton( 1 ).pt() <= 15 ) return false;
     return true;
 }
 

@@ -163,6 +163,7 @@ class Event{
 
         //transverse mass of lepton from W decay in 1 or 3 lepton events and the MET
         LeptonCollection::size_type WLeptonIndex();
+        Lepton& WLepton(){ return lepton( WLeptonIndex() ); }
         double mtW();
 
         //other transverse mass options

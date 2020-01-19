@@ -11,20 +11,31 @@
 #include "TH2D.h"
 
 
-SusyScan::SusyScan( const Sample& sample ){
-    if( ! analysisTools::sampleIsSusy( sample.fileName() ) ){
-        throw std::invalid_argument( "Given Sample " + sample.uniqueName() + " does not correspond to a SUSY scan, so a SusyScan object can not be instantiated." );
-    }
-    readMassPoints_Fast(sample );
-}
-
-
 template < typename T > unsigned floatToUnsigned( T f ){
     return static_cast< unsigned >( std::floor( f + 0.5 ) );
 }
 
 
-void SusyScan::readMassPoints_Fast( const Sample& sample ){
+SusyScan::SusyScan( const double massSplitting ) :
+    _massSplitting( floatToUnsigned( massSplitting ) )
+{}
+
+
+SusyScan::SusyScan( const Sample& sample, const double massSplitting ) : 
+    _massSplitting( floatToUnsigned( massSplitting ) )
+{
+    addMassPoints_Fast( sample );
+}
+
+
+SusyScan::SusyScan( const Sample& sample ) : SusyScan( sample, 0 ) {}
+
+
+void SusyScan::addMassPoints_Fast( const Sample& sample ){
+
+    if( ! analysisTools::sampleIsSusy( sample.fileName() ) ){
+        throw std::invalid_argument( "Given Sample " + sample.uniqueName() + " does not correspond to a SUSY scan, so a SusyScan object can not be instantiated." );
+    }
 
     std::shared_ptr< TFile > file( sample.filePtr() );
 
@@ -35,7 +46,8 @@ void SusyScan::readMassPoints_Fast( const Sample& sample ){
     //The assumption in what follows is that bin centers are integer values, if this is not the case, the code will not work!
 
     //internal index for keeping track of mass points 
-    size_t pointIndex = 0;
+    //start the index at the current amount of mass points so several scans can be combined
+    size_t pointIndex = numberOfPoints();
 
     //loop over all bins, extract the mass point for each and check if there are events
     for( int xBin = 1; xBin < susyCounter->GetNbinsX() + 1; ++xBin ){
@@ -45,21 +57,42 @@ void SusyScan::readMassPoints_Fast( const Sample& sample ){
             double yCenter = susyCounter->GetYaxis()->GetBinCenter( yBin );
             unsigned massLSP = floatToUnsigned( yCenter );
 
+            //LSP mass can not be higher than NLSP mass
+            if( massLSP > massNLSP ) continue;
+
+            //if a particular mass-splitting was required, only allow points at this splitting
+            unsigned deltaM = ( massNLSP - massLSP );
+            if( ( _massSplitting != 0 ) && ( deltaM != _massSplitting ) ) continue;
+
             double sumOfWeights = susyCounter->GetBinContent( xBin, yBin );
 
             //if there are any events for this mass point, add it to the collection
             if( sumOfWeights > 0 ){
-                std::pair< unsigned, unsigned > massPair( massNLSP, massLSP );
-                massesToIndices[ massPair ] = pointIndex;
-                indicesToMasses[ pointIndex ] = massPair;
-                indicesToSumOfWeights[ pointIndex ] = sumOfWeights;
 
-                //next point
-                ++pointIndex;
+                //check if the mass-point is present
+                std::pair< unsigned, unsigned > massPair( massNLSP, massLSP );
+        
+                //not yet present
+                if( massesToIndices.find( massPair ) == massesToIndices.cend() ){
+                    massesToIndices[ massPair ] = pointIndex;
+                    indicesToMasses[ pointIndex ] = massPair;
+                    indicesToSumOfWeights[ pointIndex ] = sumOfWeights;
+
+                    //next point
+                    ++pointIndex;
+
+                //already present
+                } else {
+
+                    //maps don't have to be modified in this case, only the sum of weights
+                    //warning, you can't use pointIndex as the index here, that would be a bug
+                    indicesToSumOfWeights[ massesToIndices[ massPair ] ] += sumOfWeights;
+                }
             }
         }
     }
 }
+
 
 
 std::pair< unsigned, unsigned > SusyScan::massesAtIndex( const size_t pointIndex ) const{

@@ -8,6 +8,7 @@
 class Met : public PhysicsObject {
 
     public:
+        Met() = default;
         Met( const TreeReader& );
 
         virtual bool isGood() const override{ return true; }
@@ -17,6 +18,10 @@ class Met : public PhysicsObject {
         Met MetJECUp() const;
         Met MetUnclusteredDown() const;
         Met MetUnclusteredUp() const;
+
+        //maximum variations of met pT
+        double maxPtAnyVariation() const;
+        double minPtAnyVariation() const;
 
         //print met information
         virtual std::ostream& print( std::ostream& ) const override;
@@ -36,5 +41,7 @@ class Met : public PhysicsObject {
         double _phi_UnclUp = 0;
 
         Met variedMet( const double pt, const double phi ) const;
+
+        std::vector< double > metPtVariations() const;        
 };
 #endif 
