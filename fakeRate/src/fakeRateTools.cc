@@ -114,35 +114,35 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
 
         //divide data by the prompt contribution and then fit it
         //clone data histogram so the original can still be plotted later on
-		std::shared_ptr< TH1D > ratio_histogram( dynamic_cast< TH1D* >( data_histograms[trigger]->Clone() ) );
+		std::shared_ptr< TH1D > ratio_histogram( dynamic_cast< TH1D* >( data_histograms[ trigger ]->Clone() ) );
         ratio_histogram->Divide( prompt_histograms[ trigger ].get() );
 
         //make fit to the data
         ConstantFit fitInfo( ratio_histogram, min, max );
         
-        prescaleMap[trigger] = Prescale( fitInfo );
+        prescaleMap[ trigger ] = Prescale( fitInfo );
     }
 
 	//plot the prescale measurements 
 	//make plot directory if it does not already exist 
-	std::string outputDirectory_name = "prescaleMeasurementPlots";
+	std::string outputDirectory_name = "prescaleMeasurementPlots_" + year;
 	systemTools::makeDirectory( outputDirectory_name );
 
 	for( const auto& trigger : triggerNames ){
 
         //make array for prompt histogram and scale it by the prescale
-		TH1D* predictedHists[1] = { prompt_histograms[trigger].get() };
-        predictedHists[0]->Scale( prescaleMap[trigger].value() );
+		TH1D* predictedHists[1] = { prompt_histograms[ trigger ].get() };
+        predictedHists[0]->Scale( prescaleMap[ trigger ].value() );
 
         //vary prompt histogram within uncertainty on prescale measurement 
 		TH1D* systUnc = dynamic_cast< TH1D* >( predictedHists[0]->Clone() );
-        double prescaleFractionalUnc = fabs( prescaleMap[trigger].uncertaintySymmetric() / prescaleMap[trigger].value() );
+        double prescaleFractionalUnc = fabs( prescaleMap[ trigger ].uncertaintySymmetric() / prescaleMap[ trigger ].value() );
         for( int b = 1; b < systUnc->GetNbinsX() + 1; ++b ){
             systUnc->SetBinContent( b , systUnc->GetBinContent(b) * prescaleFractionalUnc );
         }
 
 		std::string predictedNames[2] = {"data", "prompt"};
-        plotDataVSMC( data_histograms[trigger].get(), predictedHists, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + trigger + "_prescaleMeasurement_" + year + ".pdf", "", false, false, "(13 TeV)", systUnc ); 
+        plotDataVSMC( data_histograms[ trigger ].get(), predictedHists, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + trigger + "_prescaleMeasurement_" + year + ".pdf", "", false, false, "(13 TeV)", systUnc ); 
 		
 	}
     return prescaleMap;

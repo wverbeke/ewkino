@@ -156,3 +156,56 @@ void JetCollection::cleanJetsFromFOLeptons( const LeptonCollection& leptonCollec
 void JetCollection::cleanJetsFromTightLeptons( const LeptonCollection& leptonCollection, const double coneSize ){
     cleanJetsFromLeptons( leptonCollection, &Lepton::isTight, coneSize );
 }
+
+
+std::vector< JetCollection::size_type > JetCollection::countsAnyVariation( bool ( Jet::*passSelection )() const ) const{
+    return {
+        count( passSelection ), 
+        JECDownCollection().count( passSelection ),
+        JECUpCollection().count( passSelection ),
+        JERDownCollection().count( passSelection ),
+        JERUpCollection().count( passSelection )
+    };
+}
+
+
+JetCollection::size_type JetCollection::minCountAnyVariation( bool ( Jet::*passSelection )() const ) const{
+    const auto& counts = countsAnyVariation( passSelection );
+    return *std::min_element( counts.cbegin(), counts.cend() );
+}
+
+
+JetCollection::size_type JetCollection::maxCountAnyVariation( bool ( Jet::*passSelection )() const ) const{
+    const auto& counts = countsAnyVariation( passSelection );
+    return *std::max_element( counts.cbegin(), counts.cend() );
+}
+
+
+JetCollection::size_type JetCollection::minNumberOfLooseBTaggedJetsAnyVariation() const{
+    return minCountAnyVariation( &Jet::isBTaggedLoose );
+}
+
+
+JetCollection::size_type JetCollection::maxNumberOfLooseBTaggedJetsAnyVariation() const{
+    return maxCountAnyVariation( &Jet::isBTaggedLoose );
+}
+
+
+JetCollection::size_type JetCollection::minNumberOfMediumBTaggedJetsAnyVariation() const{
+    return minCountAnyVariation( &Jet::isBTaggedMedium );
+}
+
+
+JetCollection::size_type JetCollection::maxNumberOfMediumBTaggedJetsAnyVariation() const{
+    return maxCountAnyVariation( &Jet::isBTaggedMedium );
+}
+
+
+JetCollection::size_type JetCollection::minNumberOfTightBTaggedJetsAnyVariation() const{
+    return minCountAnyVariation( &Jet::isBTaggedTight );
+}
+
+
+JetCollection::size_type JetCollection::maxNumberOfTightBTaggedJetsAnyVariation() const{
+    return maxCountAnyVariation( &Jet::isBTaggedTight );
+}

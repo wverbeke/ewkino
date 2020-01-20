@@ -34,5 +34,8 @@ namespace analysisTools{
 
     //check if a string is either 2016, 2017 or 2018, if not throw an error
     void checkYearString( const std::string& );
+
+    //check from a sample name whether the sample is a SUSY scan or not
+    bool sampleIsSusy( const std::string& filePath );
 }
 #endif

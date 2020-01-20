@@ -122,7 +122,7 @@ bool TreeReader::containsGeneratorInfo() const{
 }
 
 
-bool TreeReader::containsSUSYMassInfo() const{
+bool TreeReader::containsSusyMassInfo() const{
     return treeHasBranchWithName( _currentTreePtr, "_mChi" );
 }
 
@@ -235,6 +235,9 @@ void TreeReader::initSample( const Sample& samp ){
         }
         scale = samp.xSec()*dataLumi*1000 / sumSimulatedEventWeights;
     }
+
+    //check whether current sample is a SUSY sample
+    _isSusy = containsSusyMassInfo();
 }
 
 
@@ -245,7 +248,7 @@ void TreeReader::initSample(){
 
 
 //initialize the current Sample directly from a root file, this is used when skimming
-void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018 ){
+void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018, const bool resetTriggersAndFilters ){
 
     //check if file exists 
     if( !systemTools::fileExists( pathToFile ) ){
@@ -264,16 +267,19 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
     _currentSamplePtr = std::make_shared< Sample >( pathToFile, is2017, is2018, isData() );
 
     //initialize tree
-    initTree();
+    initTree( resetTriggersAndFilters );
+
+    //check whether current sample is a SUSY sample
+    _isSusy = containsSusyMassInfo();
 }
 
 
 //automatically determine whether sample is 2017 or 2018 from file name 
-void TreeReader::initSampleFromFile( const std::string& pathToFile ){
+void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool resetTriggersAndFilters ){
     
     std::pair< bool, bool > is2017Or2018 = analysisTools::fileIs2017Or2018( pathToFile );
     
-    initSampleFromFile( pathToFile, is2017Or2018.first, is2017Or2018.second );
+    initSampleFromFile( pathToFile, is2017Or2018.first, is2017Or2018.second, resetTriggersAndFilters );
 }
 
 
@@ -324,7 +330,7 @@ void setMapOutputBranches( TTree* treePtr, std::map< std::string, bool >& variab
 }
 
 
-void TreeReader::initTree(){
+void TreeReader::initTree( const bool resetTriggersAndFilters ){
 
     // Set branch addresses and branch pointers
     checkCurrentTree();
@@ -515,17 +521,23 @@ void TreeReader::initTree(){
         _currentTreePtr->SetBranchAddress("_prefireWeightUp", &_prefireWeightUp, &b__prefireWeightUp);
     }
 
-	if( containsSUSYMassInfo() ){
+	if( containsSusyMassInfo() ){
 		_currentTreePtr->SetBranchAddress("_mChi1", &_mChi1, &b__mChi1);
 		_currentTreePtr->SetBranchAddress("_mChi2", &_mChi2, &b__mChi2);
 	}
 
     //add all individually stored triggers 
-    initializeTriggerMap( _currentTreePtr );
+    //always reset triggers instead of rare case of combining primary datasets to prevent invalidating addresses set by setOutputTree
+    if( resetTriggersAndFilters || _triggerMap.empty() ){
+        initializeTriggerMap( _currentTreePtr );
+    }
     setMapBranchAddresses( _currentTreePtr, _triggerMap, b__triggerMap );
 
     //add all individually stored MET filters
-    initializeMetFilterMap( _currentTreePtr );
+    //always reset filters instead of rare case of combining primary datasets to prevent invalidating addresses set by setOutputTree
+    if( resetTriggersAndFilters || _MetFilterMap.empty() ){
+        initializeMetFilterMap( _currentTreePtr );
+    }
     setMapBranchAddresses( _currentTreePtr, _MetFilterMap, b__MetFilterMap );
 }
 
@@ -716,7 +728,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_prefireWeightDown",         &_prefireWeightDown,         "_prefireWeightDown/F"); 
     }
 
-    if( containsSUSYMassInfo() ){
+    if( containsSusyMassInfo() ){
 		outputTree->Branch("_mChi1", &_mChi1, "_mChi1/D");
 		outputTree->Branch("_mChi2", &_mChi2, "_mChi2/D");
     }

@@ -46,8 +46,7 @@ void KerasModelReader::loadPythonModule( const std::string& modelName ){
 
 double KerasModelReader::predict( const std::vector<double>& inputs ) const{
     if( inputs.size() != numberOfInputs ){
-        std::cerr << "Error in KerasModelReader::predict : number of inputs given does not correspond to number of inputs. Returning 9999." << std::endl;
-        return 9999.;
+        throw std::invalid_argument( "Number of inputs should be " + std::to_string( numberOfInputs ) + " while " + std::to_string( inputs.size() ) + " inputs are given." );
     }
     python::object inputList = vectorToPyList( inputs );
     python::object pythonOutput = predictRoutine( inputList );

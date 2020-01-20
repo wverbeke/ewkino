@@ -69,9 +69,9 @@ bool TriggerInfo::passMetFilter( const std::string& filterName ) const{
 
 
 void printAvailableInfo( const std::map< std::string, bool >& decisionMap, const std::string& decisionType ){
-    std::cout << "Available " << decisionType << " :" << std::endl;
+    std::cout << "Available " << decisionType << " :\n";
     for( const auto& decision : decisionMap ){
-        std::cout << decision.first << std::endl;
+        std::cout << decision.first << "\n";
     }
 }
 

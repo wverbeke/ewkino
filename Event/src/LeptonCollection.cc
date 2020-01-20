@@ -110,6 +110,24 @@ LeptonCollection LeptonCollection::tightLeptonCollection() const{
 }
 
 
+LeptonCollection LeptonCollection::leadingLeptonCollection( LeptonCollection::size_type numberOfLeptons ){
+	if( numberOfLeptons > size() ){
+		throw std::invalid_argument( "Trying to building collection of " + std::to_string( numberOfLeptons ) + " leptons for LeptonCollection of size " + std::to_string( size() ) + "." );
+	}
+
+    //make sure leptons are ordered by pT
+    sortByPt();
+
+	std::vector< std::shared_ptr< Lepton > > leptonVector;
+	for( size_type l = 0; l < numberOfLeptons; ++l ){
+
+		//leptons are shared between collections!
+		leptonVector.push_back( std::shared_ptr< Lepton >( &( (*this)[l] ) ) );
+	}
+	return LeptonCollection( leptonVector );
+}
+
+
 void LeptonCollection::clean( bool (Lepton::*isFlavorToClean)() const, bool (Lepton::*isFlavorToCleanFrom)() const, bool (Lepton::*passSelection)() const, const double coneSize ){
 
     for( const_iterator l1It = cbegin(); l1It != cend(); ){
@@ -338,7 +356,7 @@ std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >
             if( !oppositeSignSameFlavor( l1, l2 ) ) continue;
 
             double mass = ( l1 + l2 ).mass();
-            double massDifference = ( mass - particle::mZ );
+            double massDifference = std::abs( mass - particle::mZ );
             if( massDifference < minDiff ){
                 minDiff = massDifference;
                 bestMass = mass;

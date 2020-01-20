@@ -189,6 +189,32 @@ bool Jet::isBTaggedTight() const{
 }
 
 
+bool Jet::isBTaggedAnyVariation( bool ( Jet::*isBTaggedWP )() const ) const{
+    return (
+        ( *this.*isBTaggedWP )() ||
+        ( JetJECDown().*isBTaggedWP )() ||
+        ( JetJECUp().*isBTaggedWP )() ||
+        ( JetJERDown().*isBTaggedWP )() ||
+        ( JetJERUp().*isBTaggedWP )()
+    );
+}
+
+
+bool Jet::isBTaggedLooseAnyVariation() const{
+    return isBTaggedAnyVariation( &Jet::isBTaggedLoose );
+}
+
+
+bool Jet::isBTaggedMediumAnyVariation() const{
+    return isBTaggedAnyVariation( &Jet::isBTaggedMedium );
+}
+
+
+bool Jet::isBTaggedTightAnyVariation() const{
+    return isBTaggedAnyVariation( &Jet::isBTaggedTight );
+}
+
+
 std::ostream& Jet::print( std::ostream& os ) const{
     os << "Jet : ";
     PhysicsObject::print( os );
