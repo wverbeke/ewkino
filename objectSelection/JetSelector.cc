@@ -8,9 +8,13 @@ Jet ID selection
 */
 
 bool JetSelector::isGoodBase() const{
-    if( jetPtr->pt() < 25 ) return false;
-    if( fabs( jetPtr->eta() ) > 2.4 ) return false;
     if( !jetPtr->isTight() ) return false;
+    if( jetPtr->pt() < 25 ) return false;
+    if( fabs( jetPtr->eta() ) > 5.0 ) return false;
+    // additional pt cut for jets with 2.7 < abs(eta) < 3.0
+    if( fabs( jetPtr->eta() ) > 2.7 
+        and fabs( jetPtr->eta()) < 3.0
+        and jetPtr->pt() < 60 ) return false;
     return true;
 }
 
@@ -36,7 +40,9 @@ b-tagging working points
 
 bool JetSelector::inBTagAcceptance() const{
     if( !isGood() ) return false;
+    // the following criterion is in principle already satisfied if isGood()
     if( jetPtr->pt() < 25 ) return false;
+    // note that the b-tagging acceptance is much smaller than general jet selection
     if( fabs( jetPtr->eta() ) >= 2.4 ) return false;
     return true;
 }

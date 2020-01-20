@@ -124,6 +124,6 @@ for sample_directory, sub_directory, output_directory in zip( sample_directories
                     script.write( skim_command )
 
             # submit job and catch errors 
-            #submitQsubJob( script_name, wall_time )
+            submitQsubJob( script_name, wall_time )
             # alternative: run locally (for testing and debugging)
             #os.system('bash '+script_name)

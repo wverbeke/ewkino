@@ -44,6 +44,20 @@ LorentzVector::LorentzVector(const double pt, const double eta, const double phi
     normalizePhi();
 }
 
+// custom constructor-like method; not tested as thoroughly as the rest of this class so use at own risk.
+// an overloaded constructor might be better but number and type of arguments are equal...
+void LorentzVector::setPxPyPzE(const double px, const double py, const double pz, const double E){
+    // all properties of the LorentzVector are overwritten; use after default initialization.
+    xMomentum = px;
+    yMomentum = py;
+    zMomentum = pz;
+    energyValue = E;
+    transverseMomentum = std::sqrt(px*px + py*py);
+    pseudoRapidity = this->computePseudoRapidity();
+    azimuthalAngle = this->computeAzimuthalAngle();
+    this->setZeroValues();
+    this->normalizePhi();
+}
 
 double LorentzVector::mass() const{
     double m2 = energyValue*energyValue - transverseMomentum*transverseMomentum - zMomentum*zMomentum;

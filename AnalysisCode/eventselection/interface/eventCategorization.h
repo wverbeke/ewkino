@@ -5,7 +5,10 @@
 #include "../../../Event/interface/Event.h"
 
 void initOutputTree(TTree*);
-void entryFromEvent(Event&, TTree*);
+int eventCategory(Event&);
+void entryFromEvent(Event&);
+std::pair<double,double> pmzcandidates(Event&, Lepton&);
+std::pair<double,int> besttopcandidate(Event&, Lepton&, double, double, JetCollection);
 
 #endif
 

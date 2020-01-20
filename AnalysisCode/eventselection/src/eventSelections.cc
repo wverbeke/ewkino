@@ -27,6 +27,9 @@ void cleanjetcollection(Event& event){
 }
 
 bool pass_signalregion(Event& event){
+    // note: no conditions are imposed here on the jet collection,
+    // however, jets must still be cleaned and selected as this method is also used
+    // before event categorization!
     
     // clean jet collection (warning: need to check whether after or before lepton cleaning)
     cleanjetcollection(event);
@@ -49,7 +52,6 @@ bool pass_signalregion(Event& event){
 
     // Z boson candidate
     if(!event.hasOSSFLightLeptonPair()) return false;
-    std::cout<<"until here"<<std::endl;
     if(!event.hasZTollCandidate(7.5)) return false;
     
     return true;

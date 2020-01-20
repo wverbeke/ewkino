@@ -2,6 +2,7 @@
 #include python library classes
 import subprocess
 import time
+import os
 
 #submit script of given name as a job with given wall-time ( Copied from my DeepLearning repository, consider making a submodule for jobsubmission )
 def submitQsubJob( script_name, wall_time = '24:00:00', num_threads = 1, high_memory = False):
@@ -37,7 +38,10 @@ def initializeJobScript( script ):
 
    	#TO DO : make code to extract CMSSW directory in a general way
     #this is already available in DeepLearning repository, submodule would be a good solution 
-    current_CMSSW_version = 'CMSSW_10_2_20'
+    current_CMSSW_version = 'CMSSW_10_2_16_patch1'
+    cwd = os.getcwd()
     script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
+    script.write('cd\n')
     script.write('cd {}/src\n'.format( current_CMSSW_version ) )
     script.write('eval `scram runtime -sh`\n')
+    script.write('cd '+cwd+'\n')

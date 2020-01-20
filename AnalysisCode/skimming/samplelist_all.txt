@@ -1,5 +1,0 @@
-# This is a sample list containing only one valid line that reads 'all'.
-# In this way, the skimmer will scan its entire input directory
-# and use all samples that have a subdirectory corresponding to the requested version.
-
-all

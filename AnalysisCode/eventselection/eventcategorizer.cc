@@ -41,7 +41,9 @@ void eventloopEC(const std::string& pathToFile, const std::string& outputDirecto
 
     // make output ROOT file
     std::string outputdir = "blackJackAndHookers";
-    std::string outputtree = "blackJackAndHookersTree";
+    std::string treecat1 = "treeCat1";
+    std::string treecat2 = "treeCat2";
+    std::string treecat3 = "treeCat3";
     std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory );
     outputFilePath += stringTools::removeOccurencesOf( pathToFile, "/" );
     TFile* outputFilePtr = TFile::Open( outputFilePath.c_str() , "RECREATE" );
@@ -55,29 +57,31 @@ void eventloopEC(const std::string& pathToFile, const std::string& outputDirecto
     }
 
     // make output tree
-    std::shared_ptr< TTree > outputTreePtr( std::make_shared< TTree >( outputtree.c_str(), outputtree.c_str() ) );
-    initOutputTree(outputTreePtr.get());
+    std::shared_ptr< TTree > treeCat1Ptr( std::make_shared< TTree >( treecat1.c_str(), treecat1.c_str() ) );
+    initOutputTree(treeCat1Ptr.get());
+    std::shared_ptr< TTree > treeCat2Ptr( std::make_shared< TTree >( treecat2.c_str(), treecat2.c_str() ) );
+    initOutputTree(treeCat2Ptr.get());
+    std::shared_ptr< TTree > treeCat3Ptr( std::make_shared< TTree >( treecat3.c_str(), treecat3.c_str() ) );
+    initOutputTree(treeCat3Ptr.get());
 
-    //long unsigned numberOfEntries = treeReader.numberOfEntries();
-    long unsigned numberOfEntries = 10;
+    long unsigned numberOfEntries = treeReader.numberOfEntries();
+    //long unsigned numberOfEntries = 100;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
         Event event = treeReader.buildEvent(entry,true,true);
-        if(!passES(event,eventselection)) {std::cout<<"ES not passed"<<std::endl; continue;}
-	    
-        std::cout<<"in loop method"<<std::endl;
-        for(LeptonCollection::const_iterator lIt = event.leptonCollection().cbegin();
-        lIt != event.leptonCollection().cend(); lIt++){
-                Lepton& lep = **lIt;
-                std::cout<<lIt-event.leptonCollection().cbegin()<<std::endl;
-                std::cout<<lep.charge()<<" "<<lep.isElectron()<<" "<<lep.isMuon()<<" "<<lep.isTau()<<std::endl;
-        }
-
-        entryFromEvent(event,outputTreePtr.get());
-        //outputTreePtr->Fill();
+        if(!passES(event,eventselection)) continue;
+        int eventcategory = eventCategory(event);
+        std::cout<<"category: "<<eventcategory<<std::endl;
+        if(eventcategory == -1) continue;
+        entryFromEvent(event);
+        if(eventcategory == 1) treeCat1Ptr->Fill();
+        else if(eventcategory == 2) treeCat2Ptr->Fill();
+        else if(eventcategory == 3) treeCat3Ptr->Fill();
     }
 
-    outputTreePtr->Write("", BIT(2) );
+    treeCat1Ptr->Write("", BIT(2) );
+    treeCat2Ptr->Write("", BIT(2));
+    treeCat3Ptr->Write("", BIT(2));
     outputFilePtr->Close();
 }
 
