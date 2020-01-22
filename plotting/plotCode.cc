@@ -206,7 +206,11 @@ void initializeTDRStyle(){
 
 
 //plot a stack of backgrounds and compare it to data
-void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, const std::string& file, const std::string& analysis, const bool ylog, const bool normToData, const std::string& header, TH1D* bkgSyst, const bool* isSMSignal, TH1D** signal, const std::string* sigNames, const unsigned nSig, const bool sigNorm){
+void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsigned nBkg, 
+            const std::string& file, const std::string& analysis, const bool ylog, 
+            const bool normToData, const std::string& header, TH1D* bkgSyst, 
+            const bool* isSMSignal, TH1D** signal, const std::string* sigNames, 
+            const unsigned nSig, const bool sigNorm){
 
    	static std::mutex plotLock;
     plotLock.lock(); 
@@ -411,7 +415,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         for(int b = 1; b < data->GetNbinsX() + 1; ++b){
            if(data->GetBinContent(b) == 0)  dataGraph->GetY()[b - 1] += plotMax*10000;
         }
-    }			
+    }
 
     //draw histograms and legends
     //first draw total background to fix plot range
@@ -440,7 +444,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     p2 = new TPad((const TString&) file + "2","",0,0.0,1,xPad);
     p2->Draw();
     p2->cd();
-    p2->SetTopMargin(0.01);     //small space between two pads
+    p2->SetTopMargin(0.01); //small space between two pads
     p2->SetBottomMargin(0.4);
 
     //make separate histograms containing total and statistical background uncertainty which will be used to plot uncertainty bands
@@ -448,8 +452,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     TH1D* bkgStatErrors = new TH1D((const TString&) "bkgStaterrors" + file, (const TString&) "bkgStaterrors" + file, nBins, data->GetBinLowEdge(1), data->GetBinLowEdge(data->GetNbinsX()) + data->GetBinWidth(data->GetNbinsX()));
     TH1D* bkgErrors = (TH1D*) bkgTotE->Clone();
     for(unsigned b = 1; b < nBins + 1; ++b){
-        bkgStatErrors->SetBinContent(b, 1.);    //center bands around 0
-        bkgErrors->SetBinContent(b, 1.);
+        bkgStatErrors->SetBinContent(b, 1.); //center bands around 1
+        bkgErrors->SetBinContent(b, 1.); // center bands around 1
         if(bkgTotE->GetBinContent(b) != 0){
             bkgStatErrors->SetBinError(b, bkgTot->GetBinError(b)/bkgTot->GetBinContent(b));
             bkgErrors->SetBinError(b, bkgTotE->GetBinError(b)/bkgTotE->GetBinContent(b));
@@ -486,8 +490,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     legend2.AddEntry(obsRatio, "Obs./Pred.", "pe12");
 
     /*
-    We will set up the range and label sizes of the plot using bkgErros. As such this histogram always has to be 
-    drawn first on the pad to fix the plotted labels.
+    We will set up the range and label sizes of the plot using bkgErros. 
+    As such this histogram always has to be drawn first on the pad to fix the plotted labels.
     */
     bkgErrors->SetMarkerColor(1);
     bkgErrors->SetLineColor(1);

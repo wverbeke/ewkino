@@ -9,6 +9,8 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from fileListing import listSampleDirectories, listFiles, listParts
 from skimTuples import yearIdentifierFromPath
 from jobSubmission import initializeJobScript, submitQsubJob
+sys.path.append(os.path.abspath('../samplelists'))
+from readsamplelist import readsamplelist
 
 # this script reproduces the functionality of ewkino/skimmer/skimTuples.py,
 # but with usage of a sampleList instead of automatically running over all samples.
@@ -30,43 +32,49 @@ skim_condition = 'trilepton'
 
 # if too few command line args, check with the user if default arguments can be used
 if len(sys.argv) < 5:
-        print('### ERROR ###: trilepskim.py found too few command line arguments.')
-	print('Normal usage from the command line:')
-        print('python skimTuples.py < input_directory > < ntuple_version > < sample_list  > < output_directory > < files_per_job > < wall_time >')
-        print('(files_per_job and wall_time have default values.)')
-        print('Continue using only hard-coded arguments (e.g. for testing)? (y/n)')
-	go = raw_input()
-	if not go=='y':
-		sys.exit()
+    print('### WARNING ###: trilepskim.py found too few command line arguments.')
+    print('Normal usage from the command line:')
+    print('python skimTuples.py < input_directory > < ntuple_version > < sample_list  > < output_directory > < files_per_job > < wall_time >')
+    print('(files_per_job and wall_time have default values.)')
+    print('Continue using only hard-coded arguments (e.g. for testing)? (y/n)')
+    go = raw_input()
+    if not go=='y':
+        sys.exit()
 
 # else, overwrite default arguments
 else:
-	input_directory = sys.argv[1] 
-	version_name = sys.argv[2] 
-	sample_list = sys.argv[3]
-	output_directory_base = sys.argv[4] 
-	files_per_job = int(sys.argv[5]) if len(sys.argv) > 5 else 50
-    	wall_time = sys.argv[6] if len(sys.argv) > 6 else '24:00:00'
+    input_directory = sys.argv[1] 
+    version_name = sys.argv[2] 
+    sample_list = sys.argv[3]
+    output_directory_base = sys.argv[4] 
+    files_per_job = int(sys.argv[5]) if len(sys.argv) > 5 else 50
+    wall_time = sys.argv[6] if len(sys.argv) > 6 else '24:00:00'
 
 # set skimmer directory
 skimmer_directory = os.path.abspath('../../skimmer')
 
 # check if ./skimmer executable exists
 if not os.path.exists('../../skimmer/skimmer'):
-        print('### ERROR ###: skimmer executable does not seem to exist.')
-        print('Go to ewkino/skimmer and run make -f makeSkimmer.')
-        sys.exit()
+    print('### ERROR ###: skimmer executable does not seem to exist.')
+    print('Go to ewkino/skimmer and run make -f makeSkimmer.')
+    sys.exit()
+
+# check if sample list exists
+if not os.path.exists(sample_list):
+    print('### ERROR ###: sample list does not seem to exist.')
+    sys.exit()
+else:
+    sample_list = os.path.abspath(sample_list)
 
 # make a list of sample names to use
 samples_to_use = []
 useall = False
-with open(sample_list) as f:
-	for line in f:
-		if(line[0] != '#' and len(line)>1):
-			line = line.split(' ')[0]
-			samples_to_use.append(line.rstrip('\n'))
+samples_dict = readsamplelist(sample_list)
+for sample in samples_dict:
+    samples_to_use.append(sample['sample_name'])
 if(len(samples_to_use)==1 and samples_to_use[0]=='all'):
 	useall = True
+print(samples_to_use)
 
 # make a list of samples (the main directories) 
 # and an equally long list of subdirectories with the latest version of the ntuples 

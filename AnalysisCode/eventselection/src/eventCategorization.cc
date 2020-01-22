@@ -8,6 +8,9 @@ ULong_t _runNb;
 ULong_t _lumiBlock;
 ULong_t _eventNb;
 
+// event weight for simulation
+Double_t _weight;
+
 // event BDT variables
 Double_t _abs_eta_recoil;
 Double_t _Mjj_max;
@@ -32,6 +35,9 @@ void initOutputTree(TTree* outputTree){
     outputTree->Branch("_runNb", &_runNb, "_runNb/l");
     outputTree->Branch("_lumiBlock", &_lumiBlock, "_lumiBlock/l");
     outputTree->Branch("_eventNb", &_eventNb, "_eventNb/l");
+
+    // event weight for simulation (fill with ones for data)
+    outputTree->Branch("_weight", &_weight, "_weight/D");
     
     // event BDT variables
     outputTree->Branch("_abs_eta_recoil", &_abs_eta_recoil, "_abs_eta_recoil/D");
@@ -56,7 +62,6 @@ int eventCategory(Event& event){
     // note that it is assumed the event has been passed through a signal region selection!
     int njets = event.numberOfJets();
     int nbjets = event.numberOfMediumBTaggedJets();
-    std::cout<<njets<<" "<<nbjets<<std::endl;
     if(nbjets == 0 or (nbjets==1 and njets==1)) return -1;
     if(nbjets == 1 and (njets==2 or njets==3)) return 1;
     if(nbjets == 1) return 2;
@@ -78,6 +83,9 @@ void entryFromEvent(Event& event){
     _runNb = event.runNumber();
     _lumiBlock = event.luminosityBlock();
     _eventNb = event.eventNumber();
+
+    // event weight
+    _weight = event.weight();
 
     // other more or less precomputed event variables
     _lT = event.LT() + event.metPt();
@@ -194,15 +202,15 @@ std::pair<double,double> pmzcandidates(Event& event, Lepton& lW){
     double plxnew = gamma*(plx+beta*El); double Elnew = gamma*(El+beta*plx);
     double pmxnew = gamma*(pmx+beta*p);
     El = Elnew; plx = plxnew; pmx = pmxnew;*/
-    std::cout<<"lepton: "<<El<<" "<<plx<<" "<<ply<<" "<<plz<<std::endl;
-    std::cout<<"ptmiss: "<<pmx<<" "<<pmy<<std::endl;
+    //std::cout<<"lepton: "<<El<<" "<<plx<<" "<<ply<<" "<<plz<<std::endl;
+    //std::cout<<"ptmiss: "<<pmx<<" "<<pmy<<std::endl;
     
     // then solve quadratic equation
     double A = El*El - plz*plz;
     double B = -plz*(2*(plx*pmx+ply*pmy)+mW*mW);
     double C = El*El*(pmx*pmx+pmy*pmy) - std::pow(mW*mW/2,2) - std::pow(plx*pmx+ply*pmy,2);
     C += -mW*mW*(plx*pmx+ply*pmy);
-    std::cout<<"equation: "<<A<<" "<<B<<" "<<C<<std::endl;
+    //std::cout<<"equation: "<<A<<" "<<B<<" "<<C<<std::endl;
     double discr = B*B - 4*A*C;
     if(discr<0){
         std::cout<<"WARNING: missing pz reconstruction found negative discriminant."<<std::endl;

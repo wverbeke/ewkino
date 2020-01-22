@@ -17,7 +17,9 @@ Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , 
     _numberOfVertices( treeReader._nVertex ),
 
     //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes
-    _weight( treeReader._scaledWeight ),
+    //_weight( treeReader._scaledWeight ),
+    // WARNING: to allow more flexibility I will still use the normal _weight, but remember to scale when needed!
+    _weight(treeReader._weight),
     _samplePtr( treeReader.currentSamplePtr() )
     {}
 

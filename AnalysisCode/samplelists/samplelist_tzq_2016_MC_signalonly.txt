@@ -1,0 +1,4 @@
+# samplelist containing only the 2016 tzq sample and no backgrounds
+# to be used with version name crab_MiniAOD2016v3_ext1-v1_singlelepton_MC_2016_v1
+
+"tZq" tZq_ll_4f_13TeV-amcatnlo-pythia8 0.0942

@@ -80,7 +80,7 @@ void setTDRStyle() {
     gStyle->SetPadTopMargin(0.05);
     gStyle->SetPadBottomMargin(0.13);
     gStyle->SetPadLeftMargin(0.16);//0.14
-    gStyle->SetPadRightMargin(0.04);
+    gStyle->SetPadRightMargin(0.04); // original value: 0.04
 
     // For the Global title:
 

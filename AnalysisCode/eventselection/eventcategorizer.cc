@@ -71,7 +71,6 @@ void eventloopEC(const std::string& pathToFile, const std::string& outputDirecto
         Event event = treeReader.buildEvent(entry,true,true);
         if(!passES(event,eventselection)) continue;
         int eventcategory = eventCategory(event);
-        std::cout<<"category: "<<eventcategory<<std::endl;
         if(eventcategory == -1) continue;
         entryFromEvent(event);
         if(eventcategory == 1) treeCat1Ptr->Fill();
