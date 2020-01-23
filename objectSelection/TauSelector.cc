@@ -34,7 +34,6 @@ FO tau selection
 
 bool TauSelector::isFOBase() const{
     if( !isLoose() ) return false;
-    if( !tauPtr->passMediumMVAOld2017() ) return false;
     return true;
 }
 
@@ -60,7 +59,7 @@ tight tau selection
 
 bool TauSelector::isTightBase() const{
     if( !isFO() ) return false;
-    if( !tauPtr->passVTightMVAOld2017() ) return false;
+    if( !tauPtr->passTightMVAOld2017() ) return false;
     return true;
 }
 
