@@ -6,6 +6,10 @@
 //include other parts of framework
 #include "../../Tools/interface/histogramTools.h"
 #include "../../Tools/interface/stringTools.h"
+#include "../../constants/particleMasses.h"
+
+//include ewkino categorization
+#include "../interface/ewkinoCategorization.h"
 
 
 void ewkino::applyBaselineObjectSelection( Event& event, const bool allowUncertainties ){
@@ -65,35 +69,106 @@ bool ewkino::passBaselineSelection( Event& event, const bool allowUncertainties,
 }
 
 
-bool ewkino::passVariedSelection( const Event& event, const std::string& uncertainty ){
-    constexpr double metCut = 50;
+JetCollection ewkino::variedJetCollection( const Event& event, const std::string& uncertainty ){
     if( uncertainty == "nominal" ){
-        if( event.metPt() < metCut ) return false;
-        if( event.jetCollection().numberOfTightBTaggedJets() > 0 ) return false;
-	} else if( uncertainty == "JECDown" ){
-        if( event.met().MetJECDown().pt() < metCut ) return false;
-        if( event.jetCollection().JECDownCollection().numberOfTightBTaggedJets() > 0 ) return false;
+        return event.jetCollection().goodJetCollection();
+    } else if( uncertainty == "JECDown" ){
+        return event.jetCollection().JECDownCollection().goodJetCollection();
     } else if( uncertainty == "JECUp" ){
-        if( event.met().MetJECUp().pt() < metCut ) return false;
-        if( event.jetCollection().JECUpCollection().numberOfTightBTaggedJets() > 0 ) return false;
+        return event.jetCollection().JECUpCollection().goodJetCollection();
     } else if( uncertainty == "JERDown" ){
-        if( event.metPt() < metCut ) return false;
-        if( event.jetCollection().JERDownCollection().numberOfTightBTaggedJets() > 0 ) return false;
+        return event.jetCollection().JERDownCollection().goodJetCollection();
     } else if( uncertainty == "JERUp" ){
-        if( event.metPt() < metCut ) return false;
-        if( event.jetCollection().JERUpCollection().numberOfTightBTaggedJets() > 0 ) return false;
+        return event.jetCollection().JERUpCollection().goodJetCollection();
     } else if( uncertainty == "UnclDown" ){
-        if( event.met().MetUnclusteredDown().pt() < metCut ) return false;
-        if( event.jetCollection().numberOfTightBTaggedJets() > 0 ) return false;
+        return event.jetCollection().goodJetCollection();
     } else if( uncertainty == "UnclUp" ){
-        if( event.met().MetUnclusteredUp().pt() < metCut ) return false;
-        if( event.jetCollection().numberOfTightBTaggedJets() > 0 ) return false;
-	} else {
+        return event.jetCollection().goodJetCollection();
+    } else {
         throw std::invalid_argument( "Uncertainty source " + uncertainty + " is unknown." );
     }
-    return true;
- 
+}
 
+
+JetCollection::size_type ewkino::numberOfVariedBJets( const Event& event, const std::string& uncertainty ){
+    return ewkino::variedJetCollection( event, uncertainty ).numberOfTightBTaggedJets();
+}
+
+
+Met ewkino::variedMet( const Event& event, const std::string& uncertainty ){
+    if( uncertainty == "nominal" ){
+        return event.met();
+    } else if( uncertainty == "JECDown" ){
+        return event.met().MetJECDown();
+    } else if( uncertainty == "JECUp" ){
+        return event.met().MetJECUp();
+    } else if( uncertainty == "JERDown" ){
+        return event.met();
+    } else if( uncertainty == "JERUp" ){
+        return event.met();
+    } else if( uncertainty == "UnclDown" ){
+        return event.met().MetUnclusteredDown();
+    } else if( uncertainty == "UnclUp" ){
+        return event.met().MetUnclusteredUp();
+    } else {
+        throw std::invalid_argument( "Uncertainty source " + uncertainty + " is unknown." );
+    }
+}
+
+
+bool ewkino::passVariedSelection( const Event& event, const std::string& uncertainty ){
+    static constexpr double metCut = 50;
+    if( numberOfVariedBJets( event, uncertainty ) > 0 ) return false;
+    if( variedMet( event, uncertainty ).pt() < metCut ) return false;
+    return true;
+}
+
+
+bool ewkino::passVariedSelectionWZCR( Event& event, const std::string& uncertainty ){
+    static constexpr double minMet = 30;
+    static constexpr double maxMet = 100;
+    static constexpr double minMT = 50;
+    static constexpr double maxMT = 100;
+    if( ewkino::ewkinoCategory( event ) != ewkino::trilepLightOSSF ) return false;
+    if( numberOfVariedBJets( event, uncertainty ) > 0 ) return false;
+    Met met = variedMet( event, uncertainty );
+    if( met.pt() < minMet || met.pt() > maxMet ) return false;
+    if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 15 ) return false;
+    double mTW = mt( met, event.WLepton() );
+    if( mTW < minMT || mTW > maxMT ) return false;
+    return true;
+}
+
+
+bool ewkino::passVariedSelectionTTZCR( Event& event, const std::string& uncertainty ){
+    static constexpr size_t numberOfBJets = 1;
+    if( ewkino::ewkinoCategory( event ) != ewkino::trilepLightOSSF ) return false;
+    if( numberOfVariedBJets( event, uncertainty ) < numberOfBJets ) return false;
+    if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) >= 15 ) return false;
+    if( std::abs( event.leptonCollection().objectSum().mass() - particle::mZ ) < 15 ) return false;
+    return true;
+}
+
+
+bool ewkino::passVariedSelectionNPCR( Event& event, const std::string& uncertainty ){
+    static constexpr size_t numberOfBJets = 1;
+    if( numberOfVariedBJets( event, uncertainty ) < numberOfBJets ) return false;
+    if( ewkino::ewkinoCategory( event ) == ewkino::trilepLightOSSF ){
+        if( std::abs( event.bestZBosonCandidateMass() - particle::mZ ) < 15 ) return false;
+    } else {
+        if( ewkino::ewkinoCategory( event ) != ewkino::trilepLightNoOSSF ) return false;
+    }
+    return true;
+}
+
+
+bool ewkino::passVariedSelectionXGammaCR( Event& event, const std::string& uncertainty ){
+    if( numberOfVariedBJets( event, uncertainty ) > 0 ) return false;
+    if( ewkino::ewkinoCategory( event ) != ewkino::trilepLightOSSF ) return false;
+    if( variedMet( event, uncertainty ).pt() >= 50 ) return false;
+    if( event.bestZBosonCandidateMass() >= 75 ) return false;
+    if( std::abs( event.leptonCollection().objectSum().mass() - particle::mZ ) >= 15 ) return false;
+    return true;
 }
 
 
