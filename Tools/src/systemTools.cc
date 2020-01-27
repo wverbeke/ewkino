@@ -165,7 +165,7 @@ std::ostream& systemTools::initJobScript(std::ostream& os, const std::string& CM
         os << "cd " << CMSSWDir << "\n";
     }
     os << "source /cvmfs/cms.cern.ch/cmsset_default.sh \n";
-    os << "eval \\`scram runtime -sh\\` \n";
+    os << "eval `scram runtime -sh` \n";
     os << "cd " << systemTools::currentDirectory() << "\n";     //go back to directory from where job was submitted 
     return os;
 }

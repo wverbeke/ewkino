@@ -31,6 +31,7 @@ class SusyScan {
         double sumOfWeights( const size_t ) const;
 
         void addScan( const Sample& sample ){ addMassPoints_Fast( sample ); }
+        std::vector< unsigned > massSplittings() const;
 
     private:
         std::map< std::pair< unsigned, unsigned>, size_t > massesToIndices;

@@ -9,7 +9,7 @@ PhysicsObject::PhysicsObject( double transverseMomentum, double pseudoRapidity, 
 
 
 void PhysicsObject::setLorentzVector( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energyValue ){
-    *this = PhysicsObject( transverseMomentum, pseudoRapidity, azimuthalAngle, energyValue );
+    *this = PhysicsObject( transverseMomentum, pseudoRapidity, azimuthalAngle, energyValue, is2016Object, is2017Object );
 }
 
 

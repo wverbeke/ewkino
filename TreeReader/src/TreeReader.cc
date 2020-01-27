@@ -777,3 +777,13 @@ std::vector< std::shared_ptr< TH1 > > TreeReader::getHistogramsFromCurrentFile()
 	return histogramVector;
 }
 
+
+void TreeReader::removeBSMSignalSamples(){
+    for( auto it = samples.begin(); it != samples.end(); ){
+        if( it->isNewPhysicsSignal() ){
+            it = samples.erase( it );
+        } else {
+            ++it;
+        }
+    }
+}

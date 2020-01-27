@@ -128,7 +128,7 @@ size_t SusyScan::numberOfPoints() const{
 size_t SusyScan::index( const double mChi2, const double mChi1 ) const{
     auto it = massesToIndices.find( { floatToUnsigned( mChi2 ), floatToUnsigned( mChi1 ) } );
     if( it == massesToIndices.cend() ){
-        throw std::invalid_argument( "Mass point " + std::to_string( mChi2 ) + "/" + std::to_string( mChi2 ) + " is unknown and does not correspond to an index." );
+        throw std::invalid_argument( "Mass point " + std::to_string( mChi2 ) + "/" + std::to_string( mChi1 ) + " is unknown and does not correspond to an index." );
     } else {
         return it->second;
     }
@@ -148,4 +148,14 @@ double SusyScan::sumOfWeights( const size_t index ) const{
     } else {
         return it->second;
     }
+}
+
+
+std::vector< unsigned > SusyScan::massSplittings() const{
+    std::set< unsigned > ret;
+    for( size_t p = 0; p < numberOfPoints(); ++p ){
+        auto massPair = massesAtIndex( p );
+        ret.insert( massPair.first - massPair.second );
+    }
+    return std::vector< unsigned >( ret.cbegin(), ret.cend() );
 }

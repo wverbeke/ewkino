@@ -33,6 +33,7 @@ template< typename ObjectType > class PhysicsObjectCollection {
         size_type size() const{ return collection.size(); }
 
         ObjectType& operator[]( const size_type index ){ return *collection[index]; }
+        const ObjectType& operator[]( const size_type index ) const{ return *collection[index]; }
         
         template< typename func > void sortByAttribute( const func& f );
         void sortByPt(){ return sortByAttribute( [](const std::shared_ptr< ObjectType >& lhs, const std::shared_ptr< ObjectType >& rhs){ return lhs->pt() > rhs->pt(); } ); }
@@ -45,7 +46,7 @@ template< typename ObjectType > class PhysicsObjectCollection {
         void selectObjects( bool (&passSelection)( const ObjectType& ) );
 
         //return a vector of all possible object pairs
-        std::vector< std::pair< ObjectType*, ObjectType* > > pairCollection() const;
+        std::vector< std::pair< std::shared_ptr< ObjectType >, std::shared_ptr< ObjectType > > > pairCollection() const;
 
     protected:
         PhysicsObjectCollection( const collection_type& col ) : collection( col ) {}
@@ -140,11 +141,14 @@ template< typename ObjectType > double PhysicsObjectCollection< ObjectType >::sc
 }
 
 
-template< typename ObjectType > std::vector< std::pair< ObjectType*, ObjectType* > > PhysicsObjectCollection< ObjectType >::pairCollection() const{
-    std::vector< std::pair< ObjectType*, ObjectType* > > pairVector;
+template< typename ObjectType > std::vector< std::pair< std::shared_ptr< ObjectType >, std::shared_ptr< ObjectType > > > PhysicsObjectCollection< ObjectType >::pairCollection() const{
+    std::vector< std::pair< std::shared_ptr< ObjectType >, std::shared_ptr< ObjectType > > > pairVector;
+    if( size() < 2 ){
+        return pairVector;
+    }
     for( const_iterator it1 = cbegin(); it1 != ( cend() - 1 ); ++it1 ){
         for( const_iterator it2 = it1 + 1; it2 != cend(); ++it2 ){
-            pairVector.push_back( {it1->get(), it2->get()} );
+            pairVector.push_back( { *it1, *it2 } );
         }
     }
     return pairVector;

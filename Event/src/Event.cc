@@ -228,5 +228,5 @@ LeptonCollection::size_type Event::WLeptonIndex(){
 
 double Event::mtW(){
     initializeZBosonCandidate();
-    return mt( lepton( WLeptonIndex() ), met() );
+    return mt( WLepton(), met() );
 }
