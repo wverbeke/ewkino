@@ -49,7 +49,7 @@ double retrieveWeight( const double* array, const unsigned index, const unsigned
 
 
 double GeneratorInfo::relativeWeightPdfVar( const unsigned pdfIndex ) const{
-    return retrieveWeight( _lheWeights, pdfIndex, 9, std::min(_numberOfLheWeights - 9, unsigned(100) ), "pdf" );
+    return retrieveWeight( _lheWeights, pdfIndex, 9, std::min( std::max( _numberOfLheWeights, unsigned(9) ) - 9, unsigned(100) ), "pdf" );
 }
 
 
