@@ -626,17 +626,17 @@ void analyzeAllMasses( const std::string& modelName, const std::string& year, co
 
     for( auto splitting : susyScan.massSplittings() ){
         std::string deltaM = std::to_string( splitting );
-        std::string commandString = "./WZCR_modified " + modelName + " " + deltaM + " " + year + " " + controlRegion;
-        std::string scriptName = "WZCR_" + modelName + "_" + deltaM + "_" + year + ".sh";
+        std::string commandString = "./controlRegions " + modelName + " " + deltaM + " " + year + " " + controlRegion;
+        std::string scriptName = controlRegion + "_" + modelName + "_" + deltaM + "_" + year + ".sh";
         systemTools::submitCommandAsJob( commandString, scriptName, "100:00:00" );
     }
 }
 
 
 void analyzeNominal( const std::string& year, const std::string& controlRegion ){
-    std::string commandString = "./WZCR_modified TChiWZ None " + year + " " + controlRegion;
-    std::string scriptName = "WZCR_nominal_" + year + ".sh";
-    systemTools::submitCommandAsJob( commandString, scriptName, "8:00:00" );
+    std::string commandString = "./controlRegions TChiWZ None " + year + " " + controlRegion;
+    std::string scriptName = controlRegion + "_nominal_" + year + ".sh";
+    systemTools::submitCommandAsJob( commandString, scriptName, "10:00:00" );
 }
 
 
@@ -645,8 +645,6 @@ int main( int argc, char* argv[] ){
     const std::string sampleDirectoryPath = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino/";
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
     
-    //analyze( "TChiWZ", "None", "2016", argvStr[1], sampleDirectoryPath );
-
     //run specific model and mass splitting and year
     if( argc > 4 ){
         std::string model = argvStr[1];

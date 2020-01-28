@@ -242,12 +242,38 @@ bool ewkino::leptonsAreTight( const Event& event ){
 }
 
 
+bool leptonFromMEExternalConversion( const Lepton& lepton ){
+    if( !( lepton.matchPdgId() == 22 ) ) return false;
+    if( !( lepton.isPrompt() && lepton.provenanceConversion() == 0 ) ) return false;
+    return true;
+}
+
+
 bool ewkino::passPhotonOverlapRemoval( const Event& event ){
+    bool isPhotonSample = false;
+    bool isInclusiveSample = false;
     std::string sampleName = event.sample().fileName();
-    if( stringTools::stringContains( sampleName, "DYJetsToLL" ) ){
-        return ( event.generatorInfo().zgEventType() < 3 );
-    } else if( stringTools::stringContains( sampleName, "TTTo" ) ){
-        return ( event.generatorInfo().ttgEventType() < 3 );
+    if( stringTools::stringContains( sampleName, "DYJetsToLL" ) || stringTools::stringContains( sampleName, "TTTo" ) || stringTools::stringContains( sampleName, "TTJets" ) ){
+        isInclusiveSample = true;
+    } else if( stringTools::stringContains( sampleName, "TTGamma" ) || stringTools::stringContains( sampleName, "ZGToLLG" ) || stringTools::stringContains( sampleName, "WGToLNuG" ) ){
+        isPhotonSample = true;
+    }
+
+    if( !( isPhotonSample || isInclusiveSample ) ){
+        return true;
+    }
+
+    bool hasMEExternalConversion = false;
+    for( const auto& leptonPtr : event.leptonCollection() ){
+        if( leptonPtr->isFO() && leptonFromMEExternalConversion( *leptonPtr ) ){
+            hasMEExternalConversion = true;
+            break;
+        }
+    }
+    if( isInclusiveSample ){
+        return !hasMEExternalConversion;
+    } else if( isPhotonSample ){
+        return hasMEExternalConversion;
     }
     return true;
 }
