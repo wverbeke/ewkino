@@ -15,8 +15,7 @@ class CombinedReweighter{
 
     public:
         CombinedReweighter() = default;
-    
-        void addReweighter( const std::string&, Reweighter* );
+
         void addReweighter( const std::string&, const std::shared_ptr< Reweighter >& );
         void eraseReweighter( const std::string& );
 

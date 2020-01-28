@@ -4,12 +4,6 @@
 #include <stdexcept>
 
 
-void CombinedReweighter::addReweighter( const std::string& name, Reweighter* reweighter ){
-    reweighterMap[ name ] = std::shared_ptr< Reweighter >( reweighter );
-    reweighterVector.push_back( reweighterMap[ name ] );
-}
-
-
 void CombinedReweighter::addReweighter( const std::string& name, const std::shared_ptr< Reweighter >& reweighter ){
     reweighterMap[ name ] = reweighter;
     reweighterVector.push_back( reweighter );
@@ -23,6 +17,7 @@ std::map< std::string, std::shared_ptr< Reweighter > >::const_iterator findAndCh
     }
     return it;
 }
+
 
 void CombinedReweighter::eraseReweighter( const std::string& name ){
     auto it = findAndCheckReweighter( name, reweighterMap );
