@@ -79,6 +79,7 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
         }
 
         //make training tree for the current sample
+        std::cout << "Sample : treeReader.currentSample().uniqueName() = " << treeReader.currentSample().uniqueName() << std::endl;
         TFile* trainingFile = TFile::Open( ( stringTools::formatDirectoryName( outputDirectory ) + "trainingFile_" + treeReader.currentSample().uniqueName()  + ".root" ).c_str(), "RECREATE" );
         TTree* trainingTree = new TTree( treeName.c_str(), treeName.c_str() );
         for( const auto& entry : trainingVariables ){
@@ -96,7 +97,10 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
             //met requirement 
             if( event.metPt() < 50 ) continue;
 
-            //veto fourth leptons
+            //lepton pT cuts
+            if( !ewkino::passPtCuts( event ) ) continue;
+
+            //veto fourth lepton
             if( event.numberOfLightLeptons() != 3 ) continue;
             
             //select tight leptons and require OSSF pair
@@ -104,25 +108,27 @@ void produceNNTrainingTrees( const std::string& year, const std::string& sampleD
             if( event.numberOfLightLeptons() != 3 ) continue;
             if( !event.hasOSSFLightLeptonPair() ) continue;
 
+            if( !ewkino::passPhotonOverlapRemoval( event ) ) continue;
+
             //veto b jets
-            trainingVariables["metPt"] = event.metPt();
-            trainingVariables["mllBestZ"] = event.bestZBosonCandidateMass();
-            trainingVariables["mt"] = event.mtW();
-            trainingVariables["LTPlusMET"] = ( event.LT() + event.metPt() );
+            trainingVariables.at("metPt") = event.metPt();
+            trainingVariables.at("mllBestZ") = event.bestZBosonCandidateMass();
+            trainingVariables.at("mt") = event.mtW();
+            trainingVariables.at("LTPlusMET") = ( event.LT() + event.metPt() );
             PhysicsObject leptonSum = event.leptonCollection().objectSum();
-            trainingVariables["m3l"] = leptonSum.mass();
-            trainingVariables["mt3l"] = mt( leptonSum, event.met() );
-            trainingVariables["HT"] = event.jetCollection().scalarPtSum();
+            trainingVariables.at("m3l") = leptonSum.mass();
+            trainingVariables.at("mt3l") = mt( leptonSum, event.met() );
+            trainingVariables.at("HT") = event.jetCollection().scalarPtSum();
             
-            trainingVariables["eventWeight"] = event.weight();
+            trainingVariables.at("eventWeight") = event.weight();
 
             //modifier for WZ to combine samples
             if( stringTools::stringContains( event.sample().fileName(), "WZTo3LNu_" ) ){
-                trainingVariables["eventWeight"] *= WZWeightModifier[ event.sample().uniqueName() ];
+                trainingVariables.at("eventWeight") *= WZWeightModifier[ event.sample().uniqueName() ];
             }
 
             if( treeReader.isSusy() ){
-                trainingVariables["susyMassSplitting"] = ( event.susyMassInfo().massNLSP() - event.susyMassInfo().massLSP() );
+                trainingVariables.at("susyMassSplitting") = ( event.susyMassInfo().massNLSP() - event.susyMassInfo().massLSP() );
             }
             trainingTree->Fill();
         }
