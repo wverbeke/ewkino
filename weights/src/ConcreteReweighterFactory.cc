@@ -103,7 +103,8 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     }
     std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
 
-    combinedReweighter.addReweighter( "bTag", new ReweighterBTagDeepCSV( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg, bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_heavy", new ReweighterBTagHeavyFlavorDeepCSV( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_light", new ReweighterBTagLightFlavorDeepCSV( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg ) );
 
     //make prefire Reweighter
     combinedReweighter.addReweighter( "prefire", new ReweighterPrefire() );
