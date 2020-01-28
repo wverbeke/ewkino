@@ -13,7 +13,7 @@
 class ReweighterBTag : public Reweighter {
 
     public:
-        ReweighterBTag( const std::string& weightDirectory, const std::string& sfFilePath, const std::string& workingPoint, const std::shared_ptr< TH2 >&, const std::shared_ptr< TH2 >&, const std::shared_ptr< TH2 >& );
+        ReweighterBTag( const std::string& weightDirectory, const std::string& sfFilePath, const std::string& workingPoint, const bool heavyFlavor );
 
         virtual double weight( const Event& ) const override;
         virtual double weightDown( const Event& ) const override;
@@ -25,13 +25,12 @@ class ReweighterBTag : public Reweighter {
     private:
         std::shared_ptr< BTagCalibration > bTagSFCalibration;
         std::shared_ptr< BTagCalibrationReader > bTagSFReader;
-        std::shared_ptr< TH2 > bTagEfficiencyUDSG;
-        std::shared_ptr< TH2 > bTagEfficiencyC;
-        std::shared_ptr< TH2 > bTagEfficiencyB;
+        bool _heavyFlavor;
+        
         bool (Jet::*passBTag)() const = nullptr;
 
         virtual double CSVValue( const Jet& ) const = 0;
-        double efficiencyMC( const Jet& ) const;
+        virtual double efficiencyMC( const Jet& ) const = 0;
         double weight( const Jet&, const std::string& ) const; 
         double weight( const Event&, double (ReweighterBTag::*jetWeight)( const Jet& ) const ) const;
     
