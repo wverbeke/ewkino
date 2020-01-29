@@ -35,6 +35,7 @@
 #include "Tools/src/mergeAndRemoveOverlap.cc"
 #include "Tools/src/histogramTools.cc"
 #include "Tools/src/SusyScan.cc"
+#include "Tools/src/ConstantFit.cc"
 
 //include TreeReader code 
 #include "TreeReader/src/TreeReader.cc"

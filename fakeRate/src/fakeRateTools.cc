@@ -15,7 +15,7 @@
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/systemTools.h"
 #include "../../Tools/interface/analysisTools.h"
-#include "../interface/ConstantFit.h"
+#include "../../Tools/interface/ConstantFit.h"
 #include "../../plotting/plotCode.h"
 
 

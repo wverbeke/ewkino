@@ -2,7 +2,7 @@
 
 
 //include other parts of framework
-#include "../interface/ConstantFit.h"
+#include "../../Tools/interface/ConstantFit.h"
 
 
 Prescale::Prescale( const ConstantFit& fit) :
