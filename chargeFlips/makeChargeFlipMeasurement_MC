@@ -1,9 +1,9 @@
-CC=g++ -Wall -Wextra -O3 -g
+CC=g++ -Wall -Wextra -O3
 CFLAGS= -Wl,--no-as-needed,-lpthread
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= fakeRateMeasurement.cc ../codeLibrary.o src/fakeRateSelection.cc src/fakeRateTools.cc src/Prescale.cc
+SOURCES= chargeFlipMeasurement_MC.cc ../codeLibrary.o src/chargeFlipSelection.cc
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=fakeRateMeasurement
+EXECUTABLE=chargeFlipMeasurement_MC
 
 all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)

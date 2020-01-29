@@ -17,7 +17,7 @@ This is used for finding the cuts which give the best fake-rate closure
 #include "TH1D.h"
 
 //include other parts of framework
-#include "ConstantFit.h"
+#include "../../Tools/interface/ConstantFit.h"
 
 
 class CutsFitInfo{
