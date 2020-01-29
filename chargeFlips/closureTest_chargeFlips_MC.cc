@@ -11,13 +11,12 @@
 #include "../TreeReader/interface/TreeReader.h"
 #include "../Event/interface/Event.h"
 #include "../Tools/interface/HistInfo.h"
-//#include "interface/fakeRateTools.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 #include "../Tools/interface/systemTools.h"
 #include "../Tools/interface/stringTools.h"
-//#include "../objects/interface/PhysicsObject.h"
 #include "interface/chargeFlipSelection.h"
+#include "interface/chargeFlipTools.h"
 
 
 std::vector< HistInfo > makeDistributionInfo( const std::string& process ){
@@ -49,25 +48,6 @@ std::shared_ptr< TH2D > readChargeFlipMap( const std::string& year ){
     frFile->Close();
     return frMap;
 } 
-
-
-double chargeFlipWeight( const Event& event, const std::shared_ptr< TH2D >& chargeFlipMap ){
-
-    // P( A + B ) = P( A ) + P( B ) - P( A & B )
-    double summedProbabilities = 0.;
-    double multipliedProbabilities = 1.;
-    for( const auto& electronPtr : event.electronCollection() ){
-
-        //only apply charge flip rate to electrons with correct charge
-        if( electronPtr->isChargeFlip() ) continue;
-        double croppedPt = std::min( electronPtr->pt(), 99. );
-        double flipRate = chargeFlipMap->GetBinContent( chargeFlipMap->FindBin( croppedPt, electronPtr->absEta() ) );
-        
-        summedProbabilities += flipRate / ( 1. - flipRate );
-        multipliedProbabilities *= flipRate / ( 1. - flipRate );
-    }
-    return ( summedProbabilities - multipliedProbabilities );
-}
 
 
 void closureTest_MC( const std::string& process, const std::string& year, const std::string& sampleDirectory ){
@@ -145,7 +125,7 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
             } else {
 
                 //compute event weight with fake-rate
-                double weight = event.weight()*chargeFlipWeight( event, chargeFlipMap_electron );
+                double weight = event.weight()*chargeFlips::chargeFlipWeight( event, chargeFlipMap_electron );
                 for( std::vector< double >::size_type v = 0; v < variables.size(); ++v ){
                     predictedHists[v]->Fill( std::min( variables[v],  histInfoVec[v].maxBinCenter() ), weight );
                 }

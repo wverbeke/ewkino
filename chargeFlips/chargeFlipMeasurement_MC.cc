@@ -14,6 +14,7 @@
 #include "../Tools/interface/systemTools.h"
 #include "../Tools/interface/stringTools.h"
 #include "../Tools/interface/histogramTools.h"
+#include "../Tools/interface/analysisTools.h"
 #include "interface/chargeFlipSelection.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
@@ -21,8 +22,11 @@
 
 void determineMCChargeFlipRate( const std::string& year, const std::string& sampleListFile, const std::string& sampleDirectory ){
 
+    analysisTools::checkYearString( year );
+
     const std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};
     const std::vector< double > etaBins = { 0., 0.8, 1.442, 2.5 };
+
 
 	//initialize 2D histograms for numerator and denominator
 	std::string numerator_name = "chargeFlipRate_electron_" + year;
@@ -44,7 +48,7 @@ void determineMCChargeFlipRate( const std::string& year, const std::string& samp
             Event event = treeReader.buildEvent( entry );
 
             //apply electron selection
-            if( ! chargeFlips::passChargeFlipEventSelection( event, true, false, false) ) continue;
+            if( ! chargeFlips::passChargeFlipEventSelection( event, false, false, false) ) continue;
 
             for( auto& electronPtr : event.electronCollection() ){
 
@@ -52,13 +56,14 @@ void determineMCChargeFlipRate( const std::string& year, const std::string& samp
             
                 //require prompt leptons
                 if( !( electron.isPrompt() ) ) continue;
+                //if( electron.matchPdgId() == 22 ) continue;
 
                 //fill denominator histogram 
-                histogram::fillValues( denominatorMap.get(), electron.pt(), electron.absEta(), event.weight() );
+                histogram::fillValues( denominatorMap.get(), electron.pt(), electron.absEta(), 1. );
     
                 //fill numerator histogram
                 if( electron.isChargeFlip() ){
-                    histogram::fillValues( numeratorMap.get(), electron.pt(), electron.absEta(), event.weight() );
+                    histogram::fillValues( numeratorMap.get(), electron.pt(), electron.absEta(), 1. );
                 }
             }
         }
