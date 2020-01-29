@@ -14,6 +14,7 @@
 //include other parts of framework
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/systemTools.h"
+#include "../../Tools/interface/analysisTools.h"
 #include "../interface/ConstantFit.h"
 #include "../../plotting/plotCode.h"
 
@@ -298,6 +299,10 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
         //subtract prompt contamination from data
         data_hist_numerator->Add( prompt_hist_numerator.get(), -1. );
         data_hist_denominator->Add( prompt_hist_denominator.get(), -1. );
+
+        //set negative bins to 0
+        analysisTools::setNegativeBinsToZero( data_hist_numerator );
+        analysisTools::setNegativeBinsToZero( data_hist_denominator );
 
         //set fake-rate to 0 if there are no entries 
         double fakeRate, fakeRateUncertainty;
