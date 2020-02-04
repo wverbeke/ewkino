@@ -14,7 +14,8 @@ GeneratorInfo::GeneratorInfo( const TreeReader& treeReader ) :
     _ttgEventType( treeReader._ttgEventType ),
     _zgEventType( treeReader._zgEventType ),
     _partonLevelHT( treeReader._lheHTIncoming ),
-    _numberOfTrueInteractions( treeReader._nTrueInt )
+    _numberOfTrueInteractions( treeReader._nTrueInt ),
+    _genMetPtr( new GenMet( treeReader ) )
 { 
     if( _numberOfLheWeights > 110 ){
         throw std::out_of_range( "_numberOfLheWeights is larger than 110, which is the maximum array size of _lheWeights." );
