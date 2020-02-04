@@ -10,6 +10,7 @@
 #include "objects/src/Met.cc"
 #include "objects/src/LeptonGeneratorInfo.cc"
 #include "objects/src/LeptonSelector.cc"
+#include "objects/src/GenMet.cc"
 #include "objectSelection/MuonSelector.cc"
 #include "objectSelection/ElectronSelector.cc"
 #include "objectSelection/TauSelector.cc"
