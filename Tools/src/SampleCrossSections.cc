@@ -36,12 +36,20 @@ SampleCrossSections::SampleCrossSections( const Sample& sample ){
     //store all lhe variations
     for( int bin = 1; bin < lheCounter->GetNbinsX() + 1; ++bin ){
         double lheVariedSumOfWeights = lheCounter->GetBinContent( bin );
+
+        //0 entries indicate that a sample didn't have the respective weights
+        if( lheVariedSumOfWeights < 1e-6 ) break;
+        
         lheCrossSectionRatios.push_back( lheVariedSumOfWeights / nominalSumOfWeights );
     }
 
     //store all parton shower variations
     for( int bin = 1; bin < lheCounter->GetNbinsX() + 1; ++bin ){
         double psVariedSumOfWeights = psCounter->GetBinContent( bin );
+
+        //0 entries indicate that a sample didn't have the respective weights
+        if( psVariedSumOfWeights < 1e-6 ) break;
+
         psCrossSectionRatios.push_back( psVariedSumOfWeights / nominalSumOfWeights );
     }
 }
