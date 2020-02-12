@@ -19,6 +19,9 @@ void computeAndWritePileupWeights( const Sample& sample, const std::string& weig
     //open sample and extract pileup distribution
     std::shared_ptr< TFile > sampleFilePtr = sample.filePtr();
     std::shared_ptr< TH1 > pileupMC( dynamic_cast< TH1* >( sampleFilePtr->Get( "blackJackAndHookers/nTrueInteractions" ) ) );
+    if( pileupMC == nullptr ){
+        throw std::runtime_error( "File " + sample.fileName() + " does not contain 'blackJackAndHookers/nTrueInteractions'." );
+    }
 
     //make sure the pileup distribution is normalized to unity
     pileupMC->Scale( 1. / pileupMC->GetSumOfWeights() );
@@ -32,7 +35,7 @@ void computeAndWritePileupWeights( const Sample& sample, const std::string& weig
             //read data pileup distribution from given file
             std::string dataPuFilePath = ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/pileupData/" + "dataPuHist_" + year + "Inclusive_" + var + ".root" );
             if( !systemTools::fileExists( dataPuFilePath ) ){
-                throw std::runtime_error( "file " + dataPuFilePath + " with data pileup weights, necessary for reweighting, is not present." );
+                throw std::runtime_error( "File " + dataPuFilePath + " with data pileup weights, necessary for reweighting, is not present." );
             }
 
             TFile* dataPileupFilePtr = TFile::Open( dataPuFilePath.c_str() );
@@ -95,8 +98,12 @@ ReweighterPileup::ReweighterPileup( const std::vector< Sample >& sampleList, con
         }
         TFile* puWeightFilePtr = TFile::Open( pileupWeightPath.c_str() );
         puWeightsCentral[ sample.uniqueName() ] = std::shared_ptr< TH1 >( dynamic_cast< TH1* >( puWeightFilePtr->Get( ( "pileupWeights_" + yearSuffix + "_central" ).c_str() ) ) );
+        puWeightsCentral[ sample.uniqueName() ]->SetDirectory( gROOT );
         puWeightsDown[ sample.uniqueName() ] = std::shared_ptr< TH1 >( dynamic_cast< TH1* >( puWeightFilePtr->Get( ( "pileupWeights_" + yearSuffix + "_down" ).c_str() ) ) );
+        puWeightsDown[ sample.uniqueName() ]->SetDirectory( gROOT );
         puWeightsUp[ sample.uniqueName() ] = std::shared_ptr< TH1 >( dynamic_cast< TH1* >( puWeightFilePtr->Get( ( "pileupWeights_" + yearSuffix + "_up" ).c_str() ) ) );
+        puWeightsUp[ sample.uniqueName() ]->SetDirectory( gROOT );
+        puWeightFilePtr->Close();
     }
 }
 
@@ -104,7 +111,7 @@ ReweighterPileup::ReweighterPileup( const std::vector< Sample >& sampleList, con
 double ReweighterPileup::weight( const Event& event, const std::map< std::string, std::shared_ptr< TH1 > >& weightMap ) const{
     auto it = weightMap.find( event.sample().uniqueName() );
     if( it == weightMap.cend() ){
-        throw std::invalid_argument( "No pileupweights for sample " + event.sample().uniqueName() + " found, this sample was probably not present in the vector used to construct the Reweighter" );
+        throw std::invalid_argument( "No pileup weights for sample " + event.sample().uniqueName() + " found, this sample was probably not present in the vector used to construct the Reweighter." );
     }
     TH1* histPtr = it->second.get();
     return histogram::contentAtValue( histPtr, event.generatorInfo().numberOfTrueInteractions() );
