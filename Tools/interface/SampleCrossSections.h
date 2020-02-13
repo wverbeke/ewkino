@@ -9,6 +9,7 @@ class SampleCrossSections{
 	public:
 		using size_type = std::vector< double >::size_type;
 
+        SampleCrossSections() = default;
 		SampleCrossSections( const Sample& );
 
         size_type numberOfLheVariations() const{ return lheCrossSectionRatios.size(); }

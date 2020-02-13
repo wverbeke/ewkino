@@ -17,10 +17,10 @@ namespace python = boost::python;
 class KerasModelReader{
 
     public:
-        KerasModelReader(const std::string& modelName, size_t);
+        KerasModelReader(const std::string& modelName, size_t, const bool shortCutConnection = false, size_t numParameters = 0);
         ~KerasModelReader();
 
-        double predict( const std::vector<double>& ) const;
+        double predict( const std::vector<double>&, const std::vector<double>& parameters = std::vector< double >() ) const;
         
     private:
         void initializePythonAPI() const;
@@ -31,5 +31,7 @@ class KerasModelReader{
         python::object predictRoutine;
         python::object kerasModel;
         size_t numberOfInputs;
+        bool hasShortCutConnection;
+        size_t numberOfParameters;
 };
 #endif

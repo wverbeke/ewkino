@@ -23,21 +23,21 @@
 	
 std::vector< HistInfo > makeDistributionInfo(){
     std::vector< HistInfo > histInfoVec = {
-        HistInfo( "mll", "M_{ll} (GeV)", 10, 70, 120 ),
-        HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 25, 200 ),
-        HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 15, 150 ),
+        HistInfo( "mll", "M_{ll} (GeV)", 40, 80, 105 ),
+        HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 40, 25, 125 ),
+        HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 30, 15, 95 ),
 
-        HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
-        HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
+        HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 30, 0, 2.5 ),
+        HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 30, 0, 2.5 ),
 
-        HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 300 ),
-        HistInfo( "ltmet", "L_{T} + E_{T}^{miss} (GeV)", 10, 0, 300 ),
-        HistInfo( "ht", "H_{T} (GeV)", 10, 0, 600 ),
-        HistInfo( "mt2l", "M_{T}^{2l} (GeV)", 10, 0, 300 ),
+        HistInfo( "met", "E_{T}^{miss} (GeV)", 40, 0, 100 ),
+        HistInfo( "ltmet", "L_{T} + E_{T}^{miss} (GeV)", 40, 0, 320 ),
+        HistInfo( "ht", "H_{T} (GeV)", 40, 0, 600 ),
+        HistInfo( "mt2l", "M_{T}^{2l} (GeV)", 40, 0, 300 ),
 
         HistInfo( "nJets", "number of jets", 8, 0, 8 ),
         HistInfo( "nBJets", "number of b-jets (tight deep CSV)", 4, 0, 4 ),
-        HistInfo( "nVertex", "number of vertices", 10, 0, 70 )
+        HistInfo( "nVertex", "number of vertices", 40, 0, 70 )
     };
     return histInfoVec;
 }
@@ -56,7 +56,8 @@ std::vector< double > computeVariables( const Event& event ){
         event.jetCollection().scalarPtSum(),
         mt( electronSum, event.met() ),
         static_cast< double >( event.numberOfJets() ),
-        static_cast< double >( event.numberOfTightBTaggedJets() )
+        static_cast< double >( event.numberOfTightBTaggedJets() ),
+        static_cast< double >( event.numberOfVertices() )
     };
 }
 
@@ -91,6 +92,12 @@ void deriveChargeFlipCorrections( const std::string& year, const std::string& sa
 
             //apply selection
             if( ! chargeFlips::passChargeFlipEventSelection( event, true, true, true) ) continue;
+
+            //
+            event.sortLeptonsByPt();
+            if( event.electron( 0 ).pt() < 25. ) continue;
+            if( event.electron( 1 ).pt() < 15. ) continue;
+            if( !( event.passTriggers_e() || event.passTriggers_ee() ) ) continue;
     
             double weight = event.weight();
             bool isSameSign = event.leptonsAreSameSign();
@@ -185,16 +192,49 @@ void deriveChargeFlipCorrections( const std::string& year, const std::string& sa
         histogramMap.at( "Charge-flips" )[ dist ]->Scale( chargeFlipRatioFit.value() );
 
         TH1D* predictedHistograms[3] = { histogramMap.at( "Charge-flips" )[ dist ].get(), histogramMap.at( "Prompt" )[ dist ].get(), histogramMap.at( "Nonprompt" )[ dist ].get() };
-		plotDataVSMC( histogramMap.at( "Data" )[ dist ].get(), predictedHistograms, &contributions[0], 3, stringTools::formatDirectoryName( outputDirectoryAfterSF ) + histInfoVector[ dist ].name() + "_closureTest_chargeFlips_data_afterSF_" + year + ".pdf", "", false, false, header );
-		plotDataVSMC( histogramMap.at( "Data" )[ dist ].get(), predictedHistograms, &contributions[0], 3, stringTools::formatDirectoryName( outputDirectoryAfterSF ) + histInfoVector[ dist ].name() + "_closureTest_chargeFlips_data_afterSF_" + year + "_log.pdf", "", true, false, header );
+
+        //make 20% systematic uncertainty band 
+        TH1D* systUnc = dynamic_cast< TH1D* >( predictedHistograms[0]->Clone() );
+        for( int b = 1; b < systUnc->GetNbinsX() + 1; ++b ){
+            systUnc->SetBinContent( b , systUnc->GetBinContent(b)*0.2 );
+        }
+
+		plotDataVSMC( histogramMap.at( "Data" )[ dist ].get(), predictedHistograms, &contributions[0], 3, stringTools::formatDirectoryName( outputDirectoryAfterSF ) + histInfoVector[ dist ].name() + "_closureTest_chargeFlips_data_afterSF_" + year + ".pdf", "", false, false, header, systUnc );
+		plotDataVSMC( histogramMap.at( "Data" )[ dist ].get(), predictedHistograms, &contributions[0], 3, stringTools::formatDirectoryName( outputDirectoryAfterSF ) + histInfoVector[ dist ].name() + "_closureTest_chargeFlips_data_afterSF_" + year + "_log.pdf", "", true, false, header, systUnc );
     }
 }
 
 
-int main(){
+int main( int argc, char* argv[] ){
 
     //plotting style
     setTDRStyle();
-    deriveChargeFlipCorrections( "2016", "../test/testData/" );
+
+    const std::string sampleDirectoryPath = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_chargeflips/";
+    std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
+    
+    if( argc == 2 ){
+        std::string year = argvStr[ 1 ];
+        deriveChargeFlipCorrections( year, sampleDirectoryPath );
+    } else {
+        for( const auto& year : { "2016", "2017", "2018" } ){
+            std::string commandToRun = std::string( "./chargeFlipMeasurement_data " ) + year;
+            std::string scriptName = std::string( "chargeFlipMeasurement_" ) + year + ".sh";
+            systemTools::submitCommandAsJob( commandToRun, scriptName, "100:00:00" );
+        }
+    }
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

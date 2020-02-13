@@ -3,6 +3,7 @@
 
 //include other parts of framework
 #include "../../TreeReader/interface/TreeReader.h"
+#include "../../objects/interface/GenMet.h"
 
 class GeneratorInfo{
     

@@ -14,8 +14,10 @@ template <class T> inline boost::python::list vectorToPyList(const std::vector<T
 }
 
 
-KerasModelReader::KerasModelReader( const std::string& modelName, size_t numInputs):
-    numberOfInputs( numInputs )
+KerasModelReader::KerasModelReader( const std::string& modelName, size_t numInputs, const bool shortCutConnection, size_t numParameters ):
+    numberOfInputs( numInputs ),
+    hasShortCutConnection( shortCutConnection ),
+    numberOfParameters( numParameters )
 {
     initializePythonAPI();
     loadPythonModule( modelName );
@@ -35,7 +37,11 @@ void KerasModelReader::initializePythonAPI() const{
 
 void KerasModelReader::loadPythonModule( const std::string& modelName ){
     try{
-        pythonModule = python::import("kerasPredict");
+        if( hasShortCutConnection ){
+            pythonModule = python::import("kerasPredict_shortcut");
+        } else {
+            pythonModule = python::import("kerasPredict");
+        }
         kerasModel =  pythonModule.attr("kerasModel")(modelName);
         predictRoutine = kerasModel.attr("predict");
     } catch(...){
@@ -44,11 +50,18 @@ void KerasModelReader::loadPythonModule( const std::string& modelName ){
 }
 
 
-double KerasModelReader::predict( const std::vector<double>& inputs ) const{
+double KerasModelReader::predict( const std::vector<double>& inputs, const std::vector< double >& parameters ) const{
     if( inputs.size() != numberOfInputs ){
         throw std::invalid_argument( "Number of inputs should be " + std::to_string( numberOfInputs ) + " while " + std::to_string( inputs.size() ) + " inputs are given." );
     }
+    python::object pythonOutput;
     python::object inputList = vectorToPyList( inputs );
-    python::object pythonOutput = predictRoutine( inputList );
+    python::object pars;
+    if( hasShortCutConnection ){
+        pars = vectorToPyList( parameters );
+        pythonOutput = predictRoutine( inputList, pars );
+    } else {
+        pythonOutput = predictRoutine( inputList );
+    }
     return python::extract<double>( pythonOutput );
 }

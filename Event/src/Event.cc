@@ -143,7 +143,7 @@ Event& Event::operator=( Event&& rhs ) noexcept{
 
 void Event::checkGeneratorInfo() const{
     if( !hasGeneratorInfo() ){
-        std::domain_error( "Trying to access generator information for a data event!" );
+        throw std::domain_error( "Trying to access generator information for a data event!" );
     }
 }
 
@@ -156,7 +156,7 @@ GeneratorInfo& Event::generatorInfo() const{
 
 void Event::checkSusyMassInfo() const{
     if( !hasSusyMassInfo() ){
-        std::domain_error( "Trying to access SUSY mass info for a non-SUSY event!" );
+        throw std::domain_error( "Trying to access SUSY mass info for a non-SUSY event!" );
     }
 }
 

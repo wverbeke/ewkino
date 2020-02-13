@@ -11,9 +11,6 @@ double chargeFlips::chargeFlipWeight( const Event& event, const std::shared_ptr<
     double multipliedProbabilities = 1.;
     for( const auto& electronPtr : event.electronCollection() ){
 
-        //only apply charge flip rate to electrons with correct charge
-        if( electronPtr->isChargeFlip() ) continue;
-
 		double flipRate = histogram::contentAtValues( chargeFlipMap.get(), electronPtr->pt(), electronPtr->absEta() );
         summedProbabilities += flipRate / ( 1. - flipRate );
         multipliedProbabilities *= flipRate / ( 1. - flipRate );
