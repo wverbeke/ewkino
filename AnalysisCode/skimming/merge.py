@@ -20,23 +20,44 @@ if len( sys.argv ) != 3:
     print( 'The input directory should be the directory which contains the unmerged samples as subdirectories' )
     sys.exit()
 
+# set input and output location
 input_directory = os.path.abspath( sys.argv[1] )
 output_directory = sys.argv[2]
 if not os.path.exists(output_directory):
     os.makedirs(output_directory)
 output_directory = os.path.abspath( sys.argv[2] )
-counter = 0
 print('searching for skimmed samples in '+input_directory)
-for sample in listSkimmedSampleDirectories( input_directory ):
-    sample = os.path.join(input_directory,sample)
+inputlist = list(listSkimmedSampleDirectories( input_directory ))
+print('found '+str(len(inputlist))+' input folders')
+
+# reshape list into dict with unique sample names
+# structure: {sampleName1:[sample1,sample2,...],sampleName2:[sample3,...]}
+inputstruct = {}
+for sample in inputlist:
+    if sampleName(sample) in inputstruct:
+        inputstruct[sampleName(sample)].append(sample)
+    else:
+        inputstruct[sampleName(sample)] = [sample]
+print('found '+str(len(inputstruct))+' unique samples')
+for s in inputstruct:
+    print(s+': '+str(inputstruct[s]))
+
+# run hadd command for each element in input structure
+counter = 0
+for samplename in inputstruct:
+    samplelist = inputstruct[samplename]
+    outfile = os.path.join(output_directory,sampleName(samplelist[0])+'.root')
     script_name = 'merge.sh'
     with open(script_name,'w') as script:
-	initializeJobScript(script)
-	outfile = os.path.join(output_directory,sampleName(sample)+'.root')
-	command = 'hadd {} {}/*.root'.format(outfile,sample)
-	script.write(command+'\n')
-	script.write('rm -r {}\n'.format(sample))
+        initializeJobScript(script)
+        command = 'hadd {}'.format(outfile)
+        command2 = 'rm -r'
+        for sample in samplelist:
+            sample = os.path.join(input_directory,sample)
+            command += ' {}/*.root'.format(sample)
+            command2 += ' {}'.format(sample)
+        script.write(command+'\n')
+        script.write(command2+'\n')
     submitQsubJob(script_name)
     counter += 1
-print('submitted merging command for '+str(counter)+' sample directories.')
-	    
+    print('submitted merging command for '+str(counter)+' sample directories.')	    

@@ -10,11 +10,20 @@ def readsamplelist(sample_list):
     with open(sample_list) as f:
         for line in f:
             if(line[0] != '#' and len(line)>1):
+                # first extract the tag (short name) of the process
                 line = line.split('"')
                 process_name = line[1]
                 line = line[2][1:]
+                # now extract sample name (and version name if present)
                 line = line.split(' ')
                 sample_name = line[0].rstrip('\n')
+                if '/' in sample_name:
+                    sample_name = sample_name.split('/')
+                    version_name = sample_name[1]
+                    sample_name = sample_name[0]
+                else:
+                    version_name = ''
+                # finally extract cross-section
                 cross_section = 0.
                 if len(line)>1:
                     try:
@@ -22,7 +31,9 @@ def readsamplelist(sample_list):
                     except:
                         print('### WARNING ###: found incompatible cross-section "'+line[1].rstrip('\n')+'".')
                         print('                 Using zero as default.')
-                samples.append({'process_name':process_name,'sample_name':sample_name,'cross_section':cross_section})
+                # fill the list with a dict for this sample
+                samples.append({'process_name':process_name,'sample_name':sample_name,
+                                    'version_name':version_name,'cross_section':cross_section})
     return samples
 
 if __name__ == "__main__":
@@ -30,4 +41,6 @@ if __name__ == "__main__":
         print('### ERROR ###: wrong number of command line arguments.')
         print('               usage: python readsamplelist.py <name_of_samplelist>.txt')
         sys.exit()
-    readsamplelist(sys.argv[1])
+    test = readsamplelist(sys.argv[1])
+    for el in test:
+        print(el)

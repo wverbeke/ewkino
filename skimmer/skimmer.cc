@@ -66,6 +66,7 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
 
 
 int main( int argc, char* argv[] ){
+    std::cerr << "###starting###" << std::endl; // used for succes/fail checking!
     if( argc != 4 ){
         std::cerr << "skimmer requires exactly three arguments to run : input_file_path, output_directory, skim_condition" << std::endl;
         return -1;
@@ -77,6 +78,6 @@ int main( int argc, char* argv[] ){
     std::string& output_directory = argvStr[2];
     std::string& skimCondition = argvStr[3];
     skimFile( input_file_path, output_directory, skimCondition );
-
+    std::cerr << "###done###" << std::endl; // used for succes/fail checking!
     return 0;
 }

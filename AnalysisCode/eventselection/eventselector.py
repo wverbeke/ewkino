@@ -24,9 +24,10 @@ if len(sys.argv) != 4:
 
 input_directory = os.path.abspath(sys.argv[1])
 output_directory = sys.argv[2]
-if not os.path.exists(output_directory):
-	os.makedirs(output_directory)
 output_directory = os.path.abspath(output_directory)
+if os.path.exists(output_directory):
+    os.system('rm -r '+output_directory)
+os.makedirs(output_directory)
 event_selection = sys.argv[3]
 cwd = os.getcwd()
 

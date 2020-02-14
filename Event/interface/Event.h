@@ -79,6 +79,8 @@ class Event{
         void selectLooseLeptons(){ _leptonCollectionPtr->selectLooseLeptons(); }
         void selectFOLeptons(){ _leptonCollectionPtr->selectFOLeptons(); }
         void selectTightLeptons(){ _leptonCollectionPtr->selectTightLeptons(); }
+        void selectFOtZqLeptons(){ _leptonCollectionPtr->selectFOtZqLeptons(); }
+        void selectTighttZqLeptons(){ _leptonCollectionPtr->selectTighttZqLeptons(); }
        	void cleanElectronsFromLooseMuons( const double coneSize = 0.05 ){ _leptonCollectionPtr->cleanElectronsFromLooseMuons( coneSize ); }
         void cleanElectronsFromFOMuons( const double coneSize = 0.05 ){ _leptonCollectionPtr->cleanElectronsFromFOMuons( coneSize ); }
         void cleanTausFromLooseLightLeptons( const double coneSize = 0.4 ){ _leptonCollectionPtr->cleanTausFromLooseLightLeptons( coneSize ); }

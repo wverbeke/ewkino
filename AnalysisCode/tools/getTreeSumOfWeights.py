@@ -24,6 +24,9 @@ try:
 except:
     print('### ERROR ###: tree not found or has no attribute "_weight"')
     sys.exit()
+
+# old method
+'''
 for j in range(int(tree.GetEntries())):
     if(j%5000==0):
         percent = j*100/tree.GetEntries()
@@ -31,6 +34,14 @@ for j in range(int(tree.GetEntries())):
         sys.stdout.flush()
     tree.GetEntry(j)
     sumweights += getattr(tree,'_weight')
+print(sumweights)'''
+
+# new method
+h = ROOT.TH1F("h","h",1,1,2)
+h.StatOverflows(ROOT.kTRUE) # use overflow bins for getmean and getentries!
+tree.Draw("_weight>>h", "", "goff")
+sumweights = h.GetMean()*h.GetEntries()
+
 print('number of entries in tree: '+str(tree.GetEntries()))
 print('sum of weights in tree: '+str(sumweights))
 try:

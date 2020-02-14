@@ -60,12 +60,12 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 50000;
+    //long unsigned numberOfEntries = 50;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
-	if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
-        Event event = treeReader.buildEvent(entry,true,true);
-	if(!passES(event,eventselection)) continue;
-	outputTreePtr->Fill();
+	    if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
+	    Event event = treeReader.buildEvent(entry,true,true);
+	    if(!passES(event,eventselection)) continue;
+	    outputTreePtr->Fill();
     }
     
     outputTreePtr->Write("", BIT(2) );

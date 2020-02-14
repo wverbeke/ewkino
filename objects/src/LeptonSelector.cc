@@ -38,3 +38,21 @@ bool LeptonSelector::isTight() const{
         return isTight2018();
     }
 }
+
+bool LeptonSelector::isFOtZq() const{
+    if(!isFOBasetZq()) return false;
+    if( is2016() ){
+        return isFO2016tZq();
+    } else if( is2017() ){
+        return isFO2017tZq();
+    } else return false; // no 2018 implementation!
+}
+
+bool LeptonSelector::isTighttZq() const{
+    if(!isTightBasetZq()) return false;
+    if( is2016() ){
+        return isTight2016tZq();
+    } else if( is2017() ){
+        return isTight2017tZq();
+    } else return false; // no 2018 implementation!
+}

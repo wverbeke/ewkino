@@ -100,6 +100,40 @@ bool MuonSelector::isFO2018() const{
     return true;
 }
 
+bool MuonSelector::isFOBasetZq() const{
+    // function to copy as closely as possible lepton ID of tZq analysis note
+    if(muonPtr->absEta()>2.4) return false;
+    if(muonPtr->uncorrectedPt()<10) return false;
+    if(muonPtr->dxy()>0.05) return false;
+    if(muonPtr->dz()>0.1) return false;
+    if(muonPtr->sip3d()>8) return false;
+    if(muonPtr->miniIso()>0.4) return false;
+    if(!muonPtr->isLoosePOGMuon()) return false;
+    if(!muonPtr->isMediumPOGMuon()) return false;
+    return true;
+}
+
+bool MuonSelector::isFO2016tZq() const{
+    if(muonPtr->leptonMVAtZq()<0.8){
+        if(muonPtr->closestJetDeepCSV()>0.3) return false;
+        if(muonPtr->ptRatio()<0.6) return false;
+    }
+    else{
+        if(muonPtr->closestJetDeepCSV()>0.8958) return false;
+    }
+    return true;    
+}
+
+bool MuonSelector::isFO2017tZq() const{
+    if(muonPtr->leptonMVAtZq()<0.8){
+        if(muonPtr->closestJetDeepCSV()>0.2) return false;
+        if(muonPtr->ptRatio()<0.6) return false;
+    }
+    else{
+        if(muonPtr->closestJetDeepCSV()>0.8001) return false;
+    }
+    return true;
+}
 
 /*
 tight muon selection
@@ -127,6 +161,22 @@ bool MuonSelector::isTight2018() const{
     return true;
 }
 
+bool MuonSelector::isTightBasetZq() const{
+    // function to copy as closely as possible lepton ID of tZq analysis note
+    if(!isFOtZq()) return false;
+    if(muonPtr->leptonMVAtZq()<0.8) return false;
+    return true;
+}
+
+bool MuonSelector::isTight2016tZq() const{
+    if(muonPtr->closestJetDeepCSV()>0.8958) return false;
+    return true;
+}
+
+bool MuonSelector::isTight2017tZq() const{
+    if(muonPtr->closestJetDeepCSV()>0.8001) return false;
+    return true;
+}
 
 /*
 cone correction

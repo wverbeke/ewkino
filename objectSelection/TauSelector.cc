@@ -53,6 +53,12 @@ bool TauSelector::isFO2018() const{
     return true;
 }
 
+bool TauSelector::isFOBasetZq() const{
+    // to avoid compilation errors this function must be defined here as well
+    return false; // since taus are not considered in the analysis
+}
+bool TauSelector::isFO2016tZq() const{return false;}
+bool TauSelector::isFO2017tZq() const{return false;}
 
 /*
 tight tau selection
@@ -79,6 +85,12 @@ bool TauSelector::isTight2018() const{
     return true;
 }
 
+bool TauSelector::isTightBasetZq() const{
+    // to avoid compilation errors this function must be defined here as well
+    return false; // since taus are not considered in the analysis
+}
+bool TauSelector::isTight2016tZq() const{return false;}
+bool TauSelector::isTight2017tZq() const{return false;}
 
 /*
 cone correction

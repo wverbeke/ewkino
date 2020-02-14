@@ -1,3 +1,10 @@
+/*
+ * Note that this file seems to be superfluous?
+ * The isGood() and isBTagged methods are implemented in the header.
+ * Comment out this entire file to avoid confusion.
+ */
+
+/*
 #include "../interface/JetSelector.h"
 
 //include other parts of framework
@@ -24,3 +31,4 @@ bool JetSelector::isBTaggedMedium() const{
 bool JetSelector::isBTaggedTight() const{
     return ( jetPtr->deepCSV() > 0.9535 );
 }
+*/

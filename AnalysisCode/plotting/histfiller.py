@@ -9,6 +9,7 @@ from array import array
 import glob
 import os
 import sys
+import json
 sys.path.append(os.path.abspath('../samplelists'))
 from readsamplelist import readsamplelist
 
@@ -69,7 +70,19 @@ def initializehistograms(mcin,datain,variables):
             datahistlist[k][j].SetDirectory(0)
     return (mchistlist,datahistlist)
 
-def addinputfile(histlist,filelist,index,variables,isdata,normalization,lumi):
+def underflow(value,hist):
+    lowX = hist.GetBinLowEdge(1)
+    if value > lowX: return value
+    highX = hist.GetBinLowEdge(2)
+    return (lowX+highX)/2.
+
+def overflow(value,hist):
+    lowX = hist.GetBinLowEdge(hist.GetNbinsX())
+    highX = lowX + hist.GetBinWidth(hist.GetNbinsX())
+    if value < highX: return value
+    return (lowX+highX)/2.
+
+def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization,lumi):
     f = ROOT.TFile.Open(filelist[index]['file'])
     if(not isdata and not normalization==0):
         sumweights = f.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
@@ -90,7 +103,8 @@ def addinputfile(histlist,filelist,index,variables,isdata,normalization,lumi):
             varname = vardict['name']
             varvalue = getattr(tree,varname)
             bins = vardict['bins']
-            if(varvalue<bins[0] or varvalue>bins[-1]): continue
+            if varvalue<bins[0]: varvalue = underflow(varvalue,histlist[k][index])
+	    if varvalue>bins[-1]: varvalue = overflow(varvalue,histlist[k][index])
             histlist[k][index].Fill(varvalue,weight*lumi*xsection/sumweights)
     f.Close()
     sys.stdout.write("\r"+'100%'+"\n")
@@ -158,42 +172,79 @@ def savehistograms(mchistlist,datahistlist,histfile,normalization,lumi):
     lumi_st.Write("lumi")
     f.Close()
 
+def input_from_cmd(arglist):
+    # read command line arguments and return a dict.
+    # the order of the arguments is fixed and no checking is done, but this can be generalized
+    res = {}
+    res['mcrootdir'] = sys.argv[1]
+    res['mcsamplelist'] = sys.argv[2]
+    res['datarootdir'] = sys.argv[3]
+    res['datasamplelist'] = sys.argv[4]
+    res['histfile'] = sys.argv[5]
+    res['variables'] = json.loads(sys.argv[6])
+    res['treename'] = sys.argv[7]
+    res['normalization'] = int(sys.argv[8])
+    res['lumi'] = float(sys.argv[9])
+    return res
+
 if __name__ == '__main__':
     # create histogram objects for an arbitrary number of variables
     # using a collection of root files in a single sample list, directory and tree.
   
+    args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    mcrootdir = '/user/llambrec/Files/test'
+    args['mcrootdir'] = '/user/llambrec/Files/signalregion/2016MC_flat'
     # folder to read data root files from
-    datarootdir = '/user/llambrec/Files/test'
+    args['datarootdir'] = '/user/llambrec/Files/signalregion/2016MC_flat'
     # samplelist for simulation with process names and cross sections
-    mcsamplelist = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
+    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
     # samplelist for data with dataset names
-    datasamplelist = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt' 
+    args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt' 
     # (use MC for testing, data histogram will be reset later on)
     # file to store histograms in:
-    histfile = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms/test.root'
+    args['histfile'] = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms_0211/signalregion1/histograms.root'
     # list of dicts of variables to plot with corresponding bins:
-    variables = [
-        {'name':'_Mjj_max','bins':list(np.linspace(0,1200,num=21))}
+    args['variables'] = [
+        {'name':'_abs_eta_recoil','bins':list(np.linspace(0,5,num=21))},
+        {'name':'_Mjj_max','bins':list(np.linspace(0,1200,num=21))},
+        {'name':'_lW_asymmetry','bins':list(np.linspace(-2.5,2.5,num=21))},
+        {'name':'_deepCSV_max','bins':list(np.linspace(0,1,num=21))},
+        {'name':'_lT','bins':list(np.linspace(0,800,num=21))},
+        {'name':'_MT','bins':list(np.linspace(0,300,num=21))},
+        {'name':'_pTjj_max','bins':list(np.linspace(0,300,num=21))},
+        {'name':'_dRlb_min','bins':list(np.linspace(0,3.14,num=21))},
+        {'name':'_dPhill_max','bins':list(np.linspace(0,3.14,num=21))},
+        {'name':'_HT','bins':list(np.linspace(0,800,num=21))},
+        {'name':'_nJets','bins':list(np.linspace(0,10,num=21))},
+        {'name':'_dRlWrecoil','bins':list(np.linspace(0,10,num=21))},
+        {'name':'_dRlWbtagged','bins':list(np.linspace(0,7,num=21))},
+        {'name':'_M3l','bins':list(np.linspace(0,600,num=21))},
+        {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21))}
     ]
     # name of tree to read for each input file:
-    treename = 'treeCat1'
+    args['treename'] = 'treeCat1'
     # normalization:
-    normalization = 1
+    args['normalization'] = 1
     # (normalization parameter: 0 = no normalization, weights, xsection and lumi set to 1.)
     # (             1 = normalize using weights, xsection and lumi.)
     # (             2 = same as before but apply normalization to data afterwards.)
     # luminosity in inverse picobarns
-    lumi = 35900.
+    args['lumi'] = 35900.
+
+    ### Overwrite using cmd args
+    if(len(sys.argv)==10):
+	args = input_from_cmd(sys.argv)
+    elif(not len(sys.argv)==1):
+	print('### ERROR ###: wrong number of command line args: '+str(len(sys.argv)))
+	sys.exit()
 
     ### Make all paths global
-    mcrootdir = os.path.abspath(mcrootdir)
-    datarootdir = os.path.abspath(datarootdir)
-    mcsamplelist = os.path.abspath(mcsamplelist)
-    datasamplelist = os.path.abspath(datasamplelist)
-    histfile = os.path.abspath(histfile)
+    mcrootdir = os.path.abspath(args['mcrootdir'])
+    mcsamplelist = os.path.abspath(args['mcsamplelist'])
+    datarootdir = os.path.abspath(args['datarootdir'])
+    datasamplelist = os.path.abspath(args['datasamplelist'])
+    histfile = os.path.abspath(args['histfile'])
 
     ### Overwrite output file
     if os.path.exists(histfile): os.system('rm '+histfile)
@@ -202,30 +253,29 @@ if __name__ == '__main__':
 
     ### Configure input files
     mcin = getinputfiles(mcrootdir,mcsamplelist,False)
-    #print(mcin)
     datain = getinputfiles(datarootdir,datasamplelist,True)
 
     ### Fill histograms
-    mchistlist,datahistlist = initializehistograms(mcin,datain,variables)
+    mchistlist,datahistlist = initializehistograms(mcin,datain,args['variables'])
     print('adding simulation files...')
     for i in range(len(mcin)):
         print('file '+str(i+1)+' of '+str(len(mcin)))
-        addinputfile(mchistlist,mcin,i,variables,False,normalization,lumi)
+        addinputfile(mchistlist,mcin,args['treename'],i,args['variables'],False,args['normalization'],args['lumi'])
     print('adding data files...')
     for i in range(len(datain)):
-        print('file '+str(i+1)+' of '+str(len(datain)))
-        addinputfile(datahistlist,datain,i,variables,True,normalization,lumi)
+	print('file '+str(i+1)+' of '+str(len(datain)))
+	addinputfile(datahistlist,datain,args['treename'],i,args['variables'],True,args['normalization'],args['lumi'])
 
     ### Merge histograms with same process name
     mergemchistograms(mchistlist)
     mergedatahistograms(datahistlist)
-    # reset data hist for testing mc only
+    # manually put data to zero for now
     for hist in datahistlist:
-        hist.Reset()
+	hist.Reset()
 
     ### Normalize if needed
-    if(normalization==2):
+    if(args['normalization']==2):
         normalizemctodata(mchistlist,datahistlist,variables)
 
     ### Write histograms to file
-    savehistograms(mchistlist,datahistlist,histfile,normalization,lumi) 
+    savehistograms(mchistlist,datahistlist,histfile,args['normalization'],args['lumi']) 

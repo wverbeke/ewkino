@@ -27,11 +27,17 @@ class ElectronSelector : public LeptonSelector {
         virtual bool isFO2016() const override;
         virtual bool isFO2017() const override;
         virtual bool isFO2018() const override;
+        virtual bool isFOBasetZq() const override;
+        virtual bool isFO2016tZq() const override;
+        virtual bool isFO2017tZq() const override;
 
         virtual bool isTightBase() const override;
         virtual bool isTight2016() const override;
         virtual bool isTight2017() const override;
         virtual bool isTight2018() const override;
+        virtual bool isTightBasetZq() const override;
+        virtual bool isTight2016tZq() const override;
+        virtual bool isTight2017tZq() const override;
 
         virtual double coneCorrection() const override;
 

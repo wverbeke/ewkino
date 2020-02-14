@@ -6,6 +6,8 @@
 import ROOT
 import sys
 import numpy as np
+import json
+import os
 import plottools as tools
 
 def loadhistograms(histfile,prefix):
@@ -174,10 +176,12 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile
     ### calculate data to mc ratio
     ratiograph = ROOT.TGraphAsymmErrors(datahist)
     for i in range(1,datahist.GetNbinsX()+1):
-        ratiograph.GetY()[i-1] *= 1./mchistsum.GetBinContent(i)
-        ratiograph.SetPointError(i-1,0,0,datahist.GetBinErrorLow(i)/mchistsum.GetBinContent(i),
+        if not mchistsum.GetBinContent(i)==0:
+            ratiograph.GetY()[i-1] *= 1./mchistsum.GetBinContent(i)
+            ratiograph.SetPointError(i-1,0,0,datahist.GetBinErrorLow(i)/mchistsum.GetBinContent(i),
                                         datahist.GetBinErrorUp(i)/mchistsum.GetBinContent(i))
-        # avoid drawing empty data bins
+        # avoid drawing empty mc or data bins
+        else: ratiograph.GetY()[i-1] = 1e6
         if(datahist.GetBinContent(i)<=0): ratiograph.GetY()[i-1] += 1e6
 
     ### make legend for upper plot and add all histograms
@@ -212,7 +216,7 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile
     ### make upper part of the plot
     pad1.cd()
     # determine range of pad
-    if(yaxlog): pad2.SetLogy()
+    if(yaxlog): pad1.SetLogy()
     (rangemin,rangemax) = getminmax(datahist,mcerror,yaxlog)
     mcerror.SetMinimum(rangemin)
     mcerror.SetMaximum(rangemax)
@@ -290,21 +294,48 @@ if __name__=="__main__":
     
     ### Configure input parameters (hard-coded)
     # file to read the histograms from
-    histfile = 'histograms/test.root'
+    histfile = os.path.abspath('histograms_0211/signalregion_1/histograms.root')
+    print(histfile)
     # variables with axis titles, units, etc.
     variables = [
-        {'name':'_Mjj_max','title':r'M_{jet+jet}^{max}','unit':'GeV'}
+        {'name':'_abs_eta_recoil','title':r'#||{#eta}_{recoil}','unit':''},
+        {'name':'_Mjj_max','title':r'M_{jet+jet}^{max}','unit':'GeV'},
+        {'name':'_lW_asymmetry','title':r'asymmetry (lepton from W)','unit':''},
+        {'name':'_deepCSV_max','title':r'highest deepCSV','unit':''},
+        {'name':'_lT','title':'L_{T}','unit':'GeV'},
+        {'name':'_MT','title':'M_{T}','unit':'GeV'},
+        {'name':'_pTjj_max','title':r'p_T^{max}(jet+jet)','unit':'GeV'},
+        {'name':'_dRlb_min','title':r'#Delta R(lep,bjet)_{min}','unit':''},
+        {'name':'_dPhill_max','title':r'#Delta #Phi (lep,lep)_{max}','unit':''},
+        {'name':'_HT','title':r'H_{T}','unit':'GeV'},
+        {'name':'_nJets','title':r'number of jets','unit':''},
+        {'name':'_dRlWrecoil','title':r'#Delta R(lep_{W},jet_{recoil})','unit':''},
+        {'name':'_dRlWbtagged','title':r'#Delta R(lep_{W},jet_{b-tagged})','unit':''},
+        {'name':'_M3l','title':r'M_{3l}','unit':'GeV'},
+        {'name':'_abs_eta_max','title':r'#||{#eta}_{max}','unit':''}
     ]
-    
+
+    ### Overwrite using cmd args
+    if(len(sys.argv)==3):
+	histfile = sys.argv[1]
+	variables = json.loads(sys.argv[2])
+	print(variables)
+    elif(not len(sys.argv)==1):
+	print('### ERROR ###: wrong number of command line args')
+	sys.exit()
+
+    histdir = histfile[:histfile.rfind('/')]
     ### Loop over input variables
     for k,vardict in enumerate(variables):
-        varname = vardict['name']
-        
+        varname = str(vardict['name'])
+        # (explicit conversion from unicode to str seems necessary...)
         ### Load histograms
         mchistlist,normalization,lumi = loadhistograms(histfile,'mc_'+varname+'_')
-        datahistlist,_,_ = loadhistograms(histfile,'data_'+varname+'_')
-        if len(datahistlist)>1:
-            print('### ERROR ###: list of data histograms has unexpected length different from 1')
+        print(lumi)
+	print(normalization)
+	datahistlist,_,_ = loadhistograms(histfile,'data_'+varname+'_')
+        if not len(datahistlist)==1:
+            print('### ERROR ###: list of data histograms has unexpected length: '+str(len(datahistlist)))
             sys.exit()
         datahist = datahistlist[0]
         
@@ -317,4 +348,6 @@ if __name__=="__main__":
         xaxtitle = vardict['title']
         if not vardict['unit']=='':
             xaxtitle += '('+vardict['unit']+')'
-        plotdatavsmc(datahist,mchistlist,None,yaxtitle,False,xaxtitle,'test')
+	figname = os.path.join(histdir,varname)
+        plotdatavsmc(datahist,mchistlist,None,yaxtitle,False,xaxtitle,figname+'_lin')
+	plotdatavsmc(datahist,mchistlist,None,yaxtitle,True,xaxtitle,figname+'_log')

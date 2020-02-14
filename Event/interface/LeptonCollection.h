@@ -28,6 +28,8 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
         void selectLooseLeptons();
         void selectFOLeptons();
         void selectTightLeptons();
+        void selectFOtZqLeptons();
+        void selectTighttZqLeptons();
 
         //build collection of leptons passing certain selection
         LeptonCollection looseLeptonCollection() const;
