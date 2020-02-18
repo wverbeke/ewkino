@@ -15,7 +15,7 @@
 
 //call std::system with std::string argyment
 void systemTools::system( const std::string& command ){
-    int response = std::system(command.c_str() );
+    int response = std::system( command.c_str() );
     if( response < 0 ){
         throw std::runtime_error( "system command '" + command + " failed." );
     }
@@ -38,7 +38,7 @@ void systemTools::makeDirectory( const std::string& directoryName ){
 
 
 void systemTools::sleep( unsigned seconds ){
-    std::this_thread::sleep_for(std::chrono::milliseconds(seconds*1000));
+    std::this_thread::sleep_for( std::chrono::milliseconds( seconds*1000 ) );
 }
 
 
@@ -49,10 +49,10 @@ bool systemTools::fileExists( const std::string& fileName ){
 
 
 //check if file name is already in use, and return a randomized filename if it is 
-std::string systemTools::uniqueFileName( const std::string& fileName){
+std::string systemTools::uniqueFileName( const std::string& fileName ){
 
 	std::string uniqueName = fileName;
-    while( systemTools::fileExists(uniqueName) ){
+    while( systemTools::fileExists( uniqueName ) ){
 
         std::pair< std::string, std::string> fileAndExtension = stringTools::splitFileExtension( fileName );
 
@@ -62,19 +62,42 @@ std::string systemTools::uniqueFileName( const std::string& fileName){
 	return uniqueName;
 } 
 
+
 //read lines of text file to vector 
-std::vector < std::string > systemTools::readLines( const std::string& textFile, const std::string& mustContain, const std::string& mustEndWith){
+std::vector < std::string > systemTools::readLines( const std::string& textFile, const std::string& mustContain, const std::string& mustEndWith ){
 	std::vector<std::string> lines;
-    std::ifstream textStream(textFile);
+    std::ifstream textStream( textFile );
     std::string line;
-    while(std::getline(textStream, line)){
-        if(!line.empty() && stringTools::stringContains(line, mustContain) && stringTools::stringEndsWith(line, mustEndWith) ){
-            lines.push_back( stringTools::cleanSpaces(line) );
+    while( std::getline( textStream, line ) ){
+        if( !line.empty() && stringTools::stringContains( line, mustContain ) && stringTools::stringEndsWith( line, mustEndWith ) ){
+            lines.push_back( stringTools::cleanSpaces( line ) );
         }
     }
     textStream.close();
     return lines;
 }
+
+
+bool systemTools::directoryExists( const std::string& directoryName ){
+    std::string temporaryFileName = systemTools::uniqueFileName( "directoryCheck_" + stringTools::replace( directoryName, "/", "" ) + ".txt" );
+    systemTools::system( "if [ -d " + directoryName + " ]; then echo 'directory exists' > " + temporaryFileName + " 2>> " + temporaryFileName + "; fi" );
+
+    std::vector< std::string > lines;
+    if( systemTools::fileExists( temporaryFileName ) ){
+        lines = systemTools::readLines( temporaryFileName );
+        systemTools::deleteFile( temporaryFileName );
+    } else {
+        return false;
+    }
+
+    for( const auto& line : lines ){
+        if( stringTools::stringContains( line, "directory exists" ) ){
+            return true;
+        }
+    }
+    return false;
+}
+
 
 //check number of columns in tabular txt file
 unsigned systemTools::numberOfColumnsInFile( const std::string& textFile ){
@@ -108,13 +131,14 @@ unsigned systemTools::numberOfColumnsInFile( const std::string& textFile ){
     return numberOfColumns;
 }
 
+
 //read first line of a file 
 std::string systemTools::readFirstLine( const std::string& textFile){
-    std::ifstream textStream(textFile);
+    std::ifstream textStream( textFile );
     std::string line;
-    std::getline(textStream, line);
+    std::getline( textStream, line );
     textStream.close();
-    return stringTools::cleanSpaces(line);
+    return stringTools::cleanSpaces( line );
 }
 
 
@@ -124,16 +148,16 @@ std::vector<std::string> systemTools::listFiles( const std::string& directory, c
     //write list of files to temporary file
     //make sure file does not exist to make application thread safe 
 	std::string outFileName = "fileList.txt";
-    outFileName = systemTools::uniqueFileName(outFileName);
+    outFileName = systemTools::uniqueFileName( outFileName );
 
     //remake the file
     systemTools::makeFile( outFileName );
 
     //pipe directory contents to file
-    systemTools::system( "for f in " + stringTools::formatDirectoryName(directory) + "*; do echo $f >> " + outFileName + "; done");
+    systemTools::system( "for f in " + stringTools::formatDirectoryName( directory ) + "*; do echo $f >> " + outFileName + "; done" );
 
     //read the txt file into a vector
-	std::vector< std::string > fileList = systemTools::readLines(outFileName, mustContain, fileExtension);
+	std::vector< std::string > fileList = systemTools::readLines( outFileName, mustContain, fileExtension );
 
     //clean up temporary file
     system( "rm " + outFileName );
@@ -149,16 +173,16 @@ std::string systemTools::CMSSWDirectory(){
     static std::string cmsswDir = "";
     if(cmsswDir == ""){
         std::string outFileName = systemTools::uniqueFileName( "cmsswDir.txt" );
-        systemTools::system("echo $CMSSW_BASE > " + outFileName);
+        systemTools::system( "echo $CMSSW_BASE > " + outFileName );
         cmsswDir = systemTools::readFirstLine( outFileName );       
-        systemTools::deleteFile(outFileName);
+        systemTools::deleteFile( outFileName );
     }
     return cmsswDir;
 }
 
 
 //initialize a submission script for running on cluster
-std::ostream& systemTools::initJobScript(std::ostream& os, const std::string& CMSSWDir ){
+std::ostream& systemTools::initJobScript( std::ostream& os, const std::string& CMSSWDir ){
     if( CMSSWDir == "" ){
         os << "cd " << systemTools::CMSSWDirectory() << "\n";
     } else {
@@ -179,7 +203,7 @@ void systemTools::submitScript( const std::string& scriptName, const std::string
     do{
 
         //submit script and pipe output to text file to check if submission succeeded
-        std::string outFileName =  systemTools::uniqueFileName("submissionOutput.txt");
+        std::string outFileName =  systemTools::uniqueFileName( "submissionOutput.txt" );
         
         //check if extra arguments are given, specifying the number of threads or the submission queue 
         std::string extraArguments;
@@ -194,13 +218,13 @@ void systemTools::submitScript( const std::string& scriptName, const std::string
         std::ifstream submissionOutput(outFileName);
 
         //check for errors in output file
-        static std::vector< std::string > errorMessages = {"Invalid credential", "Expired credential", "Error"};
+        static std::vector< std::string > errorMessages = { "Invalid credential", "Expired credential", "Error" };
         std::string line; 
-        while(std::getline(submissionOutput, line)){
+        while( std::getline( submissionOutput, line ) ){
 
             bool errorFound = false;
-            for(const std::string& message : errorMessages ){
-                if( stringTools::stringContains(line, message) ){
+            for( const std::string& message : errorMessages ){
+                if( stringTools::stringContains( line, message ) ){
                     errorFound = true;
                     break;
                 }
@@ -217,9 +241,9 @@ void systemTools::submitScript( const std::string& scriptName, const std::string
         systemTools::deleteFile( outFileName );
 
         //sleep for 2 seconds before attempting resubmission
-        if(!submitted){
+        if( !submitted ){
             std::cerr << "submission failed: reattempting submission" << std::endl;
-            sleep(2);
+            sleep( 2 );
         }
     } while(!submitted);
 }
@@ -252,17 +276,17 @@ bool systemTools::runningJobs( const std::string& jobName ){
 
     //if the jobname is specified limit it to the last 10 characters, since qstat will not display all
     else{
-        job = std::string(jobName);
-        job = std::string(job.cend() - 11, job.cend());
+        job = std::string( jobName );
+        job = std::string( job.cend() - 11, job.cend() );
     }
 
     //pipe qstat output to temporary txt file
-    std::string outFileName = systemTools::uniqueFileName("runningJobs.txt");
-    systemTools::system("qstat -u$USER > " + outFileName);
-    std::vector< std::string > currentJobs = systemTools::readLines(outFileName, job);
+    std::string outFileName = systemTools::uniqueFileName( "runningJobs.txt" );
+    systemTools::system( "qstat -u$USER > " + outFileName );
+    std::vector< std::string > currentJobs = systemTools::readLines( outFileName, job );
 
     //clean temporary file 
-    systemTools::deleteFile(outFileName);
+    systemTools::deleteFile( outFileName );
 
     //check if any jobs are running
     return ( currentJobs.size() != 0 );
@@ -276,10 +300,10 @@ std::string systemTools::currentDirectory(){
     //if the current directory is not determined yet interact with terminal to retrieve it
     //directory is assumed not to change during program execution
     if(directory == ""){
-        std::string outFileName = systemTools::uniqueFileName("directory.txt");
-        systemTools::system("echo $PWD > "  + outFileName);
+        std::string outFileName = systemTools::uniqueFileName( "directory.txt" );
+        systemTools::system( "echo $PWD > "  + outFileName );
         directory = readFirstLine( outFileName );
-        systemTools::deleteFile(outFileName);
+        systemTools::deleteFile( outFileName );
     }
     return directory;
 }

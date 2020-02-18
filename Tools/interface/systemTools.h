@@ -27,6 +27,9 @@ namespace systemTools{
     //check if file exists
     bool fileExists( const std::string& );
 
+    //check if directory exists
+    bool directoryExists( const std::string& );
+
     //make sure output file name is unused
     std::string uniqueFileName( const std::string& );
 
