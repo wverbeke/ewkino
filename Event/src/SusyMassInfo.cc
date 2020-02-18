@@ -12,4 +12,7 @@ SusyMassInfo::SusyMassInfo( const TreeReader& treeReader ) :
     if( !treeReader.containsSusyMassInfo() ){
         throw std::runtime_error( "Can not instantiate SUSYMassInfo object since the TreeReader has no SUSY mass information." );
     }
+    if( std::abs( _massLSP - 1. ) < 1e-8 ){
+        _massLSP = 0.;
+    }
 }

@@ -57,6 +57,11 @@ void SusyScan::addMassPoints_Fast( const Sample& sample ){
             double yCenter = susyCounter->GetYaxis()->GetBinCenter( yBin );
             unsigned massLSP = floatToUnsigned( yCenter );
 
+            //consider 1 GeV LSP as massless to avoid having separate mass splittings that are 1 GeV apart
+            if( massLSP == 1 ){
+                massLSP = 0;
+            }
+
             //LSP mass can not be higher than NLSP mass
             if( massLSP > massNLSP ) continue;
 
