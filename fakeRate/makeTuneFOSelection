@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wextra -O3
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= tuneFOSelection.cc ../codeLibrary.o src/CutsFitInfo.cc src/fakeRateTools.cc src/Prescale.cc
+SOURCES= tuneFOSelection.cc ../codeLibrary.o src/CutsFitInfo.cc src/fakeRateTools.cc src/Prescale.cc src/SlidingCut.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=tuneFOSelection
 
