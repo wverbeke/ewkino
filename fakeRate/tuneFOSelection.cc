@@ -221,11 +221,9 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
         if( ratioHasPathologicalBin( ratio.get() ) ) continue;
         
 
-        std::cout << "actual fit" << std::endl;
         std::map< std::string, double > cutMap;
         auto indices = categories.indices( c );
         cutMap["pTRatio"] =  ptRatioCuts[ indices[ 0 ] ];
-        //cutMap["deepFlavor"] = ptRatioCuts[ indices[ 1 ] ];
         cutMap["deepFlavor left"] = deepFlavorCutCollection[ indices[ 1 ] ].cut( minSlidePt );
         cutMap["deepFlavor right"] = deepFlavorCutCollection[ indices[ 1 ] ].cut( maxSlidePt );
         fitInfoCollection.push_back( CutsFitInfo( heavyFlavorNumerator[ c ], lightFlavorNumerator[ c ], cutMap ) );
