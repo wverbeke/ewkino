@@ -16,16 +16,24 @@ template < typename T > unsigned floatToUnsigned( T f ){
 }
 
 
-SusyScan::SusyScan( const double massSplitting ) :
-    _massSplitting( floatToUnsigned( massSplitting ) )
+SusyScan::SusyScan( const double massSplitting, const double massSplittingHalfWindow ) :
+    _massSplitting( floatToUnsigned( massSplitting ) ),
+    _massSplittingHalfWindow( floatToUnsigned( massSplittingHalfWindow ) )
 {}
 
 
-SusyScan::SusyScan( const Sample& sample, const double massSplitting ) : 
-    _massSplitting( floatToUnsigned( massSplitting ) )
+SusyScan::SusyScan( const double massSplitting ) : SusyScan( massSplitting, 0 ) {}
+
+
+SusyScan::SusyScan( const Sample& sample, const double massSplitting, const double massSplittingHalfWindow ) :
+    _massSplitting( floatToUnsigned( massSplitting ) ),
+    _massSplittingHalfWindow( floatToUnsigned( massSplittingHalfWindow ) )
 {
     addMassPoints_Fast( sample );
 }
+
+
+SusyScan::SusyScan( const Sample& sample, const double massSplitting ) : SusyScan( sample, massSplitting, 0 ) {}
 
 
 SusyScan::SusyScan( const Sample& sample ) : SusyScan( sample, 0 ) {}
@@ -67,7 +75,10 @@ void SusyScan::addMassPoints_Fast( const Sample& sample ){
 
             //if a particular mass-splitting was required, only allow points at this splitting
             unsigned deltaM = ( massNLSP - massLSP );
-            if( ( _massSplitting != 0 ) && ( deltaM != _massSplitting ) ) continue;
+            if( _massSplitting != 0 ){
+                unsigned diff = std::abs( static_cast< int >( deltaM ) - static_cast< int >( _massSplitting ) );
+                if( diff > _massSplittingHalfWindow ) continue;
+            }
 
             double sumOfWeights = susyCounter->GetBinContent( xBin, yBin );
 
@@ -163,4 +174,10 @@ std::vector< unsigned > SusyScan::massSplittings() const{
         ret.insert( massPair.first - massPair.second );
     }
     return std::vector< unsigned >( ret.cbegin(), ret.cend() );
+}
+
+
+bool SusyScan::containsMassSplitting( const double massSplitting ) const{
+    unsigned diff = std::abs( static_cast< int >( floatToUnsigned( massSplitting ) ) - static_cast< int >( _massSplitting ) );
+    return ( diff <= _massSplittingHalfWindow );
 }

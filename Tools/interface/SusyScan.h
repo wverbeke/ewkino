@@ -18,8 +18,10 @@ class SusyScan {
     public:
         SusyScan() = default;
         SusyScan( const double massSplitting );
+        SusyScan( const double massSplitting, const double massSplittingHalfWindow );
         SusyScan( const Sample& );
         SusyScan( const Sample&, const double massSplitting ); 
+        SusyScan( const Sample&, const double massSplitting, const double massSplittingHalfWindow );
 
         size_t numberOfPoints() const;
         size_t index( const double mChi2, const double mChi1 ) const;
@@ -33,11 +35,14 @@ class SusyScan {
         void addScan( const Sample& sample ){ addMassPoints_Fast( sample ); }
         std::vector< unsigned > massSplittings() const;
 
+        bool containsMassSplitting( const double ) const;
+
     private:
         std::map< std::pair< unsigned, unsigned>, size_t > massesToIndices;
         std::map< size_t, std::pair< unsigned, unsigned > > indicesToMasses;
         std::map< size_t, double > indicesToSumOfWeights;
         unsigned _massSplitting = 0;
+        unsigned _massSplittingHalfWindow = 0;
         
         void addMassPoints_Fast( const Sample& );
 
