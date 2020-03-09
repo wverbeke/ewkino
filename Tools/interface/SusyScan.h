@@ -21,7 +21,8 @@ class SusyScan {
         SusyScan( const double massSplitting, const double massSplittingHalfWindow );
         SusyScan( const Sample& );
         SusyScan( const Sample&, const double massSplitting ); 
-        SusyScan( const Sample&, const double massSplitting, const double massSplittingHalfWindow );
+        //SusyScan( const Sample&, const double massSplitting, const double massSplittingHalfWindow );
+        SusyScan( const Sample&, const double minimimMassSplitting, const double maximumMassSplitting );
 
         size_t numberOfPoints() const;
         size_t index( const double mChi2, const double mChi1 ) const;
@@ -42,7 +43,9 @@ class SusyScan {
         std::map< size_t, std::pair< unsigned, unsigned > > indicesToMasses;
         std::map< size_t, double > indicesToSumOfWeights;
         unsigned _massSplitting = 0;
-        unsigned _massSplittingHalfWindow = 0;
+        //unsigned _massSplittingHalfWindow = 0;
+        unsigned _minimumMassSplitting = 0;
+        unsigned _maximumMassSplitting = 0;
         
         void addMassPoints_Fast( const Sample& );
 

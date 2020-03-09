@@ -77,7 +77,7 @@ int main(){
     //check that all massSplittings within a certain window from a given mass splitting are present
     const double interval = 100.;
     for( const auto& deltaM : massSplittings ){
-        SusyScan deltaMIntervalScan( susySample, deltaM, interval );
+        SusyScan deltaMIntervalScan( susySample, std::max( static_cast< double >( deltaM ) - interval, 0. ), deltaM + interval );
         for( const auto& entry : massSplittings ){
             if( std::abs( static_cast< double >( entry ) - static_cast< double >( deltaM ) ) <= interval ){
                 if( !deltaMIntervalScan.containsMassSplitting( entry ) ){
