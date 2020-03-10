@@ -2,6 +2,7 @@
 
 //include c++ library tools
 #include <algorithm>
+#include <cmath>
 
 
 double histogram::minBinCenter( const TH1* histPtr ){
@@ -148,3 +149,21 @@ void histogram::fillValues( TH2* histPtr, const double valueX, const double valu
 	histPtr->Fill( boundedXValue( histPtr, valueX ), boundedYValue( histPtr, valueY ), weight );
 }
 
+
+double histogram::totalUncertainty( const TH1* histPtr ){
+    double sumUncSquared = 0.;
+    for( int bin = 1; bin < histPtr->GetNbinsX() + 1; ++bin ){
+        double binError = histPtr->GetBinError( bin );
+        sumUncSquared += binError * binError;
+    }
+    return std::sqrt( sumUncSquared );
+}
+
+
+std::pair< double, double > histogram::sumOfWeightsRatioAndUncertainty( const TH1* numeratorPtr, const TH1* denominatorPtr ){
+    double fractionalUncNumerator =  histogram::totalUncertainty( numeratorPtr ) / numeratorPtr->GetSumOfWeights();
+    double fractionalUncDenominator = histogram::totalUncertainty( denominatorPtr ) / denominatorPtr->GetSumOfWeights();
+    double sumOfWeightsRatio = numeratorPtr->GetSumOfWeights() / denominatorPtr->GetSumOfWeights();
+    double totalRatioUnc = std::sqrt( fractionalUncNumerator * fractionalUncNumerator + fractionalUncDenominator * fractionalUncDenominator );
+    return { sumOfWeightsRatio, sumOfWeightsRatio * totalRatioUnc };
+}
