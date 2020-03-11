@@ -24,7 +24,7 @@
 "t#bar{t}/t + X" ttHToNonbb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_v1 0.2151
 "t#bar{t}/t + X" ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/crab_MiniAOD2016v3-v1_singlelepton_MC_2016_v1 3.68
 "t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_v1 0.2529
-"t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3_ext2-v2_singlelepton_MC_2016_v1 0.2529
+"t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3_ext2-v1_singlelepton_MC_2016_v1 0.2529
 
 # following do not seem to be present in wverbeke/heavyNeutrino, replace by lines below
 #"t#bar{t}/t + X" ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1 44.07

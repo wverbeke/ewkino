@@ -71,6 +71,13 @@ def setcolorTZQ(tag):
     print('### WARNING ###: tag not recognized (in setcolorTZQ), returning default color')
     return ROOT.kBlack
 
+def clip(hist):
+    # set minimum value for all bins to zero (no net negative weight)
+    for i in range(hist.GetNbinsX()+1):
+	if hist.GetBinContent(i)<0:
+	    hist.SetBinContent(i,0.)
+	    hist.SetBinError(i,0)
+
 def getminmax(datahist,mchist,yaxlog):
     # get suitable minimum and maximum values for plotting a given data hist and summed mc hist
     # find maximum:
@@ -99,19 +106,22 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile
     cwidth = 450 # width of canvas
     rfrac = 0.25 # fraction of ratio plot in canvas
     # fonts and sizes:
-    titlefont = 6; titlesize = 60
-    labelfont = 5; labelsize = 20
-    axtitlefont = 5; axtitlesize = 20
-    infofont = 6; infosize = 30
-    legendfont = 4; legendsize = 30
+    #titlefont = 6; titlesize = 60
+    labelfont = 5; labelsize = 22
+    axtitlefont = 5; axtitlesize = 22
+    #infofont = 6; infosize = 40
+    #legendfont = 4; legendsize = 40
     # title offset
     ytitleoffset = 1.9
     xtitleoffset = 4.5
     # margins:
-    p1topmargin = 0.05
+    p1topmargin = 0.07
     p2bottommargin = 0.4
+    leftmargin = 0.15
+    rightmargin = 0.05
     # legend box
-    legendbox = [0.25,1-p1topmargin-0.23,0.87,1-p1topmargin-0.03]
+    p1legendbox = [leftmargin+0.03,1-p1topmargin-0.25,1-rightmargin-0.03,1-p1topmargin-0.03]
+    p2legendbox = [leftmargin+0.03,0.84,1-rightmargin-0.03,0.97]
     # marker properties for data
     markerstyle = 20
     markercolor = 1
@@ -134,6 +144,7 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile
     mchiststack = ROOT.THStack("mchiststack","")
     for hist in mchistlist:
         stackcol(hist,setcolorTZQ(hist.GetTitle()))
+	clip(hist) # set negative bins to zero!
         mchistsum.Add(hist)
         mchiststack.Add(hist)
     
@@ -185,7 +196,7 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile
         if(datahist.GetBinContent(i)<=0): ratiograph.GetY()[i-1] += 1e6
 
     ### make legend for upper plot and add all histograms
-    legend = ROOT.TLegend(legendbox[0],legendbox[1],legendbox[2],legendbox[3])
+    legend = ROOT.TLegend(p1legendbox[0],p1legendbox[1],p1legendbox[2],p1legendbox[3])
     legend.SetNColumns(2)
     legend.SetFillStyle(0)
     legend.AddEntry(datahist,datahist.GetTitle(),"pe1")
@@ -194,7 +205,7 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile
     legend.AddEntry(mcerror,"total sim. unc.","f")    
 
     ### make legend for lower plot and add all histograms
-    legend2 = ROOT.TLegend(0.18, 0.85, 0.94, 0.98)
+    legend2 = ROOT.TLegend(p2legendbox[0],p2legendbox[1],p2legendbox[2],p2legendbox[3])
     legend2.SetNColumns(3); 
     legend2.SetFillStyle(0);
     legend2.AddEntry(scstaterror, "stat. pred. unc.", "f");
@@ -207,10 +218,14 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile
     pad1 = ROOT.TPad("pad1","",0.,rfrac,1.,1.)
     pad1.SetTopMargin(p1topmargin)
     pad1.SetBottomMargin(0.03)
+    pad1.SetLeftMargin(leftmargin)
+    pad1.SetRightMargin(rightmargin)
     pad1.Draw()
     pad2 = ROOT.TPad("pad2","",0.,0.,1.,rfrac)
     pad2.SetTopMargin(0.01)
     pad2.SetBottomMargin(p2bottommargin)
+    pad2.SetLeftMargin(leftmargin)
+    pad2.SetRightMargin(rightmargin)
     pad2.Draw()
     
     ### make upper part of the plot
@@ -294,8 +309,7 @@ if __name__=="__main__":
     
     ### Configure input parameters (hard-coded)
     # file to read the histograms from
-    histfile = os.path.abspath('histograms_0211/signalregion_1/histograms.root')
-    print(histfile)
+    histfile = os.path.abspath('histograms/histograms.root')
     # variables with axis titles, units, etc.
     variables = [
         {'name':'_abs_eta_recoil','title':r'#||{#eta}_{recoil}','unit':''},
@@ -304,7 +318,7 @@ if __name__=="__main__":
         {'name':'_deepCSV_max','title':r'highest deepCSV','unit':''},
         {'name':'_lT','title':'L_{T}','unit':'GeV'},
         {'name':'_MT','title':'M_{T}','unit':'GeV'},
-        {'name':'_pTjj_max','title':r'p_T^{max}(jet+jet)','unit':'GeV'},
+        {'name':'_pTjj_max','title':r'p_{T}^{max}(jet+jet)','unit':'GeV'},
         {'name':'_dRlb_min','title':r'#Delta R(lep,bjet)_{min}','unit':''},
         {'name':'_dPhill_max','title':r'#Delta #Phi (lep,lep)_{max}','unit':''},
         {'name':'_HT','title':r'H_{T}','unit':'GeV'},
@@ -319,7 +333,6 @@ if __name__=="__main__":
     if(len(sys.argv)==3):
 	histfile = sys.argv[1]
 	variables = json.loads(sys.argv[2])
-	print(variables)
     elif(not len(sys.argv)==1):
 	print('### ERROR ###: wrong number of command line args')
 	sys.exit()
@@ -331,8 +344,6 @@ if __name__=="__main__":
         # (explicit conversion from unicode to str seems necessary...)
         ### Load histograms
         mchistlist,normalization,lumi = loadhistograms(histfile,'mc_'+varname+'_')
-        print(lumi)
-	print(normalization)
 	datahistlist,_,_ = loadhistograms(histfile,'data_'+varname+'_')
         if not len(datahistlist)==1:
             print('### ERROR ###: list of data histograms has unexpected length: '+str(len(datahistlist)))
@@ -341,13 +352,13 @@ if __name__=="__main__":
         
         ### Set plot properties
         binwidth = datahist.GetBinWidth(1)
-        if binwidth.is_integer:
+        if binwidth.is_integer():
             yaxtitle = 'events / '+str(int(binwidth))+' '+vardict['unit']
         else:
-            yaxtitle = 'events / {0:2f}'.format(binwidth)+' '+vardict['unit']
+            yaxtitle = 'events / {0:.2f}'.format(binwidth)+' '+vardict['unit']
         xaxtitle = vardict['title']
         if not vardict['unit']=='':
             xaxtitle += '('+vardict['unit']+')'
 	figname = os.path.join(histdir,varname)
-        plotdatavsmc(datahist,mchistlist,None,yaxtitle,False,xaxtitle,figname+'_lin')
+	plotdatavsmc(datahist,mchistlist,None,yaxtitle,False,xaxtitle,figname+'_lin')
 	plotdatavsmc(datahist,mchistlist,None,yaxtitle,True,xaxtitle,figname+'_log')

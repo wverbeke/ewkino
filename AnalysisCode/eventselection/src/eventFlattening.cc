@@ -10,6 +10,7 @@ ULong_t _eventNb;
 
 // event weight for simulation
 Double_t _weight;
+Double_t _normweight;
 
 // event BDT variables
 Double_t _abs_eta_recoil;
@@ -23,6 +24,7 @@ Double_t _dRlb_min;
 Double_t _dPhill_max;
 Double_t _HT;
 UInt_t _nJets;
+UInt_t _nBJets;
 Double_t _dRlWrecoil;
 Double_t _dRlWbtagged;
 Double_t _M3l;
@@ -38,6 +40,7 @@ void initOutputTree(TTree* outputTree){
 
     // event weight for simulation (fill with ones for data)
     outputTree->Branch("_weight", &_weight, "_weight/D");
+    outputTree->Branch("_normweight", &_normweight, "_normweight/D");
     
     // event BDT variables
     outputTree->Branch("_abs_eta_recoil", &_abs_eta_recoil, "_abs_eta_recoil/D");
@@ -51,13 +54,14 @@ void initOutputTree(TTree* outputTree){
     outputTree->Branch("_dPhill_max", &_dPhill_max, "_dPhill_max/D");
     outputTree->Branch("_HT", &_HT, "_HT/D");
     outputTree->Branch("_nJets", &_nJets, "_nJets/i");
+    outputTree->Branch("_nBJets", &_nBJets, "_nBJets/i");
     outputTree->Branch("_dRlWrecoil", &_dRlWrecoil, "_dRlWrecoil/D");
     outputTree->Branch("_dRlWbtagged", &_dRlWbtagged, "_dRlWbtagged/D");
     outputTree->Branch("_M3l", &_M3l, "_M3l/D");
     outputTree->Branch("_abs_eta_max", &_abs_eta_max, "_abs_eta_max/D");
 }
  
-void eventToEntry(Event& event){
+void eventToEntry(Event& event, double norm){
     // fill one entry in outputTree (initialized with initOutputTree), based on the info of one event.
     // Note that the event must be cleaned and processed by an event selection function first!
     
@@ -72,11 +76,13 @@ void eventToEntry(Event& event){
 
     // event weight
     _weight = event.weight();
+    _normweight = event.weight()*norm;
 
     // other more or less precomputed event variables
     _lT = event.LT() + event.metPt();
     _HT = event.HT();
     _nJets = event.numberOfJets();
+    _nBJets = event.numberOfMediumBTaggedJets();
     _MT = event.mtW();
 
     // find lepton from W and set its properties
@@ -109,6 +115,7 @@ void eventToEntry(Event& event){
     //std::cout<<"top mass: "<<topresults.first<<std::endl;
     //std::cout<<"b-tagged jet: "<<topresults.second<<std::endl;
     int taggedbindex = topresults.second;
+    if(event.numberOfMediumBTaggedJets()==0) taggedbindex = 0;
     //std::cout<<topresults.first<<std::endl;
 
     // find index of recoiling jet
@@ -134,7 +141,7 @@ void eventToEntry(Event& event){
         // if abs(eta) is larger than max, modify max
         if(fabs(jet.eta())>_abs_eta_max) _abs_eta_max = fabs(jet.eta());
         // if deepCSV is higher than maximum, modify max
-        if(jet.deepCSV()>_deepCSV_max) _deepCSV_max = jet.deepCSV();
+        if(jet.deepCSV()>_deepCSV_max and jet.inBTagAcceptance()) _deepCSV_max = jet.deepCSV();
         // find maximum dijet mass and pt
         for(JetCollection::const_iterator jIt2 = jIt+1; jIt2 != event.jetCollection().cend(); jIt2++){
             Jet& jet2 = **jIt2;
@@ -142,6 +149,7 @@ void eventToEntry(Event& event){
             if((jet+jet2).pt()>_pTjj_max) _pTjj_max = (jet+jet2).pt();
         } 
     }
+    //std::cout<<_deepCSV_max<<std::endl;
     
     _dRlWrecoil = 0;
     _dRlWbtagged = 0;
@@ -151,7 +159,7 @@ void eventToEntry(Event& event){
 	for(int i=0; i<recoilindex; i++){jIt++;}
 	Jet& recoiljet = **jIt;
 	_dRlWrecoil = deltaR(lW,recoiljet);
-	_abs_eta_recoil = recoiljet.eta();
+	_abs_eta_recoil = fabs(recoiljet.eta());
     }
     if(taggedbindex>=0){
 	JetCollection::const_iterator jIt = event.jetCollection().cbegin();

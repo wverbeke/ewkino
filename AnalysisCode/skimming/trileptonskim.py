@@ -35,7 +35,7 @@ skim_condition = 'trilepton'
 if len(sys.argv) < 4:
     print('### WARNING ###: trilepskim.py found too few command line arguments.')
     print('Normal usage from the command line:')
-    print('python skimTuples.py < input_directory > < sample_list  > < output_directory >')
+    print('python skimTuples.py < input_directory > < sample_list > < output_directory >')
     print('       version=<ntuple version> filesperjob=< files_per_job > walltime=< wall_time >')
     print('(named arguments are optional)')
     print('Continue using only hard-coded arguments (e.g. for testing)? (y/n)')
@@ -147,10 +147,6 @@ for sample_directory, sub_directory, output_directory in zip( sample_directories
                 skim_command += ' {}'.format(output_directory)
                 skim_command += ' {}\n'.format(skim_condition)
                 script.write( skim_command )
-		# check if job succeeded
-		check_command = 'if [ $? -ne 0 ]\nthen\n\techo "###failed###"\n'
-		check_command += 'else\n\techo "###succeeded###"\nfi'
-		script.write( check_command )
 
         # submit job and catch errors 
         submitQsubJob( script_name, wall_time )

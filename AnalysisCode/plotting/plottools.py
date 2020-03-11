@@ -159,7 +159,7 @@ def setTDRstyle():
 ############################################################
 
 def drawLumi(pad, extratext="Preliminary", lumitext="<lumi> fb^{-1} (13 TeV)"):
-    lmargin = pad.GetLeftMargin()+0.15; # to leave room for powers of ten next to axis
+    lmargin = pad.GetLeftMargin()+0.03;
     tmargin = pad.GetTopMargin();
     rmargin = pad.GetRightMargin();
     #bmargin = pad.GetBottomMargin();

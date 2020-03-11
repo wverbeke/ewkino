@@ -1,6 +1,6 @@
 # Sample list for 2017 MC samples used in the tZq analysis.
 # This list is taken from the analysis note (AN_2018_100)
-# with slight modifications (e.g. remove double lines only different in '(extx)')
+# with slight modifications where necessary or appropriate
 
 # Formatting: "process name (may include spaces)" <space> sample name <space> cross-section
 

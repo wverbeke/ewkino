@@ -4,9 +4,12 @@
 # grouping these functions here will avoid copy pasting and allow easy redefinition of format conventions
 import sys
 
-def readsamplelist(sample_list):
-    # return a list of dicts containing the process names, sample names and cross sections
+def readsamplelist(sample_list,unique=False):
+    # return a list of dicts containing the process names, sample names and cross sections.
+    # if unique is set to True, only one entry per sample is returned ignoring version info
     samples = []
+    unique_samples = []
+    unique_sample_names = []
     with open(sample_list) as f:
         for line in f:
             if(line[0] != '#' and len(line)>1):
@@ -31,9 +34,14 @@ def readsamplelist(sample_list):
                     except:
                         print('### WARNING ###: found incompatible cross-section "'+line[1].rstrip('\n')+'".')
                         print('                 Using zero as default.')
-                # fill the list with a dict for this sample
+                # fill the lists with a dict for this sample
                 samples.append({'process_name':process_name,'sample_name':sample_name,
                                     'version_name':version_name,'cross_section':cross_section})
+		if not sample_name in unique_sample_names:
+		    unique_sample_names.append(sample_name)
+		    unique_samples.append({'process_name':process_name,'sample_name':sample_name,
+					    'cross_section':cross_section})
+    if unique: return unique_samples
     return samples
 
 if __name__ == "__main__":

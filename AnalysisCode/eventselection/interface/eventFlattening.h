@@ -6,7 +6,7 @@
 
 void initOutputTree(TTree*);
 //int eventCategory(Event&); move to other file
-void eventToEntry(Event&);
+void eventToEntry(Event&, double norm);
 std::pair<double,double> pmzcandidates(Event&, Lepton&);
 std::pair<double,int> besttopcandidate(Event&, Lepton&, double, double);
 

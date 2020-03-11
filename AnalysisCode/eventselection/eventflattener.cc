@@ -32,7 +32,7 @@ bool checkReadability(const std::string& pathToFile){
     return true;
 }
 
-void eventloopEF_SR(const std::string& pathToFile, const std::string& outputDirectory){
+void eventloopEF_SR(const std::string& pathToFile, double norm, const std::string& outputDirectory){
     // loop over events and write flat trees for signal region categories
 
     // initialize TreeReader
@@ -66,14 +66,14 @@ void eventloopEF_SR(const std::string& pathToFile, const std::string& outputDire
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 100;
+    //long unsigned numberOfEntries = 5000;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
         Event event = treeReader.buildEvent(entry,true,true);
         if(!passES(event,"signalregion")) continue;
         int eventcategory = eventCategory(event);
         if(eventcategory == -1) continue;
-        eventToEntry(event);
+        eventToEntry(event,norm);
         if(eventcategory == 1) treeCat1Ptr->Fill();
         else if(eventcategory == 2) treeCat2Ptr->Fill();
         else if(eventcategory == 3) treeCat3Ptr->Fill();
@@ -84,8 +84,9 @@ void eventloopEF_SR(const std::string& pathToFile, const std::string& outputDire
     outputFilePtr->Close();
 }
 
-void eventloopEF_CR(const std::string& pathToFile, const std::string& outputDirectory,
-                        const std::string& eventselection){
+void eventloopEF_CR(const std::string& pathToFile, double norm,
+		    const std::string& outputDirectory,
+                    const std::string& eventselection){
 
     TreeReader treeReader;
     treeReader.initSampleFromFile( pathToFile );
@@ -103,13 +104,12 @@ void eventloopEF_CR(const std::string& pathToFile, const std::string& outputDire
     std::shared_ptr< TTree > treeCat1Ptr( std::make_shared< TTree >( treecat1.c_str(), treecat1.c_str() ) );
     initOutputTree(treeCat1Ptr.get());
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //unsigned numberOfEntries = 100;
+    //unsigned numberOfEntries = 5000;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
-        //if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
-        std::cout<<entry<<std::endl;
+        if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
         Event event = treeReader.buildEvent(entry,true,true);
         if(!passES(event,eventselection)) continue;
-        eventToEntry(event);
+        eventToEntry(event,norm);
         treeCat1Ptr->Fill();
     }
     treeCat1Ptr->Write("", BIT(2) );
@@ -117,20 +117,21 @@ void eventloopEF_CR(const std::string& pathToFile, const std::string& outputDire
 } 
 
 int main( int argc, char* argv[] ){
-    if( argc != 4 ){
-        std::cerr << "event flattening requires exactly three arguments to run: ";
-        std::cerr << "input_file_path, output_directory, event_selection" << std::endl;
+    if( argc != 5 ){
+        std::cerr << "### ERROR ###: event flattening requires exactly four arguments to run: ";
+        std::cerr << "               input_file_path, norm, output_directory, event_selection" << std::endl;
         return -1;
     }
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
     std::string& input_file_path = argvStr[1];
-    std::string& output_directory = argvStr[2];
-    std::string& event_selection = argvStr[3];
+    double norm = std::stod(argvStr[2]);
+    std::string& output_directory = argvStr[3];
+    std::string& event_selection = argvStr[4];
     bool validInput = checkReadability( input_file_path );
     if(!validInput){return -1;}
     std::string sigreg = "signalregion";
-    if(event_selection == sigreg) eventloopEF_SR(input_file_path,output_directory);
-    else eventloopEF_CR(input_file_path, output_directory, event_selection);
+    if(event_selection == sigreg) eventloopEF_SR(input_file_path,norm,output_directory);
+    else eventloopEF_CR(input_file_path, norm, output_directory, event_selection);
     std::cout<<"done"<<std::endl;
     return 0;
 }

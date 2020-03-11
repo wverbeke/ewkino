@@ -30,14 +30,22 @@ print('searching for skimmed samples in '+input_directory)
 inputlist = list(listSkimmedSampleDirectories( input_directory ))
 print('found '+str(len(inputlist))+' input folders')
 
+def sampleName_override(sample):
+    # NOT YET TESTED!!!
+    # to take into account possible '_extx' in sample name instead of version name
+    name = sampleName(sample)
+    if r'_ext' in name:
+	name = name[:name.find('_ext')]+name[name.find('_ext')+5:]
+    return name
+
 # reshape list into dict with unique sample names
 # structure: {sampleName1:[sample1,sample2,...],sampleName2:[sample3,...]}
 inputstruct = {}
 for sample in inputlist:
-    if sampleName(sample) in inputstruct:
-        inputstruct[sampleName(sample)].append(sample)
+    if sampleName_override(sample) in inputstruct:
+        inputstruct[sampleName_override(sample)].append(sample)
     else:
-        inputstruct[sampleName(sample)] = [sample]
+        inputstruct[sampleName_override(sample)] = [sample]
 print('found '+str(len(inputstruct))+' unique samples')
 for s in inputstruct:
     print(s+': '+str(inputstruct[s]))
@@ -46,7 +54,7 @@ for s in inputstruct:
 counter = 0
 for samplename in inputstruct:
     samplelist = inputstruct[samplename]
-    outfile = os.path.join(output_directory,sampleName(samplelist[0])+'.root')
+    outfile = os.path.join(output_directory,sampleName_override(samplelist[0])+'.root')
     script_name = 'merge.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)

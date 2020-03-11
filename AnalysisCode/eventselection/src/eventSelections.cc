@@ -95,6 +95,14 @@ bool pass_wzcontrolregion(Event& event){
     if(!hasnTightLeptons(event,3)) return false;
     if(!event.hasOSSFLightLeptonPair()) return false;
     if(!event.hasZTollCandidate(halfwindow)) return false;
+    std::cout<<"before selection"<<std::endl;
+    for(JetCollection::const_iterator jIt = event.jetCollection().cbegin();
+      jIt != event.jetCollection().cend(); jIt++){
+	Jet& jet = **jIt;
+	std::cout<<jet.deepCSV()<<std::endl;
+	std::cout<<jet.isBTaggedMedium()<<std::endl;
+    }
+    std::cout<<"number of b jets "<<event.numberOfMediumBTaggedJets()<<std::endl;
     if(event.numberOfMediumBTaggedJets()>0) return false;
     if(event.metPt()<50.) return false;
     // calculate mass of 3-lepton system and veto mass close to Z mass

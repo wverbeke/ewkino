@@ -9,12 +9,12 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
 
 ### Define regions to make plots for
-#regions = ['signalregion','wzcontrolregion','zzcontrolregion','zgcontrolregion']
-regions = ['zgcontrolregion']
-years = ['2016']
+regions = ['signalregion']
+#regions = ['zgcontrolregion']
+years = ['2016','2017','2018']
 
 ### Global settings
-outdir = 'histograms_0212'
+outdir = 'histograms_0310'
 outdir = os.path.abspath(outdir)
 variables = [
     {'name':'_abs_eta_recoil','bins':list(np.linspace(0,5,num=21)),
@@ -37,7 +37,7 @@ variables = [
      'title':r'#Delta #Phi (lep,lep)_{max}','unit':''},
     {'name':'_HT','bins':list(np.linspace(0,800,num=21)),
      'title':r'H_{T}','unit':'GeV'},
-    {'name':'_nJets','bins':list(np.linspace(0,10,num=21)),
+    {'name':'_nJets','bins':list(np.linspace(0,10,num=11)),
      'title':r'number of jets','unit':''},
     {'name':'_dRlWrecoil','bins':list(np.linspace(0,10,num=21)),
      'title':r'#Delta R(lep_{W},jet_{recoil})','unit':''},

@@ -97,15 +97,20 @@ def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization
             sys.stdout.flush()
         tree.GetEntry(j)
         weight = 1.
+	normweight = 1.
         if(not isdata and not normalization==0):
             weight = getattr(tree,'_weight')
+	    normweight = getattr(tree,'_normweight')
         for k,vardict in enumerate(variables):
             varname = vardict['name']
             varvalue = getattr(tree,varname)
             bins = vardict['bins']
             if varvalue<bins[0]: varvalue = underflow(varvalue,histlist[k][index])
 	    if varvalue>bins[-1]: varvalue = overflow(varvalue,histlist[k][index])
-            histlist[k][index].Fill(varvalue,weight*lumi*xsection/sumweights)
+	    # default filling method:
+            #histlist[k][index].Fill(varvalue,weight*lumi*xsection/sumweights)
+	    # alternative using precomputed normalized weight:
+	    histlist[k][index].Fill(varvalue,normweight)
     f.Close()
     sys.stdout.write("\r"+'100%'+"\n")
     sys.stdout.flush()
@@ -203,7 +208,7 @@ if __name__ == '__main__':
     args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt' 
     # (use MC for testing, data histogram will be reset later on)
     # file to store histograms in:
-    args['histfile'] = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms_0211/signalregion1/histograms.root'
+    args['histfile'] = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms/histograms.root'
     # list of dicts of variables to plot with corresponding bins:
     args['variables'] = [
         {'name':'_abs_eta_recoil','bins':list(np.linspace(0,5,num=21))},
