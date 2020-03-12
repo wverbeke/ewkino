@@ -1,10 +1,10 @@
 #include "../interface/QuantileBinner.h"
 
-
 //include c++ library classes
 #include <numeric>
 #include <stdexcept>
 #include <string>
+#include <algorithm>
 
 
 QuantileBinner::QuantileBinner( const TH1* originalHist, const std::vector< double >& contentFractions ){
@@ -28,29 +28,35 @@ QuantileBinner::QuantileBinner( const TH1* originalHist, const std::vector< doub
         currentSum += originalHist->GetBinContent( bin );
 
         if( ( currentSum / totalContent ) > contentFractions[ contentFractions.size() - quantileCounter - 1 ] ){
-            binsToMerge.push_back( bin );
+            _binsToMerge.push_back( bin );
             currentSum = 0.;
             ++quantileCounter;
         }
     }
-    originalNumberOfBins = originalHist->GetNbinsX();
-    newNumberOfBins = contentFractions.size();
+
+    for( int bin : _binsToMerge ){
+        _binBorders.push_back( originalHist->GetBinLowEdge( bin ) );
+    }
+    std::reverse( _binBorders.begin(), _binBorders.end() );
+
+    _originalNumberOfBins = originalHist->GetNbinsX();
+    _newNumberOfBins = contentFractions.size();
 }
 
 
 std::shared_ptr< TH1D > QuantileBinner::rebinnedHistogram( const TH1* histogramPtr ) const{
 
-    if( histogramPtr->GetNbinsX() != originalNumberOfBins ){
-        throw std::invalid_argument( "Given histogram has " + std::to_string( histogramPtr->GetNbinsX() ) + " bins, while the QuantileBinner has been initialized using a histogram with " + std::to_string( originalNumberOfBins ) + " bins." );
+    if( histogramPtr->GetNbinsX() != _originalNumberOfBins ){
+        throw std::invalid_argument( "Given histogram has " + std::to_string( histogramPtr->GetNbinsX() ) + " bins, while the QuantileBinner has been initialized using a histogram with " + std::to_string( _originalNumberOfBins ) + " bins." );
     }
 
     std::string xTitle = histogramPtr->GetXaxis()->GetTitle();
     std::string yTitle = "Events";
     std::string histogramName = histogramPtr->GetName();
 
-    std::shared_ptr< TH1D > ret = std::make_shared< TH1D >( ( histogramName + "_transFormed" ).c_str(), ( histogramName + ";" + xTitle + ";" + yTitle ).c_str(), newNumberOfBins, 0., 1. );
+    std::shared_ptr< TH1D > ret = std::make_shared< TH1D >( ( histogramName + "_transFormed" ).c_str(), ( histogramName + ";" + xTitle + ";" + yTitle ).c_str(), _newNumberOfBins, 0., 1. );
 
-    for( int bin = 1; bin < newNumberOfBins + 1; ++bin ){
+    for( int bin = 1; bin < _newNumberOfBins + 1; ++bin ){
 
         //determine range of old bins corresponding to this new bin
         int lowBinIndex; //inclusive
@@ -58,13 +64,13 @@ std::shared_ptr< TH1D > QuantileBinner::rebinnedHistogram( const TH1* histogramP
 
         if( bin == 1 ){
             lowBinIndex = 1;
-            highBinIndex = binsToMerge.back();
-        } else if( bin == newNumberOfBins ){
-            lowBinIndex = binsToMerge.front();
-            highBinIndex = originalNumberOfBins + 1;
+            highBinIndex = _binsToMerge.back();
+        } else if( bin == _newNumberOfBins ){
+            lowBinIndex = _binsToMerge.front();
+            highBinIndex = _originalNumberOfBins + 1;
         } else {
-            lowBinIndex = binsToMerge[ binsToMerge.size() - bin + 1 ];
-            highBinIndex = binsToMerge[ binsToMerge.size() - bin ];
+            lowBinIndex = _binsToMerge[ _binsToMerge.size() - bin + 1 ];
+            highBinIndex = _binsToMerge[ _binsToMerge.size() - bin ];
         }
 
         //set the new bin content and error
@@ -80,6 +86,3 @@ std::shared_ptr< TH1D > QuantileBinner::rebinnedHistogram( const TH1* histogramP
     }
     return ret;
 }
-
-
-

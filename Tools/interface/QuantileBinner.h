@@ -21,11 +21,13 @@ class QuantileBinner {
         QuantileBinner( const TH1*, const std::vector< double >& );
         
         std::shared_ptr< TH1D > rebinnedHistogram( const TH1* ) const;
+        const std::vector< double >& binBorders() const{ return _binBorders; }
 
     private:
-        std::vector< int > binsToMerge;
-        int originalNumberOfBins;
-        int newNumberOfBins;
+        std::vector< int > _binsToMerge;
+        std::vector< double > _binBorders;
+        int _originalNumberOfBins;
+        int _newNumberOfBins;
 };
 
 
