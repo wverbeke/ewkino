@@ -21,7 +21,7 @@ class QuantileBinner {
         QuantileBinner( const TH1*, const std::vector< double >& );
         
         std::shared_ptr< TH1D > rebinnedHistogram( const TH1* ) const;
-        const std::vector< double >& binBirders() const{ return _binBorders; }
+        const std::vector< double >& binBorders() const{ return _binBorders; }
 
     private:
         std::vector< int > _binsToMerge;

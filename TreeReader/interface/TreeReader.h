@@ -391,11 +391,6 @@ class TreeReader {
         //current index in samples vector
         int currentSampleIndex = -1;
 
-        //luminosity for each year in units of fb
-        static constexpr double lumi2016 = 35.92;
-        static constexpr double lumi2017 = 41.53;
-        static constexpr double lumi2018 = 59.74;
-
         //luminosity scaling
         double scale = 0;
 

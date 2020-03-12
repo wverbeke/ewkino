@@ -11,6 +11,7 @@
 #include "../../Tools/interface/systemTools.h"
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Event/interface/Event.h"
+#include "../../constants/luminosities.h"
 
 
 TreeReader::TreeReader( const std::string& sampleListFile, const std::string& sampleDirectory ){
@@ -227,11 +228,11 @@ void TreeReader::initSample( const Sample& samp ){
         //event weights set with lumi depending on sample's era 
         double dataLumi;
         if( is2016() ){
-            dataLumi = lumi2016;
+            dataLumi = lumi::lumi2016;
         } else if( is2017() ){
-            dataLumi = lumi2017;
+            dataLumi = lumi::lumi2017;
         } else {
-            dataLumi = lumi2018;
+            dataLumi = lumi::lumi2018;
         }
         scale = samp.xSec()*dataLumi*1000 / sumSimulatedEventWeights;
     }
