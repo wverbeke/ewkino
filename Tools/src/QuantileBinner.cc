@@ -14,7 +14,7 @@ QuantileBinner::QuantileBinner( const TH1* originalHist, const std::vector< doub
 
     //check if content fractions approximately sum to one
     double fractionSum = std::accumulate( contentFractions.cbegin(), contentFractions.cend(), 0. );
-    if( numeric::floatEquals( fractionSum, 1. ) ){
+    if( !numeric::floatEquals( fractionSum, 1. ) ){
         throw std::invalid_argument( "Sum of given content fractions is " + std::to_string( fractionSum ) + ", while it should be 1." );
     }
 
