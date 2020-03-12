@@ -3,6 +3,7 @@
 //include other parts of code 
 #include "../interface/stringTools.h"
 #include "../interface/analysisTools.h"
+#include "../interface/numericTools.h"
 
 //include c++ library classes 
 #include <cmath>
@@ -11,32 +12,27 @@
 #include "TH2D.h"
 
 
-template < typename T > unsigned floatToUnsigned( T f ){
-    return static_cast< unsigned >( std::floor( std::max( f + 0.5, 0.1 ) ) );
-}
-
-
 SusyScan::SusyScan( const double massSplitting ) :
-    _massSplitting( floatToUnsigned( massSplitting ) )
+    _massSplitting( numeric::floatToUnsigned( massSplitting ) )
 {}
 
 
 SusyScan::SusyScan( const double minimumMassSplitting, const double maximumMassSplitting ) :
-    _minimumMassSplitting( floatToUnsigned( minimumMassSplitting ) ),
-    _maximumMassSplitting( floatToUnsigned( maximumMassSplitting ) )
+    _minimumMassSplitting( numeric::floatToUnsigned( minimumMassSplitting ) ),
+    _maximumMassSplitting( numeric::floatToUnsigned( maximumMassSplitting ) )
 {}
 
 
 SusyScan::SusyScan( const Sample& sample, const double massSplitting ) :
-    _massSplitting( floatToUnsigned( massSplitting ) )
+    _massSplitting( numeric::floatToUnsigned( massSplitting ) )
 {
     addMassPoints_Fast( sample );
 }
 
 
 SusyScan::SusyScan( const Sample& sample, const double minimumMassSplitting, const double maximumMassSplitting ) :
-    _minimumMassSplitting( minimumMassSplitting ),
-    _maximumMassSplitting( maximumMassSplitting )
+    _minimumMassSplitting( numeric::floatToUnsigned( minimumMassSplitting ) ),
+    _maximumMassSplitting( numeric::floatToUnsigned( maximumMassSplitting ) )
 {
     addMassPoints_Fast( sample );
 }
@@ -66,10 +62,10 @@ void SusyScan::addMassPoints_Fast( const Sample& sample ){
     //loop over all bins, extract the mass point for each and check if there are events
     for( int xBin = 1; xBin < susyCounter->GetNbinsX() + 1; ++xBin ){
         double xCenter = susyCounter->GetXaxis()->GetBinCenter( xBin );
-        unsigned massNLSP = floatToUnsigned( xCenter );
+        unsigned massNLSP = numeric::floatToUnsigned( xCenter );
         for( int yBin = 1; yBin < susyCounter->GetNbinsY() + 1; ++yBin ){
             double yCenter = susyCounter->GetYaxis()->GetBinCenter( yBin );
-            unsigned massLSP = floatToUnsigned( yCenter );
+            unsigned massLSP = numeric::floatToUnsigned( yCenter );
 
             //consider 1 GeV LSP as massless to avoid having separate mass splittings that are 1 GeV apart
             if( massLSP == 1 ){
@@ -148,7 +144,7 @@ size_t SusyScan::numberOfPoints() const{
 
 
 size_t SusyScan::index( const double mChi2, const double mChi1 ) const{
-    auto it = massesToIndices.find( { floatToUnsigned( mChi2 ), floatToUnsigned( mChi1 ) } );
+    auto it = massesToIndices.find( { numeric::floatToUnsigned( mChi2 ), numeric::floatToUnsigned( mChi1 ) } );
     if( it == massesToIndices.cend() ){
         throw std::invalid_argument( "Mass point " + std::to_string( mChi2 ) + "/" + std::to_string( mChi1 ) + " is unknown and does not correspond to an index." );
     } else {
@@ -184,6 +180,6 @@ std::vector< unsigned > SusyScan::massSplittings() const{
 
 
 bool SusyScan::containsMassSplitting( const double massSplitting ) const{
-    unsigned dM = floatToUnsigned( massSplitting );
+    unsigned dM = numeric::floatToUnsigned( massSplitting );
     return ( dM >= _minimumMassSplitting && dM <= _maximumMassSplitting );
 }
