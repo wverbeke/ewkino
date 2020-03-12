@@ -6,12 +6,15 @@
 #include <string>
 #include <algorithm>
 
+//include other parts of code
+#include "../interface/numericTools.h"
+
 
 QuantileBinner::QuantileBinner( const TH1* originalHist, const std::vector< double >& contentFractions ){
 
     //check if content fractions approximately sum to one
     double fractionSum = std::accumulate( contentFractions.cbegin(), contentFractions.cend(), 0. );
-    if( std::abs( ( fractionSum - 1. ) / fractionSum  ) > 1e-6 ){
+    if( numeric::floatEquals( fractionSum, 1. ) ){
         throw std::invalid_argument( "Sum of given content fractions is " + std::to_string( fractionSum ) + ", while it should be 1." );
     }
 
@@ -20,7 +23,7 @@ QuantileBinner::QuantileBinner( const TH1* originalHist, const std::vector< doub
     double currentSum = 0.;
     size_t quantileCounter = 0;
     for( int bin = originalHist->GetNbinsX(); bin != 0; --bin ){
-    
+
         if( quantileCounter == ( contentFractions.size() - 1 ) ){
             break;  
         }
@@ -85,4 +88,40 @@ std::shared_ptr< TH1D > QuantileBinner::rebinnedHistogram( const TH1* histogramP
         ret->SetBinError( bin, std::sqrt( binErrorSquared ) );
     }
     return ret;
+}
+
+
+std::vector< double > exponentialBinningQuantiles( const double totalYield, const double eventsInLastBin, const double binRatio, const double lumiRatio ){
+    std::vector< double > quantileVector;
+
+    //we want to have eventsInLastBin event at an intergrated luminosity of targetLumi
+    double lastQuantile = eventsInLastBin * lumiRatio / totalYield;
+    quantileVector.push_back( lastQuantile );
+
+    double quantileSum = lastQuantile;
+    while( quantileSum <= 1. ){
+        double nextQuantile = quantileVector.back() * binRatio;
+        quantileVector.push_back( nextQuantile );
+        quantileSum += nextQuantile;
+    }
+
+    //adjust last quantile so total sum is one 
+    double& last = quantileVector.back();
+    double& secondToLast = quantileVector[ quantileVector.size() - 2 ];
+    double diff = quantileSum - 1.;
+    last -= diff;
+    if( quantileVector.back() < secondToLast ){
+        secondToLast += last;
+        quantileVector.pop_back();
+    }
+
+    //reverse the vector
+    std::reverse( quantileVector.begin(), quantileVector.end() );
+
+    return quantileVector;
+}
+
+
+std::vector< double > exponentialBinningQuantiles( const TH1* histPtr, const double eventsInLastBin, const double binRatio, const double lumiRatio ){
+    return exponentialBinningQuantiles( histPtr->GetSumOfWeights(), eventsInLastBin, binRatio, lumiRatio );
 }
