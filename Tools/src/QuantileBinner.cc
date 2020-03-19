@@ -30,7 +30,7 @@ QuantileBinner::QuantileBinner( const TH1* originalHist, const std::vector< doub
 
         currentSum += originalHist->GetBinContent( bin );
 
-        if( ( currentSum / totalContent ) > contentFractions[ contentFractions.size() - quantileCounter - 1 ] ){
+        if( ( currentSum / totalContent ) >= contentFractions[ contentFractions.size() - quantileCounter - 1 ] ){
             _binsToMerge.push_back( bin );
             currentSum = 0.;
             ++quantileCounter;
@@ -65,7 +65,11 @@ std::shared_ptr< TH1D > QuantileBinner::rebinnedHistogram( const TH1* histogramP
         int lowBinIndex; //inclusive
         int highBinIndex; //exclusive
 
-        if( bin == 1 ){
+        //handle the case of empty _binsToMerge, which means the whole histogram gets merged to a single bin
+        if( _binsToMerge.empty() ){
+            lowBinIndex = 1;
+            highBinIndex = _originalNumberOfBins + 1;
+        } else if( bin == 1 ){
             lowBinIndex = 1;
             highBinIndex = _binsToMerge.back();
         } else if( bin == _newNumberOfBins ){
@@ -87,6 +91,7 @@ std::shared_ptr< TH1D > QuantileBinner::rebinnedHistogram( const TH1* histogramP
         ret->SetBinContent( bin, binContent );
         ret->SetBinError( bin, std::sqrt( binErrorSquared ) );
     }
+
     return ret;
 }
 

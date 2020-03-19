@@ -1,5 +1,16 @@
-#VV		        WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8_Summer16.root					                        0.2086
-#VV		        WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8_Fall17.root              					                    0.2086
-#TTHH		    TTHH_TuneCP5_13TeV-madgraph-pythia8.root                  					                        1               forceIs2018
-WJets           WJets_TuneCP5_Autumn18.root                                                                         1
-WJets           WJets_TuneCP5_Autumn18_small.root                                                                   1
+TT      TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root         1
+TT      TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root      1
+TT      TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_Summer16.root               1
+TT      TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root                         1
+TT      TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_Summer16.root                      1
+TT      TTToSemilepton_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_Summer16.root          1
+
+TT      TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17.root                           1
+TT      TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_Fall17.root                                  1
+TT      TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_Fall17.root                 1
+TT      TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_Fall17.root                        1
+
+
+TT      TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_Autumn18.root                       1
+TT      TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Autumn18.root                         1
+TT      TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_Autumn18.root                                1

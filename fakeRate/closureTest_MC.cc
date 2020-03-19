@@ -23,7 +23,7 @@ std::vector< HistInfo > makeDistributionInfo(){
 	std::vector< HistInfo > histInfoVec = {
 		HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 25, 200 ),
 		HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 15, 150 ),
-		HistInfo( "leptonPtTrailing", "P_{T}^{trailing lepton} (GeV)", 10, 15, 150 ),
+		HistInfo( "leptonPtTrailing", "P_{T}^{trailing lepton} (GeV)", 15, 10, 150 ),
 
 		HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
 		HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
@@ -54,7 +54,7 @@ std::shared_ptr< TH2D > readFRMap( const std::string& flavor, const std::string&
 } 
 
 
-bool passClosureTestEventSelection( Event& event ){
+bool passClosureTestEventSelection( Event& event, const bool requireMuon = false, const bool requireElectron = false ){
     event.removeTaus();
     event.applyLeptonConeCorrection();
     event.cleanElectronsFromLooseMuons();
@@ -67,8 +67,14 @@ bool passClosureTestEventSelection( Event& event ){
     size_t numberOfNonPromptLeptons = 0;
     size_t numberOfPromptLeptons = 0;
     for( auto& leptonPtr : event.lightLeptonCollection() ){
-        if( !leptonPtr->isPrompt() && leptonPtr->matchPdgId() != 22 ) ++numberOfNonPromptLeptons;
-        else if( leptonPtr->isPrompt() && leptonPtr->matchPdgId() != 22 ) ++numberOfPromptLeptons;
+        //if( !leptonPtr->isPrompt() && leptonPtr->matchPdgId() != 22 ){
+        if( !leptonPtr->isPrompt() ){
+            if( requireMuon && !leptonPtr->isMuon() ) continue;
+            if( requireElectron && !leptonPtr->isElectron() ) continue;
+            ++numberOfNonPromptLeptons;
+        }
+        //else if( leptonPtr->isPrompt() && leptonPtr->matchPdgId() != 22 ) ++numberOfPromptLeptons;
+        else if( leptonPtr->isPrompt() ) ++numberOfPromptLeptons;
     }
     if( numberOfNonPromptLeptons < 1 ) return false;
     if( ( numberOfNonPromptLeptons + numberOfPromptLeptons ) != 3 ) return false;
@@ -97,7 +103,7 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
 }
 
 
-void closureTest_MC( const std::string& process, const std::string& year, const std::string& sampleDirectory ){
+void closureTest_MC( const std::string& process, const std::string& year, const std::string& sampleDirectory, const std::string& flavor = ""){
 
     analysisTools::checkYearString( year );
 
@@ -105,6 +111,9 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
     if( ! (process == "TT" || process == "DY" ) ){
         throw std::invalid_argument( "Given closure test process argument is '" + process + "' while it should be DY or TT." );
     }
+
+    bool onlyMuonFakes = ( flavor == "muon" );
+    bool onlyElectronFakes = ( flavor == "electron" );
 
     //make collection of histograms
     std::vector< std::shared_ptr< TH1D > > observedHists; 
@@ -132,7 +141,7 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
             Event event = treeReader.buildEvent( entry );
 
             //apply event selection
-            if( !passClosureTestEventSelection( event ) ) continue;
+            if( !passClosureTestEventSelection( event, onlyMuonFakes, onlyElectronFakes ) ) continue;
 
             //light lepton collection
             LightLeptonCollection lightLeptons = event.lightLeptonCollection();
@@ -187,6 +196,9 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
 
 	//make plot output directory
     std::string outputDirectory_name = "./closurePlots_MC_" + process + "_" + year; 
+    if( flavor != "" ){
+        outputDirectory_name += ( "_" + flavor );
+    }
 	systemTools::makeDirectory( outputDirectory_name );
     
     //make plots 
@@ -205,12 +217,19 @@ void closureTest_MC( const std::string& process, const std::string& year, const 
         for( int b = 1; b < systUnc->GetNbinsX() + 1; ++b ){
             systUnc->SetBinContent( b , systUnc->GetBinContent(b)*0.3 );
         }
-       	plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, stringTools::formatDirectoryName( outputDirectory_name ) + histInfoVec[v].name() + "_" + process + "_" + year + ".pdf", "", false, false, header, systUnc);
+        if( flavor == "" ){
+       	    plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, stringTools::formatDirectoryName( outputDirectory_name ) + histInfoVec[v].name() + "_" + process + "_" + year + ".pdf", "", false, false, header, systUnc);
+        } else {
+       	    plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, stringTools::formatDirectoryName( outputDirectory_name ) + histInfoVec[v].name() + "_" + process + "_" + year + "_" + flavor + ".pdf", "", false, false, header, systUnc);
+        }
     }
 }
 
 
 int main(){
+
+    //const std::string ntupleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino";
+    const std::string ntupleDirectory = "~/Work/ntuples_ewkino_new/";
 
     setTDRStyle();
 
@@ -218,17 +237,63 @@ int main(){
     ROOT::EnableThreadSafety();
 
 	//make threads to run different closure tests 
-    std::vector< std::thread > threadVector;
-    threadVector.reserve( 6 );
+    closureTest_MC( "DY", "2016", ntupleDirectory, "" );
+    closureTest_MC( "DY", "2017", ntupleDirectory, "" );
+    closureTest_MC( "DY", "2018", ntupleDirectory, "" );
+    closureTest_MC( "TT", "2016", ntupleDirectory, "" );
+    closureTest_MC( "TT", "2017", ntupleDirectory, "" );
+    closureTest_MC( "TT", "2018", ntupleDirectory, "" );
+
+    closureTest_MC( "DY", "2016", ntupleDirectory, "muon" );
+    closureTest_MC( "DY", "2017", ntupleDirectory, "muon" );
+    closureTest_MC( "DY", "2018", ntupleDirectory, "muon" );
+    closureTest_MC( "TT", "2016", ntupleDirectory, "muon" );
+    closureTest_MC( "TT", "2017", ntupleDirectory, "muon" );
+    closureTest_MC( "TT", "2018", ntupleDirectory, "muon" );
+
+    closureTest_MC( "DY", "2016", ntupleDirectory, "electron" );
+    closureTest_MC( "DY", "2017", ntupleDirectory, "electron" );
+    closureTest_MC( "DY", "2018", ntupleDirectory, "electron" );
+    closureTest_MC( "TT", "2016", ntupleDirectory, "electron" );
+    closureTest_MC( "TT", "2017", ntupleDirectory, "electron" );
+    closureTest_MC( "TT", "2018", ntupleDirectory, "electron" );
+    //std::vector< std::thread > threadVector;
+    //threadVector.reserve( 6 );
+    //for( const auto& process : {"TT", "DY" } ){
+    //    for( const auto& year : {"2016", "2017", "2018" } ){
+    //        threadVector.emplace_back( closureTest_MC, process, year, "~/Work/ntuples_ewkino_new/", "" );
+    //    }
+    //}
+
+    //for( auto& t : threadVector ){
+    //    t.join();
+    //}
+
+    /*
+    std::vector< std::thread > threadVector_muon;
+    threadVector_muon.reserve( 6 );
     for( const auto& process : {"TT", "DY" } ){
         for( const auto& year : {"2016", "2017", "2018" } ){
-            threadVector.emplace_back( closureTest_MC, process, year, "~/Work/ntuples_ewkino_new/" );
+            threadVector_muon.emplace_back( closureTest_MC, process, year, "~/Work/ntuples_ewkino_new/", "muon" );
         }
     }
 
-    for( auto& t : threadVector ){
+    for( auto& t : threadVector_muon ){
         t.join();
     }
+
+    std::vector< std::thread > threadVector_electron;
+    threadVector_electron.reserve( 6 );
+    for( const auto& process : {"TT", "DY" } ){
+        for( const auto& year : {"2016", "2017", "2018" } ){
+            threadVector_electron.emplace_back( closureTest_MC, process, year, "~/Work/ntuples_ewkino_new/", "electron" );
+        }
+    }
+
+    for( auto& t : threadVector_electron ){
+        t.join();
+    }
+    */
  
     return 0;
 }

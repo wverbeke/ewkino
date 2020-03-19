@@ -104,7 +104,7 @@ std::map< std::string, double > fakeRate::mapTriggerToJetPtThreshold( const std:
     
 
 //event selection for fake-rate measurement 
-bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool onlyElectrons, bool onlyTightLeptons, bool requireJet, double jetDeltaRCut ){
+bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool onlyElectrons, bool onlyTightLeptons, bool requireJet, double jetDeltaRCut, double jetPtCut ){
 
     //ignore taus here since we are measuring light lepton fake-rate
     event.removeTaus();
@@ -144,6 +144,7 @@ bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool on
         //apply cut on deltaR between lepton and any of the selected jets 
         double maxDeltaR = 0;
         for( auto jetPtr : event.jetCollection() ){
+            if( jetPtr->pt() < jetPtCut ) continue;
             double currentDeltaR = deltaR( lepton, *jetPtr );
             if( currentDeltaR > maxDeltaR ){
                 maxDeltaR = currentDeltaR;

@@ -26,6 +26,11 @@
 #include "../plotting/tdrStyle.h"
 #include "../plotting/plotCode.h"
 #include "../weights/interface/ConcreteReweighterFactory.h"
+#include "../weights/interface/ConcreteLeptonReweighter.h"
+#include "../weights/interface/ConcreteReweighterLeptons.h"
+#include "../weights/interface/ConcreteSelection.h"
+
+
 
 
 HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, const double max, const bool useMT = true){
@@ -78,7 +83,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
     //build a reweighter for scaling MC events
     std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
-
+    
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
         //load next sample
@@ -91,13 +96,15 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
 			//apply event selection, note that event is implicitly modified (lepton selection etc)
             //cone-correction is applied
             //select tight leptons for prescale measurement : onlyMuons = false / onlyElectrons = false / onlyTightLeptons = true / requireJet = false
-            if( !fakeRate::passFakeRateEventSelection( event, false, false, true, false ) ) continue;
+            if( !fakeRate::passFakeRateEventSelection( event, false, false, true, true, 0.7, 40 ) ) continue;
 
             LightLepton& lepton = event.lightLepton(0);
             double mT = mt( lepton, event.met() );
 
             if( mT <= mtCut ) continue;
             if( event.metPt() <= metCut ) continue;
+
+            if( mT > maxBin ) continue;
 
             //compute event weight
             double weight = event.weight();
@@ -124,6 +131,13 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
 
                 //check if any trigger jet threshold must be applied and apply it
                 if( !fakeRate::passTriggerJetSelection( event, trigger, jetPtCutMap ) ) continue;
+                /*
+                event.selectGoodJets();
+                event.cleanJetsFromLooseLeptons();
+                if( event.numberOfJets() < 1 ) continue;
+                event.sortJetsByPt();
+                if( event.jet(0).pt() < 40 ) continue;
+                */
                 
                 double valueToFill = ( useMT ? mT : event.metPt() );
 
@@ -179,6 +193,37 @@ void write2DHistogramMap( const RangedMap< RangedMap< std::shared_ptr< TH1D > > 
 }
 
 
+std::shared_ptr< Reweighter > makeLeptonReweighter( const std::string& year, const bool isMuon, const bool isFO){
+
+    std::string flavorString = ( isMuon ? "m" : "e" );
+    std::string wpString = ( isFO ? "FO" : "3lTight" );
+    const std::string weightDirectory = "../weights/";
+    TFile* leptonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_" + flavorString + "_" + year + "_" + wpString + ".root" ).c_str() );
+    std::shared_ptr< TH2 > leptonSFHist( dynamic_cast< TH2* >( leptonSFFile->Get( "EGamma_SF2D" ) ) );
+    leptonSFHist->SetDirectory( gROOT );
+    leptonSFFile->Close();
+
+    if( isMuon ){
+        if( isFO ){
+            MuonReweighter muonReweighter( leptonSFHist, new FOSelector );
+            return std::make_shared< ReweighterMuons >( muonReweighter );
+        } else {
+            MuonReweighter muonReweighter( leptonSFHist, new TightSelector );
+            return std::make_shared< ReweighterMuons >( muonReweighter );
+        }
+    } else {
+        if( isFO ){
+            ElectronIDReweighter electronIDReweighter( leptonSFHist, new FOSelector );
+            return std::make_shared< ReweighterElectronsID >( electronIDReweighter );
+        } else {
+            ElectronIDReweighter electronIDReweighter( leptonSFHist, new TightSelector );
+            return std::make_shared< ReweighterElectronsID >( electronIDReweighter );
+        }
+        return nullptr;
+    }
+}
+
+
 //function to fill MT shape histogram for numerator and denominator
 void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const std::string& year, const std::string& sampleDirectory, const std::vector< std::string >& triggerVector, const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet){
 
@@ -209,7 +254,7 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
     }
 
     //MAKE THE NUMBER OF MT OR MET BINS ADAPTIVE
-    unsigned numberOfMTBins = 100; 
+    unsigned numberOfMTBins = 16; 
     HistInfo mtHistInfo( "mT", "m_{T}( GeV )", numberOfMTBins, 0., 160. );
 
     //make 2D RangedMap mapping each bin to a histogram
@@ -224,8 +269,27 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
     //map lepton pT to trigger 
     RangedMap< std::string > leptonPtToTriggerMap = fakeRate::mapLeptonPtToTriggerName( triggerVector, isMuonMeasurement );
 
+
+    //map cone pT to trigger
+    std::map< double, std::string > conePtLowerBoundMap;
+    for( auto it = leptonPtToTriggerMap.cbegin(); it != leptonPtToTriggerMap.cend(); ++it ){
+        double conePtBound;
+        if( it == leptonPtToTriggerMap.cbegin() ){
+            conePtBound = it->first;
+        } else {
+            if( isMuonMeasurement ){
+                conePtBound = 2*it->first;
+            } else {
+                conePtBound = 1.5*it->first;
+            }
+        }
+        conePtLowerBoundMap[ conePtBound ] = it->second;
+    }
+    RangedMap< std::string > conePtToTriggerMap( conePtLowerBoundMap );
+
+
     //map trigger to lepton and jet pT thresholds
-    std::map< std::string, double > triggerToLeptonPtMap = fakeRate::mapTriggerToLeptonPtThreshold( triggerVector );
+    //std::map< std::string, double > triggerToLeptonPtMap = fakeRate::mapTriggerToLeptonPtThreshold( triggerVector );
     std::map< std::string, double > triggerToJetPtMap = fakeRate::mapTriggerToJetPtThreshold( triggerVector );
 
     //initialize TreeReader
@@ -234,6 +298,14 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
     //build a reweighter for scaling MC events
     std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
+
+    //remove lepton weights from reweighter so a separate FO and tight reweighter can be made
+    reweighter.eraseReweighter( "muonID" );
+    reweighter.eraseReweighter( "electronID" );
+
+    //make FO and tight reweighters
+    std::shared_ptr< Reweighter > FOReweighter = makeLeptonReweighter( year, isMuonMeasurement, true );
+    std::shared_ptr< Reweighter > tightReweighter = makeLeptonReweighter( year, isMuonMeasurement, false );
 
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
 
@@ -245,7 +317,7 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
             Event event = treeReader.buildEvent( entry, true, false );
 
             //apply event selection, note that event is implicitly modified (lepton selection etc)
-            if( !fakeRate::passFakeRateEventSelection( event, isMuonMeasurement, !isMuonMeasurement, false, true, 1 ) ) continue;
+            if( !fakeRate::passFakeRateEventSelection( event, isMuonMeasurement, !isMuonMeasurement, false, true, 0.7, 30 ) ) continue;
 
             LightLepton& lepton = event.lightLepton( 0 );
             
@@ -253,7 +325,11 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
             if( lepton.pt() < 10 ) continue;
 
             //compute mT for event binning
-            double mT = mt( lepton, event.met() );
+            //use fixed lepton pT 'mTFix to avoid correlation between mT and lepton pT when measuring the fake-rate
+            //double mT = mt( lepton, event.met() );
+            const double pTFix = 35.;
+            PhysicsObject leptonFix( pTFix, lepton.eta(), lepton.phi(), lepton.energy() );
+            double mT = mt( leptonFix, event.met() );
 
             //apply upper cuts on mT  and met 
             if( mT >= maxMT ) continue;
@@ -262,7 +338,8 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
 
             //IMPORTANT : apply correct trigger
             //if( !fakeRate::passFakeRateTrigger( event, leptonPtToTriggerMap ) ) continue;
-            std::string triggerToUse = leptonPtToTriggerMap[ lepton.uncorrectedPt() ];
+            //std::string triggerToUse = leptonPtToTriggerMap[ lepton.uncorrectedPt() ];
+            std::string triggerToUse = conePtToTriggerMap[ lepton.pt() ];
             if( !event.passTrigger( triggerToUse ) ) continue;
 
             //check if any trigger jet threshold must be applied and apply it
@@ -278,13 +355,22 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
 
             //fill numerator
             if( lepton.isTight() ){
+                double tightWeight = 1.;
+                if( event.isMC() ){
+                    tightWeight = tightReweighter->weight( event );
+                }
                 if( treeReader.isData() ){
                     data_numerator_map[ lepton.pt() ][ lepton.absEta() ]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), weight );
                 } else if( lepton.isPrompt() ){
-                    prompt_numerator_map[ lepton.pt() ][ lepton.absEta() ]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), weight );
+                    prompt_numerator_map[ lepton.pt() ][ lepton.absEta() ]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), weight*tightWeight );
                 } else {
-                    nonprompt_numerator_map[ lepton.pt() ][ lepton.absEta() ]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), weight );
+                    nonprompt_numerator_map[ lepton.pt() ][ lepton.absEta() ]->Fill( std::min( mT, mtHistInfo.maxBinCenter() ), weight*tightWeight );
                 }
+            }
+
+            //add FO weight after numerator has been filled
+            if( event.isMC() ){
+                weight *= FOReweighter->weight( event );    
             }
 
             //fill denominator
@@ -326,13 +412,13 @@ int main( int argc, char* argv[] ){
     }
 
     //configuration
-    const double metLowerCut_prescaleMeasurement = 20;
+    const double metLowerCut_prescaleMeasurement = 40;
     const double mTLowerCut_prescaleMeasurement = 0;
-    const double mTLowerCut_prescaleFit = 80;
+    const double mTLowerCut_prescaleFit = 90;
     const double mTUpperCut_prescaleFit = 130;
     const double metUpperCut_fakeRateMeasurement = 20;
     const double mTUpperCut_fakeRateMeasurement = 160;
-    const double maxFitValue = 20;
+    const double maxFitValue = 40;
     const bool use_mT = true;
     const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate";
 
