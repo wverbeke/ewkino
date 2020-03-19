@@ -92,10 +92,15 @@ std::shared_ptr< TH1D > QuantileBinner::rebinnedHistogram( const TH1* histogramP
 
 
 std::vector< double > exponentialBinningQuantiles( const double totalYield, const double eventsInLastBin, const double binRatio, const double lumiRatio ){
-    std::vector< double > quantileVector;
 
     //we want to have eventsInLastBin event at an intergrated luminosity of targetLumi
-    double lastQuantile = eventsInLastBin * lumiRatio / totalYield;
+    double eventsInLastBinCorrected = eventsInLastBin * lumiRatio;
+    if( eventsInLastBinCorrected >= totalYield ){
+        return { 1. };
+    }
+    
+    double lastQuantile = eventsInLastBinCorrected / totalYield;
+    std::vector< double > quantileVector;
     quantileVector.push_back( lastQuantile );
 
     double quantileSum = lastQuantile;
