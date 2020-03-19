@@ -44,12 +44,16 @@ void determineMagicFactor( const std::string& leptonFlavor, const double mvaThre
             //preselect loose leptons
             //magic factor tuning will happen before FO definition is final
             event.selectLooseLeptons();
+            event.cleanElectronsFromLooseMuons();
         
             for( const auto& leptonPtr : event.lightLeptonCollection() ){
 
                 //select correct lepton flavor
                 if( isMuon && !leptonPtr->isMuon() ) continue;
                 if( !isMuon && !leptonPtr->isElectron() ) continue;
+
+                //apply baseline pT cut 
+                if( leptonPtr->uncorrectedPt() <= 10 ) continue;
 
                 //apply cone-correction to leptons failing the MVA cut 
                 double ptVal = leptonPtr->pt();
