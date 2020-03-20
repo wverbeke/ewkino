@@ -41,3 +41,10 @@ def initializeJobScript( script ):
     script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
     script.write('cd {}/src\n'.format( current_CMSSW_version ) )
     script.write('eval `scram runtime -sh`\n')
+
+
+def runCommandAsJob( command, script_name, wall_time = '24:00:00', num_threads = 1, high_memory = False ):
+    with open( script_name, 'w' ) as script:
+        initializeJobScript( script )
+        script.write( command )
+    submitQsubJob( script_name, wall_time, num_threads, high_memory )
