@@ -2,6 +2,7 @@
 #include python library classes
 import subprocess
 import time
+import os
 
 #submit script of given name as a job with given wall-time ( Copied from my DeepLearning repository, consider making a submodule for jobsubmission )
 def submitQsubJob( script_name, wall_time = '24:00:00', num_threads = 1, high_memory = False):
@@ -41,10 +42,13 @@ def initializeJobScript( script ):
     script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
     script.write('cd {}/src\n'.format( current_CMSSW_version ) )
     script.write('eval `scram runtime -sh`\n')
+    working_directory = os.path.abspath( os.getcwd() )
+    script.write('cd {}\n'.format( working_directory ) )
+
 
 
 def runCommandAsJob( command, script_name, wall_time = '24:00:00', num_threads = 1, high_memory = False ):
     with open( script_name, 'w' ) as script:
         initializeJobScript( script )
-        script.write( command )
+        script.write( command + '\n' )
     submitQsubJob( script_name, wall_time, num_threads, high_memory )
