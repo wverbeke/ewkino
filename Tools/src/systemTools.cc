@@ -51,14 +51,14 @@ bool systemTools::fileExists( const std::string& fileName ){
 //check if file name is already in use, and return a randomized filename if it is 
 std::string systemTools::uniqueFileName( const std::string& fileName ){
 
+    //always add a random element to prefer cases where making the random file name happens while another script is just producing the same file
 	std::string uniqueName = fileName;
-    while( systemTools::fileExists( uniqueName ) ){
-
+    do{
         std::pair< std::string, std::string> fileAndExtension = stringTools::splitFileExtension( fileName );
 
         //add random number to temporary file name
         uniqueName = fileAndExtension.first + "_" + std::to_string( std::rand() ) + fileAndExtension.second;
-    }
+    } while( systemTools::fileExists( uniqueName ) );
 	return uniqueName;
 } 
 
@@ -202,9 +202,6 @@ void systemTools::submitScript( const std::string& scriptName, const std::string
     bool submitted = false;
     do{
 
-        //submit script and pipe output to text file to check if submission succeeded
-        std::string outFileName =  systemTools::uniqueFileName( "submissionOutput.txt" );
-        
         //check if extra arguments are given, specifying the number of threads or the submission queue 
         std::string extraArguments;
         if( queue != "" ){
@@ -213,6 +210,9 @@ void systemTools::submitScript( const std::string& scriptName, const std::string
         if( numberOfThreads != 1 ){
             extraArguments += ( " -lnodes=1:ppn=" + std::to_string( numberOfThreads ) );
         }
+
+        //submit script and pipe output to text file to check if submission succeeded
+        std::string outFileName =  systemTools::uniqueFileName( "submissionOutput.txt" );
 
         system( "qsub " + scriptName + " -l walltime=" + walltime + extraArguments + " > " + outFileName + " 2>> " + outFileName );
         std::ifstream submissionOutput(outFileName);
