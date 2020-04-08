@@ -29,7 +29,7 @@ version_name = 'Run2017E_test'
 sample_list = '../samplelists/samplelist_all.txt'
 output_directory_base = '/storage_mnt/storage/user/llambrec/ewkino/test/testData/skimmed'
 # fixed argument for now, but should be easy to adapt to allow different skimming conditions
-skim_condition = 'trilepton'
+skim_condition = 'trifolepton'
 
 # if too few command line args, check with the user if default arguments can be used
 if len(sys.argv) < 4:
@@ -78,6 +78,14 @@ if not os.path.exists(sample_list):
     sys.exit()
 else:
     sample_list = os.path.abspath(sample_list)
+
+# check if output directory is empty and ask permission to clean it
+if os.path.exists(output_directory_base):
+    if not len(os.listdir(output_directory_base))==0:
+	print('### WARNING ###: output directory not empty. Clean it? (y/n)')
+	go = raw_input()
+	if not go=='y': sys.exit()
+	os.system('rm -r {}'.format(os.path.join(output_directory_base,'*')))
 
 # make a list of sample names to use
 samples_to_use = []

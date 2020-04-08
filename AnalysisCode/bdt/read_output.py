@@ -164,18 +164,19 @@ def plotROCroot(effB,effS,colorlist,labellist,outfigpath,outfigname,title):
 
 ### driver code
 
-sdirname = 'configs' # subdirectory to scan for output files
-if len(sys.argv)==2:
-    sdirname = sys.argv[1]
-clist = sortbyauc(getlogfiles(sdirname),printout=True)
-plotauc(clist)
+if __name__=="__main__":
+    sdirname = 'configs' # subdirectory to scan for output files
+    if len(sys.argv)==2:
+	sdirname = sys.argv[1]
+    clist = sortbyauc(getlogfiles(sdirname),printout=True)
+    plotauc(clist)
 
-'''(effB,effS,paths) = getrocs(sdirname)
-labels = []
-for path in paths:
-    label = ''
-    idx = path.find('jobn')
-    if idx>=0: label = str(int(path[idx+4])+1)+' variables'
-    labels.append(label)
-colors = list(range(len(effB)))
+    '''(effB,effS,paths) = getrocs(sdirname)
+    labels = []
+    for path in paths:
+	label = ''
+	idx = path.find('jobn')
+	if idx>=0: label = str(int(path[idx+4])+1)+' variables'
+	labels.append(label)
+    colors = list(range(len(effB)))
 plotROCroot(effB,effS,colors,labels,'','test','a plot')'''

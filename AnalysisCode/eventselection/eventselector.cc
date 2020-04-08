@@ -33,7 +33,8 @@ bool checkReadability(const std::string& pathToFile){
 }
 
 void eventloopES(const std::string& pathToFile, const std::string& outputDirectory,
-			const std::string& eventselection){
+			const std::string& outputFileName,
+			const std::string& eventselection, const bool isnpbackground){
     
     // initialize TreeReader
     TreeReader treeReader;
@@ -43,7 +44,12 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
     std::string outputdir = "blackJackAndHookers";
     std::string outputtree = "blackJackAndHookersTree";
     std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory );
-    outputFilePath += stringTools::removeOccurencesOf( pathToFile, "/" );
+    //outputFilePath += stringTools::removeOccurencesOf( pathToFile, "/" );
+    outputFilePath += outputFileName;
+    if(isnpbackground){
+	outputFilePath = stringTools::removeOccurencesOf(outputFilePath, ".root");
+	outputFilePath += "_nonprompt_background.root";
+    }
     TFile* outputFilePtr = TFile::Open( outputFilePath.c_str() , "RECREATE" );
     outputFilePtr->mkdir( outputdir.c_str() );
     outputFilePtr->cd( outputdir.c_str() );
@@ -64,7 +70,7 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
 	    if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
 	    Event event = treeReader.buildEvent(entry,true,true);
-	    if(!passES(event,eventselection)) continue;
+	    if(!passES(event,eventselection,isnpbackground)) continue;
 	    outputTreePtr->Fill();
     }
     outputTreePtr->Write("", BIT(2) );
@@ -72,18 +78,21 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
 }
 
 int main( int argc, char* argv[] ){
-    if( argc != 4 ){
-        std::cerr << "event selection requires exactly three arguments to run: ";
-	std::cerr << "input_file_path, output_directory, event_selection" << std::endl;
+    if( argc != 6 ){
+        std::cerr << "event selection requires exactly five arguments to run: " << std::endl;
+	std::cerr << "input_file_path, output_directory, output_file_name, ";
+	std::cerr << "event_selection, isnpbackground" << std::endl;
         return -1;
     }
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
     std::string& input_file_path = argvStr[1];
     std::string& output_directory = argvStr[2];
-    std::string& event_selection = argvStr[3];
+    std::string& output_file_name = argvStr[3];
+    std::string& event_selection = argvStr[4];
+    const bool isnpbackground = (argvStr[5]=="True" || argvStr[5]=="true");
     bool validInput = checkReadability( input_file_path );
     if(!validInput){return -1;}
-    eventloopES( input_file_path, output_directory, event_selection );
+    eventloopES( input_file_path, output_directory, output_file_name, event_selection, isnpbackground );
     std::cout<<"done"<<std::endl;
     return 0;
 }

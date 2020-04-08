@@ -35,6 +35,7 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
         //select jets
         void selectGoodJets();
         JetCollection goodJetCollection() const;
+	void selectGoodtZqJets();
         void selectGoodAnyVariationJets();
         JetCollection goodAnyVariationJetCollection() const;
 

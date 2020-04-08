@@ -638,7 +638,7 @@ void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::
     //threading lock since root seems to misbehave when plotting multithreaded!
     //is there a lockless solution for this? Try to find out!
     static std::mutex plotMutex;
-    //initializeTDRStyle();
+    initializeTDRStyle();
 
     plotMutex.lock();
     static constexpr double width = 500;
@@ -647,14 +647,14 @@ void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::
 
     //set offset and label size 
     hist->GetXaxis()->SetTitleOffset( 0.75 );
-	hist->GetXaxis()->SetTitleSize( 0.07 );
+    hist->GetXaxis()->SetTitleSize( 0.07 );
     hist->GetYaxis()->SetTitleOffset( 1 );
     hist->GetYaxis()->SetTitleSize( 0.07 );
 
     hist->Draw( drawOption.c_str() );
-
     //make sure that the pdf file extension is always added, and not double added in case it was given as an argument
     std::string outputPath = stringTools::fileNameWithoutExtension( outputFileName ) + ".pdf";
+    std::cout<<outputPath<<std::endl;
     c->SaveAs( outputPath.c_str() );
 
     plotMutex.unlock();

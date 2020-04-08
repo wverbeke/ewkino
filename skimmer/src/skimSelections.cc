@@ -44,6 +44,14 @@ bool passFakeRateSkim( Event& event ){
     return true;
 }
 
+bool passTriFOLeptonSkim( Event& event){
+    // special skim for the TT and DY samples to be used in MC closure tests
+    event.removeTaus();
+    event.applyLeptonConeCorrection();
+    event.cleanElectronsFromLooseMuons();
+    event.selectFOLeptons();
+    return (event.numberOfLeptons() >= 3);
+}
 
 bool passSkim( Event& event, const std::string& skimCondition ){
     static std::map< std::string, std::function< bool(Event&) > > skimFunctionMap = {
@@ -52,7 +60,9 @@ bool passSkim( Event& event, const std::string& skimCondition ){
         { "dilepton", passDileptonSkim },
         { "trilepton", passTrileptonSkim },
         { "fourlepton", passFourLeptonSkim },
-        { "fakerate", passFakeRateSkim }
+        { "fakerate", passFakeRateSkim },
+	// added the following selection:
+	{ "trifolepton", passTriFOLeptonSkim }
     };
     auto it = skimFunctionMap.find( skimCondition );
     if( it == skimFunctionMap.cend() ){

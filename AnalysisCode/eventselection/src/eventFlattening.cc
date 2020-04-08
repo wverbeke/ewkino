@@ -64,10 +64,18 @@ void initOutputTree(TTree* outputTree){
 void eventToEntry(Event& event, double norm){
     // fill one entry in outputTree (initialized with initOutputTree), based on the info of one event.
     // Note that the event must be cleaned and processed by an event selection function first!
-    
+
+    //std::cout<<"------------"<<std::endl;    
     // sort leptons and jets by pt, get b-jet collection
     event.sortJetsByPt();
     event.sortLeptonsByPt();
+
+    for(LeptonCollection::const_iterator lIt = event.leptonCollection().cbegin();
+	    lIt!=event.leptonCollection().cend(); lIt++){
+	Lepton& l = **lIt;
+	//std::cout<<l<<std::endl;
+	if(l.isElectron()) std::cout<<"found electron"<<std::endl;
+    }
 
     // event id variables 
     _runNb = event.runNumber();
@@ -84,6 +92,7 @@ void eventToEntry(Event& event, double norm){
     _nJets = event.numberOfJets();
     _nBJets = event.numberOfMediumBTaggedJets();
     _MT = event.mtW();
+    //std::cout<<"checkpoint 1"<<std::endl;
 
     // find lepton from W and set its properties
     // (will this work on e.g. the ZZ control region where in principle no lepton from W is present?)
@@ -92,6 +101,7 @@ void eventToEntry(Event& event, double norm){
     for(int i=0; i<lWindex; i++){++lIt;}
     Lepton& lW = **lIt;
     _lW_asymmetry = fabs(lW.eta())*lW.charge();
+    //std::cout<<"checkpoint 2"<<std::endl;
 
     // find leptons from Z
     std::pair< int, int > zbosonresults = event.bestZBosonCandidateIndices();
@@ -107,6 +117,7 @@ void eventToEntry(Event& event, double norm){
     //std::cout<<lZ1<<std::endl;
     //std::cout<<lZ2<<std::endl;
     //std::cout<<""<<std::endl;
+    //std::cout<<"checkpoint 4"<<std::endl;
     
     // top reconstruction
     std::pair< double, double > pmz = pmzcandidates(event, lW);
@@ -117,6 +128,7 @@ void eventToEntry(Event& event, double norm){
     int taggedbindex = topresults.second;
     if(event.numberOfMediumBTaggedJets()==0) taggedbindex = 0;
     //std::cout<<topresults.first<<std::endl;
+    //std::cout<<"checkpoint 5"<<std::endl;
 
     // find index of recoiling jet
     int recoilindex = -1;
@@ -129,6 +141,7 @@ void eventToEntry(Event& event, double norm){
     }
     //std::cout<<taggedbindex<<std::endl;
     //std::cout<<recoilindex<<std::endl;
+    //std::cout<<"checkpoint 6"<<std::endl;
 
     // loop over jets and find relevant quantities
     _abs_eta_max = 0;
@@ -150,23 +163,25 @@ void eventToEntry(Event& event, double norm){
         } 
     }
     //std::cout<<_deepCSV_max<<std::endl;
+    //std::cout<<"checkpoint 7"<<std::endl;
     
     _dRlWrecoil = 0;
     _dRlWbtagged = 0;
     _abs_eta_recoil = 0;
-    if(recoilindex>=0){
+    if(recoilindex>=0 and event.numberOfJets()>0){
 	JetCollection::const_iterator jIt = event.jetCollection().cbegin();
 	for(int i=0; i<recoilindex; i++){jIt++;}
 	Jet& recoiljet = **jIt;
 	_dRlWrecoil = deltaR(lW,recoiljet);
 	_abs_eta_recoil = fabs(recoiljet.eta());
     }
-    if(taggedbindex>=0){
-	JetCollection::const_iterator jIt = event.jetCollection().cbegin();
-	for(int i=0; i<taggedbindex; i++){jIt++;}
-	Jet& taggedbjet = **jIt;
+    if(taggedbindex>=0 and event.numberOfJets()>0){
+	JetCollection::const_iterator tbjIt = event.jetCollection().cbegin();
+	for(int i=0; i<taggedbindex; i++){tbjIt++;}
+	Jet& taggedbjet = **tbjIt;
 	_dRlWbtagged = deltaR(lW,taggedbjet);
     }
+    //std::cout<<"checkpoint 8"<<std::endl;
 
     // loop over leptons and find some kinematic properties
     _dRlb_min = 99;
@@ -186,6 +201,7 @@ void eventToEntry(Event& event, double norm){
         }
     }
     _M3l = event.leptonSystem().mass();
+    //std::cout<<"checkpoint 9"<<std::endl;
 }
 
 std::pair<double,double> pmzcandidates(Event& event, Lepton& lW){
@@ -208,7 +224,7 @@ std::pair<double,double> pmzcandidates(Event& event, Lepton& lW){
     C += -mW*mW*(plx*pmx+ply*pmy);
     double discr = B*B - 4*A*C;
     if(discr<0){
-        std::cout<<"### WARNING ###: negative discriminant found."<<std::endl;
+        //std::cout<<"### WARNING ###: negative discriminant found."<<std::endl;
         discr = 0;
     }
     pmz.first = (-B + std::sqrt(discr))/(2*A);

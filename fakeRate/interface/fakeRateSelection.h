@@ -20,7 +20,7 @@ namespace fakeRate{
     RangedMap< std::string > mapElectronPtToTriggerName( const std::vector< std::string >& triggerNames );
 
     //bool passFakeRateTrigger( const Event& event, RangedMap< std::string >& triggerThresholdMap  );
-    bool passFakeRateEventSelection( Event& event, bool onlyMuon = false, bool onlyElectrons = false, bool onlyTightLeptons = false, bool requireJet = true, double jetDeltaRCut = 1);
+    bool passFakeRateEventSelection( Event& event, bool onlyMuon = false, bool onlyElectrons = false, bool onlyTightLeptons = false, bool requireJet = true, double jetDeltaRCut = 1, double jetPtCut = 25);
 
     bool passTriggerJetSelection( Event& event, const std::string& trigger, std::map< std::string, double >& triggerToJetPtMap );
 

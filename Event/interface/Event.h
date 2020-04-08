@@ -56,6 +56,7 @@ class Event{
 
         unsigned numberOfVertices() const{ return _numberOfVertices; }
         double weight() const{ return _weight; }
+	double scaledWeight() const{ return _scaledWeight; }
 
         double HT() const{ return _jetCollectionPtr->scalarPtSum(); }
         double LT() const{ return _leptonCollectionPtr->scalarPtSum(); }
@@ -63,6 +64,7 @@ class Event{
         
         //jet selection and cleaning
         void selectGoodJets() const{ _jetCollectionPtr->selectGoodJets(); }
+	void selectGoodtZqJets() const{ _jetCollectionPtr->selectGoodtZqJets(); }
         void cleanJetsFromLooseLeptons( const double coneSize = 0.4 ) const{ _jetCollectionPtr->cleanJetsFromLooseLeptons( *_leptonCollectionPtr, coneSize ); }
         void cleanJetsFromFOLeptons( const double coneSize = 0.4 ) const{ _jetCollectionPtr->cleanJetsFromFOLeptons( *_leptonCollectionPtr, coneSize ); }
         void cleanJetsFromTightLeptons( const double coneSize = 0.4 ) const{ _jetCollectionPtr->cleanJetsFromTightLeptons( *_leptonCollectionPtr, coneSize ); }
@@ -218,6 +220,7 @@ class Event{
         SusyMassInfo* _susyMassInfoPtr = nullptr;
         unsigned _numberOfVertices = 0;
         double _weight = 1;
+	double _scaledWeight = 1;
         const Sample* _samplePtr = nullptr;
 
         //presence of Z boson

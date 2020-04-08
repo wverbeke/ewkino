@@ -148,16 +148,19 @@ bool MuonSelector::isTightBase() const{
 
 
 bool MuonSelector::isTight2016() const{
+    if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2016() ) return false;
     return true;
 }
 
 
 bool MuonSelector::isTight2017() const{
+    if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2017() ) return false;
     return true;
 }
 
 
 bool MuonSelector::isTight2018() const{
+    if( muonPtr->closestJetDeepFlavor() >= bTagWP::mediumDeepFlavor2018() ) return false;
     return true;
 }
 

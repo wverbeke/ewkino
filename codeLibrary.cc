@@ -52,3 +52,10 @@
 #include "weights/src/ReweighterPrefire.cc"
 #include "weights/src/CombinedReweighter.cc"
 #include "weights/src/ConcreteReweighterFactory.cc"
+
+//addition: include fakeRate code
+#include "fakeRate/src/CutsFitInfo.cc"
+#include "fakeRate/src/Prescale.cc"
+#include "fakeRate/src/fakeRateSelection.cc"
+#include "fakeRate/src/fakeRateTools.cc"
+#include "fakeRate/src/ConstantFit.cc"

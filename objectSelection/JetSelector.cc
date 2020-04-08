@@ -10,7 +10,7 @@ Jet ID selection
 bool JetSelector::isGoodBase() const{
     if( !jetPtr->isTight() ) return false;
     if( jetPtr->pt() < 25 ) return false;
-    if( fabs( jetPtr->eta() ) > 5.0 ) return false;
+    if( fabs( jetPtr->eta() ) > 2.4 ) return false;
     return true;
 }
 
@@ -21,10 +21,6 @@ bool JetSelector::isGood2016() const{
 
 
 bool JetSelector::isGood2017() const{
-    // additional pt cut for jets with 2.7 < abs(eta) < 3.0
-    if( fabs( jetPtr->eta() ) > 2.7
-        and fabs( jetPtr->eta()) < 3.0
-        and jetPtr->pt() < 60 ) return false;
     return true;
 }
 
@@ -33,6 +29,25 @@ bool JetSelector::isGood2018() const{
     return true;
 }
 
+bool JetSelector::isGoodBasetZq() const{
+    // function to copy closely the tZq analysis note
+    if( !jetPtr->isTight() ) return false;
+    if( jetPtr->pt() < 25 ) return false;
+    if( fabs( jetPtr->eta() ) > 5.0 ) return false;
+    return true;
+}
+
+bool JetSelector::isGood2016tZq() const{ return isGood2016(); }
+
+bool JetSelector::isGood2017tZq() const{ 
+    // additional pt cut for jets with 2.7 < abs(eta) < 3.0
+    if( fabs( jetPtr->eta() ) > 2.7
+        and fabs( jetPtr->eta()) < 3.0
+        and jetPtr->pt() < 60 ) return false;
+    return true;
+}
+
+bool JetSelector::isGood2018tZq() const{ return isGood2018(); }
 
 /*
 b-tagging working points

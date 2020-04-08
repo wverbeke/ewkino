@@ -20,6 +20,8 @@ Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , 
     //_weight( treeReader._scaledWeight ),
     // WARNING: to allow more flexibility I will still use the normal _weight, but remember to scale when needed!
     _weight(treeReader._weight),
+    // now include scaledWeight as well for when needed (e.g. fake rate measurement)
+    _scaledWeight(treeReader._scaledWeight),
     _samplePtr( treeReader.currentSamplePtr() )
     {}
 

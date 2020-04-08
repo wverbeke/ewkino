@@ -72,23 +72,29 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
     std::map< std::string, double > leptonPtCutMap = fakeRate::mapTriggerToLeptonPtThreshold( triggerVector );
     std::map< std::string, double > jetPtCutMap = fakeRate::mapTriggerToJetPtThreshold( triggerVector );
 
-	//in this function we will loop over events and fill histograms for each trigger 
-   	TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt", sampleDirectoryPath);
+    //in this function we will loop over events and fill histograms for each trigger 
+    TreeReader treeReader( "sampleLists/samples_fakeRateMeasurement_" + year + ".txt", sampleDirectoryPath);
 
     //build a reweighter for scaling MC events
     std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
 
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
+	std::cout<<"sample "<<sampleIndex+1<<" of "<<treeReader.numberOfSamples()<<std::endl;
 
         //load next sample
         treeReader.initSample();
 
-        //loop over events in sample
-        for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
+	// reduce number of entries to run on for testing
+	unsigned numberOfEntries = (unsigned) treeReader.numberOfEntries()/100.;
+	if(treeReader.isData()) numberOfEntries = treeReader.numberOfEntries()/10;
+        
+	//loop over events in sample
+        for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
+	    if(entry%100000==0) std::cout<<"entry "<<entry+1<<" of "<<numberOfEntries<<std::endl; 
             Event event = treeReader.buildEvent( entry, true, false );
 
-			//apply event selection, note that event is implicitly modified (lepton selection etc)
+	    //apply event selection, note that event is implicitly modified (lepton selection etc)
             //cone-correction is applied
             //select tight leptons for prescale measurement : onlyMuons = false / onlyElectrons = false / onlyTightLeptons = true / requireJet = false
             if( !fakeRate::passFakeRateEventSelection( event, false, false, true, false ) ) continue;
@@ -104,6 +110,8 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
             if( event.isMC() ){
                 weight *= reweighter.totalWeight( event );
             }
+	    // modification with respect to original code:
+	    else{weight = 1;}
 
             for( const auto& trigger : triggerVector ){
 
@@ -111,11 +119,11 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
                 if( !event.passTrigger( trigger ) ) continue;
 
                 //check lepton flavor corresponding to this trigger
-				if( stringTools::stringContains( trigger, "Mu" ) ){
-					if( !lepton.isMuon() ) continue;
-				} else if( stringTools::stringContains( trigger, "Ele" ) ){
-					if( !lepton.isElectron() ) continue;
-				} else {
+		if( stringTools::stringContains( trigger, "Mu" ) ){
+		    if( !lepton.isMuon() ) continue;
+		} else if( stringTools::stringContains( trigger, "Ele" ) ){
+		    if( !lepton.isElectron() ) continue;
+		} else {
                     throw std::invalid_argument( "Can not measure prescale for trigger " + trigger + " since it is neither a muon nor electron trigger." );
                 }
 
@@ -140,17 +148,15 @@ void fillPrescaleMeasurementHistograms( const std::string& year, const std::stri
         }
     }
 
-	//write histograms to TFile 
+    //write histograms to TFile 
     TFile* histogram_file = TFile::Open( ( std::string("prescaleMeasurement_") + ( useMT ? "mT" : "met" ) + "_histograms_" + year + ".root" ).c_str(), "RECREATE" );
-	for( const auto& trigger : triggerVector ){
-		data_map[ trigger ]->Write();
-		prompt_map[ trigger ]->Write();
-		nonprompt_map[ trigger ]->Write();
-	}
+    for( const auto& trigger : triggerVector ){
+	data_map[ trigger ]->Write();
+	prompt_map[ trigger ]->Write();
+	nonprompt_map[ trigger ]->Write();
+    }
     histogram_file->Close();
 }
-
-
 
 RangedMap< RangedMap< std::shared_ptr< TH1D > > > build2DHistogramMap( const std::vector< double >& ptBinBorders, const std::vector< double >& etaBinBorders, const HistInfo& mtHistInfo, const std::string& name ){
     
@@ -236,12 +242,19 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, treeReader.sampleVector() );
 
     for( unsigned sampleIndex = 0; sampleIndex < treeReader.numberOfSamples(); ++sampleIndex ){
+	std::cout<<"sample "<<sampleIndex+1<<" of "<<treeReader.numberOfSamples()<<std::endl;
 
         //load next sample
         treeReader.initSample();
 
+	// reduce number of entries in loop for testing
+	unsigned numberOfEntries = (unsigned) treeReader.numberOfEntries()/100.;
+	if(treeReader.isData()) numberOfEntries = treeReader.numberOfEntries()/10.;
+	
         //loop over events in sample
-        for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
+        for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
+	    if(entry%100000==0) std::cout<<"entry "<<entry+1<<" of "<<numberOfEntries<<std::endl;
+
             Event event = treeReader.buildEvent( entry, true, false );
 
             //apply event selection, note that event is implicitly modified (lepton selection etc)
@@ -259,7 +272,6 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
             if( mT >= maxMT ) continue;
             if( event.metPt() >= maxMet ) continue;
 
-
             //IMPORTANT : apply correct trigger
             //if( !fakeRate::passFakeRateTrigger( event, leptonPtToTriggerMap ) ) continue;
             std::string triggerToUse = leptonPtToTriggerMap[ lepton.uncorrectedPt() ];
@@ -275,6 +287,8 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
                 weight *= prescale.value();
                 weight *= reweighter.totalWeight( event );
             }
+	    // modification with respect to original code
+	    else{ weight=1;}
 
             //fill numerator
             if( lepton.isTight() ){
@@ -310,8 +324,6 @@ void fillFakeRateMeasurementHistograms( const std::string& leptonFlavor, const s
 
     histogram_file->Close();
 }
-            
-
 
 int main( int argc, char* argv[] ){
 

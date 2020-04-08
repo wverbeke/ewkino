@@ -95,7 +95,7 @@ def getminmax(datahist,mchist,yaxlog):
     rangemax = histmax*np.power(histmax/rangemin,0.4)
     return (rangemin,rangemax)
 
-def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile):
+def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,outfile):
     
     tools.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -261,7 +261,8 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,outfile
     ROOT.gPad.RedrawAxis()
 
     # draw header
-    tools.drawLumi(pad1)
+    lumistr = '{0:.1f}'.format(lumi/1000.)
+    tools.drawLumi(pad1,lumitext=lumistr+" fb^{-1} (13 TeV)")
 
     ### make the lower part of the plot
     pad2.cd()
@@ -360,5 +361,5 @@ if __name__=="__main__":
         if not vardict['unit']=='':
             xaxtitle += '('+vardict['unit']+')'
 	figname = os.path.join(histdir,varname)
-	plotdatavsmc(datahist,mchistlist,None,yaxtitle,False,xaxtitle,figname+'_lin')
-	plotdatavsmc(datahist,mchistlist,None,yaxtitle,True,xaxtitle,figname+'_log')
+	plotdatavsmc(datahist,mchistlist,None,yaxtitle,False,xaxtitle,lumi,figname+'_lin')
+	plotdatavsmc(datahist,mchistlist,None,yaxtitle,True,xaxtitle,lumi,figname+'_log')

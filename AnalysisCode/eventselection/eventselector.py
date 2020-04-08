@@ -16,6 +16,14 @@ from jobSubmission import submitQsubJob, initializeJobScript
 # - output directory (containing analogous files but holding only selected events)
 # - name of the event selection to be applied
 
+nonpromptfromdata = True 
+# maybe later add as a command line argument
+# but for now process both nonprompt simulation as estimate from data
+
+def isdata(pathtofile):
+    # modify here how data samples should be recognized depending on the path and file name.
+    if('2016data' in pathtofile or '2017data' in pathtofile or '2018data' in pathtofile): return True
+
 if len(sys.argv) != 4:
 	print('### ERROR ###: eventselector.py requires a different number of command-line arguments.')
 	print('Normal usage from the command line:')
@@ -35,29 +43,32 @@ cwd = os.getcwd()
 inputfiles = []
 os.chdir(input_directory)
 for inputfile in glob.glob('*.root'):
-	inputfiles.append(os.path.join(input_directory,inputfile))
+    inputfiles.append(os.path.join(input_directory,inputfile))
 os.chdir(cwd)
 print('found '+str(len(inputfiles))+' root files in input directory.')
 
 # check if executable is present
 if not os.path.exists('./eventselector'):
-	print('### ERROR ###: eventselector executable was not found.')
-	print('Run make -f makeEventSelector before running this script.')
-	sys.exit()
+    print('### ERROR ###: eventselector executable was not found.')
+    print('Run make -f makeEventSelector before running this script.')
+    sys.exit()
+
+def submitjob(cwd,inputfile,output_directory,event_selection,isnpbackground):
+    script_name = 'eventselector.sh'
+    with open(script_name,'w') as script:
+        initializeJobScript(script)
+        script.write('cd {}\n'.format(cwd))
+        command = './eventselector {} {} {} {} {}'.format(inputfile,output_directory,
+						    inputfile.split('/')[-1],
+						    event_selection,isnpbackground)
+        script.write(command+'\n')
+    submitQsubJob(script_name)
+    # alternative: run locally
+    #os.system('bash '+script_name)
 
 # loop over input files and submit jobs
 for inputfile in inputfiles:
-	script_name = 'eventselector.sh'
-	with open(script_name,'w') as script:
-		initializeJobScript(script)
-		script.write('cd {}\n'.format(cwd))
-		command = './eventselector {} {} {}'.format(inputfile,output_directory,event_selection)
-		script.write(command+'\n')
-		# change name of output file to correspond to the name of the input file
-		outname = inputfile[inputfile.rfind('/')+1:]
-		script.write('cd '+output_directory+'\n')
-		script.write('mv *'+outname+' '+outname+'\n')
-		script.write('cd '+cwd+'\n')
-	submitQsubJob(script_name)
-	# alternative: run locally
-	#os.system('bash '+script_name)
+    submitjob(cwd,inputfile,output_directory,event_selection,False)
+    if( nonpromptfromdata and isdata(inputfile)):
+	submitjob(cwd,inputfile,output_directory,event_selection,True)
+    

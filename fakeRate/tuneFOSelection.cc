@@ -168,28 +168,29 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
 
                     //compute histogram vector index
                     auto histIndex = categories.index( {ptRatioI, deepFlavorI } );
-            
+           
+		    double weight = event.scaledWeight(); 
                     //fill histograms for heavy flavor leptons 
                     if( isHeavyFlavor ){
 
                         //numerator 
                         if( lepton.isTight() ){
-                            heavyFlavorNumerator[ histIndex ]->Fill( std::min( lepton.pt(), ptHistInfo.maxBinCenter() ), event.weight() );
+                            heavyFlavorNumerator[ histIndex ]->Fill( std::min( lepton.pt(), ptHistInfo.maxBinCenter() ), weight );
                         }                        
 
                         //denominator
-                        heavyFlavorDenominator[ histIndex ]->Fill( std::min( lepton.pt(), ptHistInfo.maxBinCenter() ), event.weight() );
+                        heavyFlavorDenominator[ histIndex ]->Fill( std::min( lepton.pt(), ptHistInfo.maxBinCenter() ), weight );
                         
                     //fill histograms for light flavor leptons
                     } else {
 
                         //numerator
                         if( lepton.isTight() ){
-                            lightFlavorNumerator[ histIndex ]->Fill( std::min( lepton.pt(), ptHistInfo.maxBinCenter() ), event.weight() );
+                            lightFlavorNumerator[ histIndex ]->Fill( std::min( lepton.pt(), ptHistInfo.maxBinCenter() ), weight );
                         }
                     
                         //denominator
-                        lightFlavorDenominator[ histIndex ]->Fill( std::min( lepton.pt(), ptHistInfo.maxBinCenter() ), event.weight() );
+                        lightFlavorDenominator[ histIndex ]->Fill( std::min( lepton.pt(), ptHistInfo.maxBinCenter() ), weight );
                     }
 
                 }

@@ -20,8 +20,8 @@ bool valueIsBad( const double val ){
 ConstantFit::ConstantFit( TH1* histPtr, const double min, const double max ){
 
     if( ( min < histogram::minXValue( histPtr ) ) || ( max > histogram::maxXValue( histPtr ) ) ){
-		throw std::invalid_argument( "Given range for ConstantFit falls outside of the given histogram's range." );
-	} 
+	throw std::invalid_argument( "Given range for ConstantFit falls outside of the given histogram's range." );
+    } 
 
     TF1 constFunc( "constFunc", "[0]", min, max );
 
@@ -34,8 +34,9 @@ ConstantFit::ConstantFit( TH1* histPtr, const double min, const double max ){
     _normalizedChi2 = constFunc.GetChisquare() / constFunc.GetNDF();
 
     //set high sentinel values for fit value and chi2 in case of empty data and/or failed fit
-    bool emptyData = ( histPtr->GetSumOfWeights() < 1e-6 );
+    bool emptyData = ( histPtr->GetSumOfWeights() < 1e-15 );
     bool fitFailed = ( valueIsBad( _value ) || valueIsBad( _uncertainty ) || valueIsBad( _normalizedChi2 ) );
+   
     if( emptyData || fitFailed ){
         _value = std::numeric_limits< double >::max();
         _uncertainty = std::numeric_limits< double >::max();

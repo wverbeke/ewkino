@@ -21,11 +21,11 @@ def getinputfiles(rootdir,samplelist,isdata=True):
     if '2016_MC' in samplelist: appendix = '_Summer16'
     if '2017_MC' in samplelist: appendix = '_Fall17'
     if '2018_MC' in samplelist: appendix = '_Autumn18'
-    if '2016_data' in samplelist: appendix = '_Run2016' # (?)
-    if '2017_data' in samplelist: appendix = '_Run2017' # (?)
-    if '2018_data' in samplelist: appendix = '_Run2018' # (?)
+    if '2016_data' in samplelist: appendix = '_Summer16' # (?)
+    if '2017_data' in samplelist: appendix = '_Fall17' # (?)
+    if '2018_data' in samplelist: appendix = '_Autumn18' # (?)
     # read process names and cross sections from the sample list
-    samples_dict = readsamplelist(samplelist)
+    samples_dict = readsamplelist(samplelist,unique=True)
     # find available samples in input directory and compare with sample list
     samples_available = glob.glob(rootdir+'/*.root')
     for sample in samples_dict:
@@ -82,7 +82,7 @@ def overflow(value,hist):
     if value < highX: return value
     return (lowX+highX)/2.
 
-def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization,lumi):
+def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization,lumi,evttags):
     f = ROOT.TFile.Open(filelist[index]['file'])
     if(not isdata and not normalization==0):
         sumweights = f.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
@@ -101,6 +101,12 @@ def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization
         if(not isdata and not normalization==0):
             weight = getattr(tree,'_weight')
 	    normweight = getattr(tree,'_normweight')
+	if isdata:
+	    evtid = str(getattr(tree,'_runNb'))
+	    evtid += '/'+str(getattr(tree,'_lumiBlock'))
+	    evtid += '/'+str(getattr(tree,'_eventNb'))
+	    if evtid in evttags: continue
+	    evttags.append(evtid) 
         for k,vardict in enumerate(variables):
             varname = vardict['name']
             varvalue = getattr(tree,varname)
@@ -114,6 +120,7 @@ def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization
     f.Close()
     sys.stdout.write("\r"+'100%'+"\n")
     sys.stdout.flush()
+    return evttags
 
 def normalizemctodata(mchistlist,datahistlist,variables):
     # normalize MC to data.
@@ -199,13 +206,13 @@ if __name__ == '__main__':
     args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    args['mcrootdir'] = '/user/llambrec/Files/signalregion/2016MC_flat'
+    args['mcrootdir'] = '/user/llambrec/Files/zgcontrolregion/2016MC_flat'
     # folder to read data root files from
-    args['datarootdir'] = '/user/llambrec/Files/signalregion/2016MC_flat'
+    args['datarootdir'] = '/user/llambrec/Files/zgcontrolregion/2016data_flat'
     # samplelist for simulation with process names and cross sections
     args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
     # samplelist for data with dataset names
-    args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt' 
+    args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_data.txt' 
     # (use MC for testing, data histogram will be reset later on)
     # file to store histograms in:
     args['histfile'] = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms/histograms.root'
@@ -228,7 +235,7 @@ if __name__ == '__main__':
         {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21))}
     ]
     # name of tree to read for each input file:
-    args['treename'] = 'treeCat1'
+    args['treename'] = 'blackJackAndHookersTree'
     # normalization:
     args['normalization'] = 1
     # (normalization parameter: 0 = no normalization, weights, xsection and lumi set to 1.)
@@ -262,21 +269,24 @@ if __name__ == '__main__':
 
     ### Fill histograms
     mchistlist,datahistlist = initializehistograms(mcin,datain,args['variables'])
+    evttags = []
     print('adding simulation files...')
     for i in range(len(mcin)):
         print('file '+str(i+1)+' of '+str(len(mcin)))
-        addinputfile(mchistlist,mcin,args['treename'],i,args['variables'],False,args['normalization'],args['lumi'])
+	print(mcin[i]['sample_name'])
+        addinputfile(mchistlist,mcin,args['treename'],i,args['variables'],False,args['normalization'],args['lumi'],evttags)
     print('adding data files...')
     for i in range(len(datain)):
 	print('file '+str(i+1)+' of '+str(len(datain)))
-	addinputfile(datahistlist,datain,args['treename'],i,args['variables'],True,args['normalization'],args['lumi'])
+	evttags = addinputfile(datahistlist,datain,args['treename'],i,
+				args['variables'],True,args['normalization'],args['lumi'],evttags)
 
     ### Merge histograms with same process name
     mergemchistograms(mchistlist)
     mergedatahistograms(datahistlist)
     # manually put data to zero for now
-    for hist in datahistlist:
-	hist.Reset()
+    #for hist in datahistlist:
+    #	hist.Reset()
 
     ### Normalize if needed
     if(args['normalization']==2):

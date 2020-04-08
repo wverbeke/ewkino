@@ -157,6 +157,10 @@ bool Jet::isGood() const{
     return selector->isGood();
 }
 
+bool Jet::isGoodtZq() const{
+    return selector->isGoodtZq();
+}
+
 
 bool Jet::isGoodAnyVariation() const{
     return (

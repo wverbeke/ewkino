@@ -26,7 +26,6 @@ Electron::Electron( const TreeReader& treeReader, const unsigned leptonIndex ):
     _isMediumPOGElectron( treeReader._lPOGMedium[leptonIndex] ),
     _isTightPOGElectron( treeReader._lPOGTight[leptonIndex] )
 {
-    
     //apply electron energy correction
     setLorentzVector( treeReader._lPtCorr[ leptonIndex ], eta(), phi(), treeReader._lECorr[ leptonIndex ] );
 

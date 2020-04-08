@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra -O3
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= closureTest_MC.cc ../../codeLibrary.o
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=closureTest_MC
+
+all:
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+
+clean:
+	rm -rf *o $(EXECUTABLE)

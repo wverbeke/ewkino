@@ -1,223 +1,0 @@
-adding simulation files...
-file 1 of 39
-0%100%
-file 2 of 39
-0%100%
-file 3 of 39
-0%100%
-file 4 of 39
-100%
-file 5 of 39
-0%100%
-file 6 of 39
-0%100%
-file 7 of 39
-100%
-file 8 of 39
-0%100%
-file 9 of 39
-0%100%
-file 10 of 39
-100%
-file 11 of 39
-0%100%
-file 12 of 39
-100%
-file 13 of 39
-100%
-file 14 of 39
-100%
-file 15 of 39
-100%
-file 16 of 39
-0%100%
-file 17 of 39
-0%100%
-file 18 of 39
-100%
-file 19 of 39
-0%100%
-file 20 of 39
-100%
-file 21 of 39
-0%100%
-file 22 of 39
-0%100%
-file 23 of 39
-0%100%
-file 24 of 39
-0%21%43%65%87%100%
-file 25 of 39
-0%100%
-file 26 of 39
-0%100%
-file 27 of 39
-0%100%
-file 28 of 39
-0%100%
-file 29 of 39
-100%
-file 30 of 39
-100%
-file 31 of 39
-0%87%100%
-file 32 of 39
-0%100%
-file 33 of 39
-0%100%
-file 34 of 39
-0%100%
-file 35 of 39
-0%100%
-file 36 of 39
-0%100%
-file 37 of 39
-0%100%
-file 38 of 39
-0%98%100%
-file 39 of 39
-0%100%
-adding data files...
-file 1 of 39
-0%100%
-file 2 of 39
-0%100%
-file 3 of 39
-0%100%
-file 4 of 39
-100%
-file 5 of 39
-0%100%
-file 6 of 39
-0%100%
-file 7 of 39
-100%
-file 8 of 39
-0%100%
-file 9 of 39
-0%100%
-file 10 of 39
-100%
-file 11 of 39
-0%100%
-file 12 of 39
-100%
-file 13 of 39
-100%
-file 14 of 39
-100%
-file 15 of 39
-100%
-file 16 of 39
-0%100%
-file 17 of 39
-0%100%
-file 18 of 39
-100%
-file 19 of 39
-0%100%
-file 20 of 39
-100%
-file 21 of 39
-0%100%
-file 22 of 39
-0%100%
-file 23 of 39
-0%100%
-file 24 of 39
-0%21%43%65%87%100%
-file 25 of 39
-0%100%
-file 26 of 39
-0%100%
-file 27 of 39
-0%100%
-file 28 of 39
-0%100%
-file 29 of 39
-100%
-file 30 of 39
-100%
-file 31 of 39
-0%87%100%
-file 32 of 39
-0%100%
-file 33 of 39
-0%100%
-file 34 of 39
-0%100%
-file 35 of 39
-0%100%
-file 36 of 39
-0%100%
-file 37 of 39
-0%100%
-file 38 of 39
-0%98%100%
-file 39 of 39
-0%100%
-merging simulation histograms...
-merging data histograms...
-writing histograms to file...
-/storage_mnt/storage/user/llambrec/ewkino/AnalysisCode/plotting/histograms_0211/signalregion_1/histograms.root
-[{u'bins': [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0], u'name': u'_abs_eta_recoil', u'unit': u'', u'title': u'#||{#eta}_{recoil}'}, {u'bins': [0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0, 540.0, 600.0, 660.0, 720.0, 780.0, 840.0, 900.0, 960.0, 1020.0, 1080.0, 1140.0, 1200.0], u'name': u'_Mjj_max', u'unit': u'GeV', u'title': u'M_{jet+jet}^{max}'}, {u'bins': [-2.5, -2.25, -2.0, -1.75, -1.5, -1.25, -1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5], u'name': u'_lW_asymmetry', u'unit': u'', u'title': u'asymmetry (lepton from W)'}, {u'bins': [0.0, 0.05, 0.1, 0.15000000000000002, 0.2, 0.25, 0.30000000000000004, 0.35000000000000003, 0.4, 0.45, 0.5, 0.55, 0.6000000000000001, 0.65, 0.7000000000000001, 0.75, 0.8, 0.8500000000000001, 0.9, 0.9500000000000001, 1.0], u'name': u'_deepCSV_max', u'unit': u'', u'title': u'highest deepCSV'}, {u'bins': [0.0, 40.0, 80.0, 120.0, 160.0, 200.0, 240.0, 280.0, 320.0, 360.0, 400.0, 440.0, 480.0, 520.0, 560.0, 600.0, 640.0, 680.0, 720.0, 760.0, 800.0], u'name': u'_lT', u'unit': u'GeV', u'title': u'L_{T}'}, {u'bins': [0.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 105.0, 120.0, 135.0, 150.0, 165.0, 180.0, 195.0, 210.0, 225.0, 240.0, 255.0, 270.0, 285.0, 300.0], u'name': u'_MT', u'unit': u'GeV', u'title': u'M_{T}'}, {u'bins': [0.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 105.0, 120.0, 135.0, 150.0, 165.0, 180.0, 195.0, 210.0, 225.0, 240.0, 255.0, 270.0, 285.0, 300.0], u'name': u'_pTjj_max', u'unit': u'GeV', u'title': u'p_T^{max}(jet+jet)'}, {u'bins': [0.0, 0.157, 0.314, 0.471, 0.628, 0.785, 0.942, 1.099, 1.256, 1.413, 1.57, 1.727, 1.884, 2.041, 2.198, 2.355, 2.512, 2.669, 2.826, 2.983, 3.14], u'name': u'_dRlb_min', u'unit': u'', u'title': u'#Delta R(lep,bjet)_{min}'}, {u'bins': [0.0, 0.157, 0.314, 0.471, 0.628, 0.785, 0.942, 1.099, 1.256, 1.413, 1.57, 1.727, 1.884, 2.041, 2.198, 2.355, 2.512, 2.669, 2.826, 2.983, 3.14], u'name': u'_dPhill_max', u'unit': u'', u'title': u'#Delta #Phi (lep,lep)_{max}'}, {u'bins': [0.0, 40.0, 80.0, 120.0, 160.0, 200.0, 240.0, 280.0, 320.0, 360.0, 400.0, 440.0, 480.0, 520.0, 560.0, 600.0, 640.0, 680.0, 720.0, 760.0, 800.0], u'name': u'_HT', u'unit': u'GeV', u'title': u'H_{T}'}, {u'bins': [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0], u'name': u'_nJets', u'unit': u'', u'title': u'number of jets'}, {u'bins': [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0], u'name': u'_dRlWrecoil', u'unit': u'', u'title': u'#Delta R(lep_{W},jet_{recoil})'}, {u'bins': [0.0, 0.35, 0.7, 1.0499999999999998, 1.4, 1.75, 2.0999999999999996, 2.4499999999999997, 2.8, 3.15, 3.5, 3.8499999999999996, 4.199999999999999, 4.55, 4.8999999999999995, 5.25, 5.6, 5.949999999999999, 6.3, 6.6499999999999995, 7.0], u'name': u'_dRlWbtagged', u'unit': u'', u'title': u'#Delta R(lep_{W},jet_{b-tagged})'}, {u'bins': [0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240.0, 270.0, 300.0, 330.0, 360.0, 390.0, 420.0, 450.0, 480.0, 510.0, 540.0, 570.0, 600.0], u'name': u'_M3l', u'unit': u'GeV', u'title': u'M_{3l}'}, {u'bins': [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0], u'name': u'_abs_eta_max', u'unit': u'', u'title': u'#||{#eta}_{max}'}]
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...
-loading histograms...
-35900.0
-1
-loading histograms...

@@ -22,6 +22,13 @@ class JetSelector{
             }
         }
 
+	bool isGoodtZq() const{
+	    if( !isGoodBasetZq() ) return false;
+	    if( jetPtr->is2016() ){ return isGood2016tZq(); }
+	    else if(jetPtr->is2017()) {return isGood2017tZq(); }
+	    else{ return isGood2018tZq(); }
+	} 	
+
 
         bool isBTaggedLoose() const{
             if( !inBTagAcceptance() ) return false;
@@ -70,6 +77,11 @@ class JetSelector{
         bool isGood2016() const;
         bool isGood2017() const;
         bool isGood2018() const;
+
+	bool isGoodBasetZq() const;
+	bool isGood2016tZq() const;
+	bool isGood2017tZq() const;
+	bool isGood2018tZq() const;
 
         bool isBTaggedLoose2016() const;
         bool isBTaggedLoose2017() const;

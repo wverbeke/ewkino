@@ -16,6 +16,10 @@ void JetCollection::selectGoodJets(){
     selectObjects( &Jet::isGood );
 }
 
+void JetCollection::selectGoodtZqJets(){
+    selectObjects( &Jet::isGoodtZq );
+}
+
 
 void JetCollection::selectGoodAnyVariationJets(){
     selectObjects( &Jet::isGoodAnyVariation );

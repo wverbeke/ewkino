@@ -24,7 +24,7 @@ for fname in files:
     print('-------------')
     print('found issue in file '+fname+':')
     print('   '+str(nstarted)+' commands were initiated.')
-    print('   '+str(nstopped)+' seem to have finished normally.')
+    print('   '+str(ndone)+' seem to have finished normally.')
 
 if(nerror==0):
     print('no problematic files were found by this automated checking!')

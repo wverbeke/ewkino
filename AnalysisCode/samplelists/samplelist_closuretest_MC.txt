@@ -1,0 +1,30 @@
+# TT 2016
+"TT" TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_v2 87.31
+"TT" TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_v2 87.31
+"TT" TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_v6 182.17540224
+"TT" TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_v6 182.17540224
+"TT" TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_v6 182.17540224
+"TT" TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_v6 182.17540224
+
+# TT 2017
+"TT" TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v6 87.31
+"TT" TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2NewPMX-v1_singlelepton_MC_2017_v2 364.35
+
+# TT 2018
+"TT" TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_v2 87.31
+"TT" TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_v2 364.35
+
+# DY 2016
+"DY" DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_v2 18610
+"DY" DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_v2 18610
+"DY" DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3_ext2-v1_singlelepton_MC_2016_v6 6077.22
+
+# DY 2017
+"DY" DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v6 18610
+"DY" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v6 6077.22
+"DY" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_v6 6077.22
+
+# DY 2018
+"DY" DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_v6 18610
+"DY" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_v2 6077.22
+"DY" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018_ext2-v1_singlelepton_MC_2018_v2 6077.22

@@ -10,6 +10,9 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 sys.path.append(os.path.abspath('../samplelists'))
 from readsamplelist import readsamplelist
+from extendsamplelist import extendsamplelist
+sys.path.append(os.path.abspath('../tools'))
+import smalltools as tls
 
 # this script is analogous to ewkino/AnalysisCode/skimming/trileptonskim.py
 # but instead of a skimmer, an event flattening executable is called.
@@ -41,50 +44,15 @@ cwd = os.getcwd()
 # make a list of input files in samplelist and compare to content of input directory 
 # note: the names of the files in input directory can be more extended with respect to the names
 # in the sample list, for example they can have year extensions etc.
-inputfiles = readsamplelist(samplelist,unique=True)
-inputfilesnew = []
-missinglist = []
-for f in inputfiles:
-    fname = f['sample_name']
-    indir = False
-    for findir in os.listdir(input_directory):
-	if fname in findir:
-	    indir = True
-	    f['file'] = os.path.join(input_directory,findir)
-	    inputfilesnew.append(f)
-	    break
-    if not indir: missinglist.append(fname)
-inputfiles = inputfilesnew
-if len(missinglist)>0:
-    print('### WARNING ###: the following samples are in sample list but not in input directory:')
-    print(missinglist)
+inputfiles = extendsamplelist(samplelist,input_directory)
 
 # determine data taking year and luminosity from sample list name.
-slname = samplelist[samplelist.rfind('/'):]
-year = ''
-lumi = 0.
-if '2016' in slname:
-    year = '2016'
-    lumi = 35900
-elif '2017' in slname:
-    year = '2017'
-    lumi = 41500
-elif '2018' in slname:
-    year = '2018'
-    lumi = 59700
-else: 
-    print('### ERROR ###: year not recognized from samplelist '+str(slname))
-    sys.exit()
+(year,lumi) = tls.year_and_lumi_from_samplelist(samplelist)
+if lumi<0. : sys.exit()
 
 # determine data type from sample name.
-dtype = ''
-if 'MC' in slname:
-    dtype = 'MC'
-elif 'data' in slname:
-    dtype = 'data'
-else:
-    print('### ERROR ###: data type not recognized from samplelist '+str(slname))
-    sys.exit()
+dtype = tls.data_type_from_samplelist(samplelist)    
+if len(dtype)==0 : sys.exit()
 
 # check if executable is present
 if not os.path.exists('./eventflattener'):

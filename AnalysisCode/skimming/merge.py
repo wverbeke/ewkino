@@ -49,6 +49,7 @@ for sample in inputlist:
 print('found '+str(len(inputstruct))+' unique samples')
 for s in inputstruct:
     print(s+': '+str(inputstruct[s]))
+#sys.exit()
 
 # run hadd command for each element in input structure
 counter = 0
