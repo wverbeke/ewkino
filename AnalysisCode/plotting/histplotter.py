@@ -327,7 +327,8 @@ if __name__=="__main__":
         {'name':'_dRlWrecoil','title':r'#Delta R(lep_{W},jet_{recoil})','unit':''},
         {'name':'_dRlWbtagged','title':r'#Delta R(lep_{W},jet_{b-tagged})','unit':''},
         {'name':'_M3l','title':r'M_{3l}','unit':'GeV'},
-        {'name':'_abs_eta_max','title':r'#||{#eta}_{max}','unit':''}
+        {'name':'_abs_eta_max','title':r'#||{#eta}_{max}','unit':''},
+	{'name':'_eventBDT','title':r'event BDT output score','unit':''}
     ]
 
     ### Overwrite using cmd args
@@ -343,6 +344,7 @@ if __name__=="__main__":
     for k,vardict in enumerate(variables):
         varname = str(vardict['name'])
         # (explicit conversion from unicode to str seems necessary...)
+
         ### Load histograms
         mchistlist,normalization,lumi = loadhistograms(histfile,'mc_'+varname+'_')
 	datahistlist,_,_ = loadhistograms(histfile,'data_'+varname+'_')
@@ -350,6 +352,14 @@ if __name__=="__main__":
             print('### ERROR ###: list of data histograms has unexpected length: '+str(len(datahistlist)))
             sys.exit()
         datahist = datahistlist[0]
+	npdatahistlist,_,_ = loadhistograms(histfile,'npdata_'+varname+'_')
+	if not (len(npdatahistlist)==0 or len(npdatahistlist)==1):
+	    print('### ERROR ###: list of nonprompt data histograms has unexpected length.')
+	    sys.exit()
+	npdatahist = None
+	if len(npdatahistlist)>0: 
+	    npdatahist = npdatahistlist[0]
+	    mchistlist.append(npdatahist)
         
         ### Set plot properties
         binwidth = datahist.GetBinWidth(1)

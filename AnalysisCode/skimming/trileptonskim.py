@@ -29,7 +29,7 @@ version_name = 'Run2017E_test'
 sample_list = '../samplelists/samplelist_all.txt'
 output_directory_base = '/storage_mnt/storage/user/llambrec/ewkino/test/testData/skimmed'
 # fixed argument for now, but should be easy to adapt to allow different skimming conditions
-skim_condition = 'trifolepton'
+skim_condition = 'trilepton'
 
 # if too few command line args, check with the user if default arguments can be used
 if len(sys.argv) < 4:
@@ -122,6 +122,8 @@ else:
 print('found '+str(len(sample_directories))+' valid sample directories.')
 print(sample_directories)
 print(sample_sub_directories)
+
+#sys.exit()
 
 # make output directory for each sample
 sample_output_directories = []

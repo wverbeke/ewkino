@@ -9,13 +9,13 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
 
 ### Define regions to make plots for
-regions = ['signalregion','wzcontrolregion','zzcontrolregion','zgcontrolregion']
+regions = ['zgcontrolregion','signalsideband_noossf','signalsideband_noz']
 #regions = ['zgcontrolregion']
-years = ['2016']
-appendix = '_tZqID'
+years = ['2016','2017','2018']
+ID = 'tth' # does NOT set ID correctly, simply for folder management
 
 ### Global settings
-outdir = 'histograms_0316'
+outdir = 'histograms_0415'
 outdir = os.path.abspath(outdir)
 variables = [
     {'name':'_abs_eta_recoil','bins':list(np.linspace(0,5,num=21)),
@@ -73,13 +73,20 @@ for region in regions:
 
 ### Run over input lists
 currentdir = os.getcwd()
+if ID=='tth': interpendix='tthid'
+elif ID=='tzq': interpendix='tzqid'
+else:
+    print('### ERROR ###: ID "'+ID+'"not recognized.')
+    sys.exit()
 for region in regions:
     for year in years:
 	outpath = os.path.join(outdir,region,year)
-	mcrootdir = os.path.join('/user/llambrec/Files',region,year+'MC'+appendix+'_flat')
-	mcsamplelist = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_'+year+'_MC.txt'
-	datarootdir = os.path.join('/user/llambrec/Files',region,year+'data'+appendix+'_flat')
-	datasamplelist = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_'+year+'_data.txt'
+	mcrootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'MC_flat')
+	mcsamplelist = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples'
+	mcsamplelist += '/samplelist_tzq_'+year+'_MC.txt'
+	datarootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'data_flat')
+	datasamplelist = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples'
+	datasamplelist += '/samplelist_tzq_'+year+'_data.txt'
 	# check if input folder exists
 	if(not (os.path.exists(mcrootdir) and os.path.exists(datarootdir))):
 	    print('### ERROR ###: input folder for region/year combination '+region+'/'+year+' not found.')

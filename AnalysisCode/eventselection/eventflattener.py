@@ -1,4 +1,4 @@
-#########################################################################
+##############i###########################################################
 # python script to run the eventflattener executable via job submission #
 #########################################################################
 import ROOT
@@ -22,10 +22,16 @@ import smalltools as tls
 # - output directory
 # - name of the event selection to be applied; usually the same as used to create the input file!
 
-if len(sys.argv) != 5:
+nonpromptfromdata = True
+frdir = os.path.abspath('../fakerate/fakeRateMaps')
+# maybe later add as a command line argument
+# but for now process both nonprompt simulation as estimate from data
+
+if len(sys.argv) != 9:
     print('### ERROR ###: eventflattener.py requires a different number of command-line arguments.')
     print('Normal usage from the command line:')
-    print('python eventflattener.py <input_directory> <samplelist> <output_directory> <event_selection>')
+    print('python eventflattener.py input_directory samplelist output_directory event_selection')
+    print('leptonID uncertainty do_mva path_to_xml_file')
     sys.exit()
 
 input_directory = os.path.abspath(sys.argv[1])
@@ -39,12 +45,26 @@ if os.path.exists(output_directory):
 os.makedirs(output_directory)
 output_directory = os.path.abspath(output_directory)
 event_selection = sys.argv[4]
+leptonID = sys.argv[5]
+uncertainty = sys.argv[6]
+do_mva = sys.argv[7]
+path_to_xml_file = os.path.abspath(sys.argv[8])
 cwd = os.getcwd()
 
-# make a list of input files in samplelist and compare to content of input directory 
-# note: the names of the files in input directory can be more extended with respect to the names
-# in the sample list, for example they can have year extensions etc.
-inputfiles = extendsamplelist(samplelist,input_directory)
+# check command line arguments
+if event_selection not in (['signalregion','signalsideband_noossf','signalsideband_noz',
+                            'wzcontrolregion','zzcontrolregion','zgcontrolregion']):
+    print('### ERROR ###: event_selection not in list of recognized event selections')
+    sys.exit()
+if leptonID not in ['tth','tzq']:
+    print('### ERROR ###: leptonID not in list of recognized lepton IDs')
+    sys.exit()
+if uncertainty not in ['nominal','JECDown','JECUp','JERDown','JERUp','UnclDown','UnclUp']:
+    print('### ERROR ###: uncertainty not in list of recognized scale variations')
+    sys.exit()
+if do_mva not in ['true','True','false','False']:
+    print('### ERROR ###: do_mva not in list of recognized values')
+    sys.exit()
 
 # determine data taking year and luminosity from sample list name.
 (year,lumi) = tls.year_and_lumi_from_samplelist(samplelist)
@@ -54,11 +74,42 @@ if lumi<0. : sys.exit()
 dtype = tls.data_type_from_samplelist(samplelist)    
 if len(dtype)==0 : sys.exit()
 
+# make a list of input files in samplelist and compare to content of input directory 
+# note: the names of the files in input directory can be more extended with respect to the names
+# in the sample list, for example they can have year extensions etc.
+# in case of data, simply use all files in the directory
+if dtype=='MC':
+    inputfiles = extendsamplelist(samplelist,input_directory)
+else:
+    inputfiles = []
+    for f in os.listdir(input_directory):
+	inputfiles.append({'file':os.path.join(input_directory,f)})
+
 # check if executable is present
 if not os.path.exists('./eventflattener'):
     print('### ERROR ###: eventflattener executable was not found.')
     print('Run make -f makeEventFlattener before running this script.')
     sys.exit()
+
+def submitjob(cwd,inputfile,norm,output_directory,event_selection,leptonID,uncertainty,
+		isnpbackground, muonfrmap, electronfrmap,
+		do_mva, path_to_xml_file):
+    script_name = 'eventflattener.sh'
+    if isnpbackground: 
+	output_directory = os.path.join(output_directory,'nonprompt_background')
+	if not os.path.exists(output_directory): os.makedirs(output_directory)
+    with open(script_name,'w') as script:
+        initializeJobScript(script)
+        script.write('cd {}\n'.format(cwd))
+        command = './eventflattener {} {} {} {} {} {} {} {} {} {} {} {}'.format(
+		    inputfile,norm,output_directory,inputfile.split('/')[-1],event_selection,
+		    leptonID,uncertainty,
+		    isnpbackground,muonfrmap,electronfrmap,
+		    do_mva,path_to_xml_file)
+        script.write(command+'\n')
+    submitQsubJob(script_name)
+    # alternative: run locally
+    #os.system('bash '+script_name)
 
 # loop over input files and submit jobs
 for f in inputfiles:
@@ -70,17 +121,12 @@ for f in inputfiles:
 	hcounter = temp.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
 	xsec = f['cross_section']
 	norm = xsec*lumi/float(hcounter)
-    script_name = 'eventflattener.sh'
-    with open(script_name,'w') as script:
-        initializeJobScript(script)
-        script.write('cd {}\n'.format(cwd))
-        command = './eventflattener {} {} {} {}'.format(inputfile,norm,output_directory,event_selection)
-        script.write(command+'\n')
-        # change name of output file to correspond to the name of the input file
-        outname = inputfile[inputfile.rfind('/')+1:]
-        script.write('cd '+output_directory+'\n')
-        script.write('mv *'+outname+' '+outname+'\n')
-        script.write('cd '+cwd+'\n')
-    submitQsubJob(script_name)
-    # alternative: run locally
-    #os.system('bash '+script_name)
+    if(not 'nonprompt_background' in inputfile):
+	submitjob(cwd,inputfile,norm,output_directory,event_selection,leptonID,uncertainty,
+	False,'.','.',do_mva,path_to_xml_file)
+    else:
+	year = tls.year_from_filepath(inputfile)
+	frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
+	frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
+        submitjob(cwd,inputfile,norm,output_directory,event_selection,leptonID,uncertainty,
+		    True,frmap_muon,frmap_electron,do_mva,path_to_xml_file)

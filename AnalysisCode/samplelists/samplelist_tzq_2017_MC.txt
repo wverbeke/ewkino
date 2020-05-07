@@ -4,62 +4,78 @@
 
 # Formatting: "process name (may include spaces)" <space> sample name <space> cross-section
 
-"tZq" tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v2 0.0942
+"tZq" tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 0.0942
 
-"nonprompt" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 6020.85
-"nonprompt" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_v1 6020.85
-"nonprompt" DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 18610
+"nonprompt" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 6020.85
+"nonprompt" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_v7 6020.85
+"nonprompt" DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 18610
+"nonprompt" DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v7 18610
 
-"nonprompt" WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 61334.9
+"nonprompt" WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v7 61334.9
 
-"t#bar{t}/t + X" TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 87.315
+"nonprompt" TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 87.315
 
-# additional ttbar sample, not sure if this is correct, get it from data later
-"t#bar{t}/t + X" TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 87.315
+### additional ttbar sample, not sure if this is correct, get it from data later
+"nonprompt" TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 87.315
 
-"t#bar{t}/t + X" TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2NewPMX-v1_singlelepton_MC_2017_v1 182.75
-"t#bar{t}/t + X" TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.2043
-"t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.2529
-"t#bar{t}/t + X" ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v1 0.2151
-"t#bar{t}/t + X" ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 3.68
+"nonprompt" TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2NewPMX-v1_singlelepton_MC_2017_v7 182.75
 
-# uncertain cross section in following samples; leptonDecays seems to be not present in heavyNeutrino
-"t#bar{t}/t + X" ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8/crab_MiniAOD2017v2NewPMX-v1_singlelepton_MC_2017_v1 136.0
-"t#bar{t}/t + X" ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 80.96
+#"t#bar{t}/t + X" TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 0.2043
 
-"t#bar{t}/t + X" ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 35.6
-"t#bar{t}/t + X" ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 35.6
-"t#bar{t}/t + X" ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_v1 0.01103
-"t#bar{t}/t + X" TTTT_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.009103
+"t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 0.2529
 
-# extension of following sample was not found, so use only default one
-"X + #gamma" TGJets_TuneCP5_13TeV_amcatnlo_madspin_pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 2.967
+#"t#bar{t}/t + X" ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 0.2151
 
-"X + #gamma" TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 3.697
-"X + #gamma" WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 405.271
+"nonprompt" ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 3.68
 
-# not sure if this is the best one...
-"X + #gamma" ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3_ext1-v1_singlelepton_MC_2016_v1 123.9
+### uncertain cross section in following samples; leptonDecays seems to be not present in heavyNeutrino
+"nonprompt" ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8/crab_MiniAOD2017v2NewPMX-v1_singlelepton_MC_2017_v7 136.0
+"nonprompt" ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 80.96
 
-"WZ" WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 5.063
+### not present with _v7, use _v6 instead!
+"nonprompt" ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v6 35.6
+"nonprompt" ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 35.6
+"t#bar{t}/t + X" ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_v7 0.01103
+"t#bar{t}/t + X" TTTT_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 0.009103
 
-"ZZ/H" ZZTo4L_13TeV_powheg_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 1.256
+### extension of following sample was not found, so use only default one
+"X + #gamma" TGJets_TuneCP5_13TeV_amcatnlo_madspin_pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 2.967
 
-"multiboson" ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v2 0.01398
-"multiboson" WZZ_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v2 0.05565
-"multiboson" WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.1651
-"multiboson" WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.2086
+"X + #gamma" TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 3.697
+"X + #gamma" TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v7 3.697
 
-"nonprompt" WWTo2L2Nu_DoubleScattering_13TeV-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 0.1729
-"nonprompt" WWTo2L2Nu_NNPDF31_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 12.178
+"X + #gamma" WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 405.271
 
-"ZZ/H" GluGluHToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_v1 0.01181
-"ZZ/H" VBF_HToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.001034
-"ZZ/H" VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v1 0.9561
-"ZZ/H" GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.0067
-"ZZ/H" GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.0067
-"ZZ/H" GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.0067
-"ZZ/H" GluGluToContinToZZTo4e_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.00334
-"ZZ/H" GluGluToContinToZZTo4mu_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v1 0.00334
-"ZZ/H" GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v1 0.00334
+### not sure if this is the best one...
+"nonprompt" ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v3_singlelepton_MC_2017_v7 59.21
+
+"WZ" WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 5.063
+
+"ZZ/H" ZZTo4L_13TeV_powheg_pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_v7 1.256
+
+"multiboson" ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 0.01398
+### following is not present with _v7 or _v6...
+#"multiboson" WZZ_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 0.05565
+"multiboson" WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 0.1651
+### following is not present with _v7 or _v6...
+#"multiboson" WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 0.2086
+
+### following is not present with _v7 or _v6...
+#"nonprompt" WWTo2L2Nu_DoubleScattering_13TeV-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 0.1729
+"nonprompt" WWTo2L2Nu_NNPDF31_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 12.178
+
+"ZZ/H" GluGluHToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_v7 0.01181
+### following is not present with _v7 or _v6...
+#"ZZ/H" VBF_HToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 0.001034
+### following is not present with _v6 or _v7...
+#"ZZ/H" VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v7 0.9561
+
+
+"ZZ/H" GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v7 0.0067
+"ZZ/H" GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v7 0.0067
+### not present with _v7, use _v6 instead!
+"ZZ/H" GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_v6 0.0067
+"ZZ/H" GluGluToContinToZZTo4e_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v7 0.00334
+"ZZ/H" GluGluToContinToZZTo4mu_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v7 0.00334
+"ZZ/H" GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_v7 0.00334
 

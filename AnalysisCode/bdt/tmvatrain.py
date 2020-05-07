@@ -62,7 +62,6 @@ def tmvatrain(indirs,treenames,sigtag,variables,tloader_options,tfactory_options
     ### Book BDT method
     print(tfactory_options)
     tfactory.BookMethod(tloader,ROOT.TMVA.Types.kBDT,"BDT",tfactory_options)
-    print('here')
 
     ### Train and test method
     tfactory.TrainAllMethods()
@@ -112,9 +111,9 @@ if __name__=="__main__":
 	(indirs,treenames,sigtag,varlist,lopts,fopts) = argsfromcmd(args)
     else:
 	### Set list of input files
-	indirs = [os.path.abspath('/user/llambrec/Files/signalregion/2016MC_flat')]
-	indirs.append(os.path.abspath('/user/llambrec/Files/signalregion/2017MC_flat'))
-	indirs.append(os.path.abspath('/user/llambrec/Files/signalregion/2018MC_flat'))
+	indirs = [os.path.abspath('/user/llambrec/Files/tzqid/signalregion_lmva0p8/2016MC_flat')]
+	#indirs.append(os.path.abspath('/user/llambrec/tzqid/Files/signalregion/2017MC_flat'))
+	indirs.append(os.path.abspath('/user/llambrec/Files/tzqid/signalregion_lmva0p8/2018MC_flat'))
 	treenames = ["blackJackAndHookers/treeCat1"]
 	treenames.append("blackJackAndHookers/treeCat2")
 	treenames.append("blackJackAndHookers/treeCat3")
@@ -123,9 +122,10 @@ if __name__=="__main__":
 	lopts = "SplitMode=Random:NormMode=None"
 	### BDT options
 	fopts = "!H:!V" # help and verbosity level
-	fopts += ":NTrees=1200:BoostType=Grad" # options for ensemble
+	fopts += ":NTrees=100:BoostType=Grad" # options for ensemble
 	fopts += ":MinNodeSize=1%:MaxDepth=4:nCuts=200" # options for single tree
-	#fopts += ":UseBaggedGrad=True:BaggedSampleFraction=1."
+	fopts += ":UseBaggedGrad=True:BaggedSampleFraction=1."
+	fopts += ":Shrinkage=0.05"
 	#fopts += ":IgnoreNegWeightsInTraining=True"
 	### variables
 	varlist = (['_abs_eta_recoil','_Mjj_max','_lW_asymmetry',

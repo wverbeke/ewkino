@@ -45,7 +45,7 @@ bool LeptonSelector::isFOtZq() const{
         return isFO2016tZq();
     } else if( is2017() ){
         return isFO2017tZq();
-    } else return false; // no 2018 implementation!
+    } else return isFO2018tZq();
 }
 
 bool LeptonSelector::isTighttZq() const{
@@ -54,5 +54,5 @@ bool LeptonSelector::isTighttZq() const{
         return isTight2016tZq();
     } else if( is2017() ){
         return isTight2017tZq();
-    } else return false; // no 2018 implementation!
+    } else return isTight2018tZq();
 }

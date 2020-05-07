@@ -8,6 +8,8 @@ import glob
 # in order to import local functions: append location to sys.path
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../tools'))
+import smalltools as tls
 
 # this script is analogous to ewkino/AnalysisCode/skimming/trileptonskim.py
 # but instead of a skimmer, an event selection executable is called.
@@ -20,14 +22,11 @@ nonpromptfromdata = True
 # maybe later add as a command line argument
 # but for now process both nonprompt simulation as estimate from data
 
-def isdata(pathtofile):
-    # modify here how data samples should be recognized depending on the path and file name.
-    if('2016data' in pathtofile or '2017data' in pathtofile or '2018data' in pathtofile): return True
-
-if len(sys.argv) != 4:
+if len(sys.argv) != 5:
 	print('### ERROR ###: eventselector.py requires a different number of command-line arguments.')
 	print('Normal usage from the command line:')
-	print('python eventselector.py <input_directory> <output_directory> <event_selection>')
+	print('python eventselector.py input_directory output_directory event_selection')
+	print('leptonID')
 	sys.exit()
 
 input_directory = os.path.abspath(sys.argv[1])
@@ -37,7 +36,17 @@ if os.path.exists(output_directory):
     os.system('rm -r '+output_directory)
 os.makedirs(output_directory)
 event_selection = sys.argv[3]
+leptonID = sys.argv[4]
 cwd = os.getcwd()
+
+# check command line arguments
+if event_selection not in (['signalregion','signalsideband_noossf','signalsideband_noz',
+			    'wzcontrolregion','zzcontrolregion','zgcontrolregion']):
+    print('### ERROR ###: event_selection not in list of recognized event selections')
+    sys.exit()
+if leptonID not in ['tth','tzq']:
+    print('### ERROR ###: leptonID not in list of recognized lepton IDs')
+    sys.exit()
 
 # make a list of input files
 inputfiles = []
@@ -53,14 +62,13 @@ if not os.path.exists('./eventselector'):
     print('Run make -f makeEventSelector before running this script.')
     sys.exit()
 
-def submitjob(cwd,inputfile,output_directory,event_selection,isnpbackground):
+def submitjob(cwd,inputfile,output_directory,event_selection,leptonID,isnpbackground):
     script_name = 'eventselector.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
-        command = './eventselector {} {} {} {} {}'.format(inputfile,output_directory,
-						    inputfile.split('/')[-1],
-						    event_selection,isnpbackground)
+        command = './eventselector {} {} {} {} {} {}'.format(inputfile,output_directory,
+			inputfile.split('/')[-1],event_selection,leptonID,isnpbackground)
         script.write(command+'\n')
     submitQsubJob(script_name)
     # alternative: run locally
@@ -68,7 +76,7 @@ def submitjob(cwd,inputfile,output_directory,event_selection,isnpbackground):
 
 # loop over input files and submit jobs
 for inputfile in inputfiles:
-    submitjob(cwd,inputfile,output_directory,event_selection,False)
-    if( nonpromptfromdata and isdata(inputfile)):
-	submitjob(cwd,inputfile,output_directory,event_selection,True)
+    submitjob(cwd,inputfile,output_directory,event_selection,leptonID,False)
+    if( nonpromptfromdata and tls.isdata_from_filepath(inputfile)):
+	submitjob(cwd,inputfile,output_directory,event_selection,leptonID,True)
     

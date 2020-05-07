@@ -28,6 +28,20 @@ def data_type_from_samplelist(samplelist_name):
 	print('### WARNING ###: data type not recognized from samplelist '+str(slname))
     return dtype
 
+def isdata_from_filepath(filepath):
+    # determine whether a file represents data
+    if('2016data' in filepath or '2017data' in filepath or '2018data' in filepath): return True
+    return False
+    
+def year_from_filepath(filepath):
+    # determine the year based on the path to the file
+    if('Summer16' in filepath): return '2016'
+    elif('Fall17' in filepath): return '2017'
+    elif('Autumn' in filepath): return '2018'
+    else: print('### WARNING ###: cannot determine year from path to file: '+filepath)
+    return None
+    
+
 ### test section ###
 if __name__ == "__main__":
     testname = 'samplelist_tzq_2016_MC'

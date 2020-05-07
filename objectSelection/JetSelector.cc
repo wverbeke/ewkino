@@ -4,7 +4,9 @@
 #include "bTagWP.h"
 
 /*
-Jet ID selection
+--------------------------------------------------------------
+Jet ID selection for ttH analysis
+--------------------------------------------------------------
 */
 
 bool JetSelector::isGoodBase() const{
@@ -29,6 +31,12 @@ bool JetSelector::isGood2018() const{
     return true;
 }
 
+/*
+----------------------------------------------------------------
+Jet ID selection for tZq analysis
+----------------------------------------------------------------
+*/
+
 bool JetSelector::isGoodBasetZq() const{
     // function to copy closely the tZq analysis note
     if( !jetPtr->isTight() ) return false;
@@ -50,7 +58,9 @@ bool JetSelector::isGood2017tZq() const{
 bool JetSelector::isGood2018tZq() const{ return isGood2018(); }
 
 /*
-b-tagging working points
+---------------------------------------------------------------
+b-tagging working points (common to ttH and tZq analysis)
+---------------------------------------------------------------
 */
 
 bool JetSelector::inBTagAcceptance() const{

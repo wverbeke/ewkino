@@ -172,6 +172,15 @@ bool Jet::isGoodAnyVariation() const{
     );
 }
 
+bool Jet::isGoodtZqAnyVariation() const{
+    return (
+	isGoodtZq() ||
+	JetJECDown().isGoodtZq() ||
+	JetJECUp().isGoodtZq() ||
+	JetJERDown().isGoodtZq() ||
+	JetJERUp().isGoodtZq()
+    );
+}
 
 bool Jet::inBTagAcceptance() const{
     return selector->inBTagAcceptance();

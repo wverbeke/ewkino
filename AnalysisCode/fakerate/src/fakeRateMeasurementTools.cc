@@ -24,6 +24,7 @@ HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, const d
 RangedMap< RangedMap< std::shared_ptr< TH1D > > > build2DHistogramMap( 
     const std::vector< double >& ptBinBorders, const std::vector< double >& etaBinBorders, 
     const HistInfo& mtHistInfo, const std::string& name ){
+
     std::map< double, RangedMap< std::shared_ptr< TH1D > > >  histMap2DTemp;
     for( auto ptBinBorder : ptBinBorders ){
         std::map< double, std::shared_ptr< TH1D > > histMapTemp;
@@ -254,6 +255,8 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
         conePtLowerBoundMap[ conePtBound ] = it->second;
     }
     RangedMap< std::string > conePtToTriggerMap( conePtLowerBoundMap );
+    // temporary replacement corresponding to older code version:
+    //RangedMap< std::string > conePtToTriggerMap = leptonPtToTriggerMap;
 
     std::map<std::string,double> triggerToJetPtMap = fakeRate::mapTriggerToJetPtThreshold(triggerVector);
     
@@ -273,21 +276,25 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     //std::shared_ptr< Reweighter > FOReweighter = makeLeptonReweighter( year, isMuonMeasurement, true );
     //std::shared_ptr< Reweighter > tightReweighter = makeLeptonReweighter( year, isMuonMeasurement, false );
     
-    long unsigned numberOfEntries = 2000;
-    //long unsigned numberOfEntries = treeReader.numberOfEntries();
+    //long unsigned numberOfEntries = 200000;
+    long unsigned numberOfEntries = treeReader.numberOfEntries();
     std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
     for(long unsigned entry=0; entry<numberOfEntries; ++entry){
 	Event event = treeReader.buildEvent( entry, true, false );
+	// original
 	if( !fakeRate::passFakeRateEventSelection( event, isMuonMeasurement, 
 		!isMuonMeasurement, false, true, 0.7, 30 ) ) continue;
+	// temporary replacement corresponding to older code version:
+	//if( !fakeRate::passFakeRateEventSelection( event, isMuonMeasurement,
+	//	!isMuonMeasurement, false, true, 1.)) continue;
 
         LightLepton& lepton = event.lightLepton( 0 );
 
 	if( lepton.pt() < 10 ) continue;
 
-	//const double pTFix = 35.;
-	// try to use normal pt instead of fixed pt.
-	const double pTFix = lepton.pt();
+	const double pTFix = 35.;
+	// temporary replacement corresponding to older code version:
+	//const double pTFix = lepton.pt();
         PhysicsObject leptonFix( pTFix, lepton.eta(), lepton.phi(), lepton.energy() );
         double mT = mt( leptonFix, event.met() );
 
@@ -295,6 +302,8 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
         if( event.metPt() >= maxMet ) continue;
 
 	std::string triggerToUse = conePtToTriggerMap[ lepton.pt() ];
+	// temporary replacement corresponding to older code version
+	//std::string triggerToUse = conePtToTriggerMap[ lepton.uncorrectedPt() ];
         if( !event.passTrigger( triggerToUse ) ) continue;
 
 	if( !fakeRate::passTriggerJetSelection( event, triggerToUse, triggerToJetPtMap ) ) continue;
@@ -305,11 +314,10 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
             const Prescale& prescale = prescaleMap.find( triggerToUse )->second;
             weight *= prescale.value();
             weight *= reweighter.totalWeight( event );
-	    std::cout<<triggerToUse<<std::endl;
-	    std::cout<<lepton.pt()<<std::endl;
-	    std::cout<<"prescale: "<<prescale.value()<<", reweighter: "<<reweighter.totalWeight(event)<<std::endl;
+	    //std::cout<<triggerToUse<<std::endl;
+	    //std::cout<<lepton.pt()<<std::endl;
+	    //std::cout<<"prescale: "<<prescale.value()<<", reweighter: "<<reweighter.totalWeight(event)<<std::endl;
         }
-	else weight=1;
 
 	if( lepton.isTight() ){
             double tightWeight = 1.;

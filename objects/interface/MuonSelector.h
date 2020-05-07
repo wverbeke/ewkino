@@ -30,6 +30,7 @@ class MuonSelector : public LeptonSelector {
         virtual bool isFOBasetZq() const override;
         virtual bool isFO2016tZq() const override;
         virtual bool isFO2017tZq() const override;
+	virtual bool isFO2018tZq() const override;
 
         virtual bool isTightBase() const override;
         virtual bool isTight2016() const override;
@@ -38,6 +39,7 @@ class MuonSelector : public LeptonSelector {
         virtual bool isTightBasetZq() const override;
         virtual bool isTight2016tZq() const override;
         virtual bool isTight2017tZq() const override;
+	virtual bool isTight2018tZq() const override;
 
         virtual double coneCorrection() const override;
 

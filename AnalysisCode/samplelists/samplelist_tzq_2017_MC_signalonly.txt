@@ -1,4 +1,0 @@
-# sample list containing only the 2017 tzq signal and no backgrounds
-# to be used with version name crab_MiniAOD2017v2-v1_singlelepton_MC_2017_v2 (???)
-
-"tZq" tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8 0.0942

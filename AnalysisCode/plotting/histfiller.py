@@ -11,48 +11,24 @@ import os
 import sys
 import json
 sys.path.append(os.path.abspath('../samplelists'))
-from readsamplelist import readsamplelist
+from extendsamplelist import extendsamplelist
 
-def getinputfiles(rootdir,samplelist,isdata=True):
+def getinputfiles(rootdir,samplelist):
     ### get list of input files in rootdir whose names (and cross-sections) are in samplelist
-    infiles = []
-    # first define some kind of appendix to have the correct filename; possibly to be replaced by cleaner method
-    appendix = ''
-    if '2016_MC' in samplelist: appendix = '_Summer16'
-    if '2017_MC' in samplelist: appendix = '_Fall17'
-    if '2018_MC' in samplelist: appendix = '_Autumn18'
-    if '2016_data' in samplelist: appendix = '_Summer16' # (?)
-    if '2017_data' in samplelist: appendix = '_Fall17' # (?)
-    if '2018_data' in samplelist: appendix = '_Autumn18' # (?)
-    # read process names and cross sections from the sample list
-    samples_dict = readsamplelist(samplelist,unique=True)
-    # find available samples in input directory and compare with sample list
-    samples_available = glob.glob(rootdir+'/*.root')
-    for sample in samples_dict:
-        filename = os.path.join(rootdir,sample['sample_name']+appendix+'.root')
-        if not os.path.exists(filename):
-            print('### WARNING ###: this file was requested but does not seem to exist:')
-            print('                 '+filename)
-            continue
-        if isdata:
-            infiles.append({'file':filename,'sample_name':sample['sample_name']+appendix,
-                            'process_name':sample['process_name']})
-        else:
-            infiles.append({'file':filename,'sample_name':sample['sample_name']+appendix,
-                            'process_name':sample['process_name'],'xsection':sample['cross_section']})
-        if filename in samples_available:
-            samples_available.remove(filename)
-    if len(samples_available)>0:
-        print('### WARNING ###: these files are present in input directory but not used:')
-        for filename in samples_available:
-            print('                 '+filename)
-    return infiles
+    samples_dict = extendsamplelist(samplelist,rootdir)
+    return samples_dict
 
-def initializehistograms(mcin,datain,variables):
+def removenonpromptmc(mcin):
+    # modify the input file lists, removing all nonprompt processes
+    mcinnew = [f for f in mcin if f['process_name']!='nonprompt']
+    return mcinnew    
+
+def initializehistograms(mcin,datain,npdatain,variables):
     # initialize histograms for all variables and files
     # (2D lists: dimension 1: variables, dimension 2: files)
     mchistlist = []
     datahistlist = []
+    npdatahistlist = []
     for k,vardict in enumerate(variables):
         bins = vardict['bins']
         varname = vardict['name']
@@ -68,7 +44,13 @@ def initializehistograms(mcin,datain,variables):
             datahistlist[k].append(ROOT.TH1F("data_"+varname+"_"+str(j),
                                 datain[j]['process_name']+"/"+datain[j]['sample_name'],nbins,bins))
             datahistlist[k][j].SetDirectory(0)
-    return (mchistlist,datahistlist)
+	if len(npdatain)>0:
+	    npdatahistlist.append([])
+	    for j in range(len(npdatain)):
+		npdatahistlist[k].append(ROOT.TH1F("npdata_"+varname+"_"+str(j),
+                                datain[j]['process_name']+"/"+datain[j]['sample_name'],nbins,bins))
+		npdatahistlist[k][j].SetDirectory(0)
+    return (mchistlist,datahistlist,npdatahistlist)
 
 def underflow(value,hist):
     lowX = hist.GetBinLowEdge(1)
@@ -82,13 +64,9 @@ def overflow(value,hist):
     if value < highX: return value
     return (lowX+highX)/2.
 
-def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization,lumi,evttags):
+def addinputfile(histlist,filelist,treename,index,variables,
+		    usenormweight,removeoverlap,normalization,lumi,evttags):
     f = ROOT.TFile.Open(filelist[index]['file'])
-    if(not isdata and not normalization==0):
-        sumweights = f.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
-        xsection = filelist[index]['xsection']
-    else:
-        sumweights=1; xsection=1; lumi=1
     tree = f.Get("blackJackAndHookers/"+treename)
     for j in range(int(tree.GetEntries()/1.)):
         if(j%5000==0):
@@ -96,12 +74,10 @@ def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization
             sys.stdout.write("\r"+str(percent)+'%')
             sys.stdout.flush()
         tree.GetEntry(j)
-        weight = 1.
 	normweight = 1.
-        if(not isdata and not normalization==0):
-            weight = getattr(tree,'_weight')
+        if(usenormweight and not normalization==0):
 	    normweight = getattr(tree,'_normweight')
-	if isdata:
+	if removeoverlap:
 	    evtid = str(getattr(tree,'_runNb'))
 	    evtid += '/'+str(getattr(tree,'_lumiBlock'))
 	    evtid += '/'+str(getattr(tree,'_eventNb'))
@@ -113,7 +89,7 @@ def addinputfile(histlist,filelist,treename,index,variables,isdata,normalization
             bins = vardict['bins']
             if varvalue<bins[0]: varvalue = underflow(varvalue,histlist[k][index])
 	    if varvalue>bins[-1]: varvalue = overflow(varvalue,histlist[k][index])
-	    # default filling method:
+	    # default filling method (deprecated, removed definition of parameters from func):
             #histlist[k][index].Fill(varvalue,weight*lumi*xsection/sumweights)
 	    # alternative using precomputed normalized weight:
 	    histlist[k][index].Fill(varvalue,normweight)
@@ -157,7 +133,7 @@ def mergemchistograms(mchistlist):
                 newhistset[index].SetName(hist.GetName()[:hist.GetName().rfind("_")+1]+str(index))
         mchistlist[k] = newhistset
 
-def mergedatahistograms(datahistlist):
+def mergedatahistograms(datahistlist,title):
     # merge all data histograms
     print('merging data histograms...')
     for k in range(len(datahistlist)):
@@ -165,11 +141,11 @@ def mergedatahistograms(datahistlist):
         newhist = firsthist.Clone()
         for hist in datahistlist[k][1:]:
             newhist.Add(hist)
-        newhist.SetTitle('data')
+        newhist.SetTitle(title)
         newhist.SetName(firsthist.GetName()[:firsthist.GetName().rfind("_")+1]+str(0))
         datahistlist[k] = newhist
 
-def savehistograms(mchistlist,datahistlist,histfile,normalization,lumi):
+def savehistograms(mchistlist,datahistlist,npdatahistlist,histfile,normalization,lumi):
     print('writing histograms to file...')
     f = ROOT.TFile.Open(histfile,"recreate")
     for histset in mchistlist:
@@ -177,6 +153,8 @@ def savehistograms(mchistlist,datahistlist,histfile,normalization,lumi):
             hist.Write(hist.GetName())
     for hist in datahistlist:
         hist.Write(hist.GetName())
+    for hist in npdatahistlist:
+	hist.Write(hist.GetName())
     normalization_st = ROOT.TVectorD(1); normalization_st[0] = normalization
     normalization_st.Write("normalization")
     lumi_st = ROOT.TVectorD(1)
@@ -206,14 +184,16 @@ if __name__ == '__main__':
     args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    args['mcrootdir'] = '/user/llambrec/Files/zgcontrolregion/2016MC_flat'
+    args['mcrootdir'] = '/user/llambrec/Files/tthid/signalregion_test/2016MC_flat_JECDown'
     # folder to read data root files from
-    args['datarootdir'] = '/user/llambrec/Files/zgcontrolregion/2016data_flat'
+    #args['datarootdir'] = '/user/llambrec/Files/tzqid/signalregion/2016data_flat'
+    args['datarootdir'] = args['mcrootdir']
     # samplelist for simulation with process names and cross sections
-    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
+    #args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
+    args['mcsamplelist'] = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/samplelist_tzq_2016_MC.txt'
     # samplelist for data with dataset names
-    args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_data.txt' 
-    # (use MC for testing, data histogram will be reset later on)
+    #args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_data.txt' 
+    args['datasamplelist'] = args['mcsamplelist']
     # file to store histograms in:
     args['histfile'] = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms/histograms.root'
     # list of dicts of variables to plot with corresponding bins:
@@ -232,10 +212,11 @@ if __name__ == '__main__':
         {'name':'_dRlWrecoil','bins':list(np.linspace(0,10,num=21))},
         {'name':'_dRlWbtagged','bins':list(np.linspace(0,7,num=21))},
         {'name':'_M3l','bins':list(np.linspace(0,600,num=21))},
-        {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21))}
+        {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21))},
+	{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21))}
     ]
     # name of tree to read for each input file:
-    args['treename'] = 'blackJackAndHookersTree'
+    args['treename'] = 'treeCat1'
     # normalization:
     args['normalization'] = 1
     # (normalization parameter: 0 = no normalization, weights, xsection and lumi set to 1.)
@@ -264,33 +245,57 @@ if __name__ == '__main__':
     if not os.path.exists(histdir): os.makedirs(histdir)
 
     ### Configure input files
-    mcin = getinputfiles(mcrootdir,mcsamplelist,False)
-    datain = getinputfiles(datarootdir,datasamplelist,True)
+    mcin = getinputfiles(mcrootdir,mcsamplelist)
+    datain = getinputfiles(datarootdir,datasamplelist)
+    datain = datain[1:2] # TEMP FOR SPEED-UP WHEN NO DATA IS BEING USED
+    npdatain = []
+    npfromdata = False # later add as cmdline arg
+    if npfromdata:
+	npdatain = getinputfiles(os.path.join(datarootdir,'nonprompt_background'),
+				    datasamplelist)
+	mcin = removenonpromptmc(mcin)
+
+    print('=== MC files ===')
+    for s in mcin: print(s['sample_name'])
+    print('=== data files ===')
+    for s in datain: print(s['sample_name'])
+    print('=== nonprompt data files ===')
+    for s in npdatain: print(s['sample_name'])
 
     ### Fill histograms
-    mchistlist,datahistlist = initializehistograms(mcin,datain,args['variables'])
-    evttags = []
+    mchistlist,datahistlist,npdatahistlist = initializehistograms(mcin,datain,npdatain,args['variables'])
     print('adding simulation files...')
     for i in range(len(mcin)):
         print('file '+str(i+1)+' of '+str(len(mcin)))
 	print(mcin[i]['sample_name'])
-        addinputfile(mchistlist,mcin,args['treename'],i,args['variables'],False,args['normalization'],args['lumi'],evttags)
+        addinputfile(mchistlist,mcin,args['treename'],i,args['variables'],
+			True,False,args['normalization'],args['lumi'],[])
     print('adding data files...')
+    evttags = []
     for i in range(len(datain)):
 	print('file '+str(i+1)+' of '+str(len(datain)))
-	evttags = addinputfile(datahistlist,datain,args['treename'],i,
-				args['variables'],True,args['normalization'],args['lumi'],evttags)
+	evttags = addinputfile(datahistlist,datain,args['treename'],i,args['variables'],
+				False,True,args['normalization'],args['lumi'],evttags)
+    if npfromdata:
+	evttags = []
+	print('adding non-prompt data files...')
+	# note: 
+	for i in range(len(npdatain)):
+	    print('file '+str(i+1)+' of '+str(len(npdatain)))
+	    evttags = addinputfile(npdatahistlist,npdatain,args['treename'],i,args['variables'],
+				    True,True,args['normalization'],args['lumi'],evttags)
 
     ### Merge histograms with same process name
     mergemchistograms(mchistlist)
-    mergedatahistograms(datahistlist)
+    mergedatahistograms(datahistlist,'data')
+    mergedatahistograms(npdatahistlist,'nonprompt')
     # manually put data to zero for now
-    #for hist in datahistlist:
-    #	hist.Reset()
+    for hist in datahistlist:
+    	hist.Reset()
 
     ### Normalize if needed
     if(args['normalization']==2):
         normalizemctodata(mchistlist,datahistlist,variables)
 
     ### Write histograms to file
-    savehistograms(mchistlist,datahistlist,histfile,args['normalization'],args['lumi']) 
+    savehistograms(mchistlist,datahistlist,npdatahistlist,histfile,args['normalization'],args['lumi']) 

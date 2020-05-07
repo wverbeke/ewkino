@@ -30,6 +30,7 @@ class LeptonSelector {
         virtual bool isFOBasetZq() const = 0;
         virtual bool isFO2016tZq() const = 0;
         virtual bool isFO2017tZq() const = 0;
+	virtual bool isFO2018tZq() const = 0;
 
         virtual bool isTightBase() const = 0;
         virtual bool isTight2016() const = 0;
@@ -38,6 +39,7 @@ class LeptonSelector {
         virtual bool isTightBasetZq() const = 0;
         virtual bool isTight2016tZq() const = 0;
         virtual bool isTight2017tZq() const = 0;
+	virtual bool isTight2018tZq() const = 0;
 
         virtual bool is2016() const = 0;
         virtual bool is2017() const = 0;

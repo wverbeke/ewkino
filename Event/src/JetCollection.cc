@@ -20,9 +20,12 @@ void JetCollection::selectGoodtZqJets(){
     selectObjects( &Jet::isGoodtZq );
 }
 
-
 void JetCollection::selectGoodAnyVariationJets(){
     selectObjects( &Jet::isGoodAnyVariation );
+}
+
+void JetCollection::selectGoodAnyVariationtZqJets(){
+    selectObjects( &Jet::isGoodtZqAnyVariation );
 }
 
 
@@ -70,9 +73,16 @@ JetCollection JetCollection::goodJetCollection() const{
     return buildSubCollection( &Jet::isGood );
 }
 
+JetCollection JetCollection::goodtZqJetCollection() const{
+    return buildSubCollection( &Jet::isGoodtZq );
+}
 
 JetCollection JetCollection::goodAnyVariationJetCollection() const{
     return buildSubCollection( &Jet::isGoodAnyVariation );
+}
+
+JetCollection JetCollection::goodAnyVariationtZqJetCollection() const{
+    return buildSubCollection( &Jet::isGoodtZqAnyVariation );
 }
 
 

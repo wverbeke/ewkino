@@ -51,6 +51,7 @@ class Jet : public PhysicsObject{
 
         //check if any of the jet variations passes the selection
         bool isGoodAnyVariation() const;
+	bool isGoodtZqAnyVariation() const;
 
         //print jet information
         virtual std::ostream& print( std::ostream& ) const override;

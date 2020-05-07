@@ -5,7 +5,7 @@
 import sys
 import os
 # in order to import local functions: append location to sys.path
-sys.path.append(os.path.abspath('../../skimmer'))
+sys.path.append(os.path.abspath('../../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
 
 # command line arguments (in sequence:)
@@ -29,10 +29,10 @@ if len(sys.argv)==3:
 	print('Usage: python fakeratemeasurement.py < type > < year >')
 
 # set executable directory
-fakerate_directory = os.path.abspath('../../fakeRate')
+fakerate_directory = os.path.abspath('../../../fakeRate')
 
 # check if executable exists
-if not os.path.exists('../../fakeRate/fakeRateMeasurement'):
+if not os.path.exists(os.path.join(fakerate_directory,'fakeRateMeasurement')):
     print('### ERROR ###: fakeRateMeasurement executable does not seem to exist.')
     print('Go to ewkino/fakeRate and run make -f makeFakeRateMeasurement.')
     sys.exit()
@@ -47,6 +47,7 @@ with open( script_name, 'w') as script:
     script.write( command )
 
 # submit job and catch errors 
-submitQsubJob( script_name )
+if doall: submitQsubJob( script_name, wall_time='168:00:00', num_threads=6 )
+else: submitQsubJob( script_name, wall_time='168:00:00' )
 # alternative: run locally (for testing and debugging)
 #os.system('bash '+script_name)

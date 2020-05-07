@@ -76,18 +76,18 @@ bool passClosureTestEventSelection( Event& event, const bool requireMuon = false
     size_t numberOfNonPromptLeptons = 0;
     size_t numberOfPromptLeptons = 0;
     for( auto& leptonPtr : event.lightLeptonCollection() ){
-        //if( !leptonPtr->isPrompt() && leptonPtr->matchPdgId() != 22 ){
 	// original:
         if( !leptonPtr->isPrompt() ){
 	    if( requireMuon && !leptonPtr->isMuon() ) continue;
             if( requireElectron && !leptonPtr->isElectron() ) continue;
             ++numberOfNonPromptLeptons;
         }
-        //else if( leptonPtr->isPrompt() && leptonPtr->matchPdgId() != 22 ) ++numberOfPromptLeptons;
+	// temporary replacement corresponding to older version:
+	//if( !leptonPtr->isPrompt() && leptonPtr->matchPdgId() != 22 ) ++numberOfNonPromptLeptons;
         // original:
-	else if( leptonPtr->isPrompt() ){
-	    ++numberOfPromptLeptons;
-	}
+	else if( leptonPtr->isPrompt() ) ++numberOfPromptLeptons;
+	// temporary replacement corresponding to older version:
+	//else if( leptonPtr->isPrompt() && leptonPtr->matchPdgId() != 22 ) ++numberOfPromptLeptons;
     }
     if( numberOfNonPromptLeptons < 1 ) return false;
     if( ( numberOfNonPromptLeptons + numberOfPromptLeptons ) != 3 ) return false;
@@ -100,7 +100,9 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
     for( const auto& leptonPtr : event.lightLeptonCollection() ){
         if( leptonPtr->isFO() && !leptonPtr->isTight() ){
 
-            double croppedPt = std::min( leptonPtr->pt(), 99. );
+            //double croppedPt = std::min( leptonPtr->pt(), 99. );
+	    // try the following:
+	    double croppedPt = std::min( leptonPtr->pt(), 40.); 
             double croppedAbsEta = std::min( leptonPtr->absEta(), (leptonPtr->isMuon() ? 2.4 : 2.5) );
 
             double fr;
@@ -109,6 +111,10 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
             } else {
                 fr = frMap_electron->GetBinContent( frMap_electron->FindBin( croppedPt, croppedAbsEta ) );
             }
+
+	    std::cout<<"isMuon: "<<leptonPtr->isMuon()<<", pt: "<<leptonPtr->pt()<<std::endl;
+	    std::cout<<fr<<std::endl;
+
             weight *= ( - fr / ( 1. - fr ) );
         }
     }
@@ -137,6 +143,8 @@ int main( int argc, char* argv[] ){
     //const std::string sampleDirectory = "~/Work/ntuples_ewkino_new/";
     const std::string sampleDirectory = "/user/llambrec/Files/fakerate/trifoleptonskim";
     //const std::string sampleDirectory = "/user/llambrec/Files/fakerate/trileptonskim";
+    
+    std::string sampleListFile = "../../fakeRate/sampleLists/samples_closureTest_"+process+"_"+year+".txt";
 
     setTDRStyle();
 
@@ -170,18 +178,20 @@ int main( int argc, char* argv[] ){
     std::shared_ptr< TH2D > fakeRateMap_electron = readFRMap( "electron", year, isMCFR, use_mT );
 
     //loop over samples to fill histograms
-    std::string sampleListFile = "../../fakeRate/sampleLists/samples_closureTest_"+process+"_"+year+".txt";
     TreeReader treeReader( sampleListFile, sampleDirectory );
 
     unsigned numberOfSamples = treeReader.numberOfSamples();
     for( unsigned i = 0; i < numberOfSamples; ++i ){
-	std::cout<<"start processing sample n. "<<i<<" of "<<numberOfSamples<<std::endl;
+	std::cout<<"start processing sample n. "<<i+1<<" of "<<numberOfSamples<<std::endl;
         treeReader.initSample();
+
+	//if(i==0 or i==1) continue;
     
 	long unsigned numberOfEntries = treeReader.numberOfEntries();
-	std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
-	//numberOfEntries = 1000; // temp for testing
-        for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
+	//long unsigned numberOfEntries = 1000; // temp for testing
+	//numberOfEntries = std::min(numberOfEntries, treeReader.numberOfEntries());
+        std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
+	for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
             Event event = treeReader.buildEvent( entry );
 
             //apply event selection

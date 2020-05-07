@@ -1,6 +1,0 @@
-# sample list containing only the 2018 tzq signal and no backgrounds
-# to be used with version name crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_v1 (?)
-# note that this sample was not taken from the analysis note 
-# so not completely sure this is the right one....
-
-"tZq" tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-madgraph-pythia8 0.0942
