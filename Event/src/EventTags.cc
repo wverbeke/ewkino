@@ -33,9 +33,9 @@ EventTags::EventTags( const std::initializer_list< long unsigned >& init_list )
 
 bool operator==( const EventTags& lhs, const EventTags& rhs ){
     return (
-        lhs._runNumber == rhs._runNumber &&
-        lhs._luminosityBlock == rhs._luminosityBlock &&
-        lhs._eventNumber == rhs._eventNumber 
+        ( lhs._runNumber == rhs._runNumber ) &&
+        ( lhs._luminosityBlock == rhs._luminosityBlock ) &&
+        ( lhs._eventNumber == rhs._eventNumber )
     );
 }
 

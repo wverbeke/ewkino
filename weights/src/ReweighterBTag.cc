@@ -8,10 +8,8 @@
 #include "../../Tools/interface/stringTools.h"
 
 
-ReweighterBTag::ReweighterBTag( const std::string& weightDirectory, const std::string& sfFilePath, const std::string& workingPoint, const std::shared_ptr< TH2 >& efficiencyUDSG, const std::shared_ptr< TH2 >& efficiencyC, const std::shared_ptr< TH2 >& efficiencyB ) :
-    bTagEfficiencyUDSG( efficiencyUDSG ),
-    bTagEfficiencyC( efficiencyC ),
-    bTagEfficiencyB( efficiencyB )
+ReweighterBTag::ReweighterBTag( const std::string& weightDirectory, const std::string& sfFilePath, const std::string& workingPoint, const bool heavyFlavor ):
+    _heavyFlavor( heavyFlavor )
 {
 
     //determine what working point to use, and the corresponding selection function
@@ -36,14 +34,23 @@ ReweighterBTag::ReweighterBTag( const std::string& weightDirectory, const std::s
     bTagSFReader.reset( new BTagCalibrationReader( wp, "central", {"up", "down"}) );
 
     //method for extracting scale factors
-    std::string methodHeavy = ( workingPoint == "reshaping" ) ? "iterativefit" : "comb";
-    std::string methodLight = ( workingPoint == "reshaping" ) ? "iterativefit" : "incl";
+    std::string fitMethod;
+    if( workingPoint == "reshaping" ){
+        fitMethod = "iterativefit";
+    } else if( _heavyFlavor ){
+        fitMethod = "comb";
+    } else {
+        fitMethod = "incl";
+    }
 
     //calibrate the reader
     bTagSFCalibration = std::shared_ptr< BTagCalibration >( new BTagCalibration( "", stringTools::formatDirectoryName( weightDirectory ) + sfFilePath ) );
-    bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_B, methodHeavy );
-    bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_C, methodHeavy );
-    bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_UDSG, methodLight );
+    if( heavyFlavor ){
+        bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_B, fitMethod );
+        bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_C, fitMethod );
+    } else {
+        bTagSFReader->load( *bTagSFCalibration, BTagEntry::FLAV_UDSG, fitMethod );
+    }
 }
 
 
@@ -60,19 +67,13 @@ BTagEntry::JetFlavor jetFlavorEntry( const Jet& jet ){
 }
 
 
-double ReweighterBTag::efficiencyMC( const Jet& jet ) const{
-    BTagEntry::JetFlavor jetFlavor = jetFlavorEntry( jet );
-    if( jetFlavor == BTagEntry::FLAV_UDSG ){
-        return histogram::contentAtValues( bTagEfficiencyUDSG.get(), jet.pt(), jet.eta() );
-    } else if( jetFlavor == BTagEntry::FLAV_C ){
-        return histogram::contentAtValues( bTagEfficiencyC.get(), jet.pt(), jet.eta() );
-    } else {
-        return histogram::contentAtValues( bTagEfficiencyB.get(), jet.pt(), jet.eta() );
-    }
-}
-
-
 double ReweighterBTag::weight( const Jet& jet, const std::string& uncertainty ) const{
+
+    if( _heavyFlavor ){
+        if( !( jet.hadronFlavor() == 4 || jet.hadronFlavor() == 5 ) ) return 1.;
+    } else {
+        if( !( jet.hadronFlavor() == 0 ) ) return 1.;
+    }
 
     //make sure jet passes b-tag selection
     if( ! jet.inBTagAcceptance() ){

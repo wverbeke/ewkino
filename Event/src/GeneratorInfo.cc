@@ -14,7 +14,8 @@ GeneratorInfo::GeneratorInfo( const TreeReader& treeReader ) :
     _ttgEventType( treeReader._ttgEventType ),
     _zgEventType( treeReader._zgEventType ),
     _partonLevelHT( treeReader._lheHTIncoming ),
-    _numberOfTrueInteractions( treeReader._nTrueInt )
+    _numberOfTrueInteractions( treeReader._nTrueInt ),
+    _genMetPtr( new GenMet( treeReader ) )
 { 
     if( _numberOfLheWeights > 110 ){
         throw std::out_of_range( "_numberOfLheWeights is larger than 110, which is the maximum array size of _lheWeights." );
@@ -49,7 +50,7 @@ double retrieveWeight( const double* array, const unsigned index, const unsigned
 
 
 double GeneratorInfo::relativeWeightPdfVar( const unsigned pdfIndex ) const{
-    return retrieveWeight( _lheWeights, pdfIndex, 9, std::min(_numberOfLheWeights - 9, unsigned(100) ), "pdf" );
+    return retrieveWeight( _lheWeights, pdfIndex, 9, std::min( std::max( _numberOfLheWeights, unsigned(9) ) - 9, unsigned(100) ), "pdf" );
 }
 
 

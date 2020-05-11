@@ -30,7 +30,10 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
     }
 
     //make output ROOT file
-    std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory ) + stringTools::removeOccurencesOf( pathToFile, "/" );
+    //make file names unique by modifying the full path, but shorten slightly to avoid errors with too long file names for the OS
+    std::string outputFileName = stringTools::split( pathToFile, "/heavyNeutrino/" ).back();
+    outputFileName = stringTools::removeOccurencesOf( outputFileName, "/" );
+    std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory ) + outputFileName;
     TFile* outputFilePtr = TFile::Open( outputFilePath.c_str() , "RECREATE" );
     outputFilePtr->mkdir( "blackJackAndHookers" );
     outputFilePtr->cd( "blackJackAndHookers" );

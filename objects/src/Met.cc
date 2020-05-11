@@ -41,6 +41,29 @@ Met Met::MetUnclusteredUp() const{
 }
 
 
+std::vector< double > Met::metPtVariations() const{
+    return {
+        pt(),
+        MetJECDown().pt(),
+        MetJECUp().pt(),
+        MetUnclusteredDown().pt(),
+        MetUnclusteredUp().pt()
+    };
+}
+
+
+double Met::maxPtAnyVariation() const{
+    auto variations = metPtVariations();
+    return *std::max_element( variations.cbegin(), variations.cend() );
+}
+
+
+double Met::minPtAnyVariation() const{
+    auto variations = metPtVariations();
+    return *std::min_element( variations.cbegin(), variations.cend() );
+}
+
+
 std::ostream& Met::print( std::ostream& os ) const{
     os << "Met : ";
     os << "(pt = " << pt() << ", phi = " << phi() << ")";

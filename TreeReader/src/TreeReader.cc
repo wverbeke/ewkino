@@ -11,6 +11,7 @@
 #include "../../Tools/interface/systemTools.h"
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Event/interface/Event.h"
+#include "../../constants/luminosities.h"
 
 
 TreeReader::TreeReader( const std::string& sampleListFile, const std::string& sampleDirectory ){
@@ -227,11 +228,11 @@ void TreeReader::initSample( const Sample& samp ){
         //event weights set with lumi depending on sample's era 
         double dataLumi;
         if( is2016() ){
-            dataLumi = lumi2016;
+            dataLumi = lumi::lumi2016;
         } else if( is2017() ){
-            dataLumi = lumi2017;
+            dataLumi = lumi::lumi2017;
         } else {
-            dataLumi = lumi2018;
+            dataLumi = lumi::lumi2018;
         }
         scale = samp.xSec()*dataLumi*1000 / sumSimulatedEventWeights;
     }
@@ -546,7 +547,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
-    outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/b");
+    outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/i");
     outputTree->Branch("_met",                          &_met,                          "_met/D");
     outputTree->Branch("_metJECDown",                   &_metJECDown,                   "_metJECDown/D");
     outputTree->Branch("_metJECUp",                     &_metJECUp,                     "_metJECUp/D");
@@ -709,7 +710,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_lProvenanceConversion",     &_lProvenanceConversion,     "_lProvenanceConversion[_nL]/i");
         outputTree->Branch("_gen_met",                   &_gen_met,                   "_gen_met/D");
         outputTree->Branch("_gen_metPhi",                &_gen_metPhi,                "_gen_metPhi/D");
-        outputTree->Branch("_gen_nL",                    &_gen_nL,                    "_gen_nL/b");
+        outputTree->Branch("_gen_nL",                    &_gen_nL,                    "_gen_nL/i");
         outputTree->Branch("_gen_lPt",                   &_gen_lPt,                   "_gen_lPt[_gen_nL]/D");
         outputTree->Branch("_gen_lEta",                  &_gen_lEta,                  "_gen_lEta[_gen_nL]/D");
         outputTree->Branch("_gen_lPhi",                  &_gen_lPhi,                  "_gen_lPhi[_gen_nL]/D");
@@ -718,8 +719,8 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_gen_lCharge",               &_gen_lCharge,               "_gen_lCharge[_gen_nL]/I");
         outputTree->Branch("_gen_lMomPdg",               &_gen_lMomPdg,               "_gen_lMomPdg[_gen_nL]/I");
         outputTree->Branch("_gen_lIsPrompt",             &_gen_lIsPrompt,             "_gen_lIsPrompt[_gen_nL]/O");
-        outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/b");
-        outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/b");
+        outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/i");
+        outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/i");
     } 
 
     if( !is2018() && isMC() ){
@@ -777,3 +778,13 @@ std::vector< std::shared_ptr< TH1 > > TreeReader::getHistogramsFromCurrentFile()
 	return histogramVector;
 }
 
+
+void TreeReader::removeBSMSignalSamples(){
+    for( auto it = samples.begin(); it != samples.end(); ){
+        if( it->isNewPhysicsSignal() ){
+            it = samples.erase( it );
+        } else {
+            ++it;
+        }
+    }
+}

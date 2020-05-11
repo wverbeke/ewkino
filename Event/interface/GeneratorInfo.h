@@ -3,6 +3,7 @@
 
 //include other parts of framework
 #include "../../TreeReader/interface/TreeReader.h"
+#include "../../objects/interface/GenMet.h"
 
 class GeneratorInfo{
     
@@ -25,7 +26,7 @@ class GeneratorInfo{
         unsigned numberOfPsWeights() const{ return _numberOfPsWeights; }
         double relativeWeightPsVar( const unsigned psIndex ) const;
         double relativeWeight_ISR_InverseSqrt2() const{ return relativeWeightPsVar( 2 ); }
-        double relativeWeight_FSR_InverseSqrt2_() const{ return relativeWeightPsVar( 3 ); }
+        double relativeWeight_FSR_InverseSqrt2() const{ return relativeWeightPsVar( 3 ); }
         double relativeWeight_ISR_Sqrt2() const{ return relativeWeightPsVar( 4 ); }
         double relativeWeight_FSR_Sqrt2() const{ return relativeWeightPsVar( 5 ); }
         double relativeWeight_ISR_0p5() const{ return relativeWeightPsVar( 6 ); }
@@ -46,6 +47,8 @@ class GeneratorInfo{
         double prefireWeightDown() const{ return _prefireWeightDown; }
         double prefireWeightUp() const{ return _prefireWeightUp; }
 
+        const GenMet& genMet() const{ return *_genMetPtr; }
+
     private:
         unsigned _numberOfLheWeights;
         double _lheWeights[110];
@@ -59,6 +62,8 @@ class GeneratorInfo{
         unsigned _zgEventType;
         double _partonLevelHT;
         float _numberOfTrueInteractions;
+
+        std::shared_ptr< GenMet > _genMetPtr;
 };
 
 #endif 

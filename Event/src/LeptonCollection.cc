@@ -118,20 +118,25 @@ LeptonCollection LeptonCollection::tightLeptonCollection() const{
 
 
 LeptonCollection LeptonCollection::leadingLeptonCollection( LeptonCollection::size_type numberOfLeptons ){
-	if( numberOfLeptons > size() ){
-		throw std::invalid_argument( "Trying to building collection of " + std::to_string( numberOfLeptons ) + " leptons for LeptonCollection of size " + std::to_string( size() ) + "." );
-	}
+    if( numberOfLeptons > size() ){
+        throw std::invalid_argument( "Trying to building collection of " + std::to_string( numberOfLeptons ) + " leptons for LeptonCollection of size " + std::to_string( size() ) + "." );
+    }
 
     //make sure leptons are ordered by pT
     sortByPt();
 
-	std::vector< std::shared_ptr< Lepton > > leptonVector;
-	for( size_type l = 0; l < numberOfLeptons; ++l ){
+    std::vector< std::shared_ptr< Lepton > > leptonVector;
+    size_type counter = 0;
+    for( const_iterator it = cbegin(); it != cend(); ++it ){
 
-		//leptons are shared between collections!
-		leptonVector.push_back( std::shared_ptr< Lepton >( &( (*this)[l] ) ) );
-	}
-	return LeptonCollection( leptonVector );
+        //leptons are shared between collections!
+        leptonVector.push_back( *it );
+        ++counter;
+        if( counter == numberOfLeptons ){
+            break;
+        }
+    }
+    return LeptonCollection( leptonVector );
 }
 
 
@@ -139,7 +144,7 @@ void LeptonCollection::clean( bool (Lepton::*isFlavorToClean)() const, bool (Lep
 
     for( const_iterator l1It = cbegin(); l1It != cend(); ){
         Lepton& l1 = **l1It;
-        
+
         //to increment iterator when no lepton is deleted 
         bool isDeleted = false;
         if( (l1.*isFlavorToClean)() ){
@@ -251,18 +256,18 @@ LeptonCollection::FlavorCharge LeptonCollection::flavorChargeCombination() const
     if( size() <= 1 ){
         return ZeroOrOneLepton;
     } 
-    
-        
+
+
     FlavorCharge currentState = SS;
 
     for( const_iterator l1It = cbegin(); l1It != cend() - 1; ++l1It ){
         Lepton& l1 = **l1It;
         for( const_iterator l2It = l1It + 1; l2It != cend(); ++l2It ){
             Lepton& l2 = **l2It;
-                
+
             if( l1.charge() != l2.charge() ){
                 currentState = OS;
-        
+
                 if( sameFlavor( l1, l2 ) && l1.isLightLepton() ){
 
                     //OSSF_light can be returned because it has precedence over other combinations, as it is a requirement for Z boson reconstruction
@@ -300,7 +305,7 @@ bool LeptonCollection::isSameSign() const{
 
 
 template< typename function_type> LeptonCollection::size_type LeptonCollection::numberOfUniquePairs( const function_type& pairSatisfiesCondition ) const{
-	size_type numberOfPairs = 0;
+    size_type numberOfPairs = 0;
 
     //there can be no pairs when there are less than 2 leptons
     if( size() <= 1 ){
@@ -317,11 +322,11 @@ template< typename function_type> LeptonCollection::size_type LeptonCollection::
             if( usedLeptonIterators.find( l2It ) != usedLeptonIterators.cend() ) continue;
             Lepton& l2 = **l2It;
 
-			//if the lepton pair satisfies the condition, count it and make sure it can not be re-used 
+            //if the lepton pair satisfies the condition, count it and make sure it can not be re-used 
             if( pairSatisfiesCondition( l1, l2 ) ){
                 ++numberOfPairs;
                 usedLeptonIterators.insert( {l1It, l2It} );
-            
+
                 //without this break there can be cases where l1 will be making a pair with yet another l2!
                 break;
             }
@@ -332,12 +337,12 @@ template< typename function_type> LeptonCollection::size_type LeptonCollection::
 
 
 LeptonCollection::size_type LeptonCollection::numberOfUniqueOSSFPairs() const{
-	return numberOfUniquePairs( oppositeSignSameFlavor ); 
+    return numberOfUniquePairs( oppositeSignSameFlavor ); 
 }
 
 
 LeptonCollection::size_type LeptonCollection::numberOfUniqueOSPairs() const{
-	return numberOfUniquePairs( []( const Lepton& lhs, const Lepton& rhs ){ return lhs.charge() != rhs.charge(); } );
+    return numberOfUniquePairs( []( const Lepton& lhs, const Lepton& rhs ){ return lhs.charge() != rhs.charge(); } );
 }
 
 
@@ -355,7 +360,7 @@ std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >
 
     for( const_iterator l1It = cbegin(); l1It != cend() - 1; ++l1It ){
         Lepton& l1 = **l1It;
-        
+
         //only consider light leptons
         if( l1.isTau() ) continue;
         for( const_iterator l2It = l1It + 1; l2It != cend(); ++l2It ){
@@ -371,7 +376,7 @@ std::pair< std::pair< LeptonCollection::size_type, LeptonCollection::size_type >
             }
         }
     }
-    
+
     return { indicesZCandidate, bestMass };
 }
 

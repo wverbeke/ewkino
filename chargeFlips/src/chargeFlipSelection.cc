@@ -41,8 +41,8 @@ bool chargeFlips::passChargeFlipEventSelection( Event& event, const bool diElect
     event.selectTightLeptons();
 
     //apply charge requirements
-    event.selectElectrons( chargeFlips::passChargeRequirements );
-    event.selectMuons( chargeFlips::passChargeRequirements );
+    //event.selectElectrons( chargeFlips::passChargeRequirements );
+    //event.selectMuons( chargeFlips::passChargeRequirements );
 
     if( event.numberOfLightLeptons() != 2 ) return false;
 
@@ -52,7 +52,7 @@ bool chargeFlips::passChargeFlipEventSelection( Event& event, const bool diElect
     //if specified require the invariant mass to be compatible with the Z
     if( onZ ){
         double mll = ( event.electron( 0 ) + event.electron( 1 ) ).mass();
-        if( fabs( mll - particle::mZ ) < 10. ) return false;
+        if( fabs( mll - particle::mZ ) >= 10. ) return false;
     }
 
     //if specified select jets and veto presence of b-jet

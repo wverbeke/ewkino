@@ -10,6 +10,7 @@
 #include "objects/src/Met.cc"
 #include "objects/src/LeptonGeneratorInfo.cc"
 #include "objects/src/LeptonSelector.cc"
+#include "objects/src/GenMet.cc"
 #include "objectSelection/MuonSelector.cc"
 #include "objectSelection/ElectronSelector.cc"
 #include "objectSelection/TauSelector.cc"
@@ -35,6 +36,9 @@
 #include "Tools/src/mergeAndRemoveOverlap.cc"
 #include "Tools/src/histogramTools.cc"
 #include "Tools/src/SusyScan.cc"
+#include "Tools/src/ConstantFit.cc"
+#include "Tools/src/SampleCrossSections.cc"
+#include "Tools/src/QuantileBinner.cc"
 
 //include TreeReader code 
 #include "TreeReader/src/TreeReader.cc"
@@ -48,6 +52,8 @@
 //include Reweighter code 
 #include "weights/bTagSFCode/BTagCalibrationStandalone.cc"
 #include "weights/src/ReweighterBTag.cc"
+#include "weights/src/ReweighterBTagHeavyFlavor.cc"
+#include "weights/src/ReweighterBTagLightFlavor.cc"
 #include "weights/src/ReweighterPileup.cc"
 #include "weights/src/ReweighterPrefire.cc"
 #include "weights/src/CombinedReweighter.cc"
@@ -58,4 +64,4 @@
 #include "fakeRate/src/Prescale.cc"
 #include "fakeRate/src/fakeRateSelection.cc"
 #include "fakeRate/src/fakeRateTools.cc"
-#include "fakeRate/src/ConstantFit.cc"
+//#include "fakeRate/src/ConstantFit.cc"

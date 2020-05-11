@@ -271,6 +271,7 @@ class TreeReader {
         const Sample* currentSamplePtr() const{ return _currentSamplePtr.get(); }
         std::vector< Sample >::size_type numberOfSamples() const{ return samples.size(); }
         std::vector< Sample > sampleVector() const{ return samples; }
+        void removeBSMSignalSamples();
 
         //access current file and tree 
         std::shared_ptr< TFile > currentFilePtr(){ return _currentFilePtr; }
@@ -389,11 +390,6 @@ class TreeReader {
 
         //current index in samples vector
         int currentSampleIndex = -1;
-
-        //luminosity for each year in units of fb
-        static constexpr double lumi2016 = 35.92;
-        static constexpr double lumi2017 = 41.53;
-        static constexpr double lumi2018 = 59.74;
 
         //luminosity scaling
         double scale = 0;

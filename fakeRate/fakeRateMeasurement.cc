@@ -194,7 +194,6 @@ void write2DHistogramMap( const RangedMap< RangedMap< std::shared_ptr< TH1D > > 
 
 
 /*std::shared_ptr< Reweighter > makeLeptonReweighter( const std::string& year, const bool isMuon, const bool isFO){
-
     std::string flavorString = ( isMuon ? "m" : "e" );
     std::string wpString = ( isFO ? "FO" : "3lTight" );
     const std::string weightDirectory = "../weights/";

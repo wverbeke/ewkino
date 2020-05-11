@@ -15,6 +15,7 @@
 #include "../interface/ReweighterPrefire.h"
 
 
+
 CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& weightDirectory, const std::string& year, const std::vector< Sample >& samples ) const{
 
     analysisTools::checkYearString( year );
@@ -29,7 +30,7 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     muonSFFile->Close();
 
     MuonReweighter muonReweighter( muonSFHist, new TightSelector );
-    combinedReweighter.addReweighter( "muonID", new ReweighterMuons( muonReweighter ) );
+    combinedReweighter.addReweighter( "muonID", std::make_shared< ReweighterMuons >( muonReweighter ) );
     
     //make electron ID Reweighter
     TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/looseToTight_" + year + "_e_3l.root" ).c_str() );
@@ -38,7 +39,7 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     eleSFFile->Close();
 
     ElectronIDReweighter electronIDReweighter( electronSFHist, new TightSelector );
-    combinedReweighter.addReweighter( "electronID", new ReweighterElectronsID( electronIDReweighter ) );
+    combinedReweighter.addReweighter( "electronID", std::make_shared< ReweighterElectronsID >( electronIDReweighter ) );
 
     //make electron Reconstruction Reweighter
     if( year == "2016" || year == "2017" ){
@@ -50,7 +51,7 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
         eleRecoSFFile_pTBelow20->Close();
 
         ElectronIDReweighter electronRecoReweighter_pTBelow20( electronRecoSFHist_pTBelow20, new LooseMaxPtSelector< 20 > );
-        combinedReweighter.addReweighter( "electronReco_pTBelow20", new ReweighterElectronsID( electronRecoReweighter_pTBelow20 ) );
+        combinedReweighter.addReweighter( "electronReco_pTBelow20", std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTBelow20 ) );
 
         //pT above 20 GeV
         TFile* eleRecoSFFile_pTAbove20 = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/egamma_recoEff_" + year + "_pTAbove20.root" ).c_str() );
@@ -59,7 +60,7 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
         eleRecoSFFile_pTAbove20->Close();
 
         ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20, new LooseMinPtSelector< 20 > );
-        combinedReweighter.addReweighter( "electronReco_pTAbove20", new ReweighterElectronsID( electronRecoReweighter_pTAbove20 ) );
+        combinedReweighter.addReweighter( "electronReco_pTAbove20", std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTAbove20 ) );
 
     } else if( year == "2018" ){
 
@@ -70,13 +71,13 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
         eleRecoSFFile->Close();
 
         ElectronIDReweighter electronRecoReweighter( electronRecoSFHist, new LooseSelector );
-        combinedReweighter.addReweighter( "electronReco", new ReweighterElectronsID( electronRecoReweighter ) );
+        combinedReweighter.addReweighter( "electronReco", std::make_shared< ReweighterElectronsID >( electronRecoReweighter ) );
 
     }
     
     //make pileup Reweighter
-    combinedReweighter.addReweighter( "pileup", new ReweighterPileup( samples, weightDirectory ) );
-
+    combinedReweighter.addReweighter( "pileup", std::make_shared< ReweighterPileup >( samples, weightDirectory ) );
+    
     //make b-tagging Reweighter 
     const std::string& bTagWP = "tight";
 
@@ -91,7 +92,6 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     bTagEffMCHist_b->SetDirectory( gROOT );
     bTagEffMCFile->Close();
 
-
     //path of b-tagging SF 
     std::string bTagSFFileName;
     if( year == "2016" ){
@@ -103,10 +103,11 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     }
     std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
 
-    combinedReweighter.addReweighter( "bTag", new ReweighterBTagDeepCSV( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg, bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterBTagHeavyFlavorDeepCSV >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterBTagLightFlavorDeepCSV >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg ) );
 
     //make prefire Reweighter
-    combinedReweighter.addReweighter( "prefire", new ReweighterPrefire() );
+    combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
 
     return combinedReweighter;
 }
@@ -128,7 +129,7 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     muonSFFile->Close();
 
     MuonReweighter muonReweighter( muonSFHist, new TightSelector );
-    combinedReweighter.addReweighter( "muonID", new ReweighterMuons( muonReweighter ) );
+    combinedReweighter.addReweighter( "muonID", std::make_shared<ReweighterMuons>( muonReweighter ) );
 
     //make electron ID Reweighter
     TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/looseToTight_" + year + "_e_3l.root" ).c_str() );
@@ -137,7 +138,7 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     eleSFFile->Close();
 
     ElectronIDReweighter electronIDReweighter( electronSFHist, new TightSelector );
-    combinedReweighter.addReweighter( "electronID", new ReweighterElectronsID( electronIDReweighter ) );
+    combinedReweighter.addReweighter( "electronID", std::make_shared<ReweighterElectronsID>( electronIDReweighter ) );
 
     //make electron Reconstruction Reweighter
     if( year == "2016" || year == "2017" ){
@@ -149,7 +150,7 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
         eleRecoSFFile_pTBelow20->Close();
 
         ElectronIDReweighter electronRecoReweighter_pTBelow20( electronRecoSFHist_pTBelow20, new LooseMaxPtSelector< 20 > );
-        combinedReweighter.addReweighter( "electronReco_pTBelow20", new ReweighterElectronsID( electronRecoReweighter_pTBelow20 ) );
+        combinedReweighter.addReweighter( "electronReco_pTBelow20", std::make_shared<ReweighterElectronsID>( electronRecoReweighter_pTBelow20 ) );
 
         //pT above 20 GeV
         TFile* eleRecoSFFile_pTAbove20 = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/egamma_recoEff_" + year + "_pTAbove20.root" ).c_str() );
@@ -158,7 +159,7 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
         eleRecoSFFile_pTAbove20->Close();
 
         ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20, new LooseMinPtSelector< 20 > );
-        combinedReweighter.addReweighter( "electronReco_pTAbove20", new ReweighterElectronsID( electronRecoReweighter_pTAbove20 ) );
+        combinedReweighter.addReweighter( "electronReco_pTAbove20", std::make_shared<ReweighterElectronsID>( electronRecoReweighter_pTAbove20 ) );
 
     } else if( year == "2018" ){
 
@@ -169,12 +170,12 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
         eleRecoSFFile->Close();
 
         ElectronIDReweighter electronRecoReweighter( electronRecoSFHist, new LooseSelector );
-        combinedReweighter.addReweighter( "electronReco", new ReweighterElectronsID( electronRecoReweighter ) );
+        combinedReweighter.addReweighter( "electronReco", std::make_shared<ReweighterElectronsID>( electronRecoReweighter ) );
 
     }
 
     //make pileup Reweighter
-    combinedReweighter.addReweighter( "pileup", new ReweighterPileup( samples, weightDirectory ) );
+    combinedReweighter.addReweighter( "pileup", std::make_shared<ReweighterPileup>( samples, weightDirectory ) );
 
     //make b-tagging Reweighter 
     const std::string& bTagWP = "tight";
@@ -190,7 +191,6 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     bTagEffMCHist_b->SetDirectory( gROOT );
     bTagEffMCFile->Close();
 
-
     //path of b-tagging SF 
     std::string bTagSFFileName;
     if( year == "2016" ){
@@ -202,10 +202,11 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     }
     std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
 
-    combinedReweighter.addReweighter( "bTag", new ReweighterBTagDeepCSV( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg, bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterBTagHeavyFlavorDeepCSV >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterBTagLightFlavorDeepCSV >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg ) );
 
     //make prefire Reweighter
-    combinedReweighter.addReweighter( "prefire", new ReweighterPrefire() );
+    combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
 
     return combinedReweighter;
 }

@@ -27,6 +27,9 @@ int main( int argc, char* argv[] ){
             for( const auto& fileName : presentFiles ){
 
                 if( !stringTools::stringContains( fileName, year ) ) continue;
+
+                //samples might have genMET in their name, and will pass the dataIdentifier check without this continue
+                if( stringTools::stringContains( fileName, "gen" ) ) continue;
                 
                 //make sure file corresponds to data
                 bool identified = false;

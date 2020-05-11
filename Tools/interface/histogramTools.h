@@ -1,6 +1,9 @@
 #ifndef histogramTools_H
 #define histogramTools_H
 
+//include c++ library classes
+#include <utility>
+
 //include ROOT classes
 #include "TH1.h"
 #include "TH2.h"
@@ -37,6 +40,9 @@ namespace histogram{
 
     void fillValue( TH1*, const double value, const double weight );
     void fillValues( TH2*, const double valueX, const double valueY, const double weight );
+
+    double totalUncertainty( const TH1* );
+    std::pair< double, double > sumOfWeightsRatioAndUncertainty( const TH1*, const TH1* );
 }
 
 #endif

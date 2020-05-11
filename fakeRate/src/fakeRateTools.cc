@@ -15,7 +15,7 @@
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/systemTools.h"
 #include "../../Tools/interface/analysisTools.h"
-#include "../interface/ConstantFit.h"
+#include "../../Tools/interface/ConstantFit.h"
 #include "../../plotting/plotCode.h"
 
 
@@ -248,7 +248,7 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
         throw std::invalid_argument( histogramNames.front() + " corresponds to neither electrons nor muons" );
     }
 
-    std::string flavorString = (isMuon ? "muon" : "electron");
+    std::string flavorString = ( isMuon ? "muon" : "electron" );
 
     //initialize 2D histogram
     std::pair< std::vector< double >, std::vector< double > > ptEtaBins = ptEtaBinNamesToBinVectors( ptEtaBinNames, isMuon );
@@ -306,6 +306,7 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
 	    stringTools::formatDirectoryName( outputDirectory_name ) + 
 	    ( isMuon ? "muon_" : "electron_" ) + bin + "_numerator_fakeRateMeasurement" + 
 	    year + ".pdf", "", false, false, "(13 TeV)" ); 
+        //plotDataVSMC( data_hist_numerator.get(), predictedHists_numerator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + flavorString + "_" + bin + "_numerator_fakeRateMeasurement" + year + ".pdf", "", false, false, "(13 TeV)" ); 
         
 	//plot denominator
         TH1D* predictedHists_denominator[1] = { prompt_hist_denominator.get() };
@@ -313,15 +314,15 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
 	    stringTools::formatDirectoryName( outputDirectory_name ) + 
 	    ( isMuon ? "muon_" : "electron_" ) + bin + "_denominator_fakeRateMeasurement" + 
 	    year + ".pdf", "", false, false, "(13 TeV)" ); 
-		
+        //plotDataVSMC( data_hist_denominator.get(), predictedHists_denominator, predictedNames, 1, stringTools::formatDirectoryName( outputDirectory_name ) + flavorString + "_" + bin + "_denominator_fakeRateMeasurement" + year + ".pdf", "", false, false, "(13 TeV)" ); 
 
         //subtract prompt contamination from data
         data_hist_numerator->Add( prompt_hist_numerator.get(), -1. );
         data_hist_denominator->Add( prompt_hist_denominator.get(), -1. );
 
-	// set negative bins to 0
-	analysisTools::setNegativeBinsToZero(data_hist_numerator);
-	analysisTools::setNegativeBinsToZero(data_hist_denominator);
+        //set negative bins to 0
+        analysisTools::setNegativeBinsToZero( data_hist_numerator );
+        analysisTools::setNegativeBinsToZero( data_hist_denominator );
 
         //set fake-rate to 0 if there are no entries 
         double fakeRate, fakeRateUncertainty;
@@ -344,7 +345,6 @@ std::shared_ptr< TH2D > fakeRate::produceFakeRateMap_cut( TFile* filePtr, const 
 	std::cout<<"content, error: "<<fakeRate<<", "<<fakeRateUncertainty<<std::endl;
         fakeRateMap->SetBinContent( binIndex, fakeRate );
         fakeRateMap->SetBinError( binIndex, fakeRateUncertainty );
-	}
-
+    }
     return fakeRateMap;
 }
