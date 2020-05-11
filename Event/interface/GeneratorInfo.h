@@ -51,7 +51,7 @@ class GeneratorInfo{
 
     private:
         unsigned _numberOfLheWeights;
-        double _lheWeights[110];
+        double _lheWeights[148];
         unsigned _numberOfPsWeights;
         double _psWeights[14];
         double _prefireWeight;
