@@ -17,14 +17,14 @@ GeneratorInfo::GeneratorInfo( const TreeReader& treeReader ) :
     _numberOfTrueInteractions( treeReader._nTrueInt ),
     _genMetPtr( new GenMet( treeReader ) )
 { 
-    if( _numberOfLheWeights > 110 ){
+    if( _numberOfLheWeights > maxNumberOfLheWeights ){
         throw std::out_of_range( "_numberOfLheWeights is larger than 110, which is the maximum array size of _lheWeights." );
     }
     for( unsigned i = 0; i < _numberOfLheWeights; ++i  ){
         _lheWeights[i] = treeReader._lheWeight[i];
     }
 
-    if( _numberOfPsWeights > 14 ){
+    if( _numberOfPsWeights > maxNumberOfPsWeights ){
         throw std::out_of_range( "_numberOfPsWeights is larger than 14, which is the maximum array size of _psWeights." );
     }
     for( unsigned i = 0; i < _numberOfPsWeights; ++i ){
@@ -45,7 +45,7 @@ double retrieveWeight( const double* array, const unsigned index, const unsigned
         std::string maximumIndexStr = std::to_string( maximumIndex );
         throw std::out_of_range( "Only " + maximumIndexStr + " " + name + " variations are available, and an index larger or equal than " + maximumIndexStr + " is requested." );
     }
-    return array[index + offset ];
+    return array[ index + offset ];
 }
 
 
