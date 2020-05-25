@@ -66,13 +66,13 @@ void computeBTagEff( const std::string& year, const std::string& sampleDirectory
 
             //ignore weight differences between samples for better statistics
             double weight = event.weight();
-            if( weight > 1e-6 ){ weight = 1.; } 
-	    else if( weight < -1e-6 ){ weight = -1.; } 
-	    //else { throw std::runtime_error( "Weight of event is zero." ); }
-	    else{ 
-		std::cerr<<"### WARNING ###: event weight smaller than expected: "<<weight<<"."<<std::endl;
-		std::cerr<<"                 skipping this event..."<<std::endl;
-	    } 
+            if( weight > 0. ){
+                weight = 1.;
+            } else if( weight < 0. ){
+                weight = -1.;
+            } else {
+                throw std::runtime_error( "Weight of event is zero." );
+            }
 
             //apply selection to jets 
             event.selectLooseLeptons();
