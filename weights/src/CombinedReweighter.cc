@@ -20,18 +20,18 @@ std::map< std::string, std::shared_ptr< Reweighter > >::const_iterator findAndCh
 
 
 void CombinedReweighter::eraseReweighter( const std::string& name ){
-    auto it = findAndCheckReweighter( name, reweighterMap );
+    auto mapIt = findAndCheckReweighter( name, reweighterMap );
 
     //use the address to delete the corresponding element in the vector
-    Reweighter* address = it->second.get();
+    Reweighter* address = mapIt->second.get();
 
     //remove from map
-    reweighterMap.erase( it );
+    reweighterMap.erase( mapIt );
 
     //remove from vector
-    for( auto it = reweighterVector.begin(); it != reweighterVector.end(); ++it ){
-        if( it->get() == address ){
-            reweighterVector.erase( it );
+    for( auto vecIt = reweighterVector.begin(); vecIt != reweighterVector.end(); ++vecIt ){
+        if( vecIt->get() == address ){
+            reweighterVector.erase( vecIt );
 
             //break is needed to avoid problems with invalid iterators after calling erase
             break;
