@@ -10,25 +10,7 @@ class JetSelector{
     public:
         JetSelector( Jet* jPtr ) : jetPtr( jPtr ){}
         
-        bool isGood() const{
-            if( !isGoodBase() ) return false;
-            
-            if( jetPtr->is2016() ){
-                return isGood2016();
-            } else if( jetPtr->is2017() ){
-                return isGood2017();
-            } else {
-                return isGood2018();
-            }
-        }
-
-	bool isGoodtZq() const{
-	    if( !isGoodBasetZq() ) return false;
-	    if( jetPtr->is2016() ){ return isGood2016tZq(); }
-	    else if(jetPtr->is2017()) {return isGood2017tZq(); }
-	    else{ return isGood2018tZq(); }
-	} 	
-
+        bool isGood() const;
 
         bool isBTaggedLoose() const{
             if( !inBTagAcceptance() ) return false;
@@ -72,6 +54,9 @@ class JetSelector{
 
     private:
         Jet* jetPtr;
+
+	bool isGoodttH() const;
+	bool isGoodtZq() const;
 
         bool isGoodBase() const;
         bool isGood2016() const;

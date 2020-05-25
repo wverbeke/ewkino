@@ -8,10 +8,32 @@ double ttHleptonMVACutMuon(){
     return 0.85;
 }
 
-double tZqleptonMVACutMuon(){
-    return 0.;
+// define here what mva threshold to use in tZq ID's listed below
+// warning: function ttHleptonMVACutMuon is used in ttH ID's
+double muonMVACut(){
+    return 0.9;
 }
 
+// define here what mva value to use in tZq ID's listed below
+// warning: leptonMVAttH is hard-coded in ttH ID!
+double muonMVAValue(const Muon* muonPtr){
+    //return muonPtr->leptonMVAtZq();
+    return muonPtr->leptonMVATOP();
+}
+
+// define here what b-tagger threshold to use in all tZq ID's listed below
+// warning: deepFlavor thresholds are hard-coded in ttH ID!
+double muonJetBTagCut(const std::string wp, const std::string year){
+    //return bTagWP::getWP("DeepCSV", wp, year);
+    return bTagWP::getWP("DeepFlavor", wp, year);    
+}
+
+// define here what b-tagger to use in all tZq ID's listed below
+// warning: deepFlavor is hard-coded in ttH ID!
+double muonJetBTagValue(const Muon* muonPtr){
+    //return muonPtr->closestJetDeepCSV();
+    return muonPtr->closestJetDeepFlavor();
+}
 
 /*
 -------------------------------------------------------------------
@@ -119,38 +141,38 @@ bool MuonSelector::isFOBasetZq() const{
     if(!isLoose()) return false;
     if(muonPtr->uncorrectedPt()<10) return false;
     if(!muonPtr->isMediumPOGMuon()) return false;
-    if(muonPtr->leptonMVAtZq() < tZqleptonMVACutMuon()){
+    if(muonMVAValue(muonPtr) < muonMVACut()){
 	if(muonPtr->ptRatio()<0.6) return false;
     }
     return true;
 }
 
 bool MuonSelector::isFO2016tZq() const{
-    if(muonPtr->leptonMVAtZq() < tZqleptonMVACutMuon()){
-        if(muonPtr->closestJetDeepCSV() > 0.3) return false;
+    if(muonMVAValue(muonPtr) < muonMVACut()){
+        if(muonJetBTagValue(muonPtr) > 0.3) return false;
     }
     else{
-        if(muonPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2016()) return false;
+        if(muonJetBTagValue(muonPtr) > muonJetBTagCut("tight", "2016")) return false;
     }
     return true;    
 }
 
 bool MuonSelector::isFO2017tZq() const{
-    if(muonPtr->leptonMVAtZq() < tZqleptonMVACutMuon()){
-        if(muonPtr->closestJetDeepCSV()>0.2) return false;
+    if(muonMVAValue(muonPtr) < muonMVACut()){
+        if(muonJetBTagValue(muonPtr) >0.2) return false;
     }
     else{
-        if(muonPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2017()) return false;
+        if(muonJetBTagValue(muonPtr) > muonJetBTagCut("tight", "2017")) return false;
     }
     return true;
 }
 
 bool MuonSelector::isFO2018tZq() const{
-    if(muonPtr->leptonMVAtZq() < tZqleptonMVACutMuon()){
-	if(muonPtr->closestJetDeepCSV()>0.2) return false;
+    if(muonMVAValue(muonPtr) < muonMVACut()){
+	if(muonJetBTagValue(muonPtr) > 0.2) return false;
     }
     else{
-        if(muonPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2018()) return false;
+        if(muonJetBTagValue(muonPtr) > muonJetBTagCut("tight", "2018")) return false;
     }
     return true;
 }
@@ -195,22 +217,22 @@ tight muon selection for tZq ID
 bool MuonSelector::isTightBasetZq() const{
     // function to copy as closely as possible lepton ID of tZq analysis note
     if(!isFOtZq()) return false;
-    if(muonPtr->leptonMVAtZq() < tZqleptonMVACutMuon()) return false;
+    if(muonMVAValue(muonPtr) < muonMVACut()) return false;
     return true;
 }
 
 bool MuonSelector::isTight2016tZq() const{
-    if(muonPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2016()) return false;
+    if(muonJetBTagValue(muonPtr) > muonJetBTagCut("tight", "2016")) return false;
     return true;
 }
 
 bool MuonSelector::isTight2017tZq() const{
-    if(muonPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2017()) return false;
+    if(muonJetBTagValue(muonPtr) > muonJetBTagCut("tight", "2017")) return false;
     return true;
 }
 
 bool MuonSelector::isTight2018tZq() const{
-    if(muonPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2018()) return false;
+    if(muonJetBTagValue(muonPtr) > muonJetBTagCut("tight", "2018")) return false;
     return true;
 }
 

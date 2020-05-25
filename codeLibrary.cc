@@ -9,13 +9,14 @@
 #include "objects/src/Jet.cc" 
 #include "objects/src/Met.cc"
 #include "objects/src/LeptonGeneratorInfo.cc"
-#include "objects/src/LeptonSelector.cc"
+//#include "objects/src/LeptonSelector.cc" // moved to objectSelection
 #include "objects/src/GenMet.cc"
 #include "objectSelection/MuonSelector.cc"
 #include "objectSelection/ElectronSelector.cc"
 #include "objectSelection/TauSelector.cc"
 #include "objectSelection/JetSelector.cc"
 #include "objectSelection/bTagWP.cc"
+#include "objectSelection/LeptonSelector.cc" // moved from objects/src
 
 //include Event code 
 #include "Event/src/LeptonCollection.cc"

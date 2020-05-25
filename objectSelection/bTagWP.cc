@@ -27,3 +27,19 @@ double bTagWP::tightDeepFlavor2017(){ return 0.7489; }
 double bTagWP::looseDeepFlavor2018(){ return 0.0494; }
 double bTagWP::mediumDeepFlavor2018(){ return 0.2770; }
 double bTagWP::tightDeepFlavor2018(){ return 0.7264; }
+
+// extension for more flexible calling in selections:
+double bTagWP::getWP(const std::string tagger, 
+			const std::string wp, 
+			const std::string year){
+    std::string fname = wp+tagger+year;
+    std::map<std::string, std::function<double()>>::iterator it = btagwpmap.find(fname);
+    if(it != btagwpmap.end()){
+	return btagwpmap[fname]();
+    }
+    else{
+	std::cout<<"### ERROR ###: in ewkino/objectSelection/src/bTagWP.cc"<<std::endl;
+	std::cout<<"               b-tag threshold to use not recognized ('"<<fname<<"')"<<std::endl;
+	return btagwpmap[fname](); // will give an error to safely terminate function
+    }
+}

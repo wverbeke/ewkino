@@ -35,12 +35,8 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
         //select jets
         void selectGoodJets();
         JetCollection goodJetCollection() const;
-	void selectGoodtZqJets();
-	JetCollection goodtZqJetCollection() const;
         void selectGoodAnyVariationJets();
         JetCollection goodAnyVariationJetCollection() const;
-	void selectGoodAnyVariationtZqJets();
-	JetCollection goodAnyVariationtZqJetCollection() const;;
 
         //count jets passing criteria
         size_type numberOfLooseBTaggedJets() const;

@@ -40,20 +40,24 @@ extern Float_t _abs_eta_max;
 // BDT output score
 extern Float_t _eventBDT;
 
+// other variables
+extern Int_t _nMuons;
+extern Int_t _nElectrons;
+
 // function declarations
 void initOutputTree(TTree*);
 TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile );
-JetCollection getjetcollection(const Event&, const std::string& uncertainty = "nominal");
-Met getmet(const Event&, const std::string& uncertainty = "nominal");
-int eventCategory(Event&, const std::string& uncertainty = "nominal");
+JetCollection getjetcollection(const Event&, const std::string& variation = "nominal");
+Met getmet(const Event&, const std::string& variation = "nominal");
+int eventCategory(Event&, const std::string& variation = "nominal");
 std::shared_ptr< TH2D > readFRMap( const std::string&, const std::string&, const std::string&);
 double fakeRateWeight( const Event&, const std::string&, 
 			const std::shared_ptr< TH2D >&, const std::shared_ptr< TH2D >&);
-void eventToEntry(Event&, double, const std::string& leptonID,
+void eventToEntry(Event&, double,
 		    const bool isnpbackground = false, 
 		    const std::shared_ptr< TH2D>& frMap_muon = nullptr, 
 		    const std::shared_ptr< TH2D>& frMap_electron = nullptr,
-		    const std::string& uncertainty = "nominal");
+		    const std::string& variation = "nominal");
 std::pair<double,double> pmzcandidates(Lepton&, Met&);
 std::pair<double,int> besttopcandidate(JetCollection&, Lepton&, Met&, double, double);
 

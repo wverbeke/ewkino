@@ -184,13 +184,13 @@ if __name__ == '__main__':
     args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    args['mcrootdir'] = '/user/llambrec/Files/tthid/signalregion_test/2016MC_flat_JECDown'
+    args['mcrootdir'] = '/user/llambrec/Files/tzqid/reference1/signalregion/2016MC_flat'
     # folder to read data root files from
     #args['datarootdir'] = '/user/llambrec/Files/tzqid/signalregion/2016data_flat'
     args['datarootdir'] = args['mcrootdir']
     # samplelist for simulation with process names and cross sections
-    #args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
-    args['mcsamplelist'] = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/samplelist_tzq_2016_MC.txt'
+    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
+    #args['mcsamplelist'] = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/samplelist_tzq_2016_MC.txt'
     # samplelist for data with dataset names
     #args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_data.txt' 
     args['datasamplelist'] = args['mcsamplelist']
@@ -223,6 +223,7 @@ if __name__ == '__main__':
     # (             1 = normalize using weights, xsection and lumi.)
     # (             2 = same as before but apply normalization to data afterwards.)
     # luminosity in inverse picobarns
+    #args['lumi'] = 35900.
     args['lumi'] = 35900.
 
     ### Overwrite using cmd args

@@ -59,8 +59,7 @@ double getVarValue(const std::string varname){
 }
 
 void fillSystematicsHistograms(const std::string& pathToFile, const double norm, 
-				const std::string& outputFilePath,
-				const std::string& leptonID, 
+				const std::string& outputFilePath, 
 				const std::string& variable,
 				const std::string pathToXMLFile,
 				const double xlow, const double xhigh, const int nbins,
@@ -103,11 +102,11 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
 	// build event and perform event selection
         Event event = treeReader.buildEvent(entry,true,true);
-        if(!passES(event, "signalregion", leptonID, false)) continue;
+        if(!passES(event, "signalregion", false)) continue;
 	// fill nominal histogram
 	int eventcategory = eventCategory(event, "nominal");
         if(eventcategory == -1) continue;
-	eventToEntry(event, norm, leptonID, false, nullptr, nullptr, "nominal");
+	eventToEntry(event, norm, false, nullptr, nullptr, "nominal");
         if(variable=="_eventBDT"){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
         if(event.isMC()) _normweight *= reweighter.totalWeight(event);
         histMap[std::string("nominal")]->Fill(getVarValue(variable),_normweight);
@@ -115,12 +114,13 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	for(std::string systematic : systematics){
 	    // determine type of systematic (acceptance or weight)
 	    std::string sysType = systematicType(systematic);
+	    // IF type is acceptance, special event selections are needed.
 	    if(sysType=="acceptance"){
 		// do event selection and flattening with up variation
 		std::string upvar = systematic + "Up";
 		int eventcategory = eventCategory(event, upvar);
 		if(eventcategory == -1) continue;
-		eventToEntry(event, norm, leptonID, false, nullptr, nullptr, upvar);
+		eventToEntry(event, norm, false, nullptr, nullptr, upvar);
 		if(variable=="_eventBDT"){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
 		if(event.isMC()) _normweight *= reweighter.totalWeight(event);
 		histMap[upvar]->Fill(getVarValue(variable),_normweight);
@@ -128,18 +128,18 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		std::string downvar = systematic + "Down";
                 eventcategory = eventCategory(event, downvar);
                 if(eventcategory == -1) continue;
-                eventToEntry(event, norm, leptonID, false, nullptr, nullptr, downvar);
+                eventToEntry(event, norm, false, nullptr, nullptr, downvar);
                 if(variable=="_eventBDT"){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
                 if(event.isMC()) _normweight *= reweighter.totalWeight(event);
                 histMap[downvar]->Fill(getVarValue(variable),_normweight);
 	    }
-	    else if(sysType=="weight"){
-		// do nominal event selection
-                int eventcategory = eventCategory(event, "nominal");
-                if(eventcategory == -1) continue;
-                eventToEntry(event, norm, leptonID, false, nullptr, nullptr, "nominal");
-                if(variable=="_eventBDT"){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
-		// apply up and down weights
+	    // ELSE do nominal event selection
+            int eventcategory = eventCategory(event, "nominal");
+            if(eventcategory == -1) continue;
+            eventToEntry(event, norm, false, nullptr, nullptr, "nominal");
+            if(variable=="_eventBDT"){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
+	    // IF type is weight, apply reweighter with up and down weight
+	    if(sysType=="weight"){
 		double upweight = _normweight;
 		double downweight = _normweight;
                 if(event.isMC()){
@@ -152,6 +152,49 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		histMap[upvar]->Fill(getVarValue(variable),upweight);
 		std::string downvar = systematic + "Down";
 		histMap[downvar]->Fill(getVarValue(variable),downweight);
+	    }
+	    // ELSE apply nominal weight
+	    if(event.isMC()) _normweight *= reweighter.totalWeight(event);
+	    // run over special types of systematics
+	    else if(systematic=="factorizationScale"){
+	    	double upweight = _normweight * event.relativeWeightScaleVar(1);
+		double downweight = _normweight * event.relativeWeightScaleVar(2);
+		std::string upvar = systematic + "Up";
+                histMap[upvar]->Fill(getVarValue(variable),upweight);
+                std::string downvar = systematic + "Down";
+                histMap[downvar]->Fill(getVarValue(variable),downweight);
+	    }
+	    else if(systematic=="renormalizationScale"){
+		double upweight = _normweight * event.relativeWeightScaleVar(3);
+                double downweight = _normweight * event.relativeWeightScaleVar(6);
+                std::string upvar = systematic + "Up";
+                histMap[upvar]->Fill(getVarValue(variable),upweight);
+                std::string downvar = systematic + "Down";
+                histMap[downvar]->Fill(getVarValue(variable),downweight);	    
+	    }
+	    else if(systematic=="scales"){
+                double upweight = _normweight * event.relativeWeightScaleVar(4);
+                double downweight = _normweight * event.relativeWeightScaleVar(8);
+                std::string upvar = systematic + "Up";
+                histMap[upvar]->Fill(getVarValue(variable),upweight);
+                std::string downvar = systematic + "Down";
+                histMap[downvar]->Fill(getVarValue(variable),downweight);
+            }
+	    else if(systematic=="isrScale"){
+		double upweight = _normweight * event.relativeWeightPsVar(8);
+                double downweight = _normweight * event.relativeWeightPsVar(6);
+                std::string upvar = systematic + "Up";
+                histMap[upvar]->Fill(getVarValue(variable),upweight);
+                std::string downvar = systematic + "Down";
+                histMap[downvar]->Fill(getVarValue(variable),downweight);
+	    }
+	    else if(systematic=="fsrScale"){
+		double upweight = _normweight * event.relativeWeightScaleVar(9);
+                double downweight = _normweight * event.relativeWeightScaleVar(7);
+                std::string upvar = systematic + "Up";
+                histMap[upvar]->Fill(getVarValue(variable),upweight);
+                std::string downvar = systematic + "Down";
+                histMap[downvar]->Fill(getVarValue(variable),downweight);
 	    }
         }
     }
@@ -166,10 +209,10 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 }
 
 int main( int argc, char* argv[] ){
-    if( argc < 11 ){
-        std::cerr << "### ERROR ###: runsystematics.cc requires at least 10 arguments to run: ";
+    if( argc < 10 ){
+        std::cerr << "### ERROR ###: runsystematics.cc requires at least 9 arguments to run: ";
         std::cerr << "input_file_path, norm, output_file_path ";
-	std::cerr << "leptonID, variable, pathToXMLFile ";
+	std::cerr << "variable, pathToXMLFile ";
 	std::cerr << "xlow, xhigh, nbins, ";
 	std::cerr << "at least one systematic" << std::endl;
         return -1;
@@ -179,14 +222,13 @@ int main( int argc, char* argv[] ){
     std::string& input_file_path = argvStr[1];
     double norm = std::stod(argvStr[2]);
     std::string& output_file_path = argvStr[3];
-    std::string& leptonID = argvStr[4];
-    std::string& variable = argvStr[5];
-    std::string& pathToXMLFile = argvStr[6];
-    double xlow = std::stod(argvStr[7]);
-    double xhigh = std::stod(argvStr[8]);
-    int nbins = std::stod(argvStr[9]);
+    std::string& variable = argvStr[4];
+    std::string& pathToXMLFile = argvStr[5];
+    double xlow = std::stod(argvStr[6]);
+    double xhigh = std::stod(argvStr[7]);
+    int nbins = std::stod(argvStr[8]);
     std::vector<std::string> systematics;
-    for(int i=10; i<argc; i++){
+    for(int i=9; i<argc; i++){
 	systematics.push_back(argvStr[i]);
     }
     // check validity
@@ -201,7 +243,7 @@ int main( int argc, char* argv[] ){
 
     // fill the histograms
     fillSystematicsHistograms(input_file_path, norm, output_file_path, 
-				    leptonID, variable, pathToXMLFile,
+				    variable, pathToXMLFile,
 				    xlow, xhigh, nbins,
 				    systematics);
     std::cout<<"done"<<std::endl;

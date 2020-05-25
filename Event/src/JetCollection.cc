@@ -16,18 +16,9 @@ void JetCollection::selectGoodJets(){
     selectObjects( &Jet::isGood );
 }
 
-void JetCollection::selectGoodtZqJets(){
-    selectObjects( &Jet::isGoodtZq );
-}
-
 void JetCollection::selectGoodAnyVariationJets(){
     selectObjects( &Jet::isGoodAnyVariation );
 }
-
-void JetCollection::selectGoodAnyVariationtZqJets(){
-    selectObjects( &Jet::isGoodtZqAnyVariation );
-}
-
 
 void JetCollection::cleanJetsFromLeptons( const LeptonCollection& leptonCollection, bool (Lepton::*passSelection)() const, const double coneSize ){
     for( const_iterator jetIt = cbegin(); jetIt != cend(); ){
@@ -73,16 +64,8 @@ JetCollection JetCollection::goodJetCollection() const{
     return buildSubCollection( &Jet::isGood );
 }
 
-JetCollection JetCollection::goodtZqJetCollection() const{
-    return buildSubCollection( &Jet::isGoodtZq );
-}
-
 JetCollection JetCollection::goodAnyVariationJetCollection() const{
     return buildSubCollection( &Jet::isGoodAnyVariation );
-}
-
-JetCollection JetCollection::goodAnyVariationtZqJetCollection() const{
-    return buildSubCollection( &Jet::isGoodtZqAnyVariation );
 }
 
 

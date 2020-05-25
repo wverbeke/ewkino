@@ -47,9 +47,9 @@ if len(sys.argv) < 4:
 
 # else, overwrite default arguments
 else:
-    input_directory = sys.argv[1] 
-    sample_list = sys.argv[2]
-    output_directory_base = sys.argv[3]
+    input_directory = os.path.abspath(sys.argv[1])
+    sample_list = os.path.abspath(sys.argv[2])
+    output_directory_base = os.path.abspath(sys.argv[3])
     version_name = ''
     files_per_job = 50
     wall_time = '24:00:00'
@@ -122,7 +122,6 @@ else:
 print('found '+str(len(sample_directories))+' valid sample directories.')
 print(sample_directories)
 print(sample_sub_directories)
-
 #sys.exit()
 
 # make output directory for each sample
@@ -143,7 +142,7 @@ for sample_directory, sub_directory, output_directory in zip( sample_directories
     print(sample_directory)
     print(sub_directory)
     print('number of root files: '+str(len(root_files)))
-    #split_files in lists of files_per_job
+    # split files in lists of files_per_job
     for chunk in listParts( root_files, files_per_job ):
 
         #make a job script 

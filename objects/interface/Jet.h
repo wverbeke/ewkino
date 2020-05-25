@@ -34,7 +34,6 @@ class Jet : public PhysicsObject{
 
         //analysis-specific jet selection
         virtual bool isGood() const override;
-	virtual bool isGoodtZq() const;
         bool inBTagAcceptance() const;
         bool isBTaggedLoose() const;
         bool isBTaggedMedium() const;
@@ -51,7 +50,6 @@ class Jet : public PhysicsObject{
 
         //check if any of the jet variations passes the selection
         bool isGoodAnyVariation() const;
-	bool isGoodtZqAnyVariation() const;
 
         //print jet information
         virtual std::ostream& print( std::ostream& ) const override;

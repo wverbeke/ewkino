@@ -38,16 +38,17 @@ def findbytitle(histlist,title):
 def sethiststyle(hist):
     # set color and line properties of a histogram
     systematic = hist.GetTitle()
-    hist.SetLineWidth(1)
+    hist.SetLineWidth(2)
     hist.SetLineColor(getcolorsyst(systematic))
     if('Up' in systematic):
-	hist.SetLineStyle(9)
+	hist.SetLineStyle(2)
     elif('Down' in systematic):
-	hist.SetLineStyle(10)
+	hist.SetLineStyle(3)
 
 def getcolorsyst(systematic):
     # return a color corresponding to a given systematic
     # for now return same color for up and down, maybe later asymmetrize
+    if(systematic=='nominal'): return ROOT.kBlack
     if(systematic=='JECUp' or systematic=='JECDown'): return ROOT.kRed
     if(systematic=='JERUp' or systematic=='JERDown'): return ROOT.kRed+2
     if(systematic=='UnclUp' or systematic=='UnclDown'): return ROOT.kOrange-3
@@ -67,19 +68,26 @@ def getminmax(histlist):
     totmax = 1.
     totmin = 1.
     for hist in histlist:
-	histmax = (hist.GetBinContent(hist.GetMaximumBin())
-		    +hist.GetBinErrorUp(hist.GetMaximumBin()))
-	histmin = (hist.GetBinContent(hist.GetMinimumBin())
-                    -hist.GetBinErrorLow(hist.GetMinimumBin()))
-	if histmax > totmax: totmax = histmax
-	if histmin < totmin: totmin = histmin
-    topmargin = (totmax-1)
-    bottommargin = (1-totmin)/2.
+	for i in range(1,hist.GetNbinsX()+1):
+	    val = hist.GetBinContent(i)
+	    if val > totmax: totmax = val
+	    if val < totmin: totmin = val
+    topmargin = (totmax-totmin)/2.
+    bottommargin = (totmax-totmin)/5.
     return (totmin-bottommargin,totmax+topmargin)
 
-#### adapted up to here ######
+def histlisttotxt(histlist,txtfile):
+    txtfile = txtfile.split('.')[-1]+'.txt'
+    with open(txtfile,'w') as txtf:
+	for hist in histlist:
+	    toprint = '{:<15}'.format(hist.GetTitle())
+	    for i in range(1,hist.GetNbinsX()+1):
+		toprint += '\t{:<5}'.format('{0:.3f}'.format(hist.GetBinContent(i)))
+	    toprint += '\n'
+	    txtf.write(toprint)
 
-def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True):
+def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True,errorbars=False,
+		    outtxtfile=""):
     
     tools.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -88,36 +96,32 @@ def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True):
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
     cheight = 600 # height of canvas
     cwidth = 450 # width of canvas
-    rfrac = 0.25 # fraction of ratio plot in canvas
     # fonts and sizes:
     #titlefont = 6; titlesize = 60
     labelfont = 5; labelsize = 22
     axtitlefont = 5; axtitlesize = 22
     #infofont = 6; infosize = 40
-    #legendfont = 4; legendsize = 40
+    #legendfont = 4; legendsize = 30
     # title offset
-    ytitleoffset = 1.9
-    xtitleoffset = 4.5
+    ytitleoffset = 2.
+    xtitleoffset = 1.
     # margins:
-    p1topmargin = 0.07
-    p2bottommargin = 0.4
-    leftmargin = 0.15
+    ptopmargin = 0.07
+    pbottommargin = 0.12
+    leftmargin = 0.2
     rightmargin = 0.05
     # legend box
-    p1legendbox = [leftmargin+0.03,1-p1topmargin-0.25,1-rightmargin-0.03,1-p1topmargin-0.03]
-    p2legendbox = [leftmargin+0.03,0.84,1-rightmargin-0.03,0.97]
-    # marker properties for data
-    markerstyle = 20
-    markercolor = 1
-    markersize = 0.5  
+    plegendbox = [leftmargin+0.03,1-ptopmargin-0.15,1-rightmargin-0.03,1-ptopmargin-0.03]
 
     ### get nominal histogram and remove from the list
     nominalindex = findbytitle(mchistlist,"nominal")
+    if(nominalindex<0): 
+	print('### ERROR ###: nominal histogram not found.')
+	return
     nominalhist = mchistlist[nominalindex]
-    if(nominalindex>-1):
-        indices = list(range(len(mchistlist)))
-        indices.remove(nominalindex)
-        mchistlist = [mchistlist[i] for i in indices]
+    indices = list(range(len(mchistlist)))
+    indices.remove(nominalindex)
+    mchistlist = [mchistlist[i] for i in indices]
 
     ### operations on mc histograms
     sethiststyle(nominalhist)
@@ -126,54 +130,49 @@ def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True):
         sethiststyle(hist)
 	clip(hist)
     if relative: 
-	nominalhist.Divide(nominalhist)
-	newhistlist = []
-	for hist in mchistlist:
-	    newhist = hist.Clone()
+	for hist in mchistlist+[nominalhist]:
 	    for i in range(0,hist.GetNbinsX()+2):
 		if nominalhist.GetBinContent(i)==0:
-		    newhist.SetBinContent(i,1.)
-		    newhist.SetBinError(i,0.)
+		    hist.SetBinContent(i,1.)
+		    hist.SetBinError(i,0.)
 		else:
-		    newhist.SetBinContent(i,hist.GetBinContent(i)/nominalhist.GetBinContent(i))
-		    newhist.SetBinError(i,hist.GetBinError(i)/nominalhist.GetBinContent(i))
-	    newhistlist.append(newhist)
-	mchistlist = newhistlist
+		    hist.SetBinContent(i,hist.GetBinContent(i)/nominalhist.GetBinContent(i))
+		    hist.SetBinError(i,hist.GetBinError(i)/nominalhist.GetBinContent(i))
     
     ### make legend for upper plot and add all histograms
-    legend = ROOT.TLegend(p1legendbox[0],p1legendbox[1],p1legendbox[2],p1legendbox[3])
-    legend.SetNColumns(2)
+    legend = ROOT.TLegend(plegendbox[0],plegendbox[1],plegendbox[2],plegendbox[3])
+    legend.SetNColumns(4)
     legend.SetFillStyle(0)
-    legend.AddEntry(nominalhist,nominalhist.GetTitle(),"l")
     for hist in mchistlist:
         legend.AddEntry(hist,hist.GetTitle(),"l")
+    legend.AddEntry(nominalhist,nominalhist.GetTitle(),"l")
 
     ### make canvas and pads
     c1 = ROOT.TCanvas("c1","c1")
     c1.SetCanvasSize(cwidth,cheight)
-    pad1 = ROOT.TPad("pad1","",0.,rfrac,1.,1.)
-    pad1.SetTopMargin(p1topmargin)
-    pad1.SetBottomMargin(0.03)
+    pad1 = ROOT.TPad("pad1","",0.,0.,1.,1.)
+    pad1.SetTopMargin(ptopmargin)
+    pad1.SetBottomMargin(pbottommargin)
     pad1.SetLeftMargin(leftmargin)
     pad1.SetRightMargin(rightmargin)
     pad1.Draw()
-    pad2 = ROOT.TPad("pad2","",0.,0.,1.,rfrac)
-    pad2.SetTopMargin(0.01)
-    pad2.SetBottomMargin(p2bottommargin)
-    pad2.SetLeftMargin(leftmargin)
-    pad2.SetRightMargin(rightmargin)
-    pad2.Draw()
     
     ### make upper part of the plot
     pad1.cd()
     (rangemin,rangemax) = getminmax(mchistlist)
+    if not relative: rangemin = 0.
     nominalhist.SetMinimum(rangemin)
     nominalhist.SetMaximum(rangemax)
 
     # X-axis layout
     xax = nominalhist.GetXaxis()
     xax.SetNdivisions(5,4,0,ROOT.kTRUE)
-    xax.SetLabelSize(0)
+    xax.SetLabelSize(labelsize)
+    xax.SetLabelFont(10*labelfont+3)
+    xax.SetTitle(xaxtitle)
+    xax.SetTitleFont(10*axtitlefont+3)
+    xax.SetTitleSize(axtitlesize)
+    xax.SetTitleOffset(xtitleoffset)
     # Y-axis layout
     yax = nominalhist.GetYaxis()
     yax.SetMaxDigits(3)
@@ -186,14 +185,25 @@ def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True):
     yax.SetTitleOffset(ytitleoffset)
 
     # histograms
-    nominalhist.Draw("hist")
-    for hist in mchistlist:
-	hist.Draw("hist same")
+    if errorbars: # for now draw only error bars of nominal sample!
+	nominalhist.Draw("hist e")
+	for hist in mchistlist:
+	    hist.Draw("hist same")
+    else:
+	nominalhist.Draw("hist")
+	for hist in mchistlist:
+	    hist.Draw("hist same")
+    legend.SetFillColor(ROOT.kWhite)
     legend.Draw("same")
     ROOT.gPad.RedrawAxis()
 
+    # draw header
+    tools.drawLumi(pad1,lumitext="simulation")
+
     ### save the plot
     c1.SaveAs(outfile+'.png')
+    ### save txt files with values if requested
+    if len(outtxtfile)>0: histlisttotxt([nominalhist]+mchistlist,outtxtfile)
 
 if __name__=="__main__":
     
@@ -219,5 +229,6 @@ if __name__=="__main__":
         yaxtitle = 'events / {0:.2f}'.format(binwidth) # maybe find a way to get variable unit here
     xaxtitle = histlist[0].GetXaxis().GetTitle()
     figname = os.path.join(histdir,'test')
-    plotsystematics(histlist,yaxtitle,xaxtitle,figname+'_abs',relative=False)
-    plotsystematics(histlist,yaxtitle,xaxtitle,figname+'_rel',relative=True)
+    plotsystematics(histlist,yaxtitle,xaxtitle,figname+'_abs',relative=False,errorbars=True)
+    plotsystematics(histlist,yaxtitle,xaxtitle,figname+'_rel',relative=True,errorbars=False,
+		    outtxtfile=figname+'_tab')

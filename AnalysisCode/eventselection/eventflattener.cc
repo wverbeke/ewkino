@@ -37,8 +37,7 @@ bool checkReadability(const std::string& pathToFile){
 void eventloopEF_SR(const std::string& pathToFile, const double norm, 
 		    const std::string& outputDirectory,
 		    const std::string& outputFileName,
-		    const std::string& leptonID, 
-		    const std::string& uncertainty,
+		    const std::string& variation,
 		    const bool isdataforbackground = false,
 		    const std::shared_ptr< TH2D>& frMap_muon = nullptr,
                     const std::shared_ptr< TH2D>& frMap_electron = nullptr,
@@ -87,21 +86,21 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( 
-					"../../weights/", year, thissample );
+    					"../../weights/", year, thissample );
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 100;
+    //long unsigned numberOfEntries = 2000;
     std::cout<<"starting event loop for "<<numberOfEntries<<" events."<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
 	// build event and perform event selection
         Event event = treeReader.buildEvent(entry,true,true);
-        if(!passES(event, "signalregion", leptonID, isdataforbackground)) continue;
-        int eventcategory = eventCategory(event, uncertainty);
+        if(!passES(event, "signalregion", isdataforbackground)) continue;
+        int eventcategory = eventCategory(event, variation);
         if(eventcategory == -1) continue;
 	// set all high-level variables and make BDT output
-        eventToEntry(event, norm, leptonID, isdataforbackground, frMap_muon, frMap_electron, uncertainty);
+        eventToEntry(event, norm, isdataforbackground, frMap_muon, frMap_electron, variation);
 	if(doMVA){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
 	// determine reweighting 
         if(event.isMC()){
@@ -111,6 +110,7 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
         else if(eventcategory == 2) treeCat2Ptr->Fill();
         else if(eventcategory == 3) treeCat3Ptr->Fill();
     }
+    outputFilePtr->cd( outputdir.c_str() );
     treeCat1Ptr->Write("", BIT(2) );
     treeCat2Ptr->Write("", BIT(2));
     treeCat3Ptr->Write("", BIT(2));
@@ -124,8 +124,7 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
 		    const std::string& outputDirectory,
 		    const std::string& outputFileName,
                     const std::string& eventselection,
-		    const std::string& leptonID,
-		    const std::string& uncertainty,
+		    const std::string& variation,
 		    const bool isdataforbackground = false,
 		    const std::shared_ptr< TH2D>& frMap_muon = nullptr,
                     const std::shared_ptr< TH2D>& frMap_electron = nullptr,
@@ -158,16 +157,18 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
 
     // make reweighter
     std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
-    CombinedReweighter reweighter = reweighterFactory->buildReweighter(
-                                        "../../weights/", year, treeReader.sampleVector() );
-
+    std::vector<Sample> thissample;
+    thissample.push_back(treeReader.currentSample());
+    CombinedReweighter reweighter = reweighterFactory->buildReweighter( 
+                                      "../../weights/", year, thissample );
+    
     long unsigned numberOfEntries = treeReader.numberOfEntries();
     //unsigned numberOfEntries = 5000;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
         Event event = treeReader.buildEvent(entry,true,true);
-        if(!passES(event, eventselection, leptonID, isdataforbackground)) continue;
-        eventToEntry(event, norm, leptonID, isdataforbackground, frMap_muon, frMap_electron, uncertainty);
+        if(!passES(event, eventselection, isdataforbackground)) continue;
+        eventToEntry(event, norm, isdataforbackground, frMap_muon, frMap_electron, variation);
 	if(doMVA){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
 	// determine reweighting 
         if(event.isMC()){
@@ -175,6 +176,7 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
         }
         treeCat1Ptr->Fill();
     }
+    outputFilePtr->cd( outputdir.c_str() );
     treeCat1Ptr->Write("", BIT(2) );
     outputFilePtr->Close();
 
@@ -183,10 +185,10 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
 } 
 
 int main( int argc, char* argv[] ){
-    if( argc != 13  ){
-        std::cerr << "### ERROR ###: event flattening requires 12 arguments to run: ";
+    if( argc != 12  ){
+        std::cerr << "### ERROR ###: event flattening requires 11 arguments to run: ";
         std::cerr << "input_file_path, norm, output_directory, output_file_name";
-	std::cerr << "event_selection, leptonID, uncertainty, isdataforbackground, ";
+	std::cerr << "event_selection, variation, isdataforbackground, ";
 	std::cerr << "pathToMuonFakeRateMap, pathToElectronFakeRateMap";
 	std::cerr << "doMVA, pathToXMLFile" << std::endl;
         return -1;
@@ -198,35 +200,34 @@ int main( int argc, char* argv[] ){
     std::string& output_directory = argvStr[3];
     std::string& output_file_name = argvStr[4];
     std::string& event_selection = argvStr[5];
-    std::string& leptonID = argvStr[6];
     bool validInput = checkReadability( input_file_path );
     if(!validInput){return -1;}
-    // type of uncertainty to consider:
-    std::string& uncertainty = argvStr[7];
+    // type of variation to consider:
+    std::string& variation = argvStr[6];
     // first set of other arguments: 
     std::shared_ptr< TH2D > frMap_muon;
     std::shared_ptr< TH2D > frMap_electron;
     std::string year = "2016";
     if(stringTools::stringContains(input_file_path,"2017")) year = "2017";
     else if(stringTools::stringContains(input_file_path,"2018")) year = "2018";
-    bool isdataforbackground = (argvStr[8]=="True" || argvStr[8]=="true");
+    bool isdataforbackground = (argvStr[7]=="True" || argvStr[7]=="true");
     if(isdataforbackground){
-	frMap_muon = readFRMap(argvStr[9],"muon",year);
-	frMap_electron = readFRMap(argvStr[10],"electron",year);
+	frMap_muon = readFRMap(argvStr[8],"muon",year);
+	frMap_electron = readFRMap(argvStr[9],"electron",year);
     }
     // second set of other arguments:
-    bool doMVA = (argvStr[11]=="True" || argvStr[11]=="true");
+    bool doMVA = (argvStr[10]=="True" || argvStr[10]=="true");
     std::string pathToXMLFile = "";
-    if(doMVA){ pathToXMLFile = argvStr[12]; }
+    if(doMVA){ pathToXMLFile = argvStr[11]; }
 
     // call functions
     std::string sigreg = "signalregion";
     if(event_selection == sigreg) eventloopEF_SR(input_file_path,norm,output_directory,
-				    output_file_name,leptonID,uncertainty,
+				    output_file_name,variation,
 				    isdataforbackground,frMap_muon,frMap_electron,
 				    doMVA, pathToXMLFile);
     else eventloopEF_CR(input_file_path, norm, output_directory, 
-				    output_file_name,event_selection,leptonID,uncertainty,
+				    output_file_name,event_selection,variation,
 				    isdataforbackground,frMap_muon,frMap_electron,
 				    doMVA, pathToXMLFile);
     std::cout<<"done"<<std::endl;

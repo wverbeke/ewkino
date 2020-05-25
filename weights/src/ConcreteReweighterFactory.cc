@@ -82,6 +82,7 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     const std::string& bTagWP = "tight";
 
     //read MC b-tagging efficiency histograms
+    // and scalefactor files
     const std::string& leptonCleaning = "looseLeptonCleaned";
     TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_" + leptonCleaning + "_" + year + ".root" ).c_str() );
     std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_udsg" ).c_str() ) ) );
@@ -92,7 +93,6 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     bTagEffMCHist_b->SetDirectory( gROOT );
     bTagEffMCFile->Close();
 
-    //path of b-tagging SF 
     std::string bTagSFFileName;
     if( year == "2016" ){
         bTagSFFileName= "DeepCSV_2016LegacySF_WP_V1.csv";
@@ -180,9 +180,9 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     //make b-tagging Reweighter 
     const std::string& bTagWP = "tight";
 
-    //read MC b-tagging efficiency histograms
+    //read MC b-tagging efficiency histograms (use DeepFlavor!!!)
     const std::string& leptonCleaning = "looseLeptonCleaned";
-    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_" + leptonCleaning + "_" + year + ".root" ).c_str() );
+    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_deepFlavor_" + leptonCleaning + "_" + year + ".root" ).c_str() );
     std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_udsg" ).c_str() ) ) );
     bTagEffMCHist_udsg->SetDirectory( gROOT );
     std::shared_ptr< TH2 > bTagEffMCHist_c( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_charm" ).c_str() ) ) );
@@ -191,19 +191,18 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     bTagEffMCHist_b->SetDirectory( gROOT );
     bTagEffMCFile->Close();
 
-    //path of b-tagging SF 
     std::string bTagSFFileName;
     if( year == "2016" ){
-        bTagSFFileName= "DeepCSV_2016LegacySF_WP_V1.csv";
+        bTagSFFileName= "DeepJet_2016LegacySF_WP_V1.csv";
     } else if( year == "2017" ){
-        bTagSFFileName = "DeepCSV_94XSF_WP_V4_B_F.csv";
+        bTagSFFileName = "DeepFlavour_94XSF_WP_V3_B_F.csv";
     } else {
-        bTagSFFileName = "DeepCSV_102XSF_WP_V1.csv";
+        bTagSFFileName = "DeepJet_102XSF_WP_V1.csv";
     }
     std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
 
-    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterBTagHeavyFlavorDeepCSV >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_c, bTagEffMCHist_b ) );
-    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterBTagLightFlavorDeepCSV >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg ) );
+    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg ) );   
 
     //make prefire Reweighter
     combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );

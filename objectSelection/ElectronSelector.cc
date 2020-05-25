@@ -10,9 +10,33 @@ double ttHleptonMVACutElectron(){
     return 0.8;
 }
 
-double tZqleptonMVACutElectron(){
-    return 0.;
+// define here what mva threshold to use in tZq ID's listed below
+// warning: function ttHleptonMVACutElectron is used in ttH ID's
+double electronMVACut(){
+    return 0.95;
 }
+
+// define here what mva value to use in tZq ID's listed below
+// warning: leptonMVAttH is hard-coded in ttH ID!
+double electronMVAValue(const Electron* electronPtr){
+    //return electronPtr->leptonMVAtZq();
+    return electronPtr->leptonMVATOP();
+}
+
+// define here what b-tagger threshold to use in all tZq ID's listed below
+// warning: deepFlavor thresholds are hard-coded in ttH ID!
+double electronJetBTagCut(const std::string wp, const std::string year){
+    //return bTagWP::getWP("DeepCSV", wp, year);
+    return bTagWP::getWP("DeepFlavor", wp, year);    
+}
+
+// define here what b-tagger to use in all tZq ID's listed below
+// warning: deepFlavor is hard-coded in ttH ID!
+double electronJetBTagValue(const Electron* electronPtr){
+    //return electronPtr->closestJetDeepCSV();
+    return electronPtr->closestJetDeepFlavor();
+}
+
 
 /*
 ----------------------------------------------------------------
@@ -30,7 +54,6 @@ bool ElectronSelector::isLooseBase() const{
     //if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     return true;
 }
-
 
 
 bool ElectronSelector::isLoose2016() const{ 
@@ -101,39 +124,39 @@ bool ElectronSelector::isFOBasetZq() const{
     if(!isLoose()) return false;
     if(electronPtr->uncorrectedPt()<10) return false;
     if(!electronPtr->passDoubleEGEmulation()) return false;
-    if(electronPtr->leptonMVAtZq() < tZqleptonMVACutElectron()){
+    if(electronMVAValue(electronPtr) < electronMVACut()){
 	if(electronPtr->ptRatio()<0.6) return false;
     }
     return true;
 }
 
 bool ElectronSelector::isFO2016tZq() const{
-    if(electronPtr->leptonMVAtZq() < tZqleptonMVACutElectron()){
-        if(electronPtr->closestJetDeepCSV()>0.3) return false;
+    if(electronMVAValue(electronPtr) < electronMVACut()){
+        if(electronJetBTagValue(electronPtr) > 0.3) return false;
         if(electronPtr->absEta()<1.479){ if(electronPtr->electronMVASummer16GP()<0.4) return false; }
         else{ if(electronPtr->electronMVASummer16GP()<0.7) return false; }
     }
-    else{ if(electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2016()) return false; }
+    else{ if(electronJetBTagValue(electronPtr) > electronJetBTagCut("tight", "2016")) return false; }
     return true;
 }
 
 bool ElectronSelector::isFO2017tZq() const{
-    if(electronPtr->leptonMVAtZq() < tZqleptonMVACutElectron()){
-        if(electronPtr->closestJetDeepCSV()>0.2) return false;
+    if(electronMVAValue(electronPtr) < electronMVACut()){
+        if(electronJetBTagValue(electronPtr) > 0.2) return false;
         if(electronPtr->absEta()<1.479){ if(electronPtr->electronMVAFall17NoIso()<0.3) return false; }
         else{ if(electronPtr->electronMVAFall17NoIso()<0.6) return false; }
     }
-    else{ if(electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2017()) return false; }
+    else{ if(electronJetBTagValue(electronPtr) > electronJetBTagCut("tight", "2017")) return false; }
     return true;
 }
 
 bool ElectronSelector::isFO2018tZq() const{
-    if(electronPtr->leptonMVAtZq() < tZqleptonMVACutElectron()){
-        if(electronPtr->closestJetDeepCSV()>0.2) return false;
+    if(electronMVAValue(electronPtr) < electronMVACut()){
+        if(electronJetBTagValue(electronPtr) > 0.2) return false;
         if(electronPtr->absEta()<1.479){ if(electronPtr->electronMVAFall17NoIso()<0.3) return false; }
         else{ if(electronPtr->electronMVAFall17NoIso()<0.6) return false; }
     }
-    else{ if(electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2018()) return false; }
+    else{ if(electronJetBTagValue(electronPtr) > electronJetBTagCut("tight", "2018")) return false; }
     return true;
 }
 
@@ -173,22 +196,22 @@ tight electron selection for tZq ID
 
 bool ElectronSelector::isTightBasetZq() const{
     if(!isFOtZq()) return false;
-    if(electronPtr->leptonMVAtZq() < tZqleptonMVACutElectron()) return false;
+    if(electronMVAValue(electronPtr) < electronMVACut()) return false;
     return true;
 }
 
 bool ElectronSelector::isTight2016tZq() const{
-    if(electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2016()) return false;
+    if(electronJetBTagValue(electronPtr) > electronJetBTagCut("tight", "2016")) return false;
     return true;
 }
 
 bool ElectronSelector::isTight2017tZq() const{
-    if(electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2017()) return false;
+    if(electronJetBTagValue(electronPtr) > electronJetBTagCut("tight", "2017")) return false;
     return true;
 }
 
 bool ElectronSelector::isTight2018tZq() const{
-    if(electronPtr->closestJetDeepCSV() > bTagWP::tightDeepCSV2018()) return false;
+    if(electronJetBTagValue(electronPtr) > electronJetBTagCut("tight", "2018")) return false;
     return true;
 }
 

@@ -29,6 +29,7 @@ class TriggerInfo{
         bool passTriggers_mmm() const{ return _passTriggers_mmm; }
         bool passTriggers_FR() const{ return _passTriggers_FR; }
         bool passTriggers_FR_iso() const{ return _passTriggers_FR_iso; }
+	bool passTriggers_ref() const{ return _passTriggers_ref; }
         bool passMetFilters() const{ return _passMetFilters; }
         bool passTrigger( const std::string& ) const;
         bool passMetFilter( const std::string& ) const;
@@ -50,6 +51,7 @@ class TriggerInfo{
         bool _passTriggers_mmm;
         bool _passTriggers_FR;
         bool _passTriggers_FR_iso;
+	bool _passTriggers_ref;
         bool _passMetFilters;
         std::map< std::string, bool > individualTriggerMap; 
         std::map< std::string, bool > individualMetFilterMap; 

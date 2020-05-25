@@ -34,7 +34,7 @@ bool checkReadability(const std::string& pathToFile){
 
 void eventloopES(const std::string& pathToFile, const std::string& outputDirectory,
 			const std::string& outputFileName, const std::string& eventselection, 
-			const std::string& leptonID, const bool isdataforbackground){
+			const bool isdataforbackground){
     
     // initialize TreeReader
     TreeReader treeReader;
@@ -70,7 +70,7 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
 	    if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
 	    Event event = treeReader.buildEvent(entry,true,true);
-	    if(!passES(event, eventselection, leptonID, isdataforbackground)) continue;
+	    if(!passES(event, eventselection, isdataforbackground)) continue;
 	    outputTreePtr->Fill();
     }
     outputTreePtr->Write("", BIT(2) );
@@ -78,10 +78,10 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
 }
 
 int main( int argc, char* argv[] ){
-    if( argc != 7 ){
-        std::cerr << "event selection requires exactly six arguments to run: " << std::endl;
+    if( argc != 6 ){
+        std::cerr << "event selection requires exactly 5 arguments to run: " << std::endl;
 	std::cerr << "input_file_path, output_directory, output_file_name, ";
-	std::cerr << "event_selection, leptonID, isdataforbackground" << std::endl;
+	std::cerr << "event_selection, isdataforbackground" << std::endl;
         return -1;
     }
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
@@ -89,12 +89,11 @@ int main( int argc, char* argv[] ){
     std::string& output_directory = argvStr[2];
     std::string& output_file_name = argvStr[3];
     std::string& event_selection = argvStr[4];
-    std::string& leptonID = argvStr[5];
-    const bool isdataforbackground = (argvStr[6]=="True" || argvStr[6]=="true");
+    const bool isdataforbackground = (argvStr[5]=="True" || argvStr[5]=="true");
     bool validInput = checkReadability( input_file_path );
     if(!validInput){return -1;}
     eventloopES( input_file_path, output_directory, output_file_name, 
-		    event_selection, leptonID, isdataforbackground );
+		    event_selection, isdataforbackground );
     std::cout<<"done"<<std::endl;
     return 0;
 }

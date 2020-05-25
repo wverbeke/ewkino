@@ -33,6 +33,10 @@ Float_t _abs_eta_max = 0;
 // BDT output score
 Float_t _eventBDT = 0.;
 
+// other variables
+Int_t _nMuons = 0;
+Int_t _nElectrons = 0;
+
 void initOutputTree(TTree* outputTree){
     // set branches for a flat output tree, to be used instead of ewkino/TreeReader/src/setOutputTree. 
     
@@ -65,6 +69,10 @@ void initOutputTree(TTree* outputTree){
 
     // BDT output score (initialized here but filled in calling function!)
     outputTree->Branch("_eventBDT", &_eventBDT, "_eventBDT/F");
+
+    // other variables
+    outputTree->Branch("_nMuons", &_nMuons, "_nMuons/I");
+    outputTree->Branch("_nElectrons", &_nElectrons, "_nElectrons/I");
 }
 
 TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile ){
@@ -92,51 +100,51 @@ TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToX
 
 // help functions for getting the right jet collection and MET //
 
-JetCollection getjetcollection(const Event& event, const std::string& uncertainty){
-    if( uncertainty == "nominal" ){
-        return event.jetCollection().goodtZqJetCollection();
-    } else if( uncertainty == "JECDown" ){
-        return event.jetCollection().JECDownCollection().goodtZqJetCollection();
-    } else if( uncertainty == "JECUp" ){
-        return event.jetCollection().JECUpCollection().goodtZqJetCollection();
-    } else if( uncertainty == "JERDown" ){
-        return event.jetCollection().JERDownCollection().goodtZqJetCollection();
-    } else if( uncertainty == "JERUp" ){
-        return event.jetCollection().JERUpCollection().goodtZqJetCollection();
-    } else if( uncertainty == "UnclDown" ){
-        return event.jetCollection().goodtZqJetCollection();
-    } else if( uncertainty == "UnclUp" ){
-        return event.jetCollection().goodtZqJetCollection();
+JetCollection getjetcollection(const Event& event, const std::string& variation){
+    if( variation == "nominal" ){
+        return event.jetCollection().goodJetCollection();
+    } else if( variation == "JECDown" ){
+        return event.jetCollection().JECDownCollection().goodJetCollection();
+    } else if( variation == "JECUp" ){
+        return event.jetCollection().JECUpCollection().goodJetCollection();
+    } else if( variation == "JERDown" ){
+        return event.jetCollection().JERDownCollection().goodJetCollection();
+    } else if( variation == "JERUp" ){
+        return event.jetCollection().JERUpCollection().goodJetCollection();
+    } else if( variation == "UnclDown" ){
+        return event.jetCollection().goodJetCollection();
+    } else if( variation == "UnclUp" ){
+        return event.jetCollection().goodJetCollection();
     } else {
-        throw std::invalid_argument( "Uncertainty source " + uncertainty + " is unknown." );
+        throw std::invalid_argument( "Uncertainty source " + variation + " is unknown." );
     }
 }
 
-Met getmet(const Event& event, const std::string& uncertainty){
-    if( uncertainty == "nominal" ){
+Met getmet(const Event& event, const std::string& variation){
+    if( variation == "nominal" ){
         return event.met();
-    } else if( uncertainty == "JECDown" ){
+    } else if( variation == "JECDown" ){
         return event.met().MetJECDown();
-    } else if( uncertainty == "JECUp" ){
+    } else if( variation == "JECUp" ){
         return event.met().MetJECUp();
-    } else if( uncertainty == "JERDown" ){
+    } else if( variation == "JERDown" ){
         return event.met();
-    } else if( uncertainty == "JERUp" ){
+    } else if( variation == "JERUp" ){
         return event.met();
-    } else if( uncertainty == "UnclDown" ){
+    } else if( variation == "UnclDown" ){
         return event.met().MetUnclusteredDown();
-    } else if( uncertainty == "UnclUp" ){
+    } else if( variation == "UnclUp" ){
         return event.met().MetUnclusteredUp();
     } else {
-        throw std::invalid_argument( "Uncertainty source " + uncertainty + " is unknown." );
+        throw std::invalid_argument( "Uncertainty source " + variation + " is unknown." );
     }
 }
 
-int eventCategory(Event& event, const std::string& uncertainty){
+int eventCategory(Event& event, const std::string& variation){
     // determine the event category based on the number of jets and b-jets
     // note that it is assumed the event has been passed through a signal region selection!
 
-    JetCollection jetc = getjetcollection(event,uncertainty);
+    JetCollection jetc = getjetcollection(event,variation);
     int njets = jetc.size();
     int nbjets = jetc.numberOfMediumBTaggedJets();
     if(nbjets == 0 or (nbjets==1 and njets==1)) return -1;
@@ -168,7 +176,7 @@ std::shared_ptr< TH2D > readFRMap( const std::string& pathToFile,
     return frMap;
 }
 
-double fakeRateWeight( const Event& event, const std::string& leptonID,
+double fakeRateWeight( const Event& event,
 			const std::shared_ptr< TH2D >& frMap_muon,
                         const std::shared_ptr< TH2D >& frMap_electron ){
     // note: this function was copied (with slight modifications)
@@ -176,8 +184,7 @@ double fakeRateWeight( const Event& event, const std::string& leptonID,
     
     double weight = -1.;
     for( const auto& leptonPtr : event.lightLeptonCollection() ){
-	if( leptonID=="tth" && !(leptonPtr->isFO() && !leptonPtr->isTight()) ) continue;
-	if( leptonID=="tzq" && !(leptonPtr->isFOtZq() && !leptonPtr->isTighttZq()) ) continue;
+	if( !(leptonPtr->isFO() && !leptonPtr->isTight()) ) continue;
             
 	double croppedPt = std::min( leptonPtr->pt(), 99. );
         double croppedAbsEta = std::min( leptonPtr->absEta(), (leptonPtr->isMuon() ? 2.4 : 2.5) );
@@ -195,11 +202,11 @@ double fakeRateWeight( const Event& event, const std::string& leptonID,
  
 // main function //
 
-void eventToEntry(Event& event, const double norm, const std::string& leptonID,
+void eventToEntry(Event& event, const double norm,
 		    const bool isdataforbackground, 
 		    const std::shared_ptr< TH2D>& frMap_muon, 
 		    const std::shared_ptr< TH2D>& frMap_electron,
-		    const std::string& uncertainty){
+		    const std::string& variation){
     // fill one entry in outputTree (initialized with initOutputTree), based on the info of one event.
     // Note that the event must be cleaned and processed by an event selection function first!
 
@@ -219,16 +226,20 @@ void eventToEntry(Event& event, const double norm, const std::string& leptonID,
 
     // multiply weight by fake-rate if needed
     if(isdataforbackground){
-	_normweight = 1*fakeRateWeight(event,leptonID,frMap_muon,frMap_electron);
+	_normweight = 1*fakeRateWeight(event,frMap_muon,frMap_electron);
     }   
 
     // get correct jet collection and met (defined in eventSelections.cc!)
-    JetCollection jetcollection = getjetcollection(event, uncertainty);
+    JetCollection jetcollection = getjetcollection(event, variation);
     JetCollection bjetcollection = jetcollection.mediumBTagCollection();
-    Met met = getmet(event, uncertainty);
+    Met met = getmet(event, variation);
     // get lepton collection as well (warning: a lot of event methods work on this collection implicitly,
     // so changing the definition here is not enough to consistently use another collection of leptons!)
     LeptonCollection lepcollection = event.leptonCollection();
+
+    // number of muons and electrons
+    _nMuons = lepcollection.numberOfMuons();
+    _nElectrons = lepcollection.numberOfElectrons();
 
     // other more or less precomputed event variables
     _lT = lepcollection.scalarPtSum() + met.pt();

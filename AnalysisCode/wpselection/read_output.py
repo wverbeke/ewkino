@@ -14,7 +14,7 @@ from extendsamplelist import findsample
 inputdir = 'test'
 #samplelistdir = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples'
 samplelistdir = '/user/llambrec/ewkino/AnalysisCode/samplelists'
-years = ['2016','2018']
+years = ['2016','2017','2018']
 
 ### overwrite using command line
 if(len(sys.argv)>1):

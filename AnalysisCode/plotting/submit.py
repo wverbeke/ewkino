@@ -9,13 +9,13 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
 
 ### Define regions to make plots for
-regions = ['zgcontrolregion','signalsideband_noossf','signalsideband_noz']
+regions = ['signalregion']
 #regions = ['zgcontrolregion']
 years = ['2016','2017','2018']
-ID = 'tth' # does NOT set ID correctly, simply for folder management
+ID = 'tzq' # does NOT set ID correctly, simply for folder management
 
 ### Global settings
-outdir = 'histograms_0415'
+outdir = 'histograms_0515_reference4'
 outdir = os.path.abspath(outdir)
 variables = [
     {'name':'_abs_eta_recoil','bins':list(np.linspace(0,5,num=21)),
@@ -47,7 +47,13 @@ variables = [
     {'name':'_M3l','bins':list(np.linspace(0,600,num=21)),
      'title':r'M_{3l}','unit':'GeV'},
     {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21)),
-     'title':r'#||{#eta}_{max}','unit':''}
+     'title':r'#||{#eta}_{max}','unit':''},
+    {'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21)),
+     'title':r'event BDT score','unit':''},
+    {'name':'_nMuons','bins':list(np.linspace(-0.5,3.5,num=5)),
+     'title':r'number of muons','unit':''},
+    {'name':'_nElectrons','bins':list(np.linspace(-0.5,3.5,num=5)),
+     'title':r'number of electrons','unit':''}
 ]
 
 ### Set output directory
@@ -81,12 +87,14 @@ else:
 for region in regions:
     for year in years:
 	outpath = os.path.join(outdir,region,year)
-	mcrootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'MC_flat')
-	mcsamplelist = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples'
+	mcrootdir = os.path.join('/user/llambrec/Files',interpendix,'reference4',region,year+'MC_flat')
+	mcsamplelist = '../samplelists/'
 	mcsamplelist += '/samplelist_tzq_'+year+'_MC.txt'
-	datarootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'data_flat')
-	datasamplelist = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples'
-	datasamplelist += '/samplelist_tzq_'+year+'_data.txt'
+	#datarootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'data_flat')
+	#datasamplelist = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples'
+	#datasamplelist += '/samplelist_tzq_'+year+'_data.txt'
+	datarootdir = mcrootdir
+	datasamplelist = mcsamplelist
 	# check if input folder exists
 	if(not (os.path.exists(mcrootdir) and os.path.exists(datarootdir))):
 	    print('### ERROR ###: input folder for region/year combination '+region+'/'+year+' not found.')

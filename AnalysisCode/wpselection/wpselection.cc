@@ -35,7 +35,7 @@ std::map<double, std::vector<double>> eventloopWPS(const std::string& pathToFile
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 1000;
+    //long unsigned numberOfEntries = 10000;
     std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
     std::string eventselection = "signalregion";
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
@@ -45,11 +45,12 @@ std::map<double, std::vector<double>> eventloopWPS(const std::string& pathToFile
 	// note: this function assumes the leptonMVACut in the FO and Tight ID 
 	// has been set to a sufficiently low value!
 	// additional cuts on leptonMVA value are applied afterwards for different WP's.
-        if(!passES(event, eventselection, "tzq")) continue;
+        if(!passES(event, eventselection, "tzq", false)) continue;
+	if(eventCategory(event, "nominal")<0) continue;
 
 	// furthermore, use event flattening to get the event BDT output value
 	if(useMVA){
-	    eventToEntry(event, norm, "tzq", false, nullptr, nullptr);
+	    eventToEntry(event, norm, "tzq", false, nullptr, nullptr, "nominal");
 	    _eventBDT = reader->EvaluateMVA( "BDT" );
 	    if(_eventBDT < 0) continue;
 	}
@@ -62,11 +63,13 @@ std::map<double, std::vector<double>> eventloopWPS(const std::string& pathToFile
 		std::shared_ptr<Lepton> lep = *lIt;
 		if(lep->isElectron()){
 		    std::shared_ptr<Electron> ele = std::static_pointer_cast<Electron>(lep);
-		    if(ele->leptonMVAtZq() < wp) passwp = false;
+		    //if(ele->leptonMVAtZq() < wp) passwp = false;
+		    if(ele->leptonMVATOP() < wp) passwp = false;
 		}
 		else if(lep->isMuon()){
 		    std::shared_ptr<Muon> mu = std::static_pointer_cast<Muon>(lep);
-		    if(mu->leptonMVAtZq() < wp) passwp = false;
+		    //if(mu->leptonMVAtZq() < wp) passwp = false;
+		    if(mu->leptonMVATOP() < wp) passwp = false;
 		}
 	    }
 	    if(passwp){

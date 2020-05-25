@@ -356,6 +356,7 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_passTrigger_mt", &_passTrigger_mt, &b__passTrigger_mt);
     _currentTreePtr->SetBranchAddress("_passTrigger_FR", &_passTrigger_FR, &b__passTrigger_FR);
     _currentTreePtr->SetBranchAddress("_passTrigger_FR_iso", &_passTrigger_FR_iso, &b__passTrigger_FR_iso);
+    _currentTreePtr->SetBranchAddress("_passTrigger_ref", &_passTrigger_ref, &b__passTrigger_ref);
     _currentTreePtr->SetBranchAddress("_passMETFilters", &_passMETFilters, &b__passMETFilters);
     _currentTreePtr->SetBranchAddress("_nL", &_nL, &b__nL);
     _currentTreePtr->SetBranchAddress("_nMu", &_nMu, &b__nMu);
@@ -391,6 +392,7 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_lElectronSigmaIetaIeta", _lElectronSigmaIetaIeta, &b__lElectronSigmaIetaIeta);
     _currentTreePtr->SetBranchAddress("_leptonMvaTTH", _leptonMvaTTH, &b__leptonMvaTTH);
     _currentTreePtr->SetBranchAddress("_leptonMvatZq", _leptonMvatZq, &b__leptonMvatZq);
+    _currentTreePtr->SetBranchAddress("_leptonMvaTOP", _leptonMvaTOP, &b__leptonMvaTOP);
     _currentTreePtr->SetBranchAddress("_lPOGVeto", _lPOGVeto, &b__lPOGVeto);
     _currentTreePtr->SetBranchAddress("_lPOGLoose", _lPOGLoose, &b__lPOGLoose);
     _currentTreePtr->SetBranchAddress("_lPOGMedium", _lPOGMedium, &b__lPOGMedium);
@@ -490,7 +492,6 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     if( containsGeneratorInfo() ){
         _currentTreePtr->SetBranchAddress("_weight", &_weight, &b__weight);
         _currentTreePtr->SetBranchAddress("_nLheWeights", &_nLheWeights, &b__nLheWeights);
-	std::cout<<"the size of the vector is"<<std::size(_lheWeight)<<std::endl;
         _currentTreePtr->SetBranchAddress("_lheWeight", _lheWeight, &b__lheWeight);
         _currentTreePtr->SetBranchAddress("_nPsWeights", &_nPsWeights, &b__nPsWeights);
         _currentTreePtr->SetBranchAddress("_psWeight", _psWeight, &b__psWeight);
@@ -574,6 +575,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_passTrigger_mt", &_passTrigger_mt, "_passTrigger_mt/O");
     outputTree->Branch("_passTrigger_FR", &_passTrigger_FR, "_passTrigger_FR/O");
     outputTree->Branch("_passTrigger_FR_iso", &_passTrigger_FR_iso, "_passTrigger_FR_iso/O");
+    outputTree->Branch("_passTrigger_ref", &_passTrigger_ref, "_passTrigger_ref/O");
     outputTree->Branch("_passMETFilters", &_passMETFilters, "_passMETFilters/O");
     outputTree->Branch("_nL",                           &_nL,                           "_nL/i");
     outputTree->Branch("_nMu",                          &_nMu,                          "_nMu/i");
@@ -609,6 +611,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_lElectronSigmaIetaIeta",       &_lElectronSigmaIetaIeta,       "_lElectronSigmaIetaIeta[_nLight]/D");
     outputTree->Branch("_leptonMvaTTH",                 &_leptonMvaTTH,                 "_leptonMvaTTH[_nLight]/D");
     outputTree->Branch("_leptonMvatZq",                 &_leptonMvatZq,                 "_leptonMvatZq[_nLight]/D");
+    outputTree->Branch("_leptonMvaTOP",			&_leptonMvaTOP,			"_leptonMvaTOP[_nLight]/D");
     outputTree->Branch("_lPOGVeto",                     &_lPOGVeto,                     "_lPOGVeto[_nL]/O");
     outputTree->Branch("_lPOGLoose",                    &_lPOGLoose,                    "_lPOGLoose[_nL]/O");
     outputTree->Branch("_lPOGMedium",                   &_lPOGMedium,                   "_lPOGMedium[_nL]/O");

@@ -157,11 +157,6 @@ bool Jet::isGood() const{
     return selector->isGood();
 }
 
-bool Jet::isGoodtZq() const{
-    return selector->isGoodtZq();
-}
-
-
 bool Jet::isGoodAnyVariation() const{
     return (
         isGood() ||
@@ -169,16 +164,6 @@ bool Jet::isGoodAnyVariation() const{
         JetJECUp().isGood() ||
         JetJERDown().isGood() ||
         JetJERUp().isGood()
-    );
-}
-
-bool Jet::isGoodtZqAnyVariation() const{
-    return (
-	isGoodtZq() ||
-	JetJECDown().isGoodtZq() ||
-	JetJECUp().isGoodtZq() ||
-	JetJERDown().isGoodtZq() ||
-	JetJERUp().isGoodtZq()
     );
 }
 
@@ -226,7 +211,6 @@ bool Jet::isBTaggedMediumAnyVariation() const{
 bool Jet::isBTaggedTightAnyVariation() const{
     return isBTaggedAnyVariation( &Jet::isBTaggedTight );
 }
-
 
 std::ostream& Jet::print( std::ostream& os ) const{
     os << "Jet : ";

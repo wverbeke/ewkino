@@ -4,11 +4,9 @@
 //include c++ library classes
 #include <functional>
 
-bool passES(Event& event, const std::string& eventselection, const std::string& leptonID,
-	    const bool isdataforbackground){
+bool passES(Event& event, const std::string& eventselection, const bool isdataforbackground){
     // allowed values of eventselection: see list below
-    // allowed values of leptoniD: "tth" and "tzq"
-    static std::map< std::string, std::function<    bool(Event&, const std::string, const bool) > > 
+    static std::map< std::string, std::function< bool(Event&, const bool) > > 
     ESFunctionMap = {
         { "signalregion", pass_signalregion },
         { "wzcontrolregion", pass_wzcontrolregion },
@@ -22,7 +20,7 @@ bool passES(Event& event, const std::string& eventselection, const std::string& 
     if( it == ESFunctionMap.cend() ){
         throw std::invalid_argument( "unknown event selection condition " + eventselection );
     } else {
-        return (it->second)(event, leptonID, isdataforbackground);
+        return (it->second)(event, isdataforbackground);
     }
 }
 
@@ -39,49 +37,43 @@ void cleanleptoncollection(Event& event){
 
 void cleanjetcollection(Event& event){
     event.cleanJetsFromLooseLeptons(); // or from FO leptons? -> check!
-    //event.jetCollection().selectGoodAnyVariationJets(); // ttH jet selection
-    event.jetCollection().selectGoodAnyVariationtZqJets(); // tZq jet selection
+    event.jetCollection().selectGoodAnyVariationJets();
 }
 
 // help functions for determining the number of leptons with correct ID //
 
-bool hasnFOLeptons(Event& event, int n, const std::string& leptonID, bool select){
+bool hasnFOLeptons(Event& event, int n, bool select){
     int nFO = 0;
     for( const auto& leptonPtr : event.leptonCollection() ){
-        if( leptonID=="tth" && leptonPtr->isFO() ){ ++nFO; }
-        else if( leptonID=="tzq" && leptonPtr->isFOtZq() ){ ++nFO; }
+        if( leptonPtr->isFO() ){ ++nFO; }
     }
     if( n!=nFO ){ return false; }
-    if( select && leptonID=="tth" ){ event.selectFOLeptons(); }
-    else if( select && leptonID=="tzq" ){ event.selectFOtZqLeptons(); }
+    if( select ){ event.selectFOLeptons(); }
     return true;
 }
 
-bool hasnTightLeptons(Event& event, int n, const std::string& leptonID, bool select){
+bool hasnTightLeptons(Event& event, int n, bool select){
     int nTight = 0;
     for( const auto& leptonPtr : event.lightLeptonCollection() ){
-        if( leptonID=="tth" && leptonPtr->isTight() ){ ++nTight; }
-        else if( leptonID=="tzq" && leptonPtr->isTighttZq() ){ ++nTight; }
+        if( leptonPtr->isTight() ){ ++nTight; }
     }
     if( n!=nTight ){ return false; }
-    if( select && leptonID=="tth" ){ event.selectTightLeptons(); }
-    else if( select && leptonID=="tzq" ){ event.selectTighttZqLeptons(); }
+    if( select ){ event.selectTightLeptons(); }
     return true;
 }
 
 // dedicated functions to check if event passes certain conditions //
 
-bool pass_signalregion(Event& event, const std::string& leptonID, 
-			const bool isdataforbackground){
+bool pass_signalregion(Event& event, const bool isdataforbackground){
     // clean jet collection (warning: need to check whether after or before lepton cleaning)
     cleanjetcollection(event);
     // clean lepton collections (see also ewkino/skimmer/src/skimSelections.cc)
     cleanleptoncollection(event);
     // select FO leptons
-    if(!hasnFOLeptons(event,3,leptonID)) return false;
+    if(!hasnFOLeptons(event, 3, true)) return false;
     // select tight leptons
-    if(isdataforbackground && hasnTightLeptons(event,3,leptonID,false)) return false;
-    else if(!isdataforbackground && !hasnTightLeptons(event,3,leptonID)) return false;
+    if(isdataforbackground && hasnTightLeptons(event, 3, false)) return false;
+    else if(!isdataforbackground && !hasnTightLeptons(event, 3, true)) return false;
     // Z boson candidate
     if(!event.hasOSSFLightLeptonPair()) return false;
     if(!event.hasZTollCandidate(halfwindow)) return false;
@@ -89,26 +81,24 @@ bool pass_signalregion(Event& event, const std::string& leptonID,
     return true;
 }
 
-bool pass_signalsideband_noossf(Event& event, const std::string& leptonID, 
-			const bool isdataforbackground){
+bool pass_signalsideband_noossf(Event& event, const bool isdataforbackground){
     cleanjetcollection(event);
     cleanleptoncollection(event);
-    if(!hasnFOLeptons(event,3,leptonID)) return false;
-    if(isdataforbackground && hasnTightLeptons(event,3,leptonID,false)) return false;
-    else if(!isdataforbackground && !hasnTightLeptons(event,3,leptonID)) return false;
+    if(!hasnFOLeptons(event,3,true)) return false;
+    if(isdataforbackground && hasnTightLeptons(event,3,false)) return false;
+    else if(!isdataforbackground && !hasnTightLeptons(event,3,true)) return false;
     // inverted cut on OSSF:
     if(event.hasOSSFLightLeptonPair()) return false;
     // number of jets and b-jets -> move to event flattening
     return true;
 }
 
-bool pass_signalsideband_noz(Event& event, const std::string& leptonID, 
-			const bool isdataforbackground){
+bool pass_signalsideband_noz(Event& event, const bool isdataforbackground){
     cleanjetcollection(event);
     cleanleptoncollection(event);
-    if(!hasnFOLeptons(event,3,leptonID)) return false;
-    if(isdataforbackground && hasnTightLeptons(event,3,leptonID,false)) return false;
-    else if(!isdataforbackground && !hasnTightLeptons(event,3,leptonID)) return false;
+    if(!hasnFOLeptons(event,3,true)) return false;
+    if(isdataforbackground && hasnTightLeptons(event,3,false)) return false;
+    else if(!isdataforbackground && !hasnTightLeptons(event,3,true)) return false;
     if(!event.hasOSSFLightLeptonPair()) return false;
     // inverted cut on Z mass
     if(event.hasZTollCandidate(halfwindow)) return false;
@@ -116,15 +106,14 @@ bool pass_signalsideband_noz(Event& event, const std::string& leptonID,
     return true;
 }
 
-bool pass_wzcontrolregion(Event& event, const std::string& leptonID, 
-			const bool isdataforbackground){
+bool pass_wzcontrolregion(Event& event, const bool isdataforbackground){
     // very similar to signal region but b-jet veto and other specificities
     // cleaning and selecting leptons is done implicitly in pass_signalregion
     cleanjetcollection(event);
     cleanleptoncollection(event);
-    if(!hasnFOLeptons(event,3,leptonID)) return false;
-    if(isdataforbackground && hasnTightLeptons(event,3,leptonID,false)) return false;
-    else if(!isdataforbackground && !hasnTightLeptons(event,3,leptonID)) return false;
+    if(!hasnFOLeptons(event,3,true)) return false;
+    if(isdataforbackground && hasnTightLeptons(event,3,false)) return false;
+    else if(!isdataforbackground && !hasnTightLeptons(event,3,true)) return false;
     if(!event.hasOSSFLightLeptonPair()) return false;
     if(!event.hasZTollCandidate(halfwindow)) return false;
     if(event.numberOfMediumBTaggedJets()>0) return false;
@@ -134,13 +123,12 @@ bool pass_wzcontrolregion(Event& event, const std::string& leptonID,
     return true;
 }
 
-bool pass_zzcontrolregion(Event& event, const std::string& leptonID, 
-			const bool isdataforbackground){
+bool pass_zzcontrolregion(Event& event, const bool isdataforbackground){
     cleanjetcollection(event);
     cleanleptoncollection(event);
-    if(!hasnFOLeptons(event,4,leptonID)) return false;
-    if(isdataforbackground && hasnTightLeptons(event,4,leptonID,false)) return false;
-    else if(!isdataforbackground && !hasnTightLeptons(event,4,leptonID)) return false;
+    if(!hasnFOLeptons(event,4,true)) return false;
+    if(isdataforbackground && hasnTightLeptons(event,4,false)) return false;
+    else if(!isdataforbackground && !hasnTightLeptons(event,4,true)) return false;
     if(!event.hasOSSFLeptonPair()) return false;
     if(!(event.numberOfUniqueOSSFLeptonPairs()==2)) return false;
     // first Z candidate
@@ -161,13 +149,12 @@ bool pass_zzcontrolregion(Event& event, const std::string& leptonID,
     return true;
 }
 
-bool pass_zgcontrolregion(Event& event, const std::string& leptonID, 
-			const bool isdataforbackground){
+bool pass_zgcontrolregion(Event& event, const bool isdataforbackground){
     cleanjetcollection(event);
     cleanleptoncollection(event);
-    if(!hasnFOLeptons(event,3,leptonID)) return false;
-    if(isdataforbackground && hasnTightLeptons(event,3,leptonID,false)) return false;
-    else if(!isdataforbackground && !hasnTightLeptons(event,3,leptonID)) return false;
+    if(!hasnFOLeptons(event,3,true)) return false;
+    if(isdataforbackground && hasnTightLeptons(event,3,false)) return false;
+    else if(!isdataforbackground && !hasnTightLeptons(event,3,true)) return false;
     if(!event.hasOSSFLightLeptonPair()) return false;
     if(fabs(event.leptonSystem().mass()-particle::mZ)>halfwindow) return false;
     bool pairZmass = false;
@@ -183,10 +170,9 @@ bool pass_zgcontrolregion(Event& event, const std::string& leptonID,
     return true;
 }
 
-bool pass_ttzcontrolregion(Event& event, const std::string& leptonID, 
-			const bool isdataforbackground){
+bool pass_ttzcontrolregion(Event& event, const bool isdataforbackground){
     // no dedicated ttz control region yet (see analysis note)
     // put dummy code here to avoid compilation warnings
-    if(leptonID=="tth" && isdataforbackground) cleanjetcollection(event);
+    if(isdataforbackground) cleanjetcollection(event);
     return false;
 }

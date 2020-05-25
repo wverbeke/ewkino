@@ -14,48 +14,63 @@ from mergeTuples import listSkimmedSampleDirectories, sampleName
 # - input directory
 # - output directory
 
-if len( sys.argv ) != 3:
+if len( sys.argv ) < 3:
     print( '### ERROR ###: merge.py requires additional command-line arguments.' )
-    print( 'Usage : python merge.py <input_directory> <output_directory>' )
+    print( 'Usage : python merge.py <input_directory> <output_directory> <mode>' )
     print( 'The input directory should be the directory which contains the unmerged samples as subdirectories' )
     sys.exit()
 
+# parse mode command line argument
+mode = 'default'
+if len(sys.argv) == 4:
+    mode = sys.argv[3]
+else:
+    print('### WARNING ###: use default mode? (y/n)')
+    go = raw_input()
+    if not go == 'y': sys.exit()
+if not mode in ['default','trigger']:
+    print('### ERROR ###: mode not recognized: '+str(mode))
+
 # set input and output location
 input_directory = os.path.abspath( sys.argv[1] )
-output_directory = sys.argv[2]
+output_directory = os.path.abspath( sys.argv[2] )
 if not os.path.exists(output_directory):
     os.makedirs(output_directory)
-output_directory = os.path.abspath( sys.argv[2] )
 print('searching for skimmed samples in '+input_directory)
 inputlist = list(listSkimmedSampleDirectories( input_directory ))
 print('found '+str(len(inputlist))+' input folders')
 
-def sampleName_override(sample):
-    # NOT YET TESTED!!!
-    # to take into account possible '_extx' in sample name instead of version name
+def sampleName_override(sample,mode):
+    # override default sampleName function
+    # default:
     name = sampleName(sample)
-    if r'_ext' in name:
+    # merge samples which only differ by '_extx'
+    if '_ext' in name:
 	name = name[:name.find('_ext')]+name[name.find('_ext')+5:]
+    if mode=='trigger':
+	if '_Run' in sample:
+	    name = 'data' + sample[sample.find('_Run'):sample.find('_Run')+9]
     return name
 
 # reshape list into dict with unique sample names
 # structure: {sampleName1:[sample1,sample2,...],sampleName2:[sample3,...]}
 inputstruct = {}
 for sample in inputlist:
-    if sampleName_override(sample) in inputstruct:
-        inputstruct[sampleName_override(sample)].append(sample)
+    samplename = sampleName_override(sample,mode)
+    if samplename in inputstruct:
+        inputstruct[samplename].append(sample)
     else:
-        inputstruct[sampleName_override(sample)] = [sample]
+        inputstruct[samplename] = [sample]
 print('found '+str(len(inputstruct))+' unique samples')
 for s in inputstruct:
     print(s+': '+str(inputstruct[s]))
-#sys.exit()
 
 # run hadd command for each element in input structure
 counter = 0
 for samplename in inputstruct:
     samplelist = inputstruct[samplename]
-    outfile = os.path.join(output_directory,sampleName_override(samplelist[0])+'.root')
+    outfile = os.path.join(output_directory,sampleName_override(
+			    samplelist[0],mode)+'.root')
     script_name = 'merge.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)

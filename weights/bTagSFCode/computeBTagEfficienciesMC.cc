@@ -12,8 +12,9 @@
 #include "../../Tools/interface/systemTools.h"
 #include "../../Tools/interface/stringTools.h"
 
-
-void computeBTagEff( const std::string& year, const std::string& sampleDirectory, const bool cleanJetsFromLooseLeptons, const bool cleanJetsFromFOLeptons ){ //, const bool deepCSV ){
+void computeBTagEff( const std::string& year, const std::string& sampleDirectory, 
+		    const bool cleanJetsFromLooseLeptons, const bool cleanJetsFromFOLeptons, 
+		    const bool deepFlavor ){
 
     analysisTools::checkYearString( year ); 
 
@@ -29,8 +30,13 @@ void computeBTagEff( const std::string& year, const std::string& sampleDirectory
 
     //map working points to specific jet selectors
     typedef bool ( Jet::*passBTag )() const;
-    const std::vector< passBTag > workingPointFunctions = { &Jet::isBTaggedLoose, &Jet::isBTaggedMedium, &Jet::isBTaggedTight };
-
+    std::vector< passBTag > workingPointFunctions; 
+    if(!deepFlavor){
+	workingPointFunctions = { &Jet::isBTaggedLoose, &Jet::isBTaggedMedium, &Jet::isBTaggedTight };
+    } else{
+	workingPointFunctions = { &Jet::isDeepFlavorBTaggedLoose, &Jet::isDeepFlavorBTaggedMedium, 
+				    &Jet::isDeepFlavorBTaggedTight };
+    }
     std::vector< std::vector< std::vector< std::shared_ptr< TH2D > > > > bTagEfficiencyMaps(
         numeratorOrDenominator.size(), std::vector< std::vector< std::shared_ptr< TH2D > > >( quarkFlavors.size(), std::vector< std::shared_ptr< TH2D > >( workingPointNames.size() ) ) );
 
@@ -53,30 +59,31 @@ void computeBTagEff( const std::string& year, const std::string& sampleDirectory
         treeReader.initSample();
 
         //loop over events in sample
-        for( long unsigned entry = 0; entry < treeReader.numberOfEntries(); ++entry ){
+	unsigned numberOfEntries = treeReader.numberOfEntries();
+	//unsigned numberOfEntries = 100;
+        for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
             Event event = treeReader.buildEvent( entry );
 
             //ignore weight differences between samples for better statistics
             double weight = event.weight();
-            if( weight > 1. ){
-                weight = 1.;
-            } else if( weight < 1. ){
-                weight = -1.;
-            } else {
-                throw std::runtime_error( "Weight of event is zero." );
-            }
+            if( weight > 1e-6 ){ weight = 1.; } 
+	    else if( weight < -1e-6 ){ weight = -1.; } 
+	    //else { throw std::runtime_error( "Weight of event is zero." ); }
+	    else{ 
+		std::cerr<<"### WARNING ###: event weight smaller than expected: "<<weight<<"."<<std::endl;
+		std::cerr<<"                 skipping this event..."<<std::endl;
+	    } 
 
             //apply selection to jets 
             event.selectLooseLeptons();
             event.cleanElectronsFromLooseMuons();
             event.cleanTausFromLooseLightLeptons();
-            event.selectGoodJets();
+            event.selectGoodtZqJets();
             if( cleanJetsFromLooseLeptons && !cleanJetsFromFOLeptons ){
                 event.cleanJetsFromLooseLeptons();
             } else if( !cleanJetsFromLooseLeptons && cleanJetsFromFOLeptons ){
                 event.cleanJetsFromFOLeptons();
             } else if( !( cleanJetsFromLooseLeptons || cleanJetsFromFOLeptons ) ){
-
                 //no cleaning to do
             } else {
                 throw std::invalid_argument( "Arguments 'cleanJetsFromLooseLeptons' and 'cleanJetsFromFOLeptons' should not both be true." );
@@ -117,7 +124,8 @@ void computeBTagEff( const std::string& year, const std::string& sampleDirectory
     } else {
         cleaningName = "uncleaned";
     }
-    const std::string fileName = ( "bTagEff_" + cleaningName + "_" + year + ".root" );
+    std::string algoName = deepFlavor ? "deepFlavor" : "deepCSV";
+    const std::string fileName = ( "bTagEff_" + algoName + "_" + cleaningName + "_" + year + ".root" );
     std::string outputPath = stringTools::formatDirectoryName( outputDirectory ) + fileName;
     
     TFile* outputFilePtr = TFile::Open( outputPath.c_str(), "RECREATE" );
@@ -135,6 +143,9 @@ void computeBTagEff( const std::string& year, const std::string& sampleDirectory
 
 int main(int argc, char* argv[]){
 
+    // hard-code this option for now, maybe later command line arg
+    bool deepFlavor = true;
+
     //convert all input to std::string format for easier handling
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
 
@@ -147,7 +158,7 @@ int main(int argc, char* argv[]){
     } else if( argvStr.size() == 2 ){
         std::string sampleDirectory = argvStr[1];
 
-		//submit job for each configuration
+	//submit job for each configuration
        	for( const auto & year : { "2016", "2017", "2018" } ){
             for( const auto& cleaning : { "looseLeptons", "FOLeptons", "uncleaned" } ){
 	
@@ -166,7 +177,7 @@ int main(int argc, char* argv[]){
         }
         bool cleanJetsFromLooseLeptons = ( cleaningOption == "looseLeptons" );
         bool cleanJetsFromFOLeptons = ( cleaningOption == "FOLeptons" );
-        computeBTagEff( year, sampleDirectory, cleanJetsFromLooseLeptons, cleanJetsFromFOLeptons );
+        computeBTagEff( year, sampleDirectory, cleanJetsFromLooseLeptons, cleanJetsFromFOLeptons, deepFlavor );
     }
 	return 0;
 }

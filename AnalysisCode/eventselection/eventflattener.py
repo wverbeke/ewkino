@@ -27,11 +27,11 @@ frdir = os.path.abspath('../fakerate/fakeRateMaps')
 # maybe later add as a command line argument
 # but for now process both nonprompt simulation as estimate from data
 
-if len(sys.argv) != 9:
+if len(sys.argv) != 8:
     print('### ERROR ###: eventflattener.py requires a different number of command-line arguments.')
     print('Normal usage from the command line:')
     print('python eventflattener.py input_directory samplelist output_directory event_selection')
-    print('leptonID uncertainty do_mva path_to_xml_file')
+    print('variation do_mva path_to_xml_file')
     sys.exit()
 
 input_directory = os.path.abspath(sys.argv[1])
@@ -45,10 +45,9 @@ if os.path.exists(output_directory):
 os.makedirs(output_directory)
 output_directory = os.path.abspath(output_directory)
 event_selection = sys.argv[4]
-leptonID = sys.argv[5]
-uncertainty = sys.argv[6]
-do_mva = sys.argv[7]
-path_to_xml_file = os.path.abspath(sys.argv[8])
+variation = sys.argv[5]
+do_mva = sys.argv[6]
+path_to_xml_file = os.path.abspath(sys.argv[7])
 cwd = os.getcwd()
 
 # check command line arguments
@@ -56,11 +55,8 @@ if event_selection not in (['signalregion','signalsideband_noossf','signalsideba
                             'wzcontrolregion','zzcontrolregion','zgcontrolregion']):
     print('### ERROR ###: event_selection not in list of recognized event selections')
     sys.exit()
-if leptonID not in ['tth','tzq']:
-    print('### ERROR ###: leptonID not in list of recognized lepton IDs')
-    sys.exit()
-if uncertainty not in ['nominal','JECDown','JECUp','JERDown','JERUp','UnclDown','UnclUp']:
-    print('### ERROR ###: uncertainty not in list of recognized scale variations')
+if variation not in ['nominal','JECDown','JECUp','JERDown','JERUp','UnclDown','UnclUp']:
+    print('### ERROR ###: variation not in list of recognized scale variations')
     sys.exit()
 if do_mva not in ['true','True','false','False']:
     print('### ERROR ###: do_mva not in list of recognized values')
@@ -91,7 +87,7 @@ if not os.path.exists('./eventflattener'):
     print('Run make -f makeEventFlattener before running this script.')
     sys.exit()
 
-def submitjob(cwd,inputfile,norm,output_directory,event_selection,leptonID,uncertainty,
+def submitjob(cwd,inputfile,norm,output_directory,event_selection,variation,
 		isnpbackground, muonfrmap, electronfrmap,
 		do_mva, path_to_xml_file):
     script_name = 'eventflattener.sh'
@@ -101,12 +97,13 @@ def submitjob(cwd,inputfile,norm,output_directory,event_selection,leptonID,uncer
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
-        command = './eventflattener {} {} {} {} {} {} {} {} {} {} {} {}'.format(
+        command = './eventflattener {} {} {} {} {} {} {} {} {} {} {}'.format(
 		    inputfile,norm,output_directory,inputfile.split('/')[-1],event_selection,
-		    leptonID,uncertainty,
+		    variation,
 		    isnpbackground,muonfrmap,electronfrmap,
 		    do_mva,path_to_xml_file)
         script.write(command+'\n')
+	print(command)
     submitQsubJob(script_name)
     # alternative: run locally
     #os.system('bash '+script_name)
@@ -122,11 +119,11 @@ for f in inputfiles:
 	xsec = f['cross_section']
 	norm = xsec*lumi/float(hcounter)
     if(not 'nonprompt_background' in inputfile):
-	submitjob(cwd,inputfile,norm,output_directory,event_selection,leptonID,uncertainty,
+	submitjob(cwd,inputfile,norm,output_directory,event_selection,variation,
 	False,'.','.',do_mva,path_to_xml_file)
     else:
 	year = tls.year_from_filepath(inputfile)
 	frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
 	frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
-        submitjob(cwd,inputfile,norm,output_directory,event_selection,leptonID,uncertainty,
+        submitjob(cwd,inputfile,norm,output_directory,event_selection,variation,
 		    True,frmap_muon,frmap_electron,do_mva,path_to_xml_file)

@@ -64,7 +64,6 @@ class Event{
         
         //jet selection and cleaning
         void selectGoodJets() const{ _jetCollectionPtr->selectGoodJets(); }
-	void selectGoodtZqJets() const{ _jetCollectionPtr->selectGoodtZqJets(); }
         void cleanJetsFromLooseLeptons( const double coneSize = 0.4 ) const{ _jetCollectionPtr->cleanJetsFromLooseLeptons( *_leptonCollectionPtr, coneSize ); }
         void cleanJetsFromFOLeptons( const double coneSize = 0.4 ) const{ _jetCollectionPtr->cleanJetsFromFOLeptons( *_leptonCollectionPtr, coneSize ); }
         void cleanJetsFromTightLeptons( const double coneSize = 0.4 ) const{ _jetCollectionPtr->cleanJetsFromTightLeptons( *_leptonCollectionPtr, coneSize ); }
@@ -81,8 +80,6 @@ class Event{
         void selectLooseLeptons(){ _leptonCollectionPtr->selectLooseLeptons(); }
         void selectFOLeptons(){ _leptonCollectionPtr->selectFOLeptons(); }
         void selectTightLeptons(){ _leptonCollectionPtr->selectTightLeptons(); }
-        void selectFOtZqLeptons(){ _leptonCollectionPtr->selectFOtZqLeptons(); }
-        void selectTighttZqLeptons(){ _leptonCollectionPtr->selectTighttZqLeptons(); }
        	void cleanElectronsFromLooseMuons( const double coneSize = 0.05 ){ _leptonCollectionPtr->cleanElectronsFromLooseMuons( coneSize ); }
         void cleanElectronsFromFOMuons( const double coneSize = 0.05 ){ _leptonCollectionPtr->cleanElectronsFromFOMuons( coneSize ); }
         void cleanTausFromLooseLightLeptons( const double coneSize = 0.4 ){ _leptonCollectionPtr->cleanTausFromLooseLightLeptons( coneSize ); }
@@ -112,8 +109,6 @@ class Event{
         LeptonCollection FOLeptonCollection() const{ return _leptonCollectionPtr->FOLeptonCollection(); }
         LeptonCollection TightLeptonCollection() const{ return _leptonCollectionPtr->tightLeptonCollection(); }
         LeptonCollection::size_type numberOfLooseLeptons() const{ return _leptonCollectionPtr->numberOfLooseLeptons(); }
-        LeptonCollection::size_type numberOfFOLeptons() const{ return _leptonCollectionPtr->numberOfFOLeptons(); }
-        LeptonCollection::size_type numberOfTightLeptons() const{ return _leptonCollectionPtr->numberOfTightLeptons(); }
 
         //user specified lepton selection
         void selectLeptons( bool (&passSelection)( const Lepton& ) ){ _leptonCollectionPtr->selectObjects( passSelection ); }
@@ -139,6 +134,7 @@ class Event{
         bool passTriggers_mmm() const{ return _triggerInfoPtr->passTriggers_mmm(); }
         bool passTriggers_FR() const{ return _triggerInfoPtr->passTriggers_FR(); }
         bool passTriggers_FR_iso() const{ return _triggerInfoPtr->passTriggers_FR_iso(); }
+	bool passTriggers_ref() const{ return _triggerInfoPtr->passTriggers_ref(); }
         bool passMetFilters() const{ return _triggerInfoPtr->passMetFilters(); }
         bool passTrigger( const std::string& triggerName ) const{ return _triggerInfoPtr->passTrigger( triggerName ); }
         bool passMetFilter( const std::string& filterName ) const{ return _triggerInfoPtr->passMetFilter( filterName ); }
@@ -209,6 +205,17 @@ class Event{
         long unsigned eventNumber(){ return eventTags().eventNumber(); }
         long unsigned luminosityBlock(){ return eventTags().luminosityBlock(); }
         long unsigned runNumber(){ return eventTags().runNumber(); }
+
+	// for MC events
+	double relativeWeightScaleVar( const unsigned scaleIndex) const{
+	    return (hasGeneratorInfo())? _generatorInfoPtr->relativeWeightScaleVar(scaleIndex) : 0.;
+	}
+	double relativeWeightPdfVar( const unsigned pdfIndex) const{
+            return (hasGeneratorInfo())? _generatorInfoPtr->relativeWeightPdfVar(pdfIndex) : 0.;
+        }
+	double relativeWeightPsVar( const unsigned psIndex) const{
+            return (hasGeneratorInfo())? _generatorInfoPtr->relativeWeightPsVar(psIndex) : 0.;
+        }
 
 
     private:

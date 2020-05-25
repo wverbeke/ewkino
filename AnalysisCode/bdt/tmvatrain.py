@@ -35,7 +35,7 @@ def tmvatrain(indirs,treenames,sigtag,variables,tloader_options,tfactory_options
 		    except:
 			print('An error occurred for '+filename+' ('+treename+')')
 		else:
-		    if 'DYJets' in filename: continue
+		    #if 'DYJets' in filename: continue
 		    try:
 			nbckf = temp.Get(treename).GetEntries()
 			if nbckf==0: continue
@@ -53,10 +53,10 @@ def tmvatrain(indirs,treenames,sigtag,variables,tloader_options,tfactory_options
     ### Define train and test set
     for var in variables:
 	tloader.AddVariable(var,'F')
-    #cuts = ROOT.TCut("_normweight>0")
-    #cutb = ROOT.TCut("_normweight>0")
-    cuts = ROOT.TCut("")
-    cutb = ROOT.TCut("")
+    cuts = ROOT.TCut("_normweight>0")
+    cutb = ROOT.TCut("_normweight>0")
+    #cuts = ROOT.TCut("")
+    #cutb = ROOT.TCut("")
     tloader.PrepareTrainingAndTestTree(cuts,cutb,tloader_options)
 
     ### Book BDT method
@@ -111,9 +111,9 @@ if __name__=="__main__":
 	(indirs,treenames,sigtag,varlist,lopts,fopts) = argsfromcmd(args)
     else:
 	### Set list of input files
-	indirs = [os.path.abspath('/user/llambrec/Files/tzqid/signalregion_lmva0p8/2016MC_flat')]
-	#indirs.append(os.path.abspath('/user/llambrec/tzqid/Files/signalregion/2017MC_flat'))
-	indirs.append(os.path.abspath('/user/llambrec/Files/tzqid/signalregion_lmva0p8/2018MC_flat'))
+	indirs = [os.path.abspath('/user/llambrec/Files/tzqid/signalregion_wp0p6/2016MC_flat')]
+	indirs.append(os.path.abspath('/user/llambrec/Files/tzqid/signalregion_wp0p6/2017MC_flat'))
+	indirs.append(os.path.abspath('/user/llambrec/Files/tzqid/signalregion_wp0p6/2018MC_flat'))
 	treenames = ["blackJackAndHookers/treeCat1"]
 	treenames.append("blackJackAndHookers/treeCat2")
 	treenames.append("blackJackAndHookers/treeCat3")
