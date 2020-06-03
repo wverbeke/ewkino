@@ -24,6 +24,7 @@ def tmvatrain(indirs,treenames,sigtag,variables,tloader_options,tfactory_options
     for indir in indirs:
 	filelist = [f for f in os.listdir(indir) if f[-5:]=='.root']
 	for filename in filelist:
+	    if not '_train' in filename: continue
 	    fullpath = os.path.join(indir,filename)
 	    temp = ROOT.TFile.Open(fullpath)
 	    for i,treename in enumerate(treenames):
@@ -111,9 +112,9 @@ if __name__=="__main__":
 	(indirs,treenames,sigtag,varlist,lopts,fopts) = argsfromcmd(args)
     else:
 	### Set list of input files
-	indirs = [os.path.abspath('/user/llambrec/Files/tzqid/signalregion_wp0p6/2016MC_flat')]
-	indirs.append(os.path.abspath('/user/llambrec/Files/tzqid/signalregion_wp0p6/2017MC_flat'))
-	indirs.append(os.path.abspath('/user/llambrec/Files/tzqid/signalregion_wp0p6/2018MC_flat'))
+	indirs = [os.path.abspath('/user/llambrec/Files/tthid_tthmva_reduced/signalregion/2016MC_flat')]
+	indirs.append(os.path.abspath('/user/llambrec/Files/tthid_tthmva_reduced/signalregion/2017MC_flat'))
+	indirs.append(os.path.abspath('/user/llambrec/Files/tthid_tthmva_reduced/signalregion/2018MC_flat'))
 	treenames = ["blackJackAndHookers/treeCat1"]
 	treenames.append("blackJackAndHookers/treeCat2")
 	treenames.append("blackJackAndHookers/treeCat3")

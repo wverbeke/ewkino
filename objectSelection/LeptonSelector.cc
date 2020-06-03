@@ -2,7 +2,7 @@
 
 // define here what lepton ID to use throughout the whole framework!
 std::string leptonID(){
-    return "tzq"; // choose from "tzq" or "tth"
+    return "tth"; // choose from "tzq" or "tth"
 }
 
 bool LeptonSelector::isLoose() const{

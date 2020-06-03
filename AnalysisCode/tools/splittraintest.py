@@ -38,19 +38,19 @@ for f in filelist:
 	except: 
 	    print('### ERROR ###: tree '+treename+' in file '+f+' could not be opened.')
 	    continue
-	print('found tree with '+tree.GetEntries()+' entries')
+	print('found tree with '+str(tree.GetEntries())+' entries')
 	trainfraction = 0.5
 	ntrain = int(trainfraction*tree.GetEntries())
 	ntest = tree.GetEntries()-ntrain
 	# copy tree to train and test tree and write them to file
-	if '/' in treename: treename = treename[treename.rfind('/'):]
+	#if '/' in treename: treename = treename[treename.rfind('/'):]
 	trainfile.cd()
 	traintree = tree.CopyTree("","",ntrain,0)
-	print(traintree.GetEntries())
-	traintree.Write(treename+'_train')
+	print(' -> train tree with '+str(traintree.GetEntries())+' entries')
+	traintree.Write(treename)
 	testfile.cd()
 	testtree = tree.CopyTree("","",ntest,ntrain)
-	testtree.Write(treename+'_test')
+	testtree.Write(treename)
 
     trainfile.Close()
     testfile.Close()

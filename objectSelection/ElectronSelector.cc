@@ -6,37 +6,33 @@
 //include other parts of framework
 #include "bTagWP.h"
 
-double ttHleptonMVACutElectron(){
-    return 0.8;
-}
-
 // define here what mva threshold to use in tZq ID's listed below
-// warning: function ttHleptonMVACutElectron is used in ttH ID's
 double electronMVACut(){
-    return 0.95;
+    return 0.8; // for leptonMVAttH
+    //return 0.8; // for leptonMVAtZq
+    //return -1.; // for leptonMVATOP
 }
 
 // define here what mva value to use in tZq ID's listed below
-// warning: leptonMVAttH is hard-coded in ttH ID!
 double electronMVAValue(const Electron* electronPtr){
+    return electronPtr->leptonMVAttH();
     //return electronPtr->leptonMVAtZq();
-    return electronPtr->leptonMVATOP();
+    //return electronPtr->leptonMVATOP();
 }
 
 // define here what b-tagger threshold to use in all tZq ID's listed below
 // warning: deepFlavor thresholds are hard-coded in ttH ID!
 double electronJetBTagCut(const std::string wp, const std::string year){
-    //return bTagWP::getWP("DeepCSV", wp, year);
-    return bTagWP::getWP("DeepFlavor", wp, year);    
+    return bTagWP::getWP("DeepCSV", wp, year);
+    //return bTagWP::getWP("DeepFlavor", wp, year);    
 }
 
 // define here what b-tagger to use in all tZq ID's listed below
 // warning: deepFlavor is hard-coded in ttH ID!
 double electronJetBTagValue(const Electron* electronPtr){
-    //return electronPtr->closestJetDeepCSV();
-    return electronPtr->closestJetDeepFlavor();
+    return electronPtr->closestJetDeepCSV();
+    //return electronPtr->closestJetDeepFlavor();
 }
-
 
 /*
 ----------------------------------------------------------------
@@ -89,7 +85,7 @@ bool ElectronSelector::isFOBase() const{
     } else {
         if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
     }
-    if( electronPtr->leptonMVAttH() <= ttHleptonMVACutElectron() ){
+    if( electronMVAValue(electronPtr) <= electronMVACut() ){
         if( !electronPtr->passElectronMVAFall17NoIsoWP80() ) return false;
         if( electronPtr->ptRatio() <= 0.7 ) return false;
     }
@@ -169,7 +165,7 @@ tight electron selection for ttH ID
 
 bool ElectronSelector::isTightBase() const{
     if( !isFO() ) return false;
-    if( electronPtr->leptonMVAttH() <= ttHleptonMVACutElectron() ) return false;
+    if( electronMVAValue(electronPtr) <= electronMVACut() ) return false;
     return true;
 }
 

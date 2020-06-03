@@ -27,11 +27,11 @@ frdir = os.path.abspath('../fakerate/fakeRateMaps')
 # maybe later add as a command line argument
 # but for now process both nonprompt simulation as estimate from data
 
-if len(sys.argv) != 8:
+if len(sys.argv) != 6:
     print('### ERROR ###: eventflattener.py requires a different number of command-line arguments.')
     print('Normal usage from the command line:')
     print('python eventflattener.py input_directory samplelist output_directory event_selection')
-    print('variation do_mva path_to_xml_file')
+    print('variation')
     sys.exit()
 
 input_directory = os.path.abspath(sys.argv[1])
@@ -46,8 +46,6 @@ os.makedirs(output_directory)
 output_directory = os.path.abspath(output_directory)
 event_selection = sys.argv[4]
 variation = sys.argv[5]
-do_mva = sys.argv[6]
-path_to_xml_file = os.path.abspath(sys.argv[7])
 cwd = os.getcwd()
 
 # check command line arguments
@@ -57,9 +55,6 @@ if event_selection not in (['signalregion','signalsideband_noossf','signalsideba
     sys.exit()
 if variation not in ['nominal','JECDown','JECUp','JERDown','JERUp','UnclDown','UnclUp']:
     print('### ERROR ###: variation not in list of recognized scale variations')
-    sys.exit()
-if do_mva not in ['true','True','false','False']:
-    print('### ERROR ###: do_mva not in list of recognized values')
     sys.exit()
 
 # determine data taking year and luminosity from sample list name.
@@ -88,8 +83,7 @@ if not os.path.exists('./eventflattener'):
     sys.exit()
 
 def submitjob(cwd,inputfile,norm,output_directory,event_selection,variation,
-		isnpbackground, muonfrmap, electronfrmap,
-		do_mva, path_to_xml_file):
+		isnpbackground, muonfrmap, electronfrmap):
     script_name = 'eventflattener.sh'
     if isnpbackground: 
 	output_directory = os.path.join(output_directory,'nonprompt_background')
@@ -97,11 +91,10 @@ def submitjob(cwd,inputfile,norm,output_directory,event_selection,variation,
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
-        command = './eventflattener {} {} {} {} {} {} {} {} {} {} {}'.format(
+        command = './eventflattener {} {} {} {} {} {} {} {} {}'.format(
 		    inputfile,norm,output_directory,inputfile.split('/')[-1],event_selection,
 		    variation,
-		    isnpbackground,muonfrmap,electronfrmap,
-		    do_mva,path_to_xml_file)
+		    isnpbackground,muonfrmap,electronfrmap)
         script.write(command+'\n')
 	print(command)
     submitQsubJob(script_name)
@@ -119,11 +112,10 @@ for f in inputfiles:
 	xsec = f['cross_section']
 	norm = xsec*lumi/float(hcounter)
     if(not 'nonprompt_background' in inputfile):
-	submitjob(cwd,inputfile,norm,output_directory,event_selection,variation,
-	False,'.','.',do_mva,path_to_xml_file)
+	submitjob(cwd,inputfile,norm,output_directory,event_selection,variation,False,'.','.')
     else:
 	year = tls.year_from_filepath(inputfile)
 	frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
 	frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
         submitjob(cwd,inputfile,norm,output_directory,event_selection,variation,
-		    True,frmap_muon,frmap_electron,do_mva,path_to_xml_file)
+		    True,frmap_muon,frmap_electron)

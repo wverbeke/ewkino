@@ -38,15 +38,17 @@ extern Float_t _M3l;
 extern Float_t _abs_eta_max;
 
 // BDT output score
-extern Float_t _eventBDT;
+//extern Float_t _eventBDT;
 
 // other variables
 extern Int_t _nMuons;
 extern Int_t _nElectrons;
+extern Float_t _leptonMVAttH_min;
+extern Float_t _leptonMVATOP_min;
 
 // function declarations
 void initOutputTree(TTree*);
-TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile );
+//TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile );
 JetCollection getjetcollection(const Event&, const std::string& variation = "nominal");
 Met getmet(const Event&, const std::string& variation = "nominal");
 int eventCategory(Event&, const std::string& variation = "nominal");

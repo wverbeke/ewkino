@@ -12,15 +12,22 @@ from jobSubmission import submitQsubJob, initializeJobScript
 #import smalltools as tls
 import plottools as tools
 
-if len(sys.argv) == 3:
-    dofill = False
+dofill = False
+doplot = False
+doplotloop = False
+
+if len(sys.argv) == 2:
+    # apply plotting to all files in given folder
+    doplotloop = True
+    hist_file_path = os.path.abspath(sys.argv[1])
+
+elif len(sys.argv) == 3:
     doplot = True
     hist_file_path = os.path.abspath(sys.argv[1])
     output_file_path = os.path.abspath(sys.argv[2])
 
-elif len(sys.argv) > 7:
+elif len(sys.argv) > 6:
     dofill = True
-    doplot = False
     input_file_path = os.path.abspath(sys.argv[1])
     hist_file_path = os.path.abspath(sys.argv[2])
     if os.path.exists(hist_file_path):
@@ -37,19 +44,37 @@ elif len(sys.argv) > 7:
     cwd = os.getcwd()
 
 else:
-    print('### ERROR ###: singlehistplotter.py requires either 2 or at least 6 command-line arguments.')
+    print('### ERROR ###: singlehistplotter.py requires either 1, 2 or at least 6 command-line arguments.')
     print('Normal usage from the command line:')
+    print('  python singlehistplotter.py <hist_folder>')
+    print('OR')
     print('  python singlehistplotter.py <hist_file> <output_file>')
     print('OR')
     print('  python singlehistplotter.py <input_file> <hist_file> <xlow> <xhigh> <nbins>')
     print('       at least one <variable>')
     sys.exit()
 
+def submitjob(cwd,input_file_path,output_file_path,
+                        xlow, xhigh, nbins, variables):
+    script_name = 'singlehistplotter.sh'
+    with open(script_name,'w') as script:
+        initializeJobScript(script)
+        script.write('cd {}\n'.format(cwd))
+        command = './singlehistplotter {} {} {} {} {}'.format(
+                    input_file_path, output_file_path, xlow, xhigh, nbins)
+        for variable in variables:
+            command += ' {}'.format(variable)
+        script.write(command+'\n')
+    submitQsubJob(script_name)
+    # alternative: run locally
+    #os.system('bash '+script_name)
+
 if dofill:
 
     # check validity of arguments
     for variable in variables:
-	if variable not in ['leadingLeptonPt','subLeadingLeptonPt','trailingLeptonPt']:
+	if variable not in ['leadingLeptonPt','subLeadingLeptonPt','trailingLeptonPt',
+			    'minTOPMVA','mintZqMVA','minttHMVA']:
 	    print('### ERROR ###: variable not in list of recognized variables.')
 	    sys.exit()
 
@@ -58,21 +83,6 @@ if dofill:
 	print('### ERROR ###: singlehistplotter executable was not found.')
 	print('Run make -f makeSingleHistPlotter before running this script.')
 	sys.exit()
-
-    def submitjob(cwd,input_file_path,output_file_path,
-			xlow, xhigh, nbins, variables):
-	script_name = 'singlehistplotter.sh'
-	with open(script_name,'w') as script:
-	    initializeJobScript(script)
-	    script.write('cd {}\n'.format(cwd))
-	    command = './singlehistplotter {} {} {} {} {}'.format(
-			    input_file_path, output_file_path, xlow, xhigh, nbins)
-	    for variable in variables:
-		command += ' {}'.format(variable)
-	    script.write(command+'\n')
-	submitQsubJob(script_name)
-	# alternative: run locally
-	#os.system('bash '+script_name)
 
     # run the command to make the histogram objects
     submitjob(cwd,input_file_path, hist_file_path, xlow, xhigh, nbins, variables)
@@ -98,7 +108,7 @@ def loadhistograms(histfile):
 def getminmax(histlist):
     # get suitable minimum and maximum values for plotting a hist collection (not stacked)
     totmax = 0.
-    totmin = 0.
+    totmin = 99.
     for hist in histlist:
         for i in range(1,hist.GetNbinsX()+1):
             val = hist.GetBinContent(i)
@@ -108,6 +118,7 @@ def getminmax(histlist):
     bottommargin = (totmax-totmin)/5.
     #return (totmin-bottommargin,totmax+topmargin)
     return (0,totmax+topmargin)
+    #return(totmin/10.,totmax*10.)
 
 def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,errorbars=False):
 
@@ -143,9 +154,9 @@ def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,errorbars=False):
     for i,hist in enumerate(mchistlist):
 	hist.SetLineWidth(2)
 	hist.SetLineColor(clist[i])
-	scale = hist.GetSumOfWeights()
+	scale = hist.Integral("width")
         for j in range(0,hist.GetNbinsX()+2):
-            if hist.GetBinContent(j)==0:
+            if hist.GetBinContent(j)<=0:
                 hist.SetBinContent(j,0.)
                 hist.SetBinError(j,0.)
             else:
@@ -172,6 +183,7 @@ def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,errorbars=False):
 
     ### make upper part of the plot
     pad1.cd()
+    #pad1.SetLogy()
     (rangemin,rangemax) = getminmax(mchistlist)
     mchistlist[0].SetMinimum(rangemin)
     mchistlist[0].SetMaximum(rangemax)
@@ -222,3 +234,17 @@ if doplot:
         yaxtitle = 'normalized number of events / {0:.2f}'.format(binwidth)
     xaxtitle = histlist[0].GetXaxis().GetTitle()
     plothistograms(histlist,yaxtitle,xaxtitle,output_file_path,errorbars=True)
+
+if doplotloop:
+    
+    filelist = [os.path.join(hist_file_path,f) for f in os.listdir(hist_file_path) if f[-5:]=='.root']
+    for f in filelist:
+	histlist = loadhistograms(f)
+	binwidth = histlist[0].GetBinWidth(1)
+	if binwidth.is_integer():
+	    yaxtitle = 'normalized number of events / '+str(int(binwidth))
+	else:
+	    yaxtitle = 'normalized number of events / {0:.2f}'.format(binwidth)
+	#xaxtitle = histlist[0].GetXaxis().GetTitle()
+	xaxtitle = 'lepton pT (GeV)'
+	plothistograms(histlist,yaxtitle,xaxtitle,f[:-5],errorbars=True)

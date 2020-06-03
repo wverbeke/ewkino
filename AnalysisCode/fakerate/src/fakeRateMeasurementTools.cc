@@ -122,7 +122,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     for(unsigned idx=1; idx<=sampleIndex; ++idx){
 	treeReader.initSample();
     }
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../../weights/", 
 							year, treeReader.sampleVector() );
     
@@ -216,10 +216,10 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 
     if( isMuonMeasurement ){
         etaBinBorders = {0., 1.2, 2.1};
-        ptBinBorders = { 10, 20, 30, 45, 65 };
+        ptBinBorders = { 10, 15, 20, 30, 45 };
     } else{
         etaBinBorders = {0., 0.8, 1.442};
-        ptBinBorders = { 10, 20, 30, 45, 65 };
+        ptBinBorders = { 10, 15, 20, 30, 45 };
     }
 
     unsigned numberOfMTBins = 16; 
@@ -251,7 +251,6 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
             if( isMuonMeasurement ){conePtBound = 2*it->first;} 
 	    else {conePtBound = 1.5*it->first;}
         }
-	std::cout<<"cone pt bound: "<<conePtBound<<std::endl;
         conePtLowerBoundMap[ conePtBound ] = it->second;
     }
     RangedMap< std::string > conePtToTriggerMap( conePtLowerBoundMap );
@@ -267,7 +266,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
         treeReader.initSample();
     }
     std::cout<<"building reweighter"<<std::endl;
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../../weights/", year, 
 					treeReader.sampleVector() );
 
@@ -374,7 +373,10 @@ void fillMCFakeRateMeasurementHistograms(const std::string& flavor, const std::s
     analysisTools::checkYearString( year );
     const bool isMuon =  ( flavor == "muon" );
     
+    // old binning:
     const std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};
+    // new binning:
+    //const std::vector< double > ptBins = {10., 15., 20., 30., 45., 100.};
     std::vector< double > etaBins;
     if( isMuon ){
         etaBins = { 0., 1.2, 2.1, 2.4 }; 

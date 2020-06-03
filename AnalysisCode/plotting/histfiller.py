@@ -65,7 +65,8 @@ def overflow(value,hist):
     return (lowX+highX)/2.
 
 def addinputfile(histlist,filelist,treename,index,variables,
-		    usenormweight,removeoverlap,normalization,lumi,evttags):
+		    usenormweight,removeoverlap,normalization,lumi,evttags,
+		    doextraselection):
     f = ROOT.TFile.Open(filelist[index]['file'])
     tree = f.Get("blackJackAndHookers/"+treename)
     for j in range(int(tree.GetEntries()/1.)):
@@ -74,6 +75,9 @@ def addinputfile(histlist,filelist,treename,index,variables,
             sys.stdout.write("\r"+str(percent)+'%')
             sys.stdout.flush()
         tree.GetEntry(j)
+	if doextraselection:
+	    print('here')
+	    if not passextraselection(tree): continue
 	normweight = 1.
         if(usenormweight and not normalization==0):
 	    normweight = getattr(tree,'_normweight')
@@ -162,9 +166,16 @@ def savehistograms(mchistlist,datahistlist,npdatahistlist,histfile,normalization
     lumi_st.Write("lumi")
     f.Close()
 
+def passextraselection(tree):
+    # warning: must have called tree.GetEntry(j) before calling this function
+    return getattr(tree,'_eventBDT')>0
+
 def input_from_cmd(arglist):
     # read command line arguments and return a dict.
     # the order of the arguments is fixed and no checking is done, but this can be generalized
+    if not len(sys.argv)==11:
+	print('### ERROR ###: wrong number of command line arguments.')
+	sys.exit()
     res = {}
     res['mcrootdir'] = sys.argv[1]
     res['mcsamplelist'] = sys.argv[2]
@@ -175,6 +186,7 @@ def input_from_cmd(arglist):
     res['treename'] = sys.argv[7]
     res['normalization'] = int(sys.argv[8])
     res['lumi'] = float(sys.argv[9])
+    res['doextraselection'] = bool(sys.argv[10]=='True')
     return res
 
 if __name__ == '__main__':
@@ -184,15 +196,15 @@ if __name__ == '__main__':
     args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    args['mcrootdir'] = '/user/llambrec/Files/tzqid/reference1/signalregion/2016MC_flat'
+    args['mcrootdir'] = '/user/llambrec/Files/tthid_tthmva_reduced/signalregion/2017MC_flat'
     # folder to read data root files from
-    #args['datarootdir'] = '/user/llambrec/Files/tzqid/signalregion/2016data_flat'
+    #args['datarootdir'] = '/user/llambrec/Files/tzqid/wzcontrolregion/2018data_flat'
     args['datarootdir'] = args['mcrootdir']
     # samplelist for simulation with process names and cross sections
-    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
+    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2017_MC.txt'
     #args['mcsamplelist'] = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/samplelist_tzq_2016_MC.txt'
     # samplelist for data with dataset names
-    #args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_data.txt' 
+    #args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2018_data.txt' 
     args['datasamplelist'] = args['mcsamplelist']
     # file to store histograms in:
     args['histfile'] = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms/histograms.root'
@@ -208,12 +220,16 @@ if __name__ == '__main__':
         {'name':'_dRlb_min','bins':list(np.linspace(0,3.14,num=21))},
         {'name':'_dPhill_max','bins':list(np.linspace(0,3.14,num=21))},
         {'name':'_HT','bins':list(np.linspace(0,800,num=21))},
-        {'name':'_nJets','bins':list(np.linspace(0,10,num=21))},
+        {'name':'_nJets','bins':list(np.linspace(-0.5,10.5,num=11))},
         {'name':'_dRlWrecoil','bins':list(np.linspace(0,10,num=21))},
         {'name':'_dRlWbtagged','bins':list(np.linspace(0,7,num=21))},
         {'name':'_M3l','bins':list(np.linspace(0,600,num=21))},
         {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21))},
-	{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21))}
+	#{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21))},
+	{'name':'_nMuons','bins':list(np.linspace(-0.5,3.5,num=5))},
+	{'name':'_nElectrons','bins':list(np.linspace(-0.5,3.5,num=5))},
+	#{'name':'_leptonMVATOP_min','bins':list(np.linspace(-1,1,num=41))},
+	#{'name':'_leptonMVAttH_min','bins':list(np.linspace(-1,1,num=41))}
     ]
     # name of tree to read for each input file:
     args['treename'] = 'treeCat1'
@@ -223,11 +239,11 @@ if __name__ == '__main__':
     # (             1 = normalize using weights, xsection and lumi.)
     # (             2 = same as before but apply normalization to data afterwards.)
     # luminosity in inverse picobarns
-    #args['lumi'] = 35900.
-    args['lumi'] = 35900.
+    args['lumi'] = 41500.
+    args['doextraselection'] = False
 
     ### Overwrite using cmd args
-    if(len(sys.argv)==10):
+    if(len(sys.argv)==11):
 	args = input_from_cmd(sys.argv)
     elif(not len(sys.argv)==1):
 	print('### ERROR ###: wrong number of command line args: '+str(len(sys.argv)))
@@ -248,7 +264,7 @@ if __name__ == '__main__':
     ### Configure input files
     mcin = getinputfiles(mcrootdir,mcsamplelist)
     datain = getinputfiles(datarootdir,datasamplelist)
-    datain = datain[1:2] # TEMP FOR SPEED-UP WHEN NO DATA IS BEING USED
+    #datain = datain[1:2] # TEMP FOR SPEED-UP WHEN NO DATA IS BEING USED
     npdatain = []
     npfromdata = False # later add as cmdline arg
     if npfromdata:
@@ -270,13 +286,15 @@ if __name__ == '__main__':
         print('file '+str(i+1)+' of '+str(len(mcin)))
 	print(mcin[i]['sample_name'])
         addinputfile(mchistlist,mcin,args['treename'],i,args['variables'],
-			True,False,args['normalization'],args['lumi'],[])
+			True,False,args['normalization'],args['lumi'],[],
+			args['doextraselection'])
     print('adding data files...')
     evttags = []
     for i in range(len(datain)):
 	print('file '+str(i+1)+' of '+str(len(datain)))
 	evttags = addinputfile(datahistlist,datain,args['treename'],i,args['variables'],
-				False,True,args['normalization'],args['lumi'],evttags)
+				False,True,args['normalization'],args['lumi'],evttags,
+				args['doextraselection'])
     if npfromdata:
 	evttags = []
 	print('adding non-prompt data files...')
@@ -284,15 +302,16 @@ if __name__ == '__main__':
 	for i in range(len(npdatain)):
 	    print('file '+str(i+1)+' of '+str(len(npdatain)))
 	    evttags = addinputfile(npdatahistlist,npdatain,args['treename'],i,args['variables'],
-				    True,True,args['normalization'],args['lumi'],evttags)
+				    True,True,args['normalization'],args['lumi'],evttags,
+				    args['doextraselection'])
 
     ### Merge histograms with same process name
     mergemchistograms(mchistlist)
     mergedatahistograms(datahistlist,'data')
     mergedatahistograms(npdatahistlist,'nonprompt')
     # manually put data to zero for now
-    for hist in datahistlist:
-    	hist.Reset()
+    #for hist in datahistlist:
+    #	hist.Reset()
 
     ### Normalize if needed
     if(args['normalization']==2):

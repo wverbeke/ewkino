@@ -161,12 +161,20 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
 	//if(event.leptonCollection().size()!=3) continue;
 
 	// alternative: check for three tight light leptons
+	//event.selectLooseLeptons();
+	//event.cleanElectronsFromLooseMuons();
+	//event.cleanTausFromLooseLightLeptons();
+	//event.removeTaus();
+	//event.selectTightLeptons();
+	//if(event.leptonCollection().size()!=3) continue;
+
+	// alternative: two leptons (statistics check)
 	event.selectLooseLeptons();
 	event.cleanElectronsFromLooseMuons();
-	event.cleanTausFromLooseLightLeptons();
-	event.removeTaus();
-	event.selectTightLeptons();
-	if(event.leptonCollection().size()!=3) continue;
+        event.cleanTausFromLooseLightLeptons();
+        event.removeTaus();
+        event.selectTightLeptons();
+        if(event.leptonCollection().size()<2) continue;
 	
 	double weight = event.weight();
 	// for data: check if event passes orthogonal triggers and remove overlap

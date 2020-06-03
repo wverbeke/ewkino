@@ -23,7 +23,7 @@ int main( int argc, char* argv[] ){
     const unsigned sampleIndex = std::stoi(argvStr[3]);
 
     // configuration and variable definition
-    const double mTLowerCut_prescaleFit = 80; // 90
+    const double mTLowerCut_prescaleFit = 90; // 90
     const double mTUpperCut_prescaleFit = 130; // 130
     const double metUpperCut_fakeRateMeasurement = 20; // 20
     const double mTUpperCut_fakeRateMeasurement = 160; // 160

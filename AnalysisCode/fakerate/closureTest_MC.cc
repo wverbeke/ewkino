@@ -100,9 +100,9 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
     for( const auto& leptonPtr : event.lightLeptonCollection() ){
         if( leptonPtr->isFO() && !leptonPtr->isTight() ){
 
-            //double croppedPt = std::min( leptonPtr->pt(), 99. );
+            double croppedPt = std::min( leptonPtr->pt(), 99. );
 	    // try the following:
-	    double croppedPt = std::min( leptonPtr->pt(), 40.); 
+	    //double croppedPt = std::min( leptonPtr->pt(), 40.); 
             double croppedAbsEta = std::min( leptonPtr->absEta(), (leptonPtr->isMuon() ? 2.4 : 2.5) );
 
             double fr;
@@ -112,8 +112,8 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
                 fr = frMap_electron->GetBinContent( frMap_electron->FindBin( croppedPt, croppedAbsEta ) );
             }
 
-	    std::cout<<"isMuon: "<<leptonPtr->isMuon()<<", pt: "<<leptonPtr->pt()<<std::endl;
-	    std::cout<<fr<<std::endl;
+	    //std::cout<<"isMuon: "<<leptonPtr->isMuon()<<", pt: "<<leptonPtr->pt()<<std::endl;
+	    //std::cout<<fr<<std::endl;
 
             weight *= ( - fr / ( 1. - fr ) );
         }
@@ -141,8 +141,7 @@ int main( int argc, char* argv[] ){
     
     //const std::string sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino";
     //const std::string sampleDirectory = "~/Work/ntuples_ewkino_new/";
-    const std::string sampleDirectory = "/user/llambrec/Files/fakerate/trifoleptonskim";
-    //const std::string sampleDirectory = "/user/llambrec/Files/fakerate/trileptonskim";
+    const std::string sampleDirectory = "/user/llambrec/Files/fakerate/trileptonskim";
     
     std::string sampleListFile = "../../fakeRate/sampleLists/samples_closureTest_"+process+"_"+year+".txt";
 
@@ -189,7 +188,6 @@ int main( int argc, char* argv[] ){
     
 	long unsigned numberOfEntries = treeReader.numberOfEntries();
 	//long unsigned numberOfEntries = 1000; // temp for testing
-	//numberOfEntries = std::min(numberOfEntries, treeReader.numberOfEntries());
         std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
 	for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
             Event event = treeReader.buildEvent( entry );

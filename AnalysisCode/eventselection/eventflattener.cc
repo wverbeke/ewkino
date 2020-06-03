@@ -40,9 +40,7 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
 		    const std::string& variation,
 		    const bool isdataforbackground = false,
 		    const std::shared_ptr< TH2D>& frMap_muon = nullptr,
-                    const std::shared_ptr< TH2D>& frMap_electron = nullptr,
-		    const bool doMVA = false,
-		    const std::string& pathToXMLFile = ""){
+                    const std::shared_ptr< TH2D>& frMap_electron = nullptr){
 
     // initialize TreeReader
     TreeReader treeReader;
@@ -77,10 +75,6 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
     std::shared_ptr< TTree > treeCat3Ptr( std::make_shared< TTree >( treecat3.c_str(), treecat3.c_str() ) );
     initOutputTree(treeCat3Ptr.get());
 
-    // initialize TMVA reader
-    TMVA::Reader* reader = new TMVA::Reader();
-    if(doMVA){ reader = initializeReader(reader, pathToXMLFile); }
-
     // make reweighter
     std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
     std::vector<Sample> thissample;
@@ -90,7 +84,7 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 2000;
+    //long unsigned numberOfEntries = 100;
     std::cout<<"starting event loop for "<<numberOfEntries<<" events."<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
@@ -101,7 +95,6 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
         if(eventcategory == -1) continue;
 	// set all high-level variables and make BDT output
         eventToEntry(event, norm, isdataforbackground, frMap_muon, frMap_electron, variation);
-	if(doMVA){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
 	// determine reweighting 
         if(event.isMC()){
             _normweight *= reweighter.totalWeight(event);
@@ -115,9 +108,6 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
     treeCat2Ptr->Write("", BIT(2));
     treeCat3Ptr->Write("", BIT(2));
     outputFilePtr->Close();
-
-    // delete TMVA reader
-    delete reader;
 }
 
 void eventloopEF_CR(const std::string& pathToFile, const double norm,
@@ -127,9 +117,7 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
 		    const std::string& variation,
 		    const bool isdataforbackground = false,
 		    const std::shared_ptr< TH2D>& frMap_muon = nullptr,
-                    const std::shared_ptr< TH2D>& frMap_electron = nullptr,
-		    const bool doMVA = false,
-		    const std::string& pathToXMLFile = ""){
+                    const std::shared_ptr< TH2D>& frMap_electron = nullptr){
 
     TreeReader treeReader;
     treeReader.initSampleFromFile( pathToFile );
@@ -151,10 +139,6 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
     std::shared_ptr< TTree > treeCat1Ptr( std::make_shared< TTree >( treecat1.c_str(), treecat1.c_str() ) );
     initOutputTree(treeCat1Ptr.get());
 
-    // initialize TMVA reader
-    TMVA::Reader* reader = new TMVA::Reader();
-    if(doMVA){ reader = initializeReader(reader, pathToXMLFile); }
-
     // make reweighter
     std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
     std::vector<Sample> thissample;
@@ -169,7 +153,6 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
         Event event = treeReader.buildEvent(entry,true,true);
         if(!passES(event, eventselection, isdataforbackground)) continue;
         eventToEntry(event, norm, isdataforbackground, frMap_muon, frMap_electron, variation);
-	if(doMVA){ _eventBDT = reader->EvaluateMVA( "BDT" ); }
 	// determine reweighting 
         if(event.isMC()){
             _normweight *= reweighter.totalWeight(event);
@@ -179,18 +162,14 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
     outputFilePtr->cd( outputdir.c_str() );
     treeCat1Ptr->Write("", BIT(2) );
     outputFilePtr->Close();
-
-    // delete TMVA reader
-    delete reader;
 } 
 
 int main( int argc, char* argv[] ){
-    if( argc != 12  ){
-        std::cerr << "### ERROR ###: event flattening requires 11 arguments to run: ";
+    if( argc != 10  ){
+        std::cerr << "### ERROR ###: event flattening requires 9 arguments to run: ";
         std::cerr << "input_file_path, norm, output_directory, output_file_name";
 	std::cerr << "event_selection, variation, isdataforbackground, ";
-	std::cerr << "pathToMuonFakeRateMap, pathToElectronFakeRateMap";
-	std::cerr << "doMVA, pathToXMLFile" << std::endl;
+	std::cerr << "pathToMuonFakeRateMap, pathToElectronFakeRateMap" << std::endl;
         return -1;
     }
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
@@ -215,21 +194,15 @@ int main( int argc, char* argv[] ){
 	frMap_muon = readFRMap(argvStr[8],"muon",year);
 	frMap_electron = readFRMap(argvStr[9],"electron",year);
     }
-    // second set of other arguments:
-    bool doMVA = (argvStr[10]=="True" || argvStr[10]=="true");
-    std::string pathToXMLFile = "";
-    if(doMVA){ pathToXMLFile = argvStr[11]; }
-
+    
     // call functions
     std::string sigreg = "signalregion";
     if(event_selection == sigreg) eventloopEF_SR(input_file_path,norm,output_directory,
 				    output_file_name,variation,
-				    isdataforbackground,frMap_muon,frMap_electron,
-				    doMVA, pathToXMLFile);
+				    isdataforbackground,frMap_muon,frMap_electron);
     else eventloopEF_CR(input_file_path, norm, output_directory, 
 				    output_file_name,event_selection,variation,
-				    isdataforbackground,frMap_muon,frMap_electron,
-				    doMVA, pathToXMLFile);
+				    isdataforbackground,frMap_muon,frMap_electron);
     std::cout<<"done"<<std::endl;
     return 0;
 }

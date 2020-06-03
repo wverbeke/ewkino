@@ -110,6 +110,7 @@ bool pass_wzcontrolregion(Event& event, const bool isdataforbackground){
     // very similar to signal region but b-jet veto and other specificities
     // cleaning and selecting leptons is done implicitly in pass_signalregion
     cleanjetcollection(event);
+    event.selectGoodJets(); // additional jet selection for nominal JEC and JER!
     cleanleptoncollection(event);
     if(!hasnFOLeptons(event,3,true)) return false;
     if(isdataforbackground && hasnTightLeptons(event,3,false)) return false;
@@ -125,6 +126,7 @@ bool pass_wzcontrolregion(Event& event, const bool isdataforbackground){
 
 bool pass_zzcontrolregion(Event& event, const bool isdataforbackground){
     cleanjetcollection(event);
+    event.selectGoodJets(); // additional jet selection for nominal JEC and JER!
     cleanleptoncollection(event);
     if(!hasnFOLeptons(event,4,true)) return false;
     if(isdataforbackground && hasnTightLeptons(event,4,false)) return false;
@@ -151,6 +153,7 @@ bool pass_zzcontrolregion(Event& event, const bool isdataforbackground){
 
 bool pass_zgcontrolregion(Event& event, const bool isdataforbackground){
     cleanjetcollection(event);
+    event.selectGoodJets(); // additional jet selection for nominal JEC and JER!
     cleanleptoncollection(event);
     if(!hasnFOLeptons(event,3,true)) return false;
     if(isdataforbackground && hasnTightLeptons(event,3,false)) return false;

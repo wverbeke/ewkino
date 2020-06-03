@@ -284,7 +284,7 @@ def plotefficiencies(datahistlist,mchist,mcabs,mcsysthist,yaxtitle,xaxtitle,lumi
 if __name__=="__main__":
     
     # load histograms
-    histfile = os.path.abspath('../triggerefficiency/test_tight/combined.root')
+    histfile = os.path.abspath('../triggerefficiency/test_dilepton/combined.root')
     lumi = 35900.
     histdir = histfile[:histfile.rfind('/')]
     mchistlist = loadhistograms(histfile,mustcontain=['mc','leadleppt_eff'])

@@ -28,7 +28,7 @@ int main( int argc, char* argv[] ){
     const unsigned sampleIndex = std::stoi(argvStr[2]);
     
     // define and set configuration variables
-    const double metLowerCut_prescaleMeasurement = 30;
+    const double metLowerCut_prescaleMeasurement = 40;
     const double mTLowerCut_prescaleMeasurement = 0;
     const bool use_mT = true;
     const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate";

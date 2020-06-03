@@ -3,36 +3,32 @@
 //b-tagging working points
 #include "bTagWP.h"
 
-
-double ttHleptonMVACutMuon(){
-    return 0.85;
-}
-
 // define here what mva threshold to use in tZq ID's listed below
-// warning: function ttHleptonMVACutMuon is used in ttH ID's
 double muonMVACut(){
-    return 0.9;
+    return 0.85; // for leptonMVAttH
+    //return 0.8; // for leptonMVAtZq
+    //return -1.; // for leptonMVATOP
 }
 
 // define here what mva value to use in tZq ID's listed below
-// warning: leptonMVAttH is hard-coded in ttH ID!
 double muonMVAValue(const Muon* muonPtr){
+    return muonPtr->leptonMVAttH();
     //return muonPtr->leptonMVAtZq();
-    return muonPtr->leptonMVATOP();
+    //return muonPtr->leptonMVATOP();
 }
 
 // define here what b-tagger threshold to use in all tZq ID's listed below
 // warning: deepFlavor thresholds are hard-coded in ttH ID!
 double muonJetBTagCut(const std::string wp, const std::string year){
-    //return bTagWP::getWP("DeepCSV", wp, year);
-    return bTagWP::getWP("DeepFlavor", wp, year);    
+    return bTagWP::getWP("DeepCSV", wp, year);
+    //return bTagWP::getWP("DeepFlavor", wp, year);    
 }
 
 // define here what b-tagger to use in all tZq ID's listed below
 // warning: deepFlavor is hard-coded in ttH ID!
 double muonJetBTagValue(const Muon* muonPtr){
-    //return muonPtr->closestJetDeepCSV();
-    return muonPtr->closestJetDeepFlavor();
+    return muonPtr->closestJetDeepCSV();
+    //return muonPtr->closestJetDeepFlavor();
 }
 
 /*
@@ -91,7 +87,7 @@ double slidingDeepFlavorThreshold( const double looseWP, const double mediumWP, 
 bool MuonSelector::isFOBase() const{
     if( !isLoose() ) return false;
     if( muonPtr->uncorrectedPt() <= 10 ) return false;
-    if( muonPtr->leptonMVAttH() <= ttHleptonMVACutMuon() ){
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
         if( muonPtr->ptRatio() <= 0.65 ) return false;
     }
     return true;
@@ -99,7 +95,7 @@ bool MuonSelector::isFOBase() const{
 
 
 bool MuonSelector::isFO2016() const{
-    if( muonPtr->leptonMVAttH() <= ttHleptonMVACutMuon() ){
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
         double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2016(), bTagWP::mediumDeepFlavor2016(), muonPtr->uncorrectedPt() );
         if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
     } else {
@@ -110,7 +106,7 @@ bool MuonSelector::isFO2016() const{
 
 
 bool MuonSelector::isFO2017() const{
-    if( muonPtr->leptonMVAttH() <= ttHleptonMVACutMuon() ){
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
         double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2017(), bTagWP::mediumDeepFlavor2017(), muonPtr->uncorrectedPt() );
         if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
     } else {
@@ -121,7 +117,7 @@ bool MuonSelector::isFO2017() const{
 
 
 bool MuonSelector::isFO2018() const{
-    if( muonPtr->leptonMVAttH() <= ttHleptonMVACutMuon() ){
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
         double deepFlavorCut = slidingDeepFlavorThreshold( bTagWP::looseDeepFlavor2018(), bTagWP::mediumDeepFlavor2018(), muonPtr->uncorrectedPt() );
         if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
     } else {
@@ -186,7 +182,7 @@ tight muon selection for ttH ID
 bool MuonSelector::isTightBase() const{
     if( !isFO() ) return false;
     if( !muonPtr->isMediumPOGMuon() ) return false;
-    if( muonPtr->leptonMVAttH() <= ttHleptonMVACutMuon() ) return false;
+    if( muonMVAValue(muonPtr) <= muonMVACut() ) return false;
     return true;
 }
 

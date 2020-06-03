@@ -22,7 +22,7 @@ int main( int argc, char* argv[] ){
     const bool use_mT = (argvStr[1]=="True" || argvStr[1]=="true");
 
     // configuration and variable definition
-    const double mTLowerCut_prescaleFit = 80; // 90
+    const double mTLowerCut_prescaleFit = 90; // 90
     const double mTUpperCut_prescaleFit = 130; // 130
 
     setTDRStyle();

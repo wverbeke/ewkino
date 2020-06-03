@@ -15,8 +15,8 @@
 #include "../interface/ReweighterPrefire.h"
 
 
-
-CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& weightDirectory, const std::string& year, const std::vector< Sample >& samples ) const{
+CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& weightDirectory, 
+		    const std::string& year, const std::vector< Sample >& samples ) const{
 
     analysisTools::checkYearString( year );
 
@@ -24,8 +24,12 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     CombinedReweighter combinedReweighter;
 
     //make muon ID Reweighter
-    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_m_" + year + "_3lTight.root" ).c_str() );
-    std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "SFglobal" ) ) );
+    // new version (files not present here)
+    //TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_m_" + year + "_3lTight.root" ).c_str() );
+    //std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "SFglobal" ) ) );
+    // old version
+    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/looseToTight_" + year + "_m_3l.root" ).c_str() );
+    std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "EGamma_SF2D" ) ) );
     muonSFHist->SetDirectory( gROOT );
     muonSFFile->Close();
 
@@ -33,8 +37,12 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     combinedReweighter.addReweighter( "muonID", std::make_shared< ReweighterMuons >( muonReweighter ) );
 
     //make electron ID Reweighter
-    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_e_" + year + "_3lTight.root" ).c_str() );
-    std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "SFglobal" ) ) );
+    // new version (files not present here)
+    //TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_e_" + year + "_3lTight.root" ).c_str() );
+    //std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "SFglobal" ) ) );
+    // old version
+    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/looseToTight_" + year + "_e_3l.root" ).c_str() );
+    std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "EGamma_SF2D" ) ) );
     electronSFHist->SetDirectory( gROOT );
     eleSFFile->Close();
 
@@ -115,7 +123,8 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
 // ------------------------------------------------------------------------------- //
 // user specified function for the tZq Reweighter
 
-CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& weightDirectory, const std::string& year, const std::vector< Sample >& samples ) const{
+CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& weightDirectory, 
+		    const std::string& year, const std::vector< Sample >& samples ) const{
 
     analysisTools::checkYearString( year );
 
@@ -178,7 +187,7 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     combinedReweighter.addReweighter( "pileup", std::make_shared<ReweighterPileup>( samples, weightDirectory ) );
 
     //make b-tagging Reweighter 
-    const std::string& bTagWP = "tight";
+    const std::string& bTagWP = "medium";
 
     //read MC b-tagging efficiency histograms (use DeepFlavor!!!)
     const std::string& leptonCleaning = "looseLeptonCleaned";
@@ -201,8 +210,8 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     }
     std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
 
-    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_c, bTagEffMCHist_b ) );
-    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath, "tight", bTagEffMCHist_udsg ) );   
+    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath, bTagWP, bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath, bTagWP, bTagEffMCHist_udsg ) );   
 
     //make prefire Reweighter
     combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );

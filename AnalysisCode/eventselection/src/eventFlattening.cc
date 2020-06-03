@@ -31,11 +31,13 @@ Float_t _M3l = 0;
 Float_t _abs_eta_max = 0;
 
 // BDT output score
-Float_t _eventBDT = 0.;
+//Float_t _eventBDT = 0.;
 
 // other variables
 Int_t _nMuons = 0;
 Int_t _nElectrons = 0;
+Float_t _leptonMVATOP_min = 1.;
+Float_t _leptonMVAttH_min = 1.;
 
 void initOutputTree(TTree* outputTree){
     // set branches for a flat output tree, to be used instead of ewkino/TreeReader/src/setOutputTree. 
@@ -68,14 +70,16 @@ void initOutputTree(TTree* outputTree){
     outputTree->Branch("_abs_eta_max", &_abs_eta_max, "_abs_eta_max/F");
 
     // BDT output score (initialized here but filled in calling function!)
-    outputTree->Branch("_eventBDT", &_eventBDT, "_eventBDT/F");
+    //outputTree->Branch("_eventBDT", &_eventBDT, "_eventBDT/F");
 
     // other variables
     outputTree->Branch("_nMuons", &_nMuons, "_nMuons/I");
     outputTree->Branch("_nElectrons", &_nElectrons, "_nElectrons/I");
+    outputTree->Branch("_leptonMVATOP_min", &_leptonMVATOP_min, "_leptonMVATOP_min/F");
+    outputTree->Branch("_leptonMVAttH_min", &_leptonMVAttH_min, "_leptonMVAttH_min/F");
 }
 
-TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile ){
+/*TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile ){
     // make sure it is consistent with bdt training!
     reader->AddVariable("_abs_eta_recoil", &_abs_eta_recoil);
     reader->AddVariable("_Mjj_max", &_Mjj_max);
@@ -96,7 +100,7 @@ TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToX
 
     reader->BookMVA("BDT", pathToXMLFile);
     return reader;
-}
+}*/
 
 // help functions for getting the right jet collection and MET //
 
@@ -246,6 +250,22 @@ void eventToEntry(Event& event, const double norm,
     _HT = jetcollection.scalarPtSum();
     _nJets = jetcollection.size();
     _nBJets = bjetcollection.size();
+    _leptonMVATOP_min = 1.;
+    _leptonMVAttH_min = 1.;
+    for(LeptonCollection::const_iterator lIt = lepcollection.cbegin();
+	    lIt != lepcollection.cend(); lIt++){
+        std::shared_ptr<Lepton> lep = *lIt;
+        if(lep->isElectron()){
+	    std::shared_ptr<Electron> ele = std::static_pointer_cast<Electron>(lep);
+            if(ele->leptonMVAttH() < _leptonMVAttH_min) _leptonMVAttH_min = ele->leptonMVAttH();
+            if(ele->leptonMVATOP() < _leptonMVATOP_min) _leptonMVATOP_min = ele->leptonMVATOP();
+        }
+        else if(lep->isMuon()){
+	    std::shared_ptr<Muon> mu = std::static_pointer_cast<Muon>(lep);
+            if(mu->leptonMVAttH() < _leptonMVAttH_min) _leptonMVAttH_min = mu->leptonMVAttH();
+            if(mu->leptonMVATOP() < _leptonMVATOP_min) _leptonMVATOP_min = mu->leptonMVATOP();
+        }
+    }
 
     // set default values for when no OSSF light pair is present (in principle only noOSSF sideband)
     _MT = 0;

@@ -9,13 +9,13 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
 
 ### Define regions to make plots for
-regions = ['signalregion']
+regions = ['wzcontrolregion','zzcontrolregion','zgcontrolregion']
 #regions = ['zgcontrolregion']
 years = ['2016','2017','2018']
-ID = 'tzq' # does NOT set ID correctly, simply for folder management
+ID = 'tth' # does NOT set ID correctly, simply for folder management
 
 ### Global settings
-outdir = 'histograms_0515_reference4'
+outdir = 'histograms_0602_reweighting'
 outdir = os.path.abspath(outdir)
 variables = [
     {'name':'_abs_eta_recoil','bins':list(np.linspace(0,5,num=21)),
@@ -38,7 +38,7 @@ variables = [
      'title':r'#Delta #Phi (lep,lep)_{max}','unit':''},
     {'name':'_HT','bins':list(np.linspace(0,800,num=21)),
      'title':r'H_{T}','unit':'GeV'},
-    {'name':'_nJets','bins':list(np.linspace(0,10,num=11)),
+    {'name':'_nJets','bins':list(np.linspace(-0.5,9.5,num=11)),
      'title':r'number of jets','unit':''},
     {'name':'_dRlWrecoil','bins':list(np.linspace(0,10,num=21)),
      'title':r'#Delta R(lep_{W},jet_{recoil})','unit':''},
@@ -48,13 +48,14 @@ variables = [
      'title':r'M_{3l}','unit':'GeV'},
     {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21)),
      'title':r'#||{#eta}_{max}','unit':''},
-    {'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21)),
-     'title':r'event BDT score','unit':''},
+    #{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21)),
+    # 'title':r'event BDT score','unit':''},
     {'name':'_nMuons','bins':list(np.linspace(-0.5,3.5,num=5)),
      'title':r'number of muons','unit':''},
     {'name':'_nElectrons','bins':list(np.linspace(-0.5,3.5,num=5)),
      'title':r'number of electrons','unit':''}
 ]
+doextraselection = False
 
 ### Set output directory
 # check if some of the output directories already exist
@@ -81,20 +82,21 @@ for region in regions:
 currentdir = os.getcwd()
 if ID=='tth': interpendix='tthid'
 elif ID=='tzq': interpendix='tzqid'
+elif ID=='oldtzq': interpendix='oldtzqid'
 else:
     print('### ERROR ###: ID "'+ID+'"not recognized.')
     sys.exit()
 for region in regions:
     for year in years:
 	outpath = os.path.join(outdir,region,year)
-	mcrootdir = os.path.join('/user/llambrec/Files',interpendix,'reference4',region,year+'MC_flat')
-	mcsamplelist = '../samplelists/'
+	mcrootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'MC_flat_reweighting')
+	mcsamplelist = '../samplelists'
 	mcsamplelist += '/samplelist_tzq_'+year+'_MC.txt'
-	#datarootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'data_flat')
-	#datasamplelist = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples'
-	#datasamplelist += '/samplelist_tzq_'+year+'_data.txt'
-	datarootdir = mcrootdir
-	datasamplelist = mcsamplelist
+	datarootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'data_flat_reweighting')
+	datasamplelist = '../samplelists'
+	datasamplelist += '/samplelist_tzq_'+year+'_data.txt'
+	#datarootdir = mcrootdir
+	#datasamplelist = mcsamplelist
 	# check if input folder exists
 	if(not (os.path.exists(mcrootdir) and os.path.exists(datarootdir))):
 	    print('### ERROR ###: input folder for region/year combination '+region+'/'+year+' not found.')
@@ -124,11 +126,13 @@ for region in regions:
                 command1 += ' {} {}'.format(mcrootdir,mcsamplelist)
 		command1 += ' {} {}'.format(datarootdir,datasamplelist)
 		command1 += ' {} {}'.format(histfile,"'"+json.dumps(variables,separators=(',',':'))+"'")
-		command1 += ' {} {} {}\n\n'.format(tree,normalization,lumi)
+		command1 += ' {} {} {}'.format(tree,normalization,lumi)
+		command1 += ' {}\n\n'.format(doextraselection)
                 script.write(command1) 
 		command2 += ' {} {}\n'.format(histfile,"'"+json.dumps(variables,separators=(',',':'))+"'")
 		script.write(command2)
 	    # for testing: run sequentially on m-machine
 	    #os.system(command1)
+	    #sys.exit()
 	    #os.system(command2)
 	    submitQsubJob(script_name)

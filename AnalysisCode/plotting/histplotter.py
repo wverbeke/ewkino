@@ -85,7 +85,9 @@ def getminmax(datahist,mchist,yaxlog):
                 +mchist.GetBinErrorUp(mchist.GetMaximumBin()))
     histmax = max(histmax,datahist.GetBinContent(datahist.GetMaximumBin())
                             +datahist.GetBinErrorUp(datahist.GetMaximumBin()))
-    if not yaxlog: return (0,histmax*1.5)
+    if not yaxlog: 
+	return (0,histmax*1.5)
+	#return (0.,160.)
     # find minimum (manually to avoid zero)
     histmin = histmax
     for i in range(1,mchist.GetNbinsX()+1):
@@ -95,13 +97,25 @@ def getminmax(datahist,mchist,yaxlog):
     rangemax = histmax*np.power(histmax/rangemin,0.4)
     return (rangemin,rangemax)
 
+def drawbincontent(mchistlist,mchisterror,tag):
+    text = ROOT.TLatex()
+    text.SetTextAlign(21)
+    text.SetTextFont(5);
+    text.SetTextSize(22);
+    taghist = mchistlist[findbytitle(mchistlist,tag)]
+    for i in range(1, taghist.GetNbinsX()+1):
+	xcoord  = taghist.GetXaxis().GetBinCenter(i)
+	ycoord  = mchisterror.GetBinContent(i)+mchisterror.GetBinErrorUp(i)
+	printvalue = taghist.GetBinContent(i)
+	text.DrawLatex(xcoord, ycoord+0.3, '{:.2f}'.format(printvalue))
+    return None
+
 def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,outfile):
     
     tools.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
     ### define global parameters for size and positioning
-    ROOT.gROOT.SetBatch(ROOT.kTRUE)
     cheight = 600 # height of canvas
     cwidth = 450 # width of canvas
     rfrac = 0.25 # fraction of ratio plot in canvas
@@ -258,6 +272,8 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     mcerror.Draw("e2 same")
     datahist.Draw("pe1 same")
     legend.Draw("same")
+    # draw some extra info if needed
+    #drawbincontent(mchistlist,mcerror,'tZq')
     ROOT.gPad.RedrawAxis()
 
     # draw header
@@ -328,7 +344,11 @@ if __name__=="__main__":
         {'name':'_dRlWbtagged','title':r'#Delta R(lep_{W},jet_{b-tagged})','unit':''},
         {'name':'_M3l','title':r'M_{3l}','unit':'GeV'},
         {'name':'_abs_eta_max','title':r'#||{#eta}_{max}','unit':''},
-	{'name':'_eventBDT','title':r'event BDT output score','unit':''}
+	#{'name':'_eventBDT','title':r'event BDT output score','unit':''},
+	{'name':'_nMuons','title':r'number of muons in event','unit':''},
+	{'name':'_nElectrons','title':r'number of electrons in event','unit':''},
+	#{'name':'_leptonMVATOP_min','title':r'minimum TOP MVA value in event','unit':''},
+	#{'name':'_leptonMVAttH_min','title':r'minimum ttH MVA value in event','unit':''}
     ]
 
     ### Overwrite using cmd args

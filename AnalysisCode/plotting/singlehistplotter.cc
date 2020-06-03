@@ -20,17 +20,23 @@
 #include "../../Tools/interface/HistInfo.h"
 #include "../../Event/interface/Event.h"
 //#include "../../weights/interface/ConcreteReweighterFactory.h"
-//#include "../eventselection/interface/eventSelections.h"
-//#include "../eventselection/interface/eventFlattening.h"
+#include "../eventselection/interface/eventSelections.h"
+#include "../eventselection/interface/eventFlattening.h"
 
 double getLeadingLeptonPt(Event&);
 double getSubLeadingLeptonPt(Event&);
 double getTrailingLeptonPt(Event&);
+double getMinTOPMVA(Event&);
+double getMintZqMVA(Event&);
+double getMinttHMVA(Event&);
 
 std::map< std::string, std::function<double(Event&)>> varNameToFuncMap = 
     {	{"leadingLeptonPt", getLeadingLeptonPt},
 	{"subLeadingLeptonPt", getSubLeadingLeptonPt},
-	{"trailingLeptonPt", getTrailingLeptonPt}
+	{"trailingLeptonPt", getTrailingLeptonPt},
+	{"minTOPMVA", getMinTOPMVA},
+	{"mintZqMVA", getMintZqMVA},
+	{"minttHMVA", getMinttHMVA}
     };
 
 bool checkReadability(const std::string& pathToFile){
@@ -51,12 +57,14 @@ double getNthLeptonPt(Event& event, int n){
     event.cleanElectronsFromLooseMuons();
     event.cleanTausFromLooseLightLeptons();
     // additionally remove taus?
+    event.removeTaus();
     int nleptons = event.leptonCollection().size();
-    /*if(nleptons != 3 or n>=nleptons){
-	std::cerr << "### WARNING ###: unexpected number of leptons: "<<nleptons<<std::endl;
-	std::cerr << "(the pt of lepton n. "<<n<<" was requested.)"<<std::endl;
-	return 0.;
-    }*/
+    if(nleptons < 3 or n>=nleptons){
+	//std::cerr << "### WARNING ###: unexpected number of leptons: "<<nleptons<<std::endl;
+	//std::cerr << "(the pt of lepton n. "<<n<<" was requested.)"<<std::endl;
+	return -99.;
+    }
+    event.sortLeptonsByPt();
     LeptonCollection::const_iterator lIt = event.leptonCollection().cbegin();
     for(int i=0; i<n; i++){++lIt;}
     Lepton& lep = **lIt;
@@ -66,6 +74,21 @@ double getNthLeptonPt(Event& event, int n){
 double getLeadingLeptonPt(Event& event){ return getNthLeptonPt(event,0); }
 double getSubLeadingLeptonPt(Event& event){ return getNthLeptonPt(event,1); }
 double getTrailingLeptonPt(Event& event){ return getNthLeptonPt(event,2); }
+
+double getMinLightLeptonValue(Event& event, double (LightLepton::*value)() const ){
+    // apply the same selection that was used for event selection
+    if(!passES(event, "signalregion", false)) return -99.;
+    if(eventCategory(event, "nominal")<0) return -99.;
+    double minvalue = 99.;
+    for( const auto& llepPtr : event.lightLeptonCollection() ){
+	if( (*llepPtr.*value)() < minvalue ) minvalue = (*llepPtr.*value)();
+    }
+    return minvalue;
+}
+
+double getMinTOPMVA(Event& event){ return getMinLightLeptonValue(event, &LightLepton::leptonMVATOP); }
+double getMintZqMVA(Event& event){ return getMinLightLeptonValue(event, &LightLepton::leptonMVAtZq); }
+double getMinttHMVA(Event& event){ return getMinLightLeptonValue(event, &LightLepton::leptonMVAttH); }
 
 void fillHistograms(const std::string& pathToFile, const std::string& outputFilePath,
 		    const double xlow, const double xhigh, const int nbins, 
@@ -84,7 +107,7 @@ void fillHistograms(const std::string& pathToFile, const std::string& outputFile
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 100000;
+    //long unsigned numberOfEntries = 10000;
     std::cout<<"starting event loop for "<<numberOfEntries<<" events."<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%10000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
@@ -97,7 +120,19 @@ void fillHistograms(const std::string& pathToFile, const std::string& outputFile
 	// fill histograms
 	for(std::string variable : variables){
 	    double varvalue = varNameToFuncMap[variable](event);
+	    if(varvalue < xlow || varvalue > xhigh) continue;
 	    histmap[variable]->Fill(varvalue,weight);
+
+	    // for testing
+	    /*if(variable=="leadingLeptonPt" && varvalue<10.){
+		std::cout<<"==============================="<<std::endl;
+		for( LeptonCollection::const_iterator lIt = event.leptonCollection().cbegin();
+		     lIt != event.leptonCollection().cend(); ++lIt){
+		    Lepton& lep = **lIt;
+		    lep.print();
+		    std::cout<<""<<std::endl;
+		}
+	    }*/
 	}
     }
     // make output ROOT file

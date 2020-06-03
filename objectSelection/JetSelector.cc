@@ -114,7 +114,6 @@ bool JetSelector::inBTagAcceptance() const{
     return true;
 }
 
-// default: deepCSV
 bool JetSelector::isBTaggedLoose2016() const{
     return ( jetBTagValue(jetPtr) > jetBTagCut("loose", "2016") );
 }
