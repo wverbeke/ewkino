@@ -51,7 +51,7 @@ class GeneratorInfo{
         const GenMet& genMet() const{ return *_genMetPtr; }
 
     private:
-        static constexpr unsigned maxNumberOfLheWeights = 110;
+        static constexpr unsigned maxNumberOfLheWeights = 148;
         unsigned _numberOfLheWeights;
         double _lheWeights[maxNumberOfLheWeights];
         static constexpr unsigned maxNumberOfPsWeights = 14;
