@@ -38,7 +38,7 @@ class TreeReader {
         Float_t         _prefireWeightUp;
         Double_t        _weight;
         UInt_t          _nLheWeights;
-        Double_t        _lheWeight[110];
+        Double_t        _lheWeight[148];
         UInt_t          _nPsWeights;
         Double_t        _psWeight[14];
         Float_t         _nTrueInt;

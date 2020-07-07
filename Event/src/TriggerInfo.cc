@@ -21,6 +21,7 @@ std::string cleanName( const std::string& name ){
 TriggerInfo::TriggerInfo( const TreeReader& treeReader, const bool readIndividualTriggers, const bool readIndividualMetFilters ) :
     _passTriggers_e( treeReader._passTrigger_e ),
     _passTriggers_m( treeReader._passTrigger_m ),
+    _passTriggers_ee( treeReader._passTrigger_ee ),
     _passTriggers_em( treeReader._passTrigger_em ),
     _passTriggers_et( treeReader._passTrigger_et ),
     _passTriggers_mm( treeReader._passTrigger_mm ),

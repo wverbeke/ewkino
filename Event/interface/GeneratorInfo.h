@@ -12,7 +12,8 @@ class GeneratorInfo{
 
         unsigned numberOfLheWeights() const{ return _numberOfLheWeights; }
         double relativeWeightScaleVar( const unsigned scaleIndex ) const;
-        double relativeWeight_MuR_1_MuF_1() const{ return relativeWeightScaleVar( 1 ); }
+        double relativeWeight_MuR_1_MuF_1() const{ return relativeWeightScaleVar( 0 ); }
+        double relativeWeight_MuR_1_MuF_2() const{ return relativeWeightScaleVar( 1 ); }
         double relativeWeight_MuR_1_MuF_0p5() const{ return relativeWeightScaleVar( 2 ); }
         double relativeWeight_MuR_2_MuF_1() const{ return relativeWeightScaleVar( 3 ); }
         double relativeWeight_MuR_2_MuF_2() const{ return relativeWeightScaleVar( 4 ); }
@@ -50,7 +51,7 @@ class GeneratorInfo{
         const GenMet& genMet() const{ return *_genMetPtr; }
 
     private:
-        static constexpr unsigned maxNumberOfLheWeights = 110;
+        static constexpr unsigned maxNumberOfLheWeights = 148;
         unsigned _numberOfLheWeights;
         double _lheWeights[maxNumberOfLheWeights];
         static constexpr unsigned maxNumberOfPsWeights = 14;

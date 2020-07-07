@@ -58,9 +58,9 @@ void computeBTagEff( const std::string& year, const std::string& sampleDirectory
 
             //ignore weight differences between samples for better statistics
             double weight = event.weight();
-            if( weight > 1. ){
+            if( weight > 0. ){
                 weight = 1.;
-            } else if( weight < 1. ){
+            } else if( weight < 0. ){
                 weight = -1.;
             } else {
                 throw std::runtime_error( "Weight of event is zero." );
