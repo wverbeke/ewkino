@@ -41,7 +41,11 @@ std::string systematicType(const std::string systematic){
     if(systematic=="JEC" or systematic=="JER" or systematic=="Uncl"){
 	return std::string("acceptance");
     }
-    if(systematic=="muonID" or systematic=="electronID" 
+    if(
+	    //systematic=="muonID" // split into syst and stat
+	    or systematic=="muonIDSyst"
+	    or systematic=="muonIDStat"
+	    or systematic=="electronID" 
 	    or systematic=="pileup" 
 	    or systematic=="bTag_heavy" or systematic=="bTag_light"
 	    or systematic=="prefire"){ // still missing: electron reco
@@ -54,6 +58,9 @@ std::string systematicType(const std::string systematic){
     }
     if(systematic=="pdfvar"){
 	return std::string("pdfvar");
+    }
+    if(systematic=="muonID"){
+	return std::string("ignore");
     }
     std::cerr<<"### ERROR ###: systematic '"<<systematic<<"' not recognized."<<std::endl;
     return std::string("ERROR");
@@ -236,7 +243,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
 			frmap_muon, frmap_electron, "nominal", doBDT, reader);
 	    for(std::string variable : variables){
-		fillVarValue(histMap[variable][std::string("nominal")],getVarValue(variable,varmap),varmap["_normweight"]);
+		fillVarValue(histMap[variable][std::string("nominal")],
+			    getVarValue(variable,varmap),varmap["_normweight"]);
 		// for data carrying a different processName than "data" (e.g. fakes from data),
 	        // loop over all systematics and fill with nominal values
 		if(event.isData() and processName!="data"){
@@ -255,7 +263,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	for(std::string systematic : systematics){
 	    // determine type of systematic (acceptance or weight)
 	    std::string sysType = systematicType(systematic);
-	    if(sysType=="ERROR") continue;
+	    if(sysType=="ignore" || sysType=="ERROR") continue;
 	    std::string upvar = systematic + "Up";
 	    std::string downvar = systematic + "Down";
 	    
@@ -272,7 +280,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
 				frmap_muon, frmap_electron, upvar, doBDT, reader);
 		    for(std::string variable : variables){
-			fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),varmap["_normweight"]);
+			fillVarValue(histMap[variable][upvar],
+				    getVarValue(variable,varmap),varmap["_normweight"]);
 		    }
 		}
 		// and with down variation
@@ -286,7 +295,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
 				frmap_muon, frmap_electron, downvar, doBDT, reader);
 		    for(std::string variable : variables){
-			fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),varmap["_normweight"]);
+			fillVarValue(histMap[variable][downvar],
+				    getVarValue(variable,varmap),varmap["_normweight"]);
 		    }
 		}
 	    }
@@ -329,6 +339,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		}
 	    }
 	    else if(systematic=="scales" && event.generatorInfo().numberOfLheWeights()>=9){
+		// note: probably fScale, rScale and scales should not be added in quadrature
+		// as this contains 'double counting' of variations, need to check how to take into account!
                 double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_2_MuF_2();
                 double downweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_0p5_MuF_0p5();
                 for(std::string variable : variables){
