@@ -53,6 +53,7 @@ if __name__ == '__main__':
         sys.exit()
 
 
-    input_directory = os.path.abspath( '/user/wverbeke/Work' )
+    input_directory = sys.argv[1]
+    output_directory = sys.argv[2]
     for sample in listSkimmedSampleDirectories( input_directory ):
-        mergeSample( os.path.join( input_directory, sample ), '/user/wverbeke/Work/ntuples_ewkino_new' )
+        mergeSample( os.path.join( input_directory, sample ), output_directory )

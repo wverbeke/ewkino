@@ -229,6 +229,7 @@ class TreeReader {
         //read sample list from text file
         void readSamples2016(const std::string&, const std::string&);
         void readSamples2017(const std::string&, const std::string&);
+        void readSamples2018(const std::string&, const std::string&);
         void readSamples(const std::string& list, const std::string& directory);
 
         //initialize the current sample directly from a root file
