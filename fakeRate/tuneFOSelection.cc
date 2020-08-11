@@ -63,6 +63,20 @@ bool isLowStatistics( const TH1* hist ){
 }
 
 
+bool fakeRateIsSmall( const TH1* hist ){
+    const double maximumAverage = 0.35;
+    const double maximumSingle = 0.65;
+    double average = 0;
+    for( int b = 1; b < hist->GetNbinsX() + 1; ++b ){
+        double fr = hist->GetBinContent( b );
+        if( fr > maximumSingle ) return false;
+        average += fr;
+    }
+    average /= hist->GetNbinsX();
+    return ( average < maximumAverage );
+}
+
+
 void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, const std::string& sampleDirectory ){
 
     bool isMuon;
@@ -76,9 +90,9 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
 
     analysisTools::checkYearString( year );
 
-    const double minPtRatioCut = 0.3;
-    const double maxPtRatioCut = 0.6;
-    const unsigned numberOfPtRatioCuts = 6;
+    const double minPtRatioCut = 0.35;
+    const double maxPtRatioCut = 0.75;
+    const unsigned numberOfPtRatioCuts = 8;
     std::vector< double > ptRatioCuts;
     std::vector< std::string > ptRatioNames;
     for( unsigned c = 0; c < numberOfPtRatioCuts; ++c ){
@@ -89,10 +103,10 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
 
 
     const double minSlidePt = 10;
-    const double maxSlidePt = 60;
-    const double minDeepFlavorCut = 0.1;
-    const double maxDeepFlavorCut = 0.3;
-    const double deepFlavorGranularity = 0.001;
+    const double maxSlidePt = 50;
+    const double minDeepFlavorCut = 0.001;
+    const double maxDeepFlavorCut = 0.9;
+    const double deepFlavorGranularity = 0.003;
     SlidingCutCollection deepFlavorCutCollection( minSlidePt, maxSlidePt, minDeepFlavorCut, maxDeepFlavorCut, deepFlavorGranularity );
     std::vector< std::string > deepFlavorNames;
     for( size_t i = 0; i < deepFlavorCutCollection.size(); ++i ){
@@ -155,6 +169,7 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
 
                 //make sure lepton passes the minimum pt requirement (set when defining the pT histograms )
                 if( lepton.pt() < minPt ) continue;
+                if( lepton.uncorrectedPt() < 10 ) continue;
 
                 //check whether lepton comes from a b ( provenanceCompressed = 0 ) or c decay ( provenanceCompressed = 1 )
                 bool isHeavyFlavor = ( lepton.provenanceCompressed() == 1 || lepton.provenanceCompressed() == 2 );
@@ -162,13 +177,13 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
                 for( unsigned ptRatioI = 0; ptRatioI < numberOfPtRatioCuts; ++ptRatioI ){
 
                     //lepton must pass varying ptRatio threshold
-                    if( lepton.ptRatio() < ptRatioCuts[ ptRatioI ] ) continue;
+                    if( !lepton.isTight() && lepton.ptRatio() < ptRatioCuts[ ptRatioI ] ) continue;
 
                     for( unsigned deepFlavorI = 0; deepFlavorI < deepFlavorCutCollection.size(); ++deepFlavorI ){
 
                         //lepton must pass varying deepFlavor cut on closest jet 
                         //if( lepton.closestJetDeepFlavor() > deepFlavorCuts[ deepFlavorI ] ) continue;
-                        if( lepton.closestJetDeepFlavor() >= deepFlavorCutCollection[ deepFlavorI ].cut( lepton.uncorrectedPt() ) ) continue;
+                        if( !lepton.isTight() && lepton.closestJetDeepFlavor() >= deepFlavorCutCollection[ deepFlavorI ].cut( lepton.uncorrectedPt() ) ) continue;
 
                         //compute histogram vector index
                         auto histIndex = categories.index( {ptRatioI, deepFlavorI } );
@@ -210,22 +225,23 @@ void tuneFOSelection( const std::string& leptonFlavor, const std::string& year, 
     }
 
     
+    std::cout << "starting to do fits" << std::endl;
     CutsFitInfoCollection fitInfoCollection;
     for( Categorization::size_type c = 0; c < categories.size(); ++c ){
 
         //make sure the fit under consideration has decent statistics 
         if( numberOfEmptyBins( heavyFlavorNumerator[ c ].get() ) > 1 || numberOfEmptyBins( lightFlavorNumerator[ c ].get() ) > 1 ) continue;
         if( isLowStatistics( heavyFlavorNumerator[ c ].get() ) || isLowStatistics( lightFlavorNumerator[ c ].get() ) ) continue;
+        if( !( fakeRateIsSmall( heavyFlavorNumerator[ c ].get() ) && fakeRateIsSmall( lightFlavorNumerator[ c ].get() ) ) ) continue;
         std::shared_ptr< TH1 > ratio( dynamic_cast< TH1*>( heavyFlavorNumerator[ c ]->Clone() ) );
         ratio->Divide( lightFlavorNumerator[ c ].get() );
         if( ratioHasPathologicalBin( ratio.get() ) ) continue;
-        
 
         std::map< std::string, double > cutMap;
         auto indices = categories.indices( c );
         cutMap["pTRatio"] =  ptRatioCuts[ indices[ 0 ] ];
-        cutMap["deepFlavor left"] = deepFlavorCutCollection[ indices[ 1 ] ].cut( minSlidePt );
-        cutMap["deepFlavor right"] = deepFlavorCutCollection[ indices[ 1 ] ].cut( maxSlidePt );
+        cutMap["deepFlavor_left"] = deepFlavorCutCollection[ indices[ 1 ] ].cut( minSlidePt );
+        cutMap["deepFlavor_right"] = deepFlavorCutCollection[ indices[ 1 ] ].cut( maxSlidePt );
         fitInfoCollection.push_back( CutsFitInfo( heavyFlavorNumerator[ c ], lightFlavorNumerator[ c ], cutMap ) );
     }
 

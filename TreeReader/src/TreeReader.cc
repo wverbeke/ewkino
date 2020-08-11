@@ -71,6 +71,21 @@ void TreeReader::readSamples2017( const std::string& list, const std::string& di
 }
 
 
+void TreeReader::readSamples2018( const std::string& list, const std::string& directory ){
+    std::cout << "########################################" << std::endl;
+    std::cout << "         2018 samples                   " << std::endl;
+    std::cout << "########################################" << std::endl;
+
+    readSamples( list, directory, this->samples2018 );
+
+    //add the 2018 samples to the total sample list
+    this->samples.insert( samples.end(), samples2018.begin(), samples2018.end() );
+
+    //check for errors 
+    checkSampleEraConsistency();
+}
+
+
 std::pair< std::map< std::string, bool >, std::map< std::string, TBranch* > > buildBranchMap( TTree* treePtr, const std::string& nameIdentifier, const std::string& antiIdentifier = "" ){   
     std::map< std::string, bool > decisionMap;
     std::map< std::string, TBranch* > branchMap;
