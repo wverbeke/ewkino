@@ -40,6 +40,6 @@ double bTagWP::getWP(const std::string tagger,
     else{
 	std::cout<<"### ERROR ###: in ewkino/objectSelection/src/bTagWP.cc"<<std::endl;
 	std::cout<<"               b-tag threshold to use not recognized ('"<<fname<<"')"<<std::endl;
-	return btagwpmap[fname](); // will give an error to safely terminate function
+	return btagwpmap[fname](); // will give an error to safely terminate function (?)
     }
 }

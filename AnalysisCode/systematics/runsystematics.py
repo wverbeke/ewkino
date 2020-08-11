@@ -18,59 +18,72 @@ import smalltools as tls
 # but instead of a skimmer, a systematics executable is called.
 # command line arguments: see below
 
-if len(sys.argv) != 5:
+if len(sys.argv) != 7:
     print('### ERROR ###: runsystematics.py requires a different number of command-line arguments.')
     print('Normal usage from the command line:')
-    print('python eventflattener.py input_directory samplelist output_directory, leptonID')
+    print('python runsystematics.py input_directory samplelist output_directory,')
+    print('                         event_selection, selection_type, event_category')
     # maybe add more command line arguments later, keep hard coded for now
     sys.exit()
 
 # parse command line arguments
 input_directory = os.path.abspath(sys.argv[1])
+if not os.path.exists(input_directory):
+    print('### ERROR ###: input directory '+input_directory+' does not seem to exist...')
+    sys.exit()
 samplelist = os.path.abspath(sys.argv[2])
 if not os.path.exists(samplelist):
-    print('### ERROR ###: requested sample list does not seem to exist.')
+    print('### ERROR ###: requested sample list does not seem to exist...')
     sys.exit()
 output_directory = sys.argv[3]
-if os.path.exists(output_directory):
-    print('### WARNING ###: output direcory already exists. Clean it? (y/n)')
-    go = raw_input()
-    if not go=='y': sys.exit()
-    os.system('rm -r '+output_directory)
-os.makedirs(output_directory)
-output_directory = os.path.abspath(output_directory)
-leptonID = sys.argv[4]
+event_selection = sys.argv[4]
+selection_type = sys.argv[5]
+signal_category = int(sys.argv[6]) # ignored if event_selection is not 'signalregion'
 
 # hard-code rest of arguments
-variable = '_abs_eta_recoil'
-path_to_xml_file = "apath" # only needed if variable == '_eventBDT'
-xlow = 0.
-xhigh = 5.
-nbins = 20
-systematics = ['JEC','pileup']
+frdir = os.path.abspath('../fakerate/output_tthid/fakeRateMaps')
+path_to_xml_file = os.path.abspath('../bdt/outdata/weights/tmvatrain_BDT.weights.xml')
+# put dummy path here if not using BDT as a variable
+# (variables to use are hard-coded in runsystematics.cc, maybe change later...)
+systematics = (['JEC','JER','Uncl',
+                'muonID','electronID','pileup','bTag_heavy','bTag_light','prefire',
+                'fScale','rScale','scales','isrScale','fsrScale',
+                'pdfvar'])
+#systematics = ['JEC','pileup','fScale'] # smaller test set of systematics
 cwd = os.getcwd()
 
-# check validity of arguments
-if leptonID not in ['tth','tzq']:
-    print('### ERROR ###: leptonID not in list of recognized lepton IDs')
+# check  arguments
+if event_selection not in (['signalregion','signalsideband_noossf','signalsideband_noz',
+                            'wzcontrolregion','zzcontrolregion','zgcontrolregion']):
+    print('### ERROR ###: event_selection not in list of recognized event selections')
     sys.exit()
+if os.path.exists(output_directory):
+    #print('### WARNING ###: output direcory already exists. Clean it? (y/n)')
+    #go = raw_input()
+    #if not go=='y': sys.exit()
+    os.system('rm -r '+output_directory)
+output_directory = os.path.abspath(output_directory)
 
 # determine data taking year and luminosity from sample list name
 (year,lumi) = tls.year_and_lumi_from_samplelist(samplelist)
 if lumi<0. : sys.exit()
 
 # determine data type from sample name
-# (note: not sure if runsystematics will work on data, usually apply to MC only (?))
 dtype = tls.data_type_from_samplelist(samplelist)    
 if len(dtype)==0 : sys.exit()
 
 # make a list of input files in samplelist and compare to content of input directory 
-if dtype=='MC':
-    inputfiles = extendsamplelist(samplelist,input_directory)
-else:
+inputfiles = extendsamplelist(samplelist,input_directory)
+# the above does not work well for data, as it does not include the data_combined files
+if dtype=='data':
     inputfiles = []
-    for f in os.listdir(input_directory):
-	inputfiles.append({'file':os.path.join(input_directory,f)})
+    files = [f for f in os.listdir(input_directory) if f[-5:]=='.root']
+    for f in files: 
+	inputfiles.append({'file':os.path.join(input_directory,f),'process_name':'data'})
+
+# subselect input files based on type of event selection
+inputfiles = tls.subselect_inputfiles(inputfiles,selection_type)
+if inputfiles is None: sys.exit()
 
 # check if executable is present
 if not os.path.exists('./runsystematics'):
@@ -78,28 +91,42 @@ if not os.path.exists('./runsystematics'):
     print('Run make -f makeRunSystematics before running this script.')
     sys.exit()
 
-def submitjob(cwd,inputfile,norm,output_directory,
-		leptonID, variable, path_to_xml_file,
-		xlow, xhigh, nbins, systematics):
+def parseprocessname(orig):
+    res = orig
+    res = res.replace(' ','')
+    # move other parsing to .cc file in order to use full name as hist title!
+    return res
+
+def submitjob(cwd,inputfile,norm,output_directory,process_name,
+		event_selection,signal_category,selection_type,
+		frmap_muon,frmap_electron,
+		path_to_xml_file,systematics):
     script_name = 'runsystematics.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
 	output_file_path = os.path.join(output_directory,inputfile.split('/')[-1])
-        command = './runsystematics {} {} {} {} {} {} {} {} {}'.format(
-		    inputfile, norm, output_file_path,
-		    leptonID, variable, path_to_xml_file,
-		    xlow, xhigh, nbins)
+        command = './runsystematics {} {} {} {} {} {} {} {} {} {}'.format(
+		    inputfile, norm, output_file_path, process_name, 
+		    event_selection, signal_category, selection_type,
+		    frmap_muon, frmap_electron, path_to_xml_file)
 	for systematic in systematics:
 	    command += ' {}'.format(systematic)
         script.write(command+'\n')
-    #submitQsubJob(script_name)
+    submitQsubJob(script_name)
     # alternative: run locally
-    os.system('bash '+script_name)
+    #os.system('bash '+script_name)
+
+# make output directory
+os.makedirs(output_directory)
 
 # loop over input files and submit jobs
-for f in inputfiles[:1]:
+#inputfiles = [f for f in inputfiles if 'WGToLNuG' in f['sample_name']]
+for f in inputfiles:
+    # get name and tag
     inputfile = f['file']
+    process_name = parseprocessname(f['process_name'])
+    if selection_type == 'fakerate': process_name = 'nonprompt'
     # create normalization variable:
     norm = 1.
     if dtype == 'MC':
@@ -107,6 +134,10 @@ for f in inputfiles[:1]:
 	hcounter = temp.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
 	xsec = f['cross_section']
 	norm = xsec*lumi/float(hcounter)
-    submitjob(cwd,inputfile,norm,output_directory,
-		    leptonID,variable,path_to_xml_file,
-		    xlow,xhigh,nbins,systematics)
+    # set path to fake rate maps if needed
+    frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
+    frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
+    submitjob(cwd, inputfile, norm, output_directory, process_name,
+		    event_selection, signal_category, selection_type, 
+		    frmap_muon, frmap_electron,
+		    path_to_xml_file, systematics)

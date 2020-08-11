@@ -32,23 +32,23 @@ bool TauSelector::isLoose2018() const{
 FO tau selection
 */
 
-bool TauSelector::isFOBase() const{
+bool TauSelector::isFOBasettH() const{
     if( !isLoose() ) return false;
     return true;
 }
 
 
-bool TauSelector::isFO2016() const{
+bool TauSelector::isFO2016ttH() const{
     return true;
 }
 
 
-bool TauSelector::isFO2017() const{
+bool TauSelector::isFO2017ttH() const{
     return true;
 }
 
 
-bool TauSelector::isFO2018() const{
+bool TauSelector::isFO2018ttH() const{
     return true;
 }
 
@@ -60,28 +60,36 @@ bool TauSelector::isFO2016tZq() const{return false;}
 bool TauSelector::isFO2017tZq() const{return false;}
 bool TauSelector::isFO2018tZq() const{return false;}
 
+bool TauSelector::isFOBaseOldtZq() const{
+    // to avoid compilation errors this function must be defined here as well
+    return false; // since taus are not considered in the analysis
+}
+bool TauSelector::isFO2016OldtZq() const{return false;}
+bool TauSelector::isFO2017OldtZq() const{return false;}
+bool TauSelector::isFO2018OldtZq() const{return false;}
+
 /*
 tight tau selection
 */
 
-bool TauSelector::isTightBase() const{
+bool TauSelector::isTightBasettH() const{
     if( !isFO() ) return false;
     if( !tauPtr->passTightMVAOld2017() ) return false;
     return true;
 }
 
 
-bool TauSelector::isTight2016() const{
+bool TauSelector::isTight2016ttH() const{
     return true;
 }
 
 
-bool TauSelector::isTight2017() const{
+bool TauSelector::isTight2017ttH() const{
     return true;
 }
 
 
-bool TauSelector::isTight2018() const{
+bool TauSelector::isTight2018ttH() const{
     return true;
 }
 
@@ -92,6 +100,15 @@ bool TauSelector::isTightBasetZq() const{
 bool TauSelector::isTight2016tZq() const{return false;}
 bool TauSelector::isTight2017tZq() const{return false;}
 bool TauSelector::isTight2018tZq() const{return false;}
+
+bool TauSelector::isTightBaseOldtZq() const{
+    // to avoid compilation errors this function must be defined here as well
+    return false; // since taus are not considered in the analysis
+}
+bool TauSelector::isTight2016OldtZq() const{return false;}
+bool TauSelector::isTight2017OldtZq() const{return false;}
+bool TauSelector::isTight2018OldtZq() const{return false;}
+
 
 /*
 cone correction

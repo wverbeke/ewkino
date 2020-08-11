@@ -7,17 +7,20 @@ import os
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
-if not len(sys.argv)==3:
+'''if not len(sys.argv)==3:
     print('### ERROR ###: found wrong number of command line arguments.')
     print('		  usage: python closureTest_MC.py isMCFR use_mt')
     sys.exit()
 
 isMCFR = sys.argv[1]
-use_mt = sys.argv[2]
+use_mt = sys.argv[2]'''
+
+isMCFR = True
+use_mt = False
 
 years = ['2016','2017','2018']
-flavours = ['muon','electron','']
-processes = ['DY','TT']
+flavours = ['electron','muon','']
+processes = ['TT','DY']
 
 # check if executable exists
 if not os.path.exists('./closureTest_MC'):

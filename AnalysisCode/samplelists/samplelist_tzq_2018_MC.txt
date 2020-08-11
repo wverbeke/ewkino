@@ -1,30 +1,26 @@
-# Sample list for 2018 MC samples used in the tZq analysis.
+### Sample list for 2018 MC samples used in the tZq analysis.
 
-# Formatting: "process name (may include spaces)" <space> sample name <space> cross-section
+### Formatting: "process name (may include spaces)" <space> sample name <space> cross-section
 
 "tZq" tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-madgraph-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 0.0942
 
-"nonprompt" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 6020.85
-"nonprompt" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018_ext2-v1_singlelepton_MC_2018_iTuple 6020.85
+"nonprompt" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 6077.22
+"nonprompt" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018_ext2-v1_singlelepton_MC_2018_iTuple 6077.22
 "nonprompt" DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 18610
-
-### no _iTuple (yet?), use _v6 for now
-"nonprompt" WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_v6 61334.9
-
-"nonprompt" TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 87.315
+"nonprompt" WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 61526.7
+"nonprompt" TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 87.31
 "nonprompt" TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 182.175
-
 
 "t#bar{t}/t + X" TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 0.2043
 "t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 0.2529
 
 "ZZ/H" ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 0.2151
 
-"nonprompt" ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-madgraph-pythia8/crab_MiniAOD2018_ext1-v4_singlelepton_MC_2018_iTuple 3.68
+"nonprompt" ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-madgraph-pythia8/crab_MiniAOD2018_ext1-v4_singlelepton_MC_2018_iTuple 3.36
 "nonprompt" ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 136.0
 "nonprompt" ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 80.96
-"nonprompt" ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018_ext1-v1_singlelepton_MC_2018_iTuple 35.6
-"nonprompt" ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018_ext1-v1_singlelepton_MC_2018_iTuple 35.6
+"nonprompt" ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018_ext1-v1_singlelepton_MC_2018_iTuple 35.85
+"nonprompt" ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018_ext1-v1_singlelepton_MC_2018_iTuple 35.85
 "nonprompt" ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8/crab_MiniAOD2018_ext1-v1_singlelepton_MC_2018_iTuple 0.01103
 
 "t#bar{t}/t + X" TTTT_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 0.009103
@@ -32,19 +28,18 @@
 "X + #gamma" TGJets_TuneCP5_13TeV_amcatnlo_madspin_pythia8/crab_MiniAOD2018-v3_singlelepton_MC_2018_iTuple 2.967
 
 "X + #gamma" TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 3.697
-"X + #gamma" WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 405.271
+"X + #gamma" WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 489
 
 ### Sample for 2018 not found, use alternative below
+### cross section from AN-19-14
 #"X + #gamma" ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3_ext1-v1_singlelepton_MC_2016_v1 123.9
 "X + #gamma" ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 59.21
 
-"WZ" WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 5.063
-### no _iTuple (yet?), use _v6 for now
-"WZ" WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_v6 5.063
+"WZ" WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 5.26
+"WZ" WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 5.26
 
 "ZZ/H" ZZTo4L_TuneCP5_13TeV_powheg_pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 1.256
-### no _iTuple (yet?), use _v6 for now
-"ZZ/H" ZZTo4L_TuneCP5_13TeV_powheg_pythia8/crab_MiniAOD2018_ext2-v2_singlelepton_MC_2018_v6 1.256
+"ZZ/H" ZZTo4L_TuneCP5_13TeV_powheg_pythia8/crab_MiniAOD2018_ext2-v2_singlelepton_MC_2018_iTuple 1.256
 
 "multiboson" ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 0.01398
 "multiboson" WZZ_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 0.05565
@@ -54,14 +49,11 @@
 "nonprompt" WWTo2L2Nu_DoubleScattering_13TeV-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 0.1729
 "nonprompt" WWTo2L2Nu_NNPDF31_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 12.178
 
-"ZZ/H" GluGluHToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 0.01181
-### no _iTuple (yet?), use _v6 for now
-"ZZ/H" VBF_HToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_v6 0.001034
-"ZZ/H" VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 0.9561
+"ZZ/H" GluGluHToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 0.01212
+"ZZ/H" VBF_HToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 0.001034
+"ZZ/H" VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 0.952
 "ZZ/H" GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8/crab_MiniAOD2018-v3_singlelepton_MC_2018_iTuple 0.0067
-"ZZ/H" GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_iTuple 0.0067
-### no _iTuple (yet?), use _v6 for now
-"ZZ/H" GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8/crab_MiniAOD2018-v3_singlelepton_MC_2018_v6 0.0067
+"ZZ/H" GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8/crab_MiniAOD2018-v3_singlelepton_MC_2018_iTuple 0.0067
 "ZZ/H" GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8/crab_MiniAOD2018-v4_singlelepton_MC_2018_iTuple 0.0067
 "ZZ/H" GluGluToContinToZZTo4e_13TeV_MCFM701_pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 0.00334
 "ZZ/H" GluGluToContinToZZTo4mu_13TeV_MCFM701_pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 0.00334

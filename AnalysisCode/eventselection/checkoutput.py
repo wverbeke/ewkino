@@ -3,17 +3,11 @@
 #################################################################################
 import os
 
-def check_start_done(filename,filetext):
-    nstarted = filetext.count('###starting###')
-    if(nstarted==0):
-        print('### WARNING: file '+fname+' contains no valid starting tag.')
-        print('             does the process write the correct tags to the error files?')
-        return 1
-    ndone = filetext.count('###done###')
-    if(nstarted==ndone): return 0
+def check_done(filename,filetext):
+    ndone = filetext.count('done')
+    if(ndone==1): return 0
     print('found issue in file '+filename+':')
-    print('   '+str(nstarted)+' commands were initiated.')
-    print('   '+str(ndone)+' seem to have finished normally.')
+    print('   finishing command "done" was not written')
     return 1
 
 def check_content(filename,filetext,contentlist):
@@ -35,7 +29,14 @@ for fname in files:
     f = open(fname)
     c = f.read()
     f.close()
-    nerror += check_start_done(fname,c)
+    nerror += check_content(fname,c,['SysError'])
+
+files = [fname for fname in os.listdir(os.getcwd()) if '.sh.o' in fname]
+for fname in files:
+    f = open(fname)
+    c = f.read()
+    f.close()
+    nerror += check_done(fname,c)
     nerror += check_content(fname,c,['SysError'])
 
 if(nerror==0):

@@ -17,7 +17,7 @@ if not os.path.exists('./plotFakeRateMeasurement'):
 # hadd files if needed
 for year in years:
     for flavour in flavours:
-	basename = 'fakeRateMeasurement_'+flavour+'_'+year
+	basename = 'fakeRateMeasurement_data_'+flavour+'_'+year
 	if use_mT: basename += '_mT'
 	else: basename += '_met'
 	basename += '_histograms'
@@ -33,7 +33,7 @@ cwd = os.getcwd()
 for year in years:
     for flavour in flavours:
 	# check file
-	basename = 'fakeRateMeasurement_'+flavour+'_'+year
+	basename = 'fakeRateMeasurement_data_'+flavour+'_'+year
         if use_mT: basename += '_mT'
         else: basename += '_met'
         basename += '_histograms'

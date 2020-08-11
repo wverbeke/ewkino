@@ -122,7 +122,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     for(unsigned idx=1; idx<=sampleIndex; ++idx){
 	treeReader.initSample();
     }
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../../weights/", 
 							year, treeReader.sampleVector() );
     
@@ -216,10 +216,12 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 
     if( isMuonMeasurement ){
         etaBinBorders = {0., 1.2, 2.1};
-        ptBinBorders = { 10, 15, 20, 30, 45 };
+        //ptBinBorders = { 10, 15, 20, 30, 45 };
+	ptBinBorders = { 10, 20, 30, 45 };
     } else{
         etaBinBorders = {0., 0.8, 1.442};
-        ptBinBorders = { 10, 15, 20, 30, 45 };
+        //ptBinBorders = { 10, 15, 20, 30, 45 };
+	ptBinBorders = {10, 20, 30, 45 };
     }
 
     unsigned numberOfMTBins = 16; 
@@ -266,7 +268,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
         treeReader.initSample();
     }
     std::cout<<"building reweighter"<<std::endl;
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../../weights/", year, 
 					treeReader.sampleVector() );
 
@@ -348,7 +350,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     }
     std::cout<<"finished event loop"<<std::endl;
 
-    std::string file_name = "fakeRateMeasurement_" + leptonFlavor + "_" + year;
+    std::string file_name = "fakeRateMeasurement_data_" + leptonFlavor + "_" + year;
     file_name.append("_mT_histograms_sample_"+std::to_string(sampleIndex)+".root");
     TFile* histogram_file = TFile::Open( file_name.c_str(), "RECREATE" );
     

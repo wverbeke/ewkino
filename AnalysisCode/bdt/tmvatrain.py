@@ -7,47 +7,114 @@ import os
 import json
 #import tmvautils as u
 
-def tmvatrain(indirs,treenames,sigtag,variables,tloader_options,tfactory_options):
-    ### Initialize Factory and DataLoader
-    outfile = ROOT.TFile('out.root',"recreate")
-    tfactory = ROOT.TMVA.Factory('tmvatrain',outfile,"")
-    tloader = ROOT.TMVA.DataLoader('outdata')
+def pathtosidebandfile(filename,sidebanddir):
+    ### return path to file in sideband directory corresponding to filename, '' if none
+    filename = filename.split('/')[-1].replace('.root','')
+    sfiles = [f for f in os.listdir(sidebanddir) if f[-5:]=='.root']
+    for f in sfiles:
+	if filename in f: return os.path.join(sidebanddir,f)
+    return ''
 
+def getscalefactor(filelist,treenamelist,scaledentries):
+    ### return factor to scale entries in trees so that total nentries corressponds to scaledentries
+    nentries = 0
+    for fpath,treename in zip(filelist,treenamelist):
+	f = ROOT.TFile.Open(fpath)
+	tree = f.Get(treename)
+	nentries += tree.GetEntries()
+	f.Close()
+    return float(scaledentries)/nentries
+
+def gettrees(indirs,treenames,sigtag,sidebanddirs=[]):
     ### Add signal and background to DataLoader
-    sigchains = [] # separate chains per treename seem to be necessary...
-    bckchains = []
+    # sidebanddirs must have same lenth as indirs and  determines which sideband folder to include
+    # the sideband folder must contain files with the same name as regular inputs (extensions allowed)
+    # use '' to not include a sideband for a specific indir
+    sigchains = [] # remark: one chain per tree will be used, in order to apply per-file weights;
+    bckchains = [] # not sure if a list of trees (without chain) would work as well
+    bckchains_onlytrain = []
+    bckchains_onlytest = []
     nsig = 0
     nbck = 0
-    for treename in treenames:
-	sigchains.append(ROOT.TChain(treename))
-	bckchains.append(ROOT.TChain(treename))
     for indir in indirs:
 	filelist = [f for f in os.listdir(indir) if f[-5:]=='.root']
 	for filename in filelist:
-	    if not '_train' in filename: continue
+	    # use only training files:
+	    #if not '_train' in filename: continue
 	    fullpath = os.path.join(indir,filename)
 	    temp = ROOT.TFile.Open(fullpath)
-	    for i,treename in enumerate(treenames):
+	    for treename in treenames:
 		if sigtag in filename:
 		    try:
-			sigchains[i].Add(fullpath+'/'+treename)
+			sigchains.append({'chain':ROOT.TChain(treename),'weight':1.0})
+			sigchains[-1]['chain'].Add(fullpath+'/'+treename)
 			nsig += temp.Get(treename).GetEntries()
 			print('Found signal file: '+filename+' ('+treename+')')
 		    except:
 			print('An error occurred for '+filename+' ('+treename+')')
 		else:
+		    # skip DY:
 		    #if 'DYJets' in filename: continue
-		    try:
+		    #try:
 			nbckf = temp.Get(treename).GetEntries()
-			if nbckf==0: continue
-			bckchains[i].Add(fullpath+'/'+treename)
+                        if nbckf==0: continue
+			if(len(sidebanddirs)==0 or len(sidebanddirs[indirs.index(indir)])==0):
+			    # add regular file with original weight
+                            bckchains.append({'chain':ROOT.TChain(treename),'weight':1.0})
+                            bckchains[-1]['chain'].Add(fullpath+'/'+treename)
+			    print('Found background file: '+filename+' ('+treename+')')
+			else:
+			    # check whether file has sideband equivalent
+			    sfile = pathtosidebandfile(filename,sidebanddirs[indirs.index(indir)])
+			    if len(sfile)==0:
+				# add regular file with original weight
+                                bckchains.append({'chain':ROOT.TChain(treename),'weight':1.0})
+                                bckchains[-1]['chain'].Add(fullpath+'/'+treename)
+				print('Found background file: '+filename+' ('+treename+')')
+			    else:
+				# method 1:
+				# add regular and sideband file with proper weight
+				weight = getscalefactor([fullpath,sfile],[treename,treename],nbckf)
+                                bckchains.append({'chain':ROOT.TChain(treename),'weight':weight})
+                                bckchains[-1]['chain'].Add(fullpath+'/'+treename)
+                                print('Found background file: '+filename+' ('+treename+') with weight '
+                                       +str(weight))
+                                bckchains.append({'chain':ROOT.TChain(treename),'weight':weight})
+                                bckchains[-1]['chain'].Add(sfile+'/'+treename)
+                                print('Found sideband background file: '+sfile.split('/')[-1]
+                                        +' ('+treename+') with weight '+str(weight))
+				# method 2:
+				'''# add regular and sideband file to training with proper weight
+				weight = getscalefactor([sfile],[treename],nbckf)
+				#bckchains_onlytrain.append({'chain':ROOT.TChain(treename),'weight':weight})
+				#bckchains_onlytrain[-1]['chain'].Add(fullpath+'/'+treename)
+				#print('Found background file: '+filename+' ('+treename+') with weight '
+				#	+str(weight))
+				bckchains_onlytrain.append({'chain':ROOT.TChain(treename),'weight':weight})
+				bckchains_onlytrain[-1]['chain'].Add(sfile+'/'+treename)
+				print('Found sideband background file: '+sfile.split('/')[-1]
+					+' ('+treename+') with weight '+str(weight))
+				# add regular file to testing with original weight
+				bckchains_onlytest.append({'chain':ROOT.TChain(treename),'weight':1.0})
+				bckchains_onlytest[-1]['chain'].Add(fullpath+'/'+treename)'''
 			nbck += nbckf
-			print('Found background file: '+filename+' ('+treename+')')
-		    except:
-			print('An error occurred for '+filename+' ('+treename+')')
+		    #except:
+			#print('An error occurred for '+filename+' ('+treename+')')
     print('Found '+str(nsig)+' signal events and '+str(nbck)+' background events.')
-    for sigchain in sigchains: tloader.AddSignalTree(sigchain,1.0)
-    for bckchain in bckchains: tloader.AddBackgroundTree(bckchain,1.0)
+    return (sigchains,bckchains,bckchains_onlytrain,bckchains_onlytest)
+
+def tmvatrain(sigchains,bckchains,bckchains_onlytrain,bckchains_onlytest,
+		variables,tloader_options,tfactory_options):
+    ### Initialize Factory and DataLoader
+    outfile = ROOT.TFile('out.root',"recreate")
+    tfactory = ROOT.TMVA.Factory('tmvatrain',outfile,"")
+    tloader = ROOT.TMVA.DataLoader('outdata')
+    for sigchain in sigchains: tloader.AddSignalTree(sigchain['chain'],sigchain['weight'])
+    for bckchain in bckchains: tloader.AddBackgroundTree(bckchain['chain'],bckchain['weight'])
+    for bckchain in bckchains_onlytrain: tloader.AddBackgroundTree(bckchain['chain'],bckchain['weight'],
+								    ROOT.TMVA.Types.kTraining)
+    for bckchain in bckchains_onlytest: tloader.AddBackgroundTree(bckchain['chain'],bckchain['weight'],
+								    ROOT.TMVA.Types.kTesting)
     tloader.SetSignalWeightExpression("_normweight")
     tloader.SetBackgroundWeightExpression("_normweight")
 
@@ -112,9 +179,11 @@ if __name__=="__main__":
 	(indirs,treenames,sigtag,varlist,lopts,fopts) = argsfromcmd(args)
     else:
 	### Set list of input files
-	indirs = [os.path.abspath('/user/llambrec/Files/tthid_tthmva_reduced/signalregion/2016MC_flat')]
-	indirs.append(os.path.abspath('/user/llambrec/Files/tthid_tthmva_reduced/signalregion/2017MC_flat'))
-	indirs.append(os.path.abspath('/user/llambrec/Files/tthid_tthmva_reduced/signalregion/2018MC_flat'))
+	indirs = [os.path.abspath('/user/llambrec/Files/tthid/signalregion/2016MC_flat')]
+	indirs.append(os.path.abspath('/user/llambrec/Files/tthid/signalregion/2017MC_flat'))
+	indirs.append(os.path.abspath('/user/llambrec/Files/tthid/signalregion/2018MC_flat'))
+	sidebanddirs = []
+	#sidebanddirs = [f.replace('_flat','_2tight_flat') for f in indirs]
 	treenames = ["blackJackAndHookers/treeCat1"]
 	treenames.append("blackJackAndHookers/treeCat2")
 	treenames.append("blackJackAndHookers/treeCat3")
@@ -135,7 +204,8 @@ if __name__=="__main__":
 		'_M3l','_abs_eta_max'])
 	varlist += (['_nJets','_nBJets']) # parametrized learning
     ### Function call
-    aucroc = tmvatrain(indirs,treenames,sigtag,
+    (sigchains,bckchains,bckchains_onlytrain,bckchains_onlytest) = gettrees(indirs,treenames,sigtag,sidebanddirs=sidebanddirs)
+    aucroc = tmvatrain(sigchains,bckchains,bckchains_onlytrain,bckchains_onlytest,
 			varlist,lopts,fopts)
     print('---AUC (ROC)---')
     print(str(aucroc))

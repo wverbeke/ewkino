@@ -8,6 +8,8 @@ import glob
 # in order to import local functions: append location to sys.path
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../samplelists'))
+from extendsamplelist import extendsamplelist
 sys.path.append(os.path.abspath('../tools'))
 import smalltools as tls
 
@@ -18,38 +20,42 @@ import smalltools as tls
 # - output directory (containing analogous files but holding only selected events)
 # - name of the event selection to be applied
 
-nonpromptfromdata = True 
-# maybe later add as a command line argument
-# but for now process both nonprompt simulation as estimate from data
-
-if len(sys.argv) != 4:
+if len(sys.argv) != 6:
 	print('### ERROR ###: eventselector.py requires a different number of command-line arguments.')
 	print('Normal usage from the command line:')
-	print('python eventselector.py input_directory output_directory event_selection')
+	print('python eventselector.py input_directory sample_list output_directory')
+	print('event_selection selection_type')
 	sys.exit()
 
 input_directory = os.path.abspath(sys.argv[1])
-output_directory = sys.argv[2]
+sample_list = os.path.abspath(sys.argv[2])
+output_directory = sys.argv[3]
 output_directory = os.path.abspath(output_directory)
 if os.path.exists(output_directory):
     os.system('rm -r '+output_directory)
-os.makedirs(output_directory)
-event_selection = sys.argv[3]
+event_selection = sys.argv[4]
+selection_type = sys.argv[5]
+variation = 'all' 
+# maybe later add as a command line argument, however at this stage one probably wants
+# to keep all variations, to perform a further selection at a later stage.
 cwd = os.getcwd()
 
 # check command line arguments
 if event_selection not in (['signalregion','signalsideband_noossf','signalsideband_noz',
-			    'wzcontrolregion','zzcontrolregion','zgcontrolregion']):
+			    'wzcontrolregion','zzcontrolregion','zgcontrolregion',
+			    'npcontrolregion']):
     print('### ERROR ###: event_selection not in list of recognized event selections')
     sys.exit()
+if not os.path.exists(sample_list):
+    print('### ERROR ###: sample_list does not seem to exist...')
+    sys.exit()
 
-# make a list of input files
-inputfiles = []
-os.chdir(input_directory)
-for inputfile in glob.glob('*.root'):
-    inputfiles.append(os.path.join(input_directory,inputfile))
-os.chdir(cwd)
-print('found '+str(len(inputfiles))+' root files in input directory.')
+# determine data type from sample name.
+dtype = tls.data_type_from_samplelist(sample_list)
+if len(dtype)==0 : sys.exit()
+
+# make a list of input files in samplelist and compare to content of input directory 
+inputfiles = extendsamplelist(sample_list,input_directory)
 
 # check if executable is present
 if not os.path.exists('./eventselector'):
@@ -57,21 +63,27 @@ if not os.path.exists('./eventselector'):
     print('Run make -f makeEventSelector before running this script.')
     sys.exit()
 
-def submitjob(cwd,inputfile,output_directory,event_selection,isnpbackground):
+def submitjob(cwd,inputfile,output_directory,event_selection,selection_type,variation):
     script_name = 'eventselector.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
-        command = './eventselector {} {} {} {} {}'.format(inputfile,output_directory,
-			inputfile.split('/')[-1],event_selection,isnpbackground)
+        command = './eventselector {} {} {} {} {} {}'.format(inputfile,output_directory,
+			inputfile.split('/')[-1],event_selection,selection_type,variation)
         script.write(command+'\n')
+	print(command)
     submitQsubJob(script_name)
     # alternative: run locally
     #os.system('bash '+script_name)
 
+# select input files based on type of selection
+inputfiles = tls.subselect_inputfiles(inputfiles,selection_type)
+if inputfiles is None: sys.exit()
+
+# create output directory
+os.makedirs(output_directory)
+
 # loop over input files and submit jobs
-for inputfile in inputfiles:
-    submitjob(cwd,inputfile,output_directory,event_selection,False)
-    if( nonpromptfromdata and tls.isdata_from_filepath(inputfile)):
-	submitjob(cwd,inputfile,output_directory,event_selection,True)
-    
+for f in inputfiles:
+    inputfile = f['file']
+    submitjob(cwd,inputfile,output_directory,event_selection,selection_type,variation)

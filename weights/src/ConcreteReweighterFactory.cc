@@ -87,7 +87,7 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     combinedReweighter.addReweighter( "pileup", std::make_shared< ReweighterPileup >( samples, weightDirectory ) );
     
     //make b-tagging Reweighter 
-    const std::string& bTagWP = "tight";
+    const std::string& bTagWP = "medium";
 
     //read MC b-tagging efficiency histograms
     // and scalefactor files
@@ -121,6 +121,20 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
 }
 
 // ------------------------------------------------------------------------------- //
+// empty reweighter for testing purposes
+
+CombinedReweighter EmptyReweighterFactory::buildReweighter( const std::string& weightDirectory,
+		    const std::string& year, const std::vector< Sample >& samples ) const{
+
+    // reweighter to return
+    CombinedReweighter combinedReweighter;
+    // dummy condition on args to avoid compilation warnings
+    if(weightDirectory=="" && year=="" && samples.size()==0) return combinedReweighter;
+
+    return combinedReweighter;
+}
+
+// ------------------------------------------------------------------------------- //
 // user specified function for the tZq Reweighter
 
 CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& weightDirectory, 
@@ -128,78 +142,122 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
 
     analysisTools::checkYearString( year );
 
-    //reweighter to return
+    // reweighter to return
     CombinedReweighter combinedReweighter;
 
-    //make muon ID Reweighter
-    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/looseToTight_" + year + "_m_3l.root" ).c_str() );
-    std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "EGamma_SF2D" ) ) );
-    muonSFHist->SetDirectory( gROOT );
+    // make muon ID Reweighter
+    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
+	+ "weightFiles/leptonSF/SFTOPLeptonIDTight_" + year + "_muon.root" ).c_str() );
+    // load the scalefactor histogram and set the errors to zero,
+    // load the systematic errors and set the bin contents to one and errors relative,
+    // load the statistical errors and set the bin contents to one and the errors relative
+    std::shared_ptr< TH2 > muonSFHist_nom( dynamic_cast< TH2* >( 
+	muonSFFile->Get( "NUM_LeptonMVATight_DEN_genTracks_abseta_pt" ) ) );
+    muonSFHist_nom->SetDirectory( gROOT );
+    std::shared_ptr< TH2 > muonSFHist_syst( dynamic_cast< TH2* >( 
+	muonSFFile->Get( "NUM_LeptonMVATight_DEN_genTracks_abseta_pt_syst" ) ) );
+    muonSFHist_syst->SetDirectory( gROOT );
+    std::shared_ptr< TH2 > muonSFHist_stat( dynamic_cast< TH2* >( 
+	muonSFFile->Get( "NUM_LeptonMVATight_DEN_genTracks_abseta_pt_stat" ) ) );
+    muonSFHist_stat->SetDirectory( gROOT );
     muonSFFile->Close();
+    for(int i = 1; i <= muonSFHist_nom->GetNbinsX(); ++i){
+	for(int j = 1; j <= muonSFHist_nom->GetNbinsY(); ++j){
+	    muonSFHist_nom->SetBinError(i,j,0.);
+	    double sf = muonSFHist_nom->GetBinContent(i,j);
+	    muonSFHist_syst->SetBinError(i,j,muonSFHist_syst->GetBinContent(i,j)/sf);
+	    muonSFHist_syst->SetBinContent(i,j,1.);
+	    muonSFHist_stat->SetBinError(i,j,muonSFHist_stat->GetBinContent(i,j)/sf);
+            muonSFHist_stat->SetBinContent(i,j,1.);
+	}
+    }
 
-    MuonReweighter muonReweighter( muonSFHist, new TightSelector );
-    combinedReweighter.addReweighter( "muonID", std::make_shared<ReweighterMuons>( muonReweighter ) );
+    MuonReweighter muonReweighter_nom( muonSFHist_nom, new TightSelector );
+    combinedReweighter.addReweighter("muonID",std::make_shared<ReweighterMuons>(muonReweighter_nom));
+    MuonReweighter muonReweighter_syst( muonSFHist_syst, new TightSelector );
+    combinedReweighter.addReweighter("muonIDSyst",std::make_shared<ReweighterMuons>(muonReweighter_syst));
+    MuonReweighter muonReweighter_stat( muonSFHist_stat, new TightSelector );
+    combinedReweighter.addReweighter("muonIDStat",std::make_shared<ReweighterMuons>(muonReweighter_stat));
 
-    //make electron ID Reweighter
-    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/looseToTight_" + year + "_e_3l.root" ).c_str() );
+    // make electron ID Reweighter
+    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
+	+ "weightFiles/leptonSF/SFTOPLeptonIDTight_" + year + "_electron.root" ).c_str() );
     std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "EGamma_SF2D" ) ) );
     electronSFHist->SetDirectory( gROOT );
     eleSFFile->Close();
 
     ElectronIDReweighter electronIDReweighter( electronSFHist, new TightSelector );
-    combinedReweighter.addReweighter( "electronID", std::make_shared<ReweighterElectronsID>( electronIDReweighter ) );
+    combinedReweighter.addReweighter( "electronID" ,
+	std::make_shared<ReweighterElectronsID>(electronIDReweighter) );
 
-    //make electron Reconstruction Reweighter
+    // make electron Reconstruction Reweighter
     if( year == "2016" || year == "2017" ){
 
-        //pT below 20 GeV
-        TFile* eleRecoSFFile_pTBelow20 = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/egamma_recoEff_" + year + "_pTBelow20.root" ).c_str() );
-        std::shared_ptr< TH2 > electronRecoSFHist_pTBelow20( dynamic_cast< TH2* >( eleRecoSFFile_pTBelow20->Get( "EGamma_SF2D" ) ) );
+        // pT below 20 GeV
+        TFile* eleRecoSFFile_pTBelow20 = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
+	    + "weightFiles/leptonSF/egamma_recoEff_" + year + "_pTBelow20.root" ).c_str() );
+        std::shared_ptr< TH2 > electronRecoSFHist_pTBelow20( dynamic_cast< TH2* >( 
+	    eleRecoSFFile_pTBelow20->Get( "EGamma_SF2D" ) ) );
         electronRecoSFHist_pTBelow20->SetDirectory( gROOT );
         eleRecoSFFile_pTBelow20->Close();
 
-        ElectronIDReweighter electronRecoReweighter_pTBelow20( electronRecoSFHist_pTBelow20, new LooseMaxPtSelector< 20 > );
-        combinedReweighter.addReweighter( "electronReco_pTBelow20", std::make_shared<ReweighterElectronsID>( electronRecoReweighter_pTBelow20 ) );
+        ElectronIDReweighter electronRecoReweighter_pTBelow20( electronRecoSFHist_pTBelow20, 
+	    new LooseMaxPtSelector< 20 > );
+        combinedReweighter.addReweighter( "electronReco_pTBelow20", 
+	    std::make_shared<ReweighterElectronsID>( electronRecoReweighter_pTBelow20 ) );
 
-        //pT above 20 GeV
-        TFile* eleRecoSFFile_pTAbove20 = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/egamma_recoEff_" + year + "_pTAbove20.root" ).c_str() );
-        std::shared_ptr< TH2 > electronRecoSFHist_pTAbove20( dynamic_cast< TH2* >( eleRecoSFFile_pTAbove20->Get( "EGamma_SF2D" ) ) );
+        // pT above 20 GeV
+        TFile* eleRecoSFFile_pTAbove20 = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
+	    + "weightFiles/leptonSF/egamma_recoEff_" + year + "_pTAbove20.root" ).c_str() );
+        std::shared_ptr< TH2 > electronRecoSFHist_pTAbove20( dynamic_cast< TH2* >( 
+	    eleRecoSFFile_pTAbove20->Get( "EGamma_SF2D" ) ) );
         electronRecoSFHist_pTAbove20->SetDirectory( gROOT );
         eleRecoSFFile_pTAbove20->Close();
 
-        ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20, new LooseMinPtSelector< 20 > );
-        combinedReweighter.addReweighter( "electronReco_pTAbove20", std::make_shared<ReweighterElectronsID>( electronRecoReweighter_pTAbove20 ) );
+        ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20, 
+	    new LooseMinPtSelector< 20 > );
+        combinedReweighter.addReweighter( "electronReco_pTAbove20", 
+	    std::make_shared<ReweighterElectronsID>( electronRecoReweighter_pTAbove20 ) );
 
     } else if( year == "2018" ){
 
-        //inclusive pT 
-        TFile* eleRecoSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/egamma_recoEff_" + year + ".root" ).c_str() );
-        std::shared_ptr< TH2 > electronRecoSFHist ( dynamic_cast< TH2* >( eleRecoSFFile->Get( "EGamma_SF2D" ) ) );
+        // inclusive pT 
+        TFile* eleRecoSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
+	    + "weightFiles/leptonSF/egamma_recoEff_" + year + ".root" ).c_str() );
+        std::shared_ptr< TH2 > electronRecoSFHist ( dynamic_cast< TH2* >( 
+	    eleRecoSFFile->Get( "EGamma_SF2D" ) ) );
         electronRecoSFHist->SetDirectory( gROOT );
         eleRecoSFFile->Close();
 
         ElectronIDReweighter electronRecoReweighter( electronRecoSFHist, new LooseSelector );
-        combinedReweighter.addReweighter( "electronReco", std::make_shared<ReweighterElectronsID>( electronRecoReweighter ) );
-
+        combinedReweighter.addReweighter( "electronReco", 
+	    std::make_shared<ReweighterElectronsID>( electronRecoReweighter ) );
     }
 
-    //make pileup Reweighter
-    combinedReweighter.addReweighter( "pileup", std::make_shared<ReweighterPileup>( samples, weightDirectory ) );
+    // make pileup Reweighter
+    combinedReweighter.addReweighter( "pileup", 
+	std::make_shared<ReweighterPileup>( samples, weightDirectory ) );
 
-    //make b-tagging Reweighter 
+    // make b-tagging Reweighter 
     const std::string& bTagWP = "medium";
 
-    //read MC b-tagging efficiency histograms (use DeepFlavor!!!)
+    // read MC b-tagging efficiency histograms
     const std::string& leptonCleaning = "looseLeptonCleaned";
-    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_deepFlavor_" + leptonCleaning + "_" + year + ".root" ).c_str() );
-    std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_udsg" ).c_str() ) ) );
+    const std::string& btagger = "deepFlavor"; // choose from "deepFlavor" or "deepCSV"
+    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
+	+ "weightFiles/bTagEff/bTagEff_" + btagger + "_" + leptonCleaning + "_" + year + ".root" ).c_str() );
+    std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( 
+	bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_udsg" ).c_str() ) ) );
     bTagEffMCHist_udsg->SetDirectory( gROOT );
-    std::shared_ptr< TH2 > bTagEffMCHist_c( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_charm" ).c_str() ) ) );
+    std::shared_ptr< TH2 > bTagEffMCHist_c( dynamic_cast< TH2* >( 
+	bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_charm" ).c_str() ) ) );
     bTagEffMCHist_c->SetDirectory( gROOT );
-    std::shared_ptr< TH2 > bTagEffMCHist_b( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_beauty" ).c_str() ) ) );
+    std::shared_ptr< TH2 > bTagEffMCHist_b( dynamic_cast< TH2* >( 
+	bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_beauty" ).c_str() ) ) );
     bTagEffMCHist_b->SetDirectory( gROOT );
     bTagEffMCFile->Close();
 
+    // read b-tagging scale factor histograms
     std::string bTagSFFileName;
     if( year == "2016" ){
         bTagSFFileName= "DeepJet_2016LegacySF_WP_V1.csv";
@@ -210,10 +268,14 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     }
     std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
 
-    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath, bTagWP, bTagEffMCHist_c, bTagEffMCHist_b ) );
-    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath, bTagWP, bTagEffMCHist_udsg ) );   
+    combinedReweighter.addReweighter( "bTag_heavy", 
+	std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath, bTagWP, 
+	    bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_light", 
+	std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath, bTagWP, 
+	    bTagEffMCHist_udsg ) );   
 
-    //make prefire Reweighter
+    // make prefire Reweighter
     combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
 
     return combinedReweighter;

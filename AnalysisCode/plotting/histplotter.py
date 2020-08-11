@@ -59,15 +59,17 @@ def stackcol(hist,color):
     hist.SetLineColor(ROOT.kBlack)
 
 def setcolorTZQ(tag):
+    tag = tag.replace(' ','').replace('{','').replace('}','')
+    tag = tag.replace('#','').replace('/','').replace('+','')
     # return a color corresponding to a given tag (so far very analysis-dependent...)
     if(tag=='tZq'): return ROOT.kRed-7
     if(tag=='nonprompt'): return ROOT.kOrange
     if(tag=='WZ'): return ROOT.kCyan-7
     if(tag=='multiboson'): return ROOT.kYellow+1
-    if(tag=='t#bar{t}/t + X'): return ROOT.kBlue-10
-    if(tag=='t#bar{t} + Z'): return ROOT.kBlue-6
-    if(tag=='ZZ/H'): return ROOT.kTeal-6
-    if(tag=='X + #gamma'): return ROOT.kMagenta-7
+    if(tag=='tbarttX'): return ROOT.kBlue-10
+    if(tag=='tbartZ'): return ROOT.kBlue-6
+    if(tag=='ZZH'): return ROOT.kTeal-5
+    if(tag=='Xgamma'): return ROOT.kMagenta-7
     print('### WARNING ###: tag not recognized (in setcolorTZQ), returning default color')
     return ROOT.kBlack
 
@@ -91,7 +93,7 @@ def getminmax(datahist,mchist,yaxlog):
     # find minimum (manually to avoid zero)
     histmin = histmax
     for i in range(1,mchist.GetNbinsX()+1):
-        if not mchist.GetBinContent(i)==0 and mchist.GetBinContent(i)<histmin:
+        if( (not mchist.GetBinContent(i)==0) and mchist.GetBinContent(i)<histmin):
             histmin = mchist.GetBinContent(i)
     rangemin = histmin/5.
     rangemax = histmax*np.power(histmax/rangemin,0.4)
@@ -167,7 +169,7 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     if mcsysthist is not None:
         for i in range(1,mchistsum.GetNbinsX()+1):
             staterror = mchistsum.GetBinError(i)
-            systerror = mcsyshist.GetBinContent(i)
+            systerror = mcsysthist.GetBinContent(i)
             mcerror.SetBinError(i,np.sqrt(np.power(staterror,2)+np.power(systerror,2)))
     mcerror.SetFillStyle(3244)
     mcerror.SetLineWidth(0)
@@ -247,6 +249,7 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     # determine range of pad
     if(yaxlog): pad1.SetLogy()
     (rangemin,rangemax) = getminmax(datahist,mcerror,yaxlog)
+    #(rangemin,rangemax) = (0,120) # temp override
     mcerror.SetMinimum(rangemin)
     mcerror.SetMaximum(rangemax)
 
@@ -344,9 +347,10 @@ if __name__=="__main__":
         {'name':'_dRlWbtagged','title':r'#Delta R(lep_{W},jet_{b-tagged})','unit':''},
         {'name':'_M3l','title':r'M_{3l}','unit':'GeV'},
         {'name':'_abs_eta_max','title':r'#||{#eta}_{max}','unit':''},
-	#{'name':'_eventBDT','title':r'event BDT output score','unit':''},
+	{'name':'_eventBDT','title':r'event BDT output score','unit':''},
 	{'name':'_nMuons','title':r'number of muons in event','unit':''},
 	{'name':'_nElectrons','title':r'number of electrons in event','unit':''},
+	{'name':'_yield','title':r'total yield','unit':''},
 	#{'name':'_leptonMVATOP_min','title':r'minimum TOP MVA value in event','unit':''},
 	#{'name':'_leptonMVAttH_min','title':r'minimum ttH MVA value in event','unit':''}
     ]

@@ -40,7 +40,34 @@ def year_from_filepath(filepath):
     elif('Autumn' in filepath): return '2018'
     else: print('### WARNING ###: cannot determine year from path to file: '+filepath)
     return None
-    
+
+def subselect_inputfiles(inputfiles,selection_type):
+    # remove elements from inputfiles if not needed for a given selection_type
+    # inputfiles is a list of dicts, e.g. given as output by extendsamplelist
+    # inputfiles is assumed to consist of only data or only simulation, no mixture.
+    isdata = inputfiles[0]['process_name']=='data'
+    if selection_type=='3tight':
+	# remove ZG as it is fully included in DY
+        return [f for f in inputfiles if not 'ZGToLLG' in f['file']]
+    if selection_type=='3prompt':
+	# only prompt simulation needed here
+	if isdata:
+	    print('### WARNING ###: trying to run 3prompt selection on data, which does not make sense.')
+	    print('                 run 3tight selection instead, which is equivalent for data.')
+	    return None
+	return [f for f in inputfiles if f['process_name']!='nonprompt']
+    if selection_type=='fakerate':
+	# data and prompt simulation needed in this case
+	return [f for f in inputfiles if f['process_name']!='nonprompt']
+    if selection_type=='2tight':
+	# only nonprompt simulation needed here
+	if isdata:
+	    print('### WARNING ###: trying to run 2tight selection on data...')
+	    print('                 run fakerate selection instead.')
+	    return None
+	return [f for f in inputfiles if f['process_name']=='nonprompt']
+    print('### ERROR ###: selection_type not recognized: '+selection_type)
+    return None
 
 ### test section ###
 if __name__ == "__main__":

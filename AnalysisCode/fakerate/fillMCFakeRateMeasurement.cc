@@ -22,8 +22,8 @@ int main( int argc, char* argv[] ){
     std::string flavor = argvStr[1];
     const unsigned sampleIndex = std::stoi(argvStr[3]);
 
-    std::string sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate";
-    std::string sampleList = "../../fakeRate/sampleLists/samples_tuneFOSelection_";
+    std::string sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate";
+    std::string sampleList = "../samplelists/samples_tunefoselection_";
     sampleList.append(flavor+"_"+year+".txt");
 
     setTDRStyle();

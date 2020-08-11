@@ -3,24 +3,26 @@
 // include constants (particle masses)
 #include "../../../constants/particleMasses.h"
 
+// definition of the variables used for filling the ouput TTree
+// (and evaluating an TMVA::Reader if requested)
+// warning: these are not accessible outside this file; use the varmap instead!
 // event id variables
 ULong_t _runNb = 0;
 ULong_t _lumiBlock = 0;
 ULong_t _eventNb = 0;
-
 // event weight for simulation
 Float_t _weight = 0;
 Float_t _normweight = 0;
-
 // event BDT variables
 Float_t _abs_eta_recoil = 0;
 Float_t _Mjj_max = 0;
 Float_t _lW_asymmetry = 0;
 Float_t _deepCSV_max = 0;
+Float_t _deepFlavor_max = 0;
 Float_t _lT = 0;
 Float_t _MT = 0;
 Float_t _pTjj_max = 0;
-Float_t _dRlb_min = 0;
+Float_t _dRlb_min = 99.;
 Float_t _dPhill_max = 0;
 Float_t _HT = 0;
 Float_t _nJets = 0;
@@ -29,17 +31,77 @@ Float_t _dRlWrecoil = 0;
 Float_t _dRlWbtagged = 0;
 Float_t _M3l = 0;
 Float_t _abs_eta_max = 0;
-
 // BDT output score
-//Float_t _eventBDT = 0.;
-
+Float_t _eventBDT = 0.;
 // other variables
 Int_t _nMuons = 0;
 Int_t _nElectrons = 0;
 Float_t _leptonMVATOP_min = 1.;
 Float_t _leptonMVAttH_min = 1.;
+Float_t _yield = 0.5; // fixed value
 
-void initOutputTree(TTree* outputTree){
+void eventFlattening::setVariables(std::map<std::string,double> varmap){
+    // copy (and parse) the values contained in varmap to the TTree variables
+    // TODO: decent error handling when element is not present in the map
+
+    _runNb = (unsigned long) varmap["_runNb"];
+    _lumiBlock = (unsigned long) varmap["_lumiBlock"];
+    _eventNb = (unsigned long) varmap["_eventNb"];
+
+    _weight = varmap["_weight"];
+    _normweight = varmap["_normweight"];
+
+    _abs_eta_recoil = varmap["_abs_eta_recoil"];
+    _Mjj_max = varmap["_Mjj_max"]; 
+    _lW_asymmetry = varmap["_lW_asymmetry"];
+    _deepCSV_max = varmap["_deepCSV_max"];
+    _deepFlavor_max = varmap["_deepFlavor_max"];
+    _lT = varmap["_lT"];
+    _MT = varmap["_MT"];
+    _pTjj_max = varmap["_pTjj_max"];
+    _dRlb_min = varmap["_dRlb_min"];
+    _dPhill_max = varmap["_dPhill_max"];
+    _HT = varmap["_HT"];
+    _nJets = varmap["_nJets"];
+    _nBJets = varmap["_nBJets"];
+    _dRlWrecoil = varmap["_dRlWrecoil"];
+    _dRlWbtagged = varmap["_dRlWbtagged"];
+    _M3l = varmap["_M3l"];
+    _abs_eta_max = varmap["_abs_eta_max"];
+    
+    _eventBDT = varmap["_eventBDT"];
+
+    _nMuons = (int) varmap["_nMuons"];
+    _nElectrons = (int) varmap["_nElectrons"];
+    _leptonMVATOP_min = varmap["_leptonMVATOP_min"];
+    _leptonMVAttH_min = varmap["_leptonMVAttH_min"];
+    _yield = varmap["_yield"];
+}
+
+std::map< std::string, double > eventFlattening::initVarMap(){
+    // initialize a map of variables set to their default values
+    std::map< std::string, double> varmap = {
+	{"_runNb", 0},{"_lumiBlock",0},{"_eventNb",0},
+
+	{"_weight",0},{"_normweight",0},
+
+	{"_abs_eta_recoil",0},{"_Mjj_max",0},{"_lW_asymmetry",0},
+	{"_deepCSV_max",0},{"_deepFlavor_max",0},{"_lT",0},
+	{"_MT",0},{"_pTjj_max",0},{"_dRlb_min",99.},
+	{"_dPhill_max",0},{"_HT",0},{"_nJets",0},
+	{"_nBJets",0},{"_dRlWrecoil",0},{"_dRlWbtagged",0},
+	{"_M3l",0},{"_abs_eta_max",0},
+
+	{"_eventBDT",0},
+	
+	{"_nMuons",0},{"_nElectrons",0},
+	{"_leptonMVATOP_min",1.},{"_leptonMVAttH_min",1.},
+	{"_yield",0.5}
+    };
+    return varmap;    
+}
+
+void eventFlattening::initOutputTree(TTree* outputTree){
     // set branches for a flat output tree, to be used instead of ewkino/TreeReader/src/setOutputTree. 
     
     // event id variables
@@ -56,6 +118,7 @@ void initOutputTree(TTree* outputTree){
     outputTree->Branch("_Mjj_max", &_Mjj_max, "_Mjj_max/F");
     outputTree->Branch("_lW_asymmetry", &_lW_asymmetry, "_lW_asymmetry/F");
     outputTree->Branch("_deepCSV_max", &_deepCSV_max, "_deepCSV_max/F");
+    outputTree->Branch("_deepFlavor_max", &_deepFlavor_max, "_deepFlavor_max/F");
     outputTree->Branch("_lT", &_lT, "_lT/F");
     outputTree->Branch("_MT", &_MT, "_MT/F");
     outputTree->Branch("_pTjj_max", &_pTjj_max, "_pTjj_max/F");
@@ -70,16 +133,17 @@ void initOutputTree(TTree* outputTree){
     outputTree->Branch("_abs_eta_max", &_abs_eta_max, "_abs_eta_max/F");
 
     // BDT output score (initialized here but filled in calling function!)
-    //outputTree->Branch("_eventBDT", &_eventBDT, "_eventBDT/F");
+    outputTree->Branch("_eventBDT", &_eventBDT, "_eventBDT/F");
 
     // other variables
     outputTree->Branch("_nMuons", &_nMuons, "_nMuons/I");
     outputTree->Branch("_nElectrons", &_nElectrons, "_nElectrons/I");
     outputTree->Branch("_leptonMVATOP_min", &_leptonMVATOP_min, "_leptonMVATOP_min/F");
     outputTree->Branch("_leptonMVAttH_min", &_leptonMVAttH_min, "_leptonMVAttH_min/F");
+    outputTree->Branch("_yield", &_yield, "_yield/F");
 }
 
-/*TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile ){
+TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile ){
     // make sure it is consistent with bdt training!
     reader->AddVariable("_abs_eta_recoil", &_abs_eta_recoil);
     reader->AddVariable("_Mjj_max", &_Mjj_max);
@@ -100,66 +164,11 @@ void initOutputTree(TTree* outputTree){
 
     reader->BookMVA("BDT", pathToXMLFile);
     return reader;
-}*/
-
-// help functions for getting the right jet collection and MET //
-
-JetCollection getjetcollection(const Event& event, const std::string& variation){
-    if( variation == "nominal" ){
-        return event.jetCollection().goodJetCollection();
-    } else if( variation == "JECDown" ){
-        return event.jetCollection().JECDownCollection().goodJetCollection();
-    } else if( variation == "JECUp" ){
-        return event.jetCollection().JECUpCollection().goodJetCollection();
-    } else if( variation == "JERDown" ){
-        return event.jetCollection().JERDownCollection().goodJetCollection();
-    } else if( variation == "JERUp" ){
-        return event.jetCollection().JERUpCollection().goodJetCollection();
-    } else if( variation == "UnclDown" ){
-        return event.jetCollection().goodJetCollection();
-    } else if( variation == "UnclUp" ){
-        return event.jetCollection().goodJetCollection();
-    } else {
-        throw std::invalid_argument( "Uncertainty source " + variation + " is unknown." );
-    }
-}
-
-Met getmet(const Event& event, const std::string& variation){
-    if( variation == "nominal" ){
-        return event.met();
-    } else if( variation == "JECDown" ){
-        return event.met().MetJECDown();
-    } else if( variation == "JECUp" ){
-        return event.met().MetJECUp();
-    } else if( variation == "JERDown" ){
-        return event.met();
-    } else if( variation == "JERUp" ){
-        return event.met();
-    } else if( variation == "UnclDown" ){
-        return event.met().MetUnclusteredDown();
-    } else if( variation == "UnclUp" ){
-        return event.met().MetUnclusteredUp();
-    } else {
-        throw std::invalid_argument( "Uncertainty source " + variation + " is unknown." );
-    }
-}
-
-int eventCategory(Event& event, const std::string& variation){
-    // determine the event category based on the number of jets and b-jets
-    // note that it is assumed the event has been passed through a signal region selection!
-
-    JetCollection jetc = getjetcollection(event,variation);
-    int njets = jetc.size();
-    int nbjets = jetc.numberOfMediumBTaggedJets();
-    if(nbjets == 0 or (nbjets==1 and njets==1)) return -1;
-    if(nbjets == 1 and (njets==2 or njets==3)) return 1;
-    if(nbjets == 1) return 2;
-    return 3;
 }
 
 // help functions for getting the fake rate map and fake rate weight // 
 
-std::shared_ptr< TH2D > readFRMap( const std::string& pathToFile, 
+std::shared_ptr< TH2D > eventFlattening::readFRMap( const std::string& pathToFile, 
 			    const std::string& flavor, const std::string& year ){
     // note: this function was copied (with slight modifications)
     // from ewkino/AnalysisCode/fakerate/closureTest_MC.cc
@@ -169,7 +178,8 @@ std::shared_ptr< TH2D > readFRMap( const std::string& pathToFile,
     frMap->SetDirectory( gROOT );
     frFile->Close();
 
-    /*std::cout<<"values:"<<std::endl;
+    /* // printouts for testing
+    std::cout<<"values:"<<std::endl;
     for(unsigned xbin=1; xbin<=5; ++xbin){
         for(unsigned ybin=1; ybin<=3; ++ybin){
             std::cout<<"bin: "<<xbin<<" "<<ybin<<std::endl;
@@ -180,17 +190,19 @@ std::shared_ptr< TH2D > readFRMap( const std::string& pathToFile,
     return frMap;
 }
 
-double fakeRateWeight( const Event& event,
+double eventFlattening::fakeRateWeight( const Event& event,
 			const std::shared_ptr< TH2D >& frMap_muon,
                         const std::shared_ptr< TH2D >& frMap_electron ){
     // note: this function was copied (with slight modifications)
     // from ewkino/AnalysisCode/fakerate/closureTest_MC.cc
     
     double weight = -1.;
+    //std::cout<<"--- event ---"<<std::endl;
     for( const auto& leptonPtr : event.lightLeptonCollection() ){
 	if( !(leptonPtr->isFO() && !leptonPtr->isTight()) ) continue;
             
-	double croppedPt = std::min( leptonPtr->pt(), 99. );
+	double ptMax = 44.9; // limit to bin up to 45 GeV
+	double croppedPt = std::min( leptonPtr->pt(), ptMax );
         double croppedAbsEta = std::min( leptonPtr->absEta(), (leptonPtr->isMuon() ? 2.4 : 2.5) );
 
         double fr;
@@ -199,39 +211,59 @@ double fakeRateWeight( const Event& event,
         } else {
             fr = frMap_electron->GetBinContent( frMap_electron->FindBin( croppedPt, croppedAbsEta ) );
         }
+	// printouts for testing:
+	//std::cout<<"--- lepton ---"<<std::endl;
+	//std::cout<<"isMuon: "<<leptonPtr->isMuon()<<std::endl;
+	//std::cout<<"cropped pt: "<<croppedPt<<std::endl;
+	//std::cout<<"cropped eta: "<<croppedAbsEta<<std::endl;
+	//std::cout<<"fake rate: "<<fr<<std::endl;
+
+	// calculate weight
         weight *= ( - fr / ( 1. - fr ) );
     }
+    //std::cout<<"weight: "<<weight<<std::endl;
     return weight;
 }
  
 // main function //
 
-void eventToEntry(Event& event, const double norm,
-		    const bool isdataforbackground, 
-		    const std::shared_ptr< TH2D>& frMap_muon, 
-		    const std::shared_ptr< TH2D>& frMap_electron,
-		    const std::string& variation){
+std::map< std::string, double > eventFlattening::eventToEntry(Event& event, const double norm,
+				const CombinedReweighter& reweighter,
+				const std::string& selection_type, 
+				const std::shared_ptr< TH2D>& frMap_muon, 
+				const std::shared_ptr< TH2D>& frMap_electron,
+				const std::string& variation,
+				const bool doMVA,
+				TMVA::Reader* reader){
     // fill one entry in outputTree (initialized with initOutputTree), based on the info of one event.
-    // Note that the event must be cleaned and processed by an event selection function first!
+    // note that the event must be cleaned and processed by an event selection function first!
 
-    //std::cout<<"------------"<<std::endl;    
+    //std::cout<<"----- new event -----"<<std::endl;   
+
+    // re-initialize all variables in the map
+    std::map< std::string, double > varmap = initVarMap();
+ 
     // sort leptons and jets by pt, get b-jet collection
     event.sortJetsByPt();
     event.sortLeptonsByPt();
 
     // event id variables 
-    _runNb = event.runNumber();
-    _lumiBlock = event.luminosityBlock();
-    _eventNb = event.eventNumber();
+    varmap["_runNb"] = event.runNumber();
+    varmap["_lumiBlock"] = event.luminosityBlock();
+    varmap["_eventNb"] = event.eventNumber();
 
     // event weight (note: 0 for data!)
-    _weight = event.weight();
-    _normweight = event.weight()*norm;
+    varmap["_weight"] = event.weight();
+    varmap["_normweight"] = event.weight()*norm;
+    if(event.isData()) varmap["_normweight"] = 1;
+    if(event.isMC()) varmap["_normweight"] *= reweighter.totalWeight(event);
 
-    // multiply weight by fake-rate if needed
-    if(isdataforbackground){
-	_normweight = 1*fakeRateWeight(event,frMap_muon,frMap_electron);
-    }   
+    // in case of running in mode "fakerate", take into account fake rate weight
+    if(selection_type=="fakerate"){
+	double frweight = fakeRateWeight(event,frMap_muon,frMap_electron);
+	if(event.isMC()) frweight *= -1;
+	varmap["_normweight"] *= frweight;
+    }
 
     // get correct jet collection and met (defined in eventSelections.cc!)
     JetCollection jetcollection = getjetcollection(event, variation);
@@ -242,37 +274,42 @@ void eventToEntry(Event& event, const double norm,
     LeptonCollection lepcollection = event.leptonCollection();
 
     // number of muons and electrons
-    _nMuons = lepcollection.numberOfMuons();
-    _nElectrons = lepcollection.numberOfElectrons();
+    varmap["_nMuons"] = lepcollection.numberOfMuons();
+    varmap["_nElectrons"] = lepcollection.numberOfElectrons();
 
     // other more or less precomputed event variables
-    _lT = lepcollection.scalarPtSum() + met.pt();
-    _HT = jetcollection.scalarPtSum();
-    _nJets = jetcollection.size();
-    _nBJets = bjetcollection.size();
-    _leptonMVATOP_min = 1.;
-    _leptonMVAttH_min = 1.;
+    varmap["_lT"] = lepcollection.scalarPtSum() + met.pt();
+    varmap["_HT"] = jetcollection.scalarPtSum();
+    varmap["_nJets"] = jetcollection.size();
+    varmap["_nBJets"] = bjetcollection.size();
     for(LeptonCollection::const_iterator lIt = lepcollection.cbegin();
 	    lIt != lepcollection.cend(); lIt++){
         std::shared_ptr<Lepton> lep = *lIt;
         if(lep->isElectron()){
 	    std::shared_ptr<Electron> ele = std::static_pointer_cast<Electron>(lep);
-            if(ele->leptonMVAttH() < _leptonMVAttH_min) _leptonMVAttH_min = ele->leptonMVAttH();
-            if(ele->leptonMVATOP() < _leptonMVATOP_min) _leptonMVATOP_min = ele->leptonMVATOP();
+            if(ele->leptonMVAttH() < varmap["_leptonMVAttH_min"]){
+		varmap["_leptonMVAttH_min"] = ele->leptonMVAttH();
+	    }
+            if(ele->leptonMVATOP() < varmap["_leptonMVATOP_min"]){
+		varmap["_leptonMVATOP_min"] = ele->leptonMVATOP();
+	    }
         }
         else if(lep->isMuon()){
 	    std::shared_ptr<Muon> mu = std::static_pointer_cast<Muon>(lep);
-            if(mu->leptonMVAttH() < _leptonMVAttH_min) _leptonMVAttH_min = mu->leptonMVAttH();
-            if(mu->leptonMVATOP() < _leptonMVATOP_min) _leptonMVATOP_min = mu->leptonMVATOP();
+            if(mu->leptonMVAttH() < varmap["_leptonMVAttH_min"]){
+		 varmap["_leptonMVAttH_min"] = mu->leptonMVAttH();
+	    }
+            if(mu->leptonMVATOP() < varmap["_leptonMVATOP_min"]){
+		 varmap["_leptonMVATOP_min"] = mu->leptonMVATOP();
+	    }
         }
     }
 
-    // set default values for when no OSSF light pair is present (in principle only noOSSF sideband)
-    _MT = 0;
     int lWindex = 0;
-
     // set mT
-    if(event.hasOSSFLightLeptonPair()){ _MT = event.mtW(); }
+    if(event.hasOSSFLightLeptonPair()){ 
+	varmap["_MT"] = event.mtW(); 
+    }
     //std::cout<<"checkpoint 1"<<std::endl;
 
     // find lepton from W and set its properties
@@ -281,7 +318,7 @@ void eventToEntry(Event& event, const double norm,
     LeptonCollection::const_iterator lIt = lepcollection.cbegin();
     for(int i=0; i<lWindex; i++){++lIt;}
     Lepton& lW = **lIt;
-    _lW_asymmetry = fabs(lW.eta())*lW.charge();
+    varmap["_lW_asymmetry"] = fabs(lW.eta())*lW.charge();
     //std::cout<<"checkpoint 2"<<std::endl;
 
     // find leptons from Z
@@ -327,66 +364,72 @@ void eventToEntry(Event& event, const double norm,
     //std::cout<<"checkpoint 6"<<std::endl;
 
     // loop over jets and find relevant quantities
-    _abs_eta_max = 0;
-    _Mjj_max = 0;
-    _pTjj_max = 0;
-    _deepCSV_max = 0;
     for(JetCollection::const_iterator jIt = jetcollection.cbegin();
         jIt != jetcollection.cend(); jIt++){
 	Jet& jet = **jIt;
         // if abs(eta) is larger than max, modify max
-        if(fabs(jet.eta())>_abs_eta_max) _abs_eta_max = fabs(jet.eta());
+        if(fabs(jet.eta())>varmap["_abs_eta_max"]) varmap["_abs_eta_max"] = fabs(jet.eta());
         // if deepCSV is higher than maximum, modify max
-        if(jet.deepCSV()>_deepCSV_max and jet.inBTagAcceptance()) _deepCSV_max = jet.deepCSV();
+        if(jet.deepCSV()>varmap["_deepCSV_max"] and jet.inBTagAcceptance()){
+	     varmap["_deepCSV_max"] = jet.deepCSV();
+	}
+	if(jet.deepFlavor()>varmap["_deepFlavor_max"] and jet.inBTagAcceptance()){
+	    varmap["_deepFlavor_max"] = jet.deepFlavor();
+	}
         // find maximum dijet mass and pt
         for(JetCollection::const_iterator jIt2 = jIt+1; jIt2 != jetcollection.cend(); jIt2++){
             Jet& jet2 = **jIt2;
-            if((jet+jet2).mass()>_Mjj_max) _Mjj_max = (jet+jet2).mass();
-            if((jet+jet2).pt()>_pTjj_max) _pTjj_max = (jet+jet2).pt();
+            if((jet+jet2).mass()>varmap["_Mjj_max"]) varmap["_Mjj_max"] = (jet+jet2).mass();
+            if((jet+jet2).pt()>varmap["_pTjj_max"]) varmap["_pTjj_max"] = (jet+jet2).pt();
         } 
     }
-    //std::cout<<_deepCSV_max<<std::endl;
     //std::cout<<"checkpoint 7"<<std::endl;
-    
-    _dRlWrecoil = 0;
-    _dRlWbtagged = 0;
-    _abs_eta_recoil = 0;
     if(recoilindex>=0 and jetcollection.size()>0){
 	JetCollection::const_iterator jIt = jetcollection.cbegin();
 	for(int i=0; i<recoilindex; i++){jIt++;}
 	Jet& recoiljet = **jIt;
-	_dRlWrecoil = deltaR(lW,recoiljet);
-	_abs_eta_recoil = fabs(recoiljet.eta());
+	varmap["_dRlWrecoil"] = deltaR(lW,recoiljet);
+	varmap["_abs_eta_recoil"] = fabs(recoiljet.eta());
     }
     if(taggedbindex>=0 and jetcollection.size()>0){
 	JetCollection::const_iterator tbjIt = jetcollection.cbegin();
 	for(int i=0; i<taggedbindex; i++){tbjIt++;}
 	Jet& taggedbjet = **tbjIt;
-	_dRlWbtagged = deltaR(lW,taggedbjet);
+	varmap["_dRlWbtagged"] = deltaR(lW,taggedbjet);
     }
     //std::cout<<"checkpoint 8"<<std::endl;
 
     // loop over leptons and find some kinematic properties
-    _dRlb_min = 99;
-    _dPhill_max = 0;
     PhysicsObject l3vec;
     for(LeptonCollection::const_iterator lIt = lepcollection.cbegin();
         lIt != lepcollection.cend(); lIt++){
         Lepton& lep = **lIt;
         for(LeptonCollection::const_iterator lIt2 = lIt+1; lIt2 != lepcollection.cend(); lIt2++){
             Lepton& lep2 = **lIt2;
-            if(deltaPhi(lep,lep2)>_dPhill_max) _dPhill_max = deltaPhi(lep,lep2);
+            if(deltaPhi(lep,lep2)>varmap["_dPhill_max"]) varmap["_dPhill_max"] = deltaPhi(lep,lep2);
         }
-        for(JetCollection::const_iterator jIt = bjetcollection.cbegin(); jIt != bjetcollection.cend(); jIt++){
+        for(JetCollection::const_iterator jIt = bjetcollection.cbegin(); 
+	    jIt != bjetcollection.cend(); jIt++){
             Jet& bjet = **jIt;
-            if(deltaR(lep,bjet)<_dRlb_min) _dRlb_min = deltaR(lep,bjet);
+            if(deltaR(lep,bjet)<varmap["_dRlb_min"]) varmap["_dRlb_min"] = deltaR(lep,bjet);
         }
     }
-    _M3l = event.leptonSystem().mass();
+    varmap["_M3l"] = event.leptonSystem().mass();
     //std::cout<<"checkpoint 9"<<std::endl;
+
+    // at this point all variables have been calculated; now set TTree and TReader variables
+    setVariables(varmap);
+    // based on these variables: evaluate the BDT output if requested
+    if(doMVA){ 
+	varmap[" _eventBDT"] = reader->EvaluateMVA( "BDT" );
+	// also reset the TTree variable _eventBDT!
+	_eventBDT = varmap["eventBDT"];
+    }
+    // now return the varmap (e.g. to fill histograms)
+    return varmap;
 }
 
-std::pair<double,double> pmzcandidates(Lepton& lW, Met& met){
+std::pair<double,double> eventFlattening::pmzcandidates(Lepton& lW, Met& met){
     // this method returns two candidates for longitudinal component of missing momentum,
     // by imposing the W mass constraint on the system (lW,pmiss).
     
@@ -433,7 +476,7 @@ std::pair<double,double> pmzcandidates(Lepton& lW, Met& met){
     return pmz;
 }*/
 
-std::pair<double,int> besttopcandidate(JetCollection& alljets, Lepton& lW, 
+std::pair<double,int> eventFlattening::besttopcandidate(JetCollection& alljets, Lepton& lW, 
 					Met& met, double pmz1, double pmz2){
     // This method returns the reconstruced top mass closest to its nominal mass,
     // by combining the four-vectors of the lepton from W, the two missing momentum candidates,

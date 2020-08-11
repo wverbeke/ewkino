@@ -33,14 +33,24 @@ bool passFourLeptonSkim( Event& event ){
 
 
 bool passFakeRateSkim( Event& event ){
-    event.selectLooseLeptons();
+    // original: 
+    /*event.selectLooseLeptons();
     event.cleanElectronsFromLooseMuons();
     event.cleanTausFromLooseLightLeptons();
     if( event.numberOfLightLeptons() != 1 ) return false;
-
     event.selectGoodJets();
     event.cleanJetsFromLooseLeptons();
     if( event.numberOfJets() < 1 ) return false;
+    return true;*/
+
+    // replace by:
+    // for data: require to pass a fake rate trigger
+    if( event.isData() && !event.passTriggers_FR() ) return false;
+    // remainder: copy of passSingleLeptonSkim
+    event.selectLooseLeptons();
+    event.cleanElectronsFromLooseMuons();
+    event.cleanTausFromLooseLightLeptons();
+    if( event.numberOfLightLeptons() < 1 ) return false;
     return true;
 }
 

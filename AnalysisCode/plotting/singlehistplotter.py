@@ -12,48 +12,6 @@ from jobSubmission import submitQsubJob, initializeJobScript
 #import smalltools as tls
 import plottools as tools
 
-dofill = False
-doplot = False
-doplotloop = False
-
-if len(sys.argv) == 2:
-    # apply plotting to all files in given folder
-    doplotloop = True
-    hist_file_path = os.path.abspath(sys.argv[1])
-
-elif len(sys.argv) == 3:
-    doplot = True
-    hist_file_path = os.path.abspath(sys.argv[1])
-    output_file_path = os.path.abspath(sys.argv[2])
-
-elif len(sys.argv) > 6:
-    dofill = True
-    input_file_path = os.path.abspath(sys.argv[1])
-    hist_file_path = os.path.abspath(sys.argv[2])
-    if os.path.exists(hist_file_path):
-	print('### WARNING ###: output file already exists. Overwrite it? (y/n)')
-	go = raw_input()
-	if not go=='y': sys.exit()
-	os.system('rm '+hist_file_path)
-    xlow = float(sys.argv[3])
-    xhigh = float(sys.argv[4])
-    nbins = int(sys.argv[5])
-    variables = []
-    for i in range(6,len(sys.argv)):
-	variables.append(sys.argv[i])
-    cwd = os.getcwd()
-
-else:
-    print('### ERROR ###: singlehistplotter.py requires either 1, 2 or at least 6 command-line arguments.')
-    print('Normal usage from the command line:')
-    print('  python singlehistplotter.py <hist_folder>')
-    print('OR')
-    print('  python singlehistplotter.py <hist_file> <output_file>')
-    print('OR')
-    print('  python singlehistplotter.py <input_file> <hist_file> <xlow> <xhigh> <nbins>')
-    print('       at least one <variable>')
-    sys.exit()
-
 def submitjob(cwd,input_file_path,output_file_path,
                         xlow, xhigh, nbins, variables):
     script_name = 'singlehistplotter.sh'
@@ -68,24 +26,6 @@ def submitjob(cwd,input_file_path,output_file_path,
     submitQsubJob(script_name)
     # alternative: run locally
     #os.system('bash '+script_name)
-
-if dofill:
-
-    # check validity of arguments
-    for variable in variables:
-	if variable not in ['leadingLeptonPt','subLeadingLeptonPt','trailingLeptonPt',
-			    'minTOPMVA','mintZqMVA','minttHMVA']:
-	    print('### ERROR ###: variable not in list of recognized variables.')
-	    sys.exit()
-
-    # check if executable is present
-    if not os.path.exists('./singlehistplotter'):
-	print('### ERROR ###: singlehistplotter executable was not found.')
-	print('Run make -f makeSingleHistPlotter before running this script.')
-	sys.exit()
-
-    # run the command to make the histogram objects
-    submitjob(cwd,input_file_path, hist_file_path, xlow, xhigh, nbins, variables)
 
 def loadhistograms(histfile):
     # load histograms from a root file.
@@ -224,27 +164,89 @@ def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,errorbars=False):
     ### save the plot
     c1.SaveAs(outfile.rstrip('.png')+'.png')
 
-if doplot:
+#--------------------------------------------------------#
 
-    histlist = loadhistograms(hist_file_path)
-    binwidth = histlist[0].GetBinWidth(1)
-    if binwidth.is_integer():
-        yaxtitle = 'normalized number of events / '+str(int(binwidth))
-    else:
-        yaxtitle = 'normalized number of events / {0:.2f}'.format(binwidth)
-    xaxtitle = histlist[0].GetXaxis().GetTitle()
-    plothistograms(histlist,yaxtitle,xaxtitle,output_file_path,errorbars=True)
-
-if doplotloop:
+if __name__=='__main__':
     
-    filelist = [os.path.join(hist_file_path,f) for f in os.listdir(hist_file_path) if f[-5:]=='.root']
-    for f in filelist:
-	histlist = loadhistograms(f)
+    dofill = False
+    doplot = False
+    doplotloop = False
+
+    if len(sys.argv) == 2:
+	# apply plotting to all files in given folder
+	doplotloop = True
+	hist_file_path = os.path.abspath(sys.argv[1])
+
+    elif len(sys.argv) == 3:
+	doplot = True
+	hist_file_path = os.path.abspath(sys.argv[1])
+	output_file_path = os.path.abspath(sys.argv[2])
+
+    elif len(sys.argv) > 6:
+	dofill = True
+	input_file_path = os.path.abspath(sys.argv[1])
+	hist_file_path = os.path.abspath(sys.argv[2])
+	if os.path.exists(hist_file_path):
+	    print('### WARNING ###: output file already exists. Overwrite it? (y/n)')
+	    go = raw_input()
+	    if not go=='y': sys.exit()
+	    os.system('rm '+hist_file_path)
+	xlow = float(sys.argv[3])
+	xhigh = float(sys.argv[4])
+	nbins = int(sys.argv[5])
+	variables = []
+	for i in range(6,len(sys.argv)):
+	    variables.append(sys.argv[i])
+	cwd = os.getcwd()
+
+    else:
+	print('### ERROR ###: singlehistplotter.py requires either 1, 2 or at least 6 command-line arguments.')
+	print('Normal usage from the command line:')
+	print('  python singlehistplotter.py <hist_folder>')
+	print('OR')
+	print('  python singlehistplotter.py <hist_file> <output_file>')
+	print('OR')
+	print('  python singlehistplotter.py <input_file> <hist_file> <xlow> <xhigh> <nbins>')
+	print('       at least one <variable>')
+	sys.exit()
+
+    if dofill:
+	# check validity of arguments
+	for variable in variables:
+	    if variable not in ['leadingLeptonPt','subLeadingLeptonPt','trailingLeptonPt',
+		                'minTOPMVA','mintZqMVA','minttHMVA']:
+		print('### ERROR ###: variable not in list of recognized variables.')
+		sys.exit()
+	# check if executable is present
+	if not os.path.exists('./singlehistplotter'):
+	    print('### ERROR ###: singlehistplotter executable was not found.')
+	    print('Run make -f makeSingleHistPlotter before running this script.')
+	    sys.exit()
+
+	# run the command to make the histogram objects
+	submitjob(cwd,input_file_path, hist_file_path, xlow, xhigh, nbins, variables)
+
+    if doplot:
+
+	histlist = loadhistograms(hist_file_path)
 	binwidth = histlist[0].GetBinWidth(1)
 	if binwidth.is_integer():
 	    yaxtitle = 'normalized number of events / '+str(int(binwidth))
 	else:
 	    yaxtitle = 'normalized number of events / {0:.2f}'.format(binwidth)
-	#xaxtitle = histlist[0].GetXaxis().GetTitle()
-	xaxtitle = 'lepton pT (GeV)'
-	plothistograms(histlist,yaxtitle,xaxtitle,f[:-5],errorbars=True)
+	xaxtitle = histlist[0].GetXaxis().GetTitle()
+	plothistograms(histlist,yaxtitle,xaxtitle,output_file_path,errorbars=True)
+
+    if doplotloop:
+    
+	filelist = [os.path.join(hist_file_path,f) for f in os.listdir(hist_file_path) if f[-5:]=='.root']
+	for f in filelist:
+	    histlist = loadhistograms(f)
+	    binwidth = histlist[0].GetBinWidth(1)
+	    if binwidth.is_integer():
+		yaxtitle = 'normalized number of events / '+str(int(binwidth))
+	    else:
+		yaxtitle = 'normalized number of events / {0:.2f}'.format(binwidth)
+	    #xaxtitle = histlist[0].GetXaxis().GetTitle()
+	    xaxtitle = 'lepton pT (GeV)'
+	    plothistograms(histlist,yaxtitle,xaxtitle,f[:-5],errorbars=True)

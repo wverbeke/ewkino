@@ -22,7 +22,7 @@ for year in years:
     for flavour in flavours:
 	# check number of samples
 	nsamples = 0
-	with open('../../fakeRate/sampleLists/samples_tuneFOSelection_'+flavour+'_'+year+'.txt') as sf:
+	with open('../samplelists/samples_tunefoselection_'+flavour+'_'+year+'.txt') as sf:
 	    for sl in sf:
 		if(sl[0] == '#'): continue
 		if(sl[0] == '\n'): continue

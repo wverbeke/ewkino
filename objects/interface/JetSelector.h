@@ -58,10 +58,10 @@ class JetSelector{
 	bool isGoodttH() const;
 	bool isGoodtZq() const;
 
-        bool isGoodBase() const;
-        bool isGood2016() const;
-        bool isGood2017() const;
-        bool isGood2018() const;
+        bool isGoodBasettH() const;
+        bool isGood2016ttH() const;
+        bool isGood2017ttH() const;
+        bool isGood2018ttH() const;
 
 	bool isGoodBasetZq() const;
 	bool isGood2016tZq() const;

@@ -23,34 +23,22 @@ def removenonpromptmc(mcin):
     mcinnew = [f for f in mcin if f['process_name']!='nonprompt']
     return mcinnew    
 
-def initializehistograms(mcin,datain,npdatain,variables):
+def initializehistograms(indict,titleprefix,variables):
     # initialize histograms for all variables and files
     # (2D lists: dimension 1: variables, dimension 2: files)
-    mchistlist = []
-    datahistlist = []
-    npdatahistlist = []
+    outlist = []
     for k,vardict in enumerate(variables):
         bins = vardict['bins']
         varname = vardict['name']
         nbins = len(bins)-1
         bins = array('f',bins)
-        mchistlist.append([])
-        datahistlist.append([])
-        for j in range(len(mcin)):
-            mchistlist[k].append(ROOT.TH1F("mc_"+varname+"_"+str(j),
-                                 mcin[j]['process_name']+"/"+mcin[j]['sample_name'],nbins,bins))
-            mchistlist[k][j].SetDirectory(0)
-        for j in range(len(datain)):
-            datahistlist[k].append(ROOT.TH1F("data_"+varname+"_"+str(j),
-                                datain[j]['process_name']+"/"+datain[j]['sample_name'],nbins,bins))
-            datahistlist[k][j].SetDirectory(0)
-	if len(npdatain)>0:
-	    npdatahistlist.append([])
-	    for j in range(len(npdatain)):
-		npdatahistlist[k].append(ROOT.TH1F("npdata_"+varname+"_"+str(j),
-                                datain[j]['process_name']+"/"+datain[j]['sample_name'],nbins,bins))
-		npdatahistlist[k][j].SetDirectory(0)
-    return (mchistlist,datahistlist,npdatahistlist)
+	if len(indict)==0: continue
+        outlist.append([])
+        for j in range(len(indict)):
+            outlist[k].append(ROOT.TH1F(titleprefix+"_"+varname+"_"+str(j),
+                                 indict[j]['process_name']+"/"+indict[j]['sample_name'],nbins,bins))
+            outlist[k][j].SetDirectory(0)
+    return outlist
 
 def underflow(value,hist):
     lowX = hist.GetBinLowEdge(1)
@@ -69,6 +57,15 @@ def addinputfile(histlist,filelist,treename,index,variables,
 		    doextraselection):
     f = ROOT.TFile.Open(filelist[index]['file'])
     tree = f.Get("blackJackAndHookers/"+treename)
+    sumweights = 1.
+    xsection = 1.
+    # old way of determining weight (does not work for reweighting, fake rates, etc.)
+    try:
+	if(usenormweight and not normalization==0):
+	    sumweights = f.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
+	    xsection = filelist[index]['cross_section']
+    except:
+	print('warning: no sumofweights or cross-section could be found')
     for j in range(int(tree.GetEntries()/1.)):
         if(j%5000==0):
             percent = j*100/tree.GetEntries()
@@ -76,11 +73,12 @@ def addinputfile(histlist,filelist,treename,index,variables,
             sys.stdout.flush()
         tree.GetEntry(j)
 	if doextraselection:
-	    print('here')
 	    if not passextraselection(tree): continue
 	normweight = 1.
+	weight = 1.
         if(usenormweight and not normalization==0):
 	    normweight = getattr(tree,'_normweight')
+	    weight = getattr(tree,'_weight')*lumi*xsection/sumweights
 	if removeoverlap:
 	    evtid = str(getattr(tree,'_runNb'))
 	    evtid += '/'+str(getattr(tree,'_lumiBlock'))
@@ -93,8 +91,8 @@ def addinputfile(histlist,filelist,treename,index,variables,
             bins = vardict['bins']
             if varvalue<bins[0]: varvalue = underflow(varvalue,histlist[k][index])
 	    if varvalue>bins[-1]: varvalue = overflow(varvalue,histlist[k][index])
-	    # default filling method (deprecated, removed definition of parameters from func):
-            #histlist[k][index].Fill(varvalue,weight*lumi*xsection/sumweights)
+	    # default filling method (deprecated, does not work for reweighting, fake rates, etc.):
+            #histlist[k][index].Fill(varvalue,weight)
 	    # alternative using precomputed normalized weight:
 	    histlist[k][index].Fill(varvalue,normweight)
     f.Close()
@@ -173,7 +171,7 @@ def passextraselection(tree):
 def input_from_cmd(arglist):
     # read command line arguments and return a dict.
     # the order of the arguments is fixed and no checking is done, but this can be generalized
-    if not len(sys.argv)==11:
+    if not len(sys.argv)==13:
 	print('### ERROR ###: wrong number of command line arguments.')
 	sys.exit()
     res = {}
@@ -187,6 +185,8 @@ def input_from_cmd(arglist):
     res['normalization'] = int(sys.argv[8])
     res['lumi'] = float(sys.argv[9])
     res['doextraselection'] = bool(sys.argv[10]=='True')
+    res['usedata'] = bool(sys.argv[11]=='True')
+    res['npfromdata'] = bool(sys.argv[12]=='True')
     return res
 
 if __name__ == '__main__':
@@ -196,16 +196,16 @@ if __name__ == '__main__':
     args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    args['mcrootdir'] = '/user/llambrec/Files/tthid_tthmva_reduced/signalregion/2017MC_flat'
+    args['mcrootdir'] = '/user/llambrec/Files/oldtzqid/2016MC/zgcontrolregion'
     # folder to read data root files from
-    #args['datarootdir'] = '/user/llambrec/Files/tzqid/wzcontrolregion/2018data_flat'
-    args['datarootdir'] = args['mcrootdir']
+    args['datarootdir'] = '/user/llambrec/Files/oldtzqid/2016data/zgcontrolregion'
+    #args['datarootdir'] = args['mcrootdir']
     # samplelist for simulation with process names and cross sections
-    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2017_MC.txt'
-    #args['mcsamplelist'] = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/samplelist_tzq_2016_MC.txt'
+    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
+    ##args['mcsamplelist'] = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/samplelist_tzq_2016_MC.txt'
     # samplelist for data with dataset names
-    #args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2018_data.txt' 
-    args['datasamplelist'] = args['mcsamplelist']
+    args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_data.txt' 
+    #args['datasamplelist'] = args['mcsamplelist']
     # file to store histograms in:
     args['histfile'] = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms/histograms.root'
     # list of dicts of variables to plot with corresponding bins:
@@ -225,25 +225,28 @@ if __name__ == '__main__':
         {'name':'_dRlWbtagged','bins':list(np.linspace(0,7,num=21))},
         {'name':'_M3l','bins':list(np.linspace(0,600,num=21))},
         {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21))},
-	#{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21))},
+	{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21))},
 	{'name':'_nMuons','bins':list(np.linspace(-0.5,3.5,num=5))},
 	{'name':'_nElectrons','bins':list(np.linspace(-0.5,3.5,num=5))},
+	{'name':'_yield','bins':list(np.linspace(0,1,num=2))},
 	#{'name':'_leptonMVATOP_min','bins':list(np.linspace(-1,1,num=41))},
 	#{'name':'_leptonMVAttH_min','bins':list(np.linspace(-1,1,num=41))}
     ]
     # name of tree to read for each input file:
-    args['treename'] = 'treeCat1'
+    args['treename'] = 'blackJackAndHookersTree'
     # normalization:
     args['normalization'] = 1
     # (normalization parameter: 0 = no normalization, weights, xsection and lumi set to 1.)
     # (             1 = normalize using weights, xsection and lumi.)
     # (             2 = same as before but apply normalization to data afterwards.)
     # luminosity in inverse picobarns
-    args['lumi'] = 41500.
+    args['lumi'] = 35900.
     args['doextraselection'] = False
+    args['usedata'] = True # whether to include datapoints
+    args['npfromdata'] = True # whether to use fosideband files for nonprompt background
 
     ### Overwrite using cmd args
-    if(len(sys.argv)==11):
+    if(len(sys.argv)==13):
 	args = input_from_cmd(sys.argv)
     elif(not len(sys.argv)==1):
 	print('### ERROR ###: wrong number of command line args: '+str(len(sys.argv)))
@@ -262,25 +265,36 @@ if __name__ == '__main__':
     if not os.path.exists(histdir): os.makedirs(histdir)
 
     ### Configure input files
-    mcin = getinputfiles(mcrootdir,mcsamplelist)
-    datain = getinputfiles(datarootdir,datasamplelist)
-    #datain = datain[1:2] # TEMP FOR SPEED-UP WHEN NO DATA IS BEING USED
-    npdatain = []
-    npfromdata = False # later add as cmdline arg
-    if npfromdata:
-	npdatain = getinputfiles(os.path.join(datarootdir,'nonprompt_background'),
-				    datasamplelist)
+    mcin = []
+    datain = []
+    npfromdatain = []
+    pcorrectionin = []
+    if not args['npfromdata']:
+	mcin = getinputfiles(mcrootdir+'_3tight_flat',mcsamplelist)
+	datain = getinputfiles(datarootdir+'_3tight_flat',datasamplelist)
+	mcin = [f for f in mcin if not 'ZG' in f['sample_name']]
+    else:
+	mcin = getinputfiles(mcrootdir+'_3prompt_flat',mcsamplelist)
+	datain = getinputfiles(datarootdir+'_3tight_flat',datasamplelist)
+	npfromdatain = getinputfiles(datarootdir+'_fakerate_flat',datasamplelist)
+	pcorrectionin += getinputfiles(mcrootdir+'_fakerate_flat',mcsamplelist)
 	mcin = removenonpromptmc(mcin)
+    if not args['usedata']: datain = datain[1:2] # speed-up if no data is used
 
     print('=== MC files ===')
     for s in mcin: print(s['sample_name'])
     print('=== data files ===')
     for s in datain: print(s['sample_name'])
     print('=== nonprompt data files ===')
-    for s in npdatain: print(s['sample_name'])
+    for s in npfromdatain: print(s['sample_name'])
+    print('=== prompt correction files ===')
+    for s in pcorrectionin: print(s['sample_name'])
 
     ### Fill histograms
-    mchistlist,datahistlist,npdatahistlist = initializehistograms(mcin,datain,npdatain,args['variables'])
+    mchistlist = initializehistograms(mcin,'mc',args['variables'])
+    datahistlist = initializehistograms(datain,'data',args['variables'])
+    npfromdatahistlist = initializehistograms(npfromdatain,'npdata',args['variables'])
+    pcorrectionhistlist = initializehistograms(pcorrectionin,'pcorrection',args['variables'])
     print('adding simulation files...')
     for i in range(len(mcin)):
         print('file '+str(i+1)+' of '+str(len(mcin)))
@@ -295,27 +309,38 @@ if __name__ == '__main__':
 	evttags = addinputfile(datahistlist,datain,args['treename'],i,args['variables'],
 				False,True,args['normalization'],args['lumi'],evttags,
 				args['doextraselection'])
-    if npfromdata:
+    if args['npfromdata']:
 	evttags = []
 	print('adding non-prompt data files...')
-	# note: 
-	for i in range(len(npdatain)):
-	    print('file '+str(i+1)+' of '+str(len(npdatain)))
-	    evttags = addinputfile(npdatahistlist,npdatain,args['treename'],i,args['variables'],
+	for i in range(len(npfromdatain)):
+	    print('file '+str(i+1)+' of '+str(len(npfromdatain)))
+	    evttags = addinputfile(npfromdatahistlist,npfromdatain,args['treename'],i,args['variables'],
 				    True,True,args['normalization'],args['lumi'],evttags,
+				    args['doextraselection'])
+	print('adding prompt correction files...')
+	for i in range(len(pcorrectionin)):
+	    print('file '+str(i+1)+' of '+str(len(pcorrectionin)))
+	    addinputfile(pcorrectionhistlist,pcorrectionin,args['treename'],i,args['variables'],
+				    True,False,args['normalization'],args['lumi'],evttags,
 				    args['doextraselection'])
 
     ### Merge histograms with same process name
     mergemchistograms(mchistlist)
     mergedatahistograms(datahistlist,'data')
-    mergedatahistograms(npdatahistlist,'nonprompt')
-    # manually put data to zero for now
-    #for hist in datahistlist:
-    #	hist.Reset()
+    if args['npfromdata']:
+	mergedatahistograms(npfromdatahistlist,'nonprompt')
+	mergedatahistograms(pcorrectionhistlist,'pcorrection')
+	for k in range(len(npfromdatahistlist)):
+	    npfromdatahistlist[k].Add(pcorrectionhistlist[k])
+    # put data to 0 if not using it
+    if not args['usedata']:
+	print('resetting data to 0...')
+	for hist in datahistlist:
+	    hist.Reset()
 
     ### Normalize if needed
     if(args['normalization']==2):
-        normalizemctodata(mchistlist,datahistlist,variables)
+        normalizemctodata(mchistlist,datahistlist,args['variables'])
 
     ### Write histograms to file
-    savehistograms(mchistlist,datahistlist,npdatahistlist,histfile,args['normalization'],args['lumi']) 
+    savehistograms(mchistlist,datahistlist,npfromdatahistlist,histfile,args['normalization'],args['lumi']) 

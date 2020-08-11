@@ -29,7 +29,7 @@ version_name = 'Run2017E_test'
 sample_list = '../samplelists/samplelist_all.txt'
 output_directory_base = '/storage_mnt/storage/user/llambrec/ewkino/test/testData/skimmed'
 # fixed argument for now, but should be easy to adapt to allow different skimming conditions
-skim_condition = 'trilepton'
+skim_condition = 'singlelepton'
 
 # if too few command line args, check with the user if default arguments can be used
 if len(sys.argv) < 4:
@@ -96,21 +96,29 @@ for sample in samples_dict:
 if(len(samples_to_use)==1 and samples_to_use[0]=='all'):
 	useall = True
 
+print('extracted the following sample names from the sample list:')
+print(samples_to_use)
+
 # make a list of samples (the main directories) 
 # and an equally long list of subdirectories with the latest version of the ntuples 
 # (one for each main directory)
 sample_directories = []
 sample_sub_directories = []
+# first case where version name is given as fixed argument for all samples
 if not version_name=='':
     for sample_directory, subdirectory in listSampleDirectories( input_directory, version_name ):
         # extra selection using samplelist:
         sample_name = sample_directory.rstrip( os.path.sep ).split( os.path.sep )[-1]
         if(useall or sample_name in samples_to_use):
+	    print(sample_directory)
             sample_directories.append( sample_directory )
             sample_sub_directories.append( subdirectory )
+# now case where version name is extracted from the sample list
 else:
     for sample in samples_dict:
         if os.path.exists(input_directory+'/'+sample['sample_name']+'/'+sample['version_name']):
+	    # TEMPORARY SELECTION FOR MC CLOSURE TEST
+	    #if not ('DYJets' in sample['sample_name'] or 'TTJets' in sample['sample_name'] or 'TTTo' in sample['sample_name']): continue
             sample_directories.append(input_directory+'/'+sample['sample_name'])
             sample_sub_directories.append(sample['version_name'])
         else:
@@ -120,8 +128,8 @@ else:
             if not go=='y': sys.exit()
 
 print('found '+str(len(sample_directories))+' valid sample directories.')
-print(sample_directories)
-print(sample_sub_directories)
+#print(sample_directories)
+#print(sample_sub_directories)
 #sys.exit()
 
 # make output directory for each sample

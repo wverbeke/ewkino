@@ -14,9 +14,9 @@
 
 std::vector< HistInfo > makeDistributionInfo(){
     std::vector< HistInfo > histInfoVec = {
-	HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 25, 200 ),
-	HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 15, 150 ),
-	HistInfo( "leptonPtTrailing", "P_{T}^{trailing lepton} (GeV)", 10, 10, 150 ),
+	HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 10, 200 ),
+	HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 10, 150 ),
+	HistInfo( "leptonPtTrailing", "P_{T}^{trailing lepton} (GeV)", 10, 10, 100 ),
 
 	HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
 	HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
@@ -44,20 +44,21 @@ std::shared_ptr< TH2D > readFRMap( const std::string& flavor, const std::string&
     file_name.append("_"+flavor+"_"+year);
     file_name.append(use_mT ? "_mT" : "");
     file_name.append(".root");
-    std::cout<<"file name: "<<file_name<<std::endl;
+    std::cout<<"fake rate map file name: "<<file_name<<std::endl;
     TFile* frFile = TFile::Open( file_name.c_str() );
     std::shared_ptr< TH2D > frMap( dynamic_cast< TH2D* >( frFile->Get( ( 
 			    "fakeRate_" + flavor + "_" + year ).c_str() ) ) );
     frMap->SetDirectory( gROOT );
     frFile->Close();
 
-    std::cout<<"values:"<<std::endl;
+    // printout for testing
+    /*std::cout<<"values:"<<std::endl;
     for(unsigned xbin=1; xbin<=5; ++xbin){
         for(unsigned ybin=1; ybin<=3; ++ybin){
             std::cout<<"bin: "<<xbin<<" "<<ybin<<std::endl;
             std::cout<<frMap->GetBinContent(xbin,ybin)<<std::endl;
         }
-    }
+    }*/
 
     return frMap;
 }
@@ -101,8 +102,6 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
         if( leptonPtr->isFO() && !leptonPtr->isTight() ){
 
             double croppedPt = std::min( leptonPtr->pt(), 99. );
-	    // try the following:
-	    //double croppedPt = std::min( leptonPtr->pt(), 40.); 
             double croppedAbsEta = std::min( leptonPtr->absEta(), (leptonPtr->isMuon() ? 2.4 : 2.5) );
 
             double fr;
@@ -139,10 +138,8 @@ int main( int argc, char* argv[] ){
     if(argvStr.size()==6) flavor = argvStr[5];
     else flavor = "";
     
-    //const std::string sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino";
     //const std::string sampleDirectory = "~/Work/ntuples_ewkino_new/";
-    const std::string sampleDirectory = "/user/llambrec/Files/fakerate/trileptonskim";
-    
+    const std::string sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/trileptonskim_new/fakerate/"; 
     std::string sampleListFile = "../../fakeRate/sampleLists/samples_closureTest_"+process+"_"+year+".txt";
 
     setTDRStyle();
@@ -184,8 +181,6 @@ int main( int argc, char* argv[] ){
 	std::cout<<"start processing sample n. "<<i+1<<" of "<<numberOfSamples<<std::endl;
         treeReader.initSample();
 
-	//if(i==0 or i==1) continue;
-    
 	long unsigned numberOfEntries = treeReader.numberOfEntries();
 	//long unsigned numberOfEntries = 1000; // temp for testing
         std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
@@ -223,7 +218,6 @@ int main( int argc, char* argv[] ){
             };
                 
             //event is 'observed' if all leptons are tight 
-            //bool isObserved = ( event.numberOfTightLeptons() == event.numberOfLightLeptons() );
             bool isObserved = true;
 	    double weight = event.scaledWeight();
             for( const auto& leptonPtr : lightLeptons ){

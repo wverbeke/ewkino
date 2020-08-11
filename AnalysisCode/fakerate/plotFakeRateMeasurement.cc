@@ -30,13 +30,13 @@ int main( int argc, char* argv[] ){
     setTDRStyle();
 
     std::string instanceName = flavor + "_" + year + "_" + ( use_mT ? "mT" : "met" );
-    std::string file_name = "fakeRateMeasurement_" + instanceName + "_histograms.root";
+    std::string file_name = "fakeRateMeasurement_data_" + instanceName + "_histograms.root";
     TFile* measurement_filePtr = TFile::Open( file_name.c_str() );
     std::shared_ptr< TH2D > frMap = fakeRate::produceFakeRateMap_cut( measurement_filePtr, maxFitValue );
     measurement_filePtr->Close();
 
     systemTools::makeDirectory("fakeRateMaps");
-    plot2DHistogram( frMap.get(), ( "fakeRateMaps/fakeRateMap_" + instanceName + ".pdf").c_str() );
+    plot2DHistogram( frMap.get(), ( "fakeRateMaps/fakeRateMap_data_" + instanceName + ".pdf").c_str() );
     TFile* writeFile = TFile::Open( ( "fakeRateMaps/fakeRateMap_data_" + instanceName + ".root" ).c_str(), 
 					"RECREATE" );
     frMap->Write( ("fakeRate_" + flavor + "_" + year ).c_str() );

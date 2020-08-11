@@ -13,6 +13,13 @@ class EwkinoReweighterFactory : public ReweighterFactory {
         virtual CombinedReweighter buildReweighter( const std::string&, const std::string&, const std::vector< Sample >& ) const override;
 };
 
+class EmptyReweighterFactory : public ReweighterFactory {
+    // empty reweighter for testing purposes
+
+    public:
+	virtual CombinedReweighter buildReweighter( const std::string&, const std::string&, const std::vector< Sample>& ) const override;
+};
+
 class tZqReweighterFactory : public ReweighterFactory {
     // user specified Reweighter class for tZq analysis
 

@@ -17,33 +17,43 @@ class LeptonSelector {
 
     protected:
 
+	bool isFOtZq() const;
+        bool isTighttZq() const;
 	bool isFOttH() const;
 	bool isTightttH() const;
-	bool isFOtZq() const;
-	bool isTighttZq() const;
+	bool isFOOldtZq() const;
+	bool isTightOldtZq() const;
 
         virtual bool isLooseBase() const = 0;
         virtual bool isLoose2016() const = 0;
         virtual bool isLoose2017() const = 0;
         virtual bool isLoose2018() const = 0;
 
-        virtual bool isFOBase() const = 0;
-        virtual bool isFO2016() const = 0;
-        virtual bool isFO2017() const = 0;
-        virtual bool isFO2018() const = 0;
-        virtual bool isFOBasetZq() const = 0;
+	virtual bool isFOBasetZq() const = 0;
         virtual bool isFO2016tZq() const = 0;
         virtual bool isFO2017tZq() const = 0;
-	virtual bool isFO2018tZq() const = 0;
+        virtual bool isFO2018tZq() const = 0;
+        virtual bool isFOBasettH() const = 0;
+        virtual bool isFO2016ttH() const = 0;
+        virtual bool isFO2017ttH() const = 0;
+        virtual bool isFO2018ttH() const = 0;
+        virtual bool isFOBaseOldtZq() const = 0;
+        virtual bool isFO2016OldtZq() const = 0;
+        virtual bool isFO2017OldtZq() const = 0;
+	virtual bool isFO2018OldtZq() const = 0;
 
-        virtual bool isTightBase() const = 0;
-        virtual bool isTight2016() const = 0;
-        virtual bool isTight2017() const = 0;
-        virtual bool isTight2018() const = 0;
-        virtual bool isTightBasetZq() const = 0;
+	virtual bool isTightBasetZq() const = 0;
         virtual bool isTight2016tZq() const = 0;
         virtual bool isTight2017tZq() const = 0;
-	virtual bool isTight2018tZq() const = 0;
+        virtual bool isTight2018tZq() const = 0;
+        virtual bool isTightBasettH() const = 0;
+        virtual bool isTight2016ttH() const = 0;
+        virtual bool isTight2017ttH() const = 0;
+        virtual bool isTight2018ttH() const = 0;
+        virtual bool isTightBaseOldtZq() const = 0;
+        virtual bool isTight2016OldtZq() const = 0;
+        virtual bool isTight2017OldtZq() const = 0;
+	virtual bool isTight2018OldtZq() const = 0;
 
         virtual bool is2016() const = 0;
         virtual bool is2017() const = 0;

@@ -9,13 +9,18 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
 
 ### Define regions to make plots for
-regions = ['wzcontrolregion','zzcontrolregion','zgcontrolregion']
-#regions = ['zgcontrolregion']
-years = ['2016','2017','2018']
-ID = 'tth' # does NOT set ID correctly, simply for folder management
+regions = []
+for r in ['signalregion']: regions.append(r)
+for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regions.append(r)
+#for r in ['signalsideband_noz','signalsideband_noossf']: regions.append(r)
+years = ['2016']
+ID = 'oldtzq' # does NOT set ID correctly, simply for folder management
+usedata = True
+donpfromsim = True
+donpfromdata = True
 
 ### Global settings
-outdir = 'histograms_0602_reweighting'
+outdir = 'histograms_0731_oldtzqid'
 outdir = os.path.abspath(outdir)
 variables = [
     {'name':'_abs_eta_recoil','bins':list(np.linspace(0,5,num=21)),
@@ -48,8 +53,8 @@ variables = [
      'title':r'M_{3l}','unit':'GeV'},
     {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21)),
      'title':r'#||{#eta}_{max}','unit':''},
-    #{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21)),
-    # 'title':r'event BDT score','unit':''},
+    {'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21)),
+     'title':r'event BDT score','unit':''},
     {'name':'_nMuons','bins':list(np.linspace(-0.5,3.5,num=5)),
      'title':r'number of muons','unit':''},
     {'name':'_nElectrons','bins':list(np.linspace(-0.5,3.5,num=5)),
@@ -62,7 +67,7 @@ doextraselection = False
 exists = False
 for region in regions:
     for year in years:
-	outpath = os.path.join(outdir,region,year)
+	outpath = os.path.join(outdir,year,region)
 	if os.path.exists(outpath):
 	    exists = True
 # ask for confirmation to overwrite
@@ -74,7 +79,7 @@ if exists:
 # overwrite
 for region in regions:
     for year in years:
-	outpath = os.path.join(outdir,region,year)
+	outpath = os.path.join(outdir,year,region)
 	if os.path.exists(outpath): os.system('rm -r '+outpath)
 	os.makedirs(outpath)
 
@@ -86,53 +91,51 @@ elif ID=='oldtzq': interpendix='oldtzqid'
 else:
     print('### ERROR ###: ID "'+ID+'"not recognized.')
     sys.exit()
+npmethods = []
+if donpfromsim: npmethods.append('npfromsim')
+if donpfromdata: npmethods.append('npfromdata')
 for region in regions:
     for year in years:
-	outpath = os.path.join(outdir,region,year)
-	mcrootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'MC_flat_reweighting')
-	mcsamplelist = '../samplelists'
-	mcsamplelist += '/samplelist_tzq_'+year+'_MC.txt'
-	datarootdir = os.path.join('/user/llambrec/Files',interpendix,region,year+'data_flat_reweighting')
-	datasamplelist = '../samplelists'
-	datasamplelist += '/samplelist_tzq_'+year+'_data.txt'
-	#datarootdir = mcrootdir
-	#datasamplelist = mcsamplelist
-	# check if input folder exists
-	if(not (os.path.exists(mcrootdir) and os.path.exists(datarootdir))):
-	    print('### ERROR ###: input folder for region/year combination '+region+'/'+year+' not found.')
-	    print('               Skipping it...')
-	    continue
-	# special case for signal region
-	if region == 'signalregion':
-	    subtrees = ['treeCat1','treeCat2','treeCat3']
-	    subfolders = ['cat1','cat2','cat3']
-	else:
-	    subtrees = ['blackJackAndHookersTree']
-	    subfolders = ['']
-	# make plot commands and submit script
-	for tree,subfolder in zip(subtrees,subfolders):
-	    suboutpath = os.path.join(outpath,subfolder)
-	    histfile = os.path.join(suboutpath,'histograms.root')
-	    normalization = 1
-	    lumi = 35900
-	    if year=='2017': lumi = 41500
-	    if year=='2018': lumi = 59700 # (?)
-	    script_name = 'plotting.sh'
-	    command1 = 'python histfiller.py'
-	    command2 = 'python histplotter.py'
-	    with open(script_name,'w') as script:
-		initializeJobScript( script )
-		script.write('cd {}\n\n'.format(currentdir))
-                command1 += ' {} {}'.format(mcrootdir,mcsamplelist)
-		command1 += ' {} {}'.format(datarootdir,datasamplelist)
-		command1 += ' {} {}'.format(histfile,"'"+json.dumps(variables,separators=(',',':'))+"'")
-		command1 += ' {} {} {}'.format(tree,normalization,lumi)
-		command1 += ' {}\n\n'.format(doextraselection)
-                script.write(command1) 
-		command2 += ' {} {}\n'.format(histfile,"'"+json.dumps(variables,separators=(',',':'))+"'")
-		script.write(command2)
-	    # for testing: run sequentially on m-machine
-	    #os.system(command1)
-	    #sys.exit()
-	    #os.system(command2)
-	    submitQsubJob(script_name)
+	for npmethod in npmethods:
+	    outpath = os.path.join(outdir,year,region)
+	    # set input path, see histfiller.py for example
+	    mcrootdir = os.path.join('/user/llambrec/Files',interpendix,year+'MC',region)
+	    mcsamplelist = '../samplelists'
+	    mcsamplelist += '/samplelist_tzq_'+year+'_MC.txt'
+	    datarootdir = os.path.join('/user/llambrec/Files',interpendix,year+'data',region)
+	    datasamplelist = '../samplelists'
+	    datasamplelist += '/samplelist_tzq_'+year+'_data.txt'
+	    # special case for signal region
+	    if region == 'signalregion':
+		subtrees = ['treeCat1','treeCat2','treeCat3']
+		subfolders = ['cat1','cat2','cat3']
+	    else:
+		subtrees = ['blackJackAndHookersTree']
+		subfolders = ['']
+	    # make plot commands and submit script
+	    for tree,subfolder in zip(subtrees,subfolders):
+		suboutpath = os.path.join(outpath,subfolder,npmethod)
+		histfile = os.path.join(suboutpath,'histograms.root')
+		normalization = 1
+		lumi = 35900
+		if year=='2017': lumi = 41500
+		if year=='2018': lumi = 59700
+		script_name = 'plotting.sh'
+		command1 = 'python histfiller.py'
+		command2 = 'python histplotter.py'
+		with open(script_name,'w') as script:
+		    initializeJobScript( script )
+		    script.write('cd {}\n\n'.format(currentdir))
+		    command1 += ' {} {}'.format(mcrootdir,mcsamplelist)
+		    command1 += ' {} {}'.format(datarootdir,datasamplelist)
+		    command1 += ' {} {}'.format(histfile,"'"+json.dumps(variables,separators=(',',':'))+"'")
+		    command1 += ' {} {} {}'.format(tree,normalization,lumi)
+		    command1 += ' {} {} {}\n\n'.format(doextraselection,usedata,npmethod=='npfromdata')
+		    script.write(command1) 
+		    command2 += ' {} {}\n'.format(histfile,"'"+json.dumps(variables,separators=(',',':'))+"'")
+		    script.write(command2)
+		# for testing: run sequentially on m-machine
+		#os.system(command1)
+		#sys.exit()
+		#os.system(command2)
+		submitQsubJob(script_name)

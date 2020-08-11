@@ -16,11 +16,8 @@ Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , 
     _susyMassInfoPtr( treeReader.isSusy() ? new SusyMassInfo( treeReader ) : nullptr ),
     _numberOfVertices( treeReader._nVertex ),
 
-    //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes
-    //_weight( treeReader._scaledWeight ),
-    // WARNING: to allow more flexibility I will still use the normal _weight, but remember to scale when needed!
     _weight(treeReader._weight),
-    // now include scaledWeight as well for when needed (e.g. fake rate measurement)
+    // include scaledWeight as well for when needed (e.g. fake rate measurement)
     _scaledWeight(treeReader._scaledWeight),
     _samplePtr( treeReader.currentSamplePtr() )
     {}

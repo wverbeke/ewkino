@@ -10,7 +10,7 @@ import json
 import os
 import plottools as tools
 
-def loadhistograms(histfile):
+def loadhistograms(histfile,mustcontain=[],mustnotcontain=[]):
     # load histograms from a root file.
     # 'histfile' is a string containing the path to the input root file.
     # the output is a list of histograms
@@ -19,13 +19,23 @@ def loadhistograms(histfile):
     histlist = []
     keylist = f.GetListOfKeys()
     for key in keylist:
-	hist = f.Get(key.GetName())
-	hist.SetDirectory(0)
-	try:
-	    nentries = hist.GetEntries() # maybe replace by more histogram-specific function
-	except:
-	    print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
-	histlist.append(hist)
+        hist = f.Get(key.GetName())
+        hist.SetDirectory(0)
+        # check if histogram is readable
+        try:
+            nentries = hist.GetEntries() # maybe replace by more histogram-specific function
+        except:
+            print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
+        # check if histogram needs to be included
+        keep = False
+        for el in mustcontain:
+            if el in hist.GetName(): keep = True; break;
+	if not keep: continue
+        for el in mustnotcontain:
+            if el in hist.GetName(): keep = False; break;
+        if not keep: continue
+        # add hist to list
+        histlist.append(hist)
     return histlist
 
 def findbytitle(histlist,title):
@@ -35,10 +45,20 @@ def findbytitle(histlist,title):
         if hist.GetTitle()==title: index = i
     return index
 
-def sethiststyle(hist):
+def findbyname(histlist,tag):
+    indices = []
+    for i,hist in enumerate(histlist):
+	if tag in hist.GetName():
+	    indices.append(i)
+    if len(indices)>1:
+	print('### ERROR ###: multiple histograms corresponding to "'+tag+'" in name')
+	return None
+    return indices[0]
+
+def sethiststyle(hist,variable):
     # set color and line properties of a histogram
-    systematic = hist.GetTitle()
-    hist.SetLineWidth(2)
+    systematic = hist.GetName().split(variable)[-1].strip('_')
+    hist.SetLineWidth(3)
     hist.SetLineColor(getcolorsyst(systematic))
     if('Up' in systematic):
 	hist.SetLineStyle(2)
@@ -52,7 +72,19 @@ def getcolorsyst(systematic):
     if(systematic=='JECUp' or systematic=='JECDown'): return ROOT.kRed
     if(systematic=='JERUp' or systematic=='JERDown'): return ROOT.kRed+2
     if(systematic=='UnclUp' or systematic=='UnclDown'): return ROOT.kOrange-3
-    if(systematic=='pileupUp' or systematic=='pileupDown'): return ROOT.kBlue
+    if(systematic=='pileupUp' or systematic=='pileupDown'): return ROOT.kCyan
+    if(systematic=='muonIDUp' or systematic=='muonIDDown'): return ROOT.kBlue
+    if(systematic=='electronIDUp' or systematic=='electronIDDown'): return ROOT.kBlue-7
+    if(systematic=='bTag_heavyUp' or systematic=='bTag_heavyDown'): return ROOT.kGreen+1
+    if(systematic=='bTag_lightUp' or systematic=='bTag_lightDown'): return ROOT.kGreen+3
+    if(systematic=='prefireUp' or systematic=='prefireDown'): return ROOT.kGreen-5
+    if(systematic=='fScaleUp' or systematic=='fScaleDown'): return ROOT.kMagenta+1
+    if(systematic=='rScaleUp' or systematic=='rScaleDown'): return ROOT.kMagenta+3
+    if(systematic=='scalesUp' or systematic=='scalesDown'): return ROOT.kViolet
+    if(systematic=='isrScaleUp' or systematic=='isrScaleDown'): return ROOT.kYellow+1
+    if(systematic=='fsrScaleUp' or systematic=='fsrScaleDown'): return ROOT.kYellow-6
+    if('pdfvar' in systematic): return ROOT.kGray
+    if(systematic=='pdfEnvUp' or systematic=='pdfEnvDown'): return ROOT.kViolet+2
     print('### WARNING ###: tag not recognized (in setcolorTZQ), returning default color')
     return ROOT.kBlack
 
@@ -65,7 +97,7 @@ def clip(hist):
 
 def getminmax(histlist):
     # get suitable minimum and maximum values for plotting a hist collection (not stacked)
-    totmax = 1.
+    totmax = 0.
     totmin = 1.
     for hist in histlist:
 	for i in range(1,hist.GetNbinsX()+1):
@@ -86,7 +118,7 @@ def histlisttotxt(histlist,txtfile):
 	    toprint += '\n'
 	    txtf.write(toprint)
 
-def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True,errorbars=False,
+def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,errorbars=False,
 		    outtxtfile=""):
     
     tools.setTDRstyle()
@@ -101,7 +133,7 @@ def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True,errorbars
     labelfont = 5; labelsize = 22
     axtitlefont = 5; axtitlesize = 22
     #infofont = 6; infosize = 40
-    #legendfont = 4; legendsize = 30
+    legendfont = 4; legendsize = 12
     # title offset
     ytitleoffset = 2.
     xtitleoffset = 1.
@@ -111,10 +143,10 @@ def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True,errorbars
     leftmargin = 0.2
     rightmargin = 0.05
     # legend box
-    plegendbox = [leftmargin+0.03,1-ptopmargin-0.15,1-rightmargin-0.03,1-ptopmargin-0.03]
+    plegendbox = [leftmargin+0.03,1-ptopmargin-0.25,1-rightmargin-0.03,1-ptopmargin-0.03]
 
     ### get nominal histogram and remove from the list
-    nominalindex = findbytitle(mchistlist,"nominal")
+    nominalindex = findbyname(mchistlist,"nominal")
     if(nominalindex<0): 
 	print('### ERROR ###: nominal histogram not found.')
 	return
@@ -124,10 +156,10 @@ def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True,errorbars
     mchistlist = [mchistlist[i] for i in indices]
 
     ### operations on mc histograms
-    sethiststyle(nominalhist)
+    sethiststyle(nominalhist,variable)
     clip(nominalhist)
     for hist in mchistlist:
-        sethiststyle(hist)
+        sethiststyle(hist,variable)
 	clip(hist)
     if relative: 
 	for hist in mchistlist+[nominalhist]:
@@ -143,8 +175,12 @@ def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True,errorbars
     legend = ROOT.TLegend(plegendbox[0],plegendbox[1],plegendbox[2],plegendbox[3])
     legend.SetNColumns(4)
     legend.SetFillStyle(0)
+    legend.SetTextFont(legendfont)
+    legend.SetTextSize(legendsize)
     for hist in mchistlist:
-        legend.AddEntry(hist,hist.GetTitle(),"l")
+	label = hist.GetName().split(variable)[-1].strip('_')
+	if label[-2:]=='Up': label = '~Up'
+        legend.AddEntry(hist,label,"l")
     legend.AddEntry(nominalhist,nominalhist.GetTitle(),"l")
 
     ### make canvas and pads
@@ -160,6 +196,7 @@ def plotsystematics(mchistlist,yaxtitle,xaxtitle,outfile,relative=True,errorbars
     ### make upper part of the plot
     pad1.cd()
     (rangemin,rangemax) = getminmax(mchistlist)
+    #(rangemin,rangemax) = (0.74,1.31) # temp override
     if not relative: rangemin = 0.
     nominalhist.SetMinimum(rangemin)
     nominalhist.SetMaximum(rangemax)
@@ -209,26 +246,33 @@ if __name__=="__main__":
     
     ### Configure input parameters (hard-coded)
     # file to read the histograms from
-    histfile = os.path.abspath('../systematics/test/tZq_ll_4f_13TeV-amcatnlo-pythia8_Summer16.root')
+    histdir = os.path.abspath('../systematics/output/2016MC/wzcontrolregion_3prompt')
+    variable = '_dPhill_max'
 
     ### Overwrite using cmd args
     if(len(sys.argv)==2):
-	histfile = sys.argv[1]
+	histdir = os.path.abspath(sys.argv[1])
     elif(not len(sys.argv)==1):
 	print('### ERROR ###: wrong number of command line args')
 	sys.exit()
 
-    histlist = loadhistograms(histfile)
-    histdir = os.path.abspath('')
+    figdir = 'systplotter_output'
+    if os.path.exists(figdir):
+        os.system('rm -r '+figdir)
+    os.makedirs(figdir)
+    filelist = [os.path.join(histdir,f) for f in os.listdir(histdir) if f[-5:]=='.root']
 
-    ### Set plot properties
-    binwidth = histlist[0].GetBinWidth(1)
-    if binwidth.is_integer():
-        yaxtitle = 'events / '+str(int(binwidth)) # maybe find a way to get variable unit here
-    else:
-        yaxtitle = 'events / {0:.2f}'.format(binwidth) # maybe find a way to get variable unit here
-    xaxtitle = histlist[0].GetXaxis().GetTitle()
-    figname = os.path.join(histdir,'test')
-    plotsystematics(histlist,yaxtitle,xaxtitle,figname+'_abs',relative=False,errorbars=True)
-    plotsystematics(histlist,yaxtitle,xaxtitle,figname+'_rel',relative=True,errorbars=False,
-		    outtxtfile=figname+'_tab')
+    for histfile in filelist:
+	histlist = loadhistograms(histfile,mustcontain=[variable])
+	figname = os.path.join(figdir,histfile.split('/')[-1].rstrip('.root'))
+
+	### Set plot properties
+	binwidth = histlist[0].GetBinWidth(1)
+	if binwidth.is_integer():
+	    yaxtitle = 'events / '+str(int(binwidth)) # maybe find a way to get variable unit here
+	else:
+	    yaxtitle = 'events / {0:.2f}'.format(binwidth) # maybe find a way to get variable unit here
+	xaxtitle = histlist[0].GetXaxis().GetTitle()
+	plotsystematics(histlist,variable,yaxtitle,xaxtitle,figname+'_abs',relative=False,errorbars=True)
+	plotsystematics(histlist,variable,yaxtitle,xaxtitle,figname+'_rel',relative=True,errorbars=False,
+			outtxtfile=figname+'_tab')

@@ -254,7 +254,7 @@ def plotefficiencies(datahistlist,mchist,mcabs,mcsysthist,yaxtitle,xaxtitle,lumi
     xax.SetTitleOffset(xtitleoffset)
     # Y-axis layout
     yax = scerror.GetYaxis()
-    yax.SetRangeUser(0.,1.999);
+    yax.SetRangeUser(0.9,1.0999);
     yax.SetTitle("obs./pred.");
     yax.SetMaxDigits(3)
     yax.SetNdivisions(4,5,0)
@@ -284,7 +284,7 @@ def plotefficiencies(datahistlist,mchist,mcabs,mcsysthist,yaxtitle,xaxtitle,lumi
 if __name__=="__main__":
     
     # load histograms
-    histfile = os.path.abspath('../triggerefficiency/test_dilepton/combined.root')
+    histfile = os.path.abspath('../triggerefficiency/dilepton_tthid_topmva_reduced/combined.root')
     lumi = 35900.
     histdir = histfile[:histfile.rfind('/')]
     mchistlist = loadhistograms(histfile,mustcontain=['mc','leadleppt_eff'])

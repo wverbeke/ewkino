@@ -28,13 +28,13 @@ bool JetSelector::isGood() const{
 }
 
 bool JetSelector::isGoodttH() const{
-    if( !isGoodBase() ) return false;
+    if( !isGoodBasettH() ) return false;
     if( jetPtr->is2016() ){
-        return isGood2016();
+        return isGood2016ttH();
     } else if( jetPtr->is2017() ){
-        return isGood2017();
+        return isGood2017ttH();
     } else {
-        return isGood2018();
+        return isGood2018ttH();
     }
 }
 
@@ -51,7 +51,7 @@ Jet ID selection for ttH analysis
 --------------------------------------------------------------
 */
 
-bool JetSelector::isGoodBase() const{
+bool JetSelector::isGoodBasettH() const{
     if( !jetPtr->isTight() ) return false;
     if( jetPtr->pt() < 25 ) return false;
     if( fabs( jetPtr->eta() ) > 2.4 ) return false;
@@ -59,17 +59,17 @@ bool JetSelector::isGoodBase() const{
 }
 
 
-bool JetSelector::isGood2016() const{
+bool JetSelector::isGood2016ttH() const{
     return true;
 }
 
 
-bool JetSelector::isGood2017() const{
+bool JetSelector::isGood2017ttH() const{
     return true;
 }
 
 
-bool JetSelector::isGood2018() const{
+bool JetSelector::isGood2018ttH() const{
     return true;
 }
 
@@ -87,17 +87,17 @@ bool JetSelector::isGoodBasetZq() const{
     return true;
 }
 
-bool JetSelector::isGood2016tZq() const{ return isGood2016(); }
+bool JetSelector::isGood2016tZq() const{ return true; }
 
 bool JetSelector::isGood2017tZq() const{ 
     // additional pt cut for jets with 2.7 < abs(eta) < 3.0
-    if( fabs( jetPtr->eta() ) > 2.7
-        and fabs( jetPtr->eta()) < 3.0
-        and jetPtr->pt() < 60 ) return false;
+    //if( fabs( jetPtr->eta() ) > 2.7
+    //    and fabs( jetPtr->eta()) < 3.0
+    //    and jetPtr->pt() < 60 ) return false;
     return true;
 }
 
-bool JetSelector::isGood2018tZq() const{ return isGood2018(); }
+bool JetSelector::isGood2018tZq() const{ return true; }
 
 /*
 ---------------------------------------------------------------

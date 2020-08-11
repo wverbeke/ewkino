@@ -19,7 +19,7 @@ def extendsamplelist(samplelist_name,directory):
 	for findir in available:
 	    if fname in findir:
 		indir = True
-		f['file'] = os.path.join(directory,findir)
+		f['file'] = findir
 		inputfilesnew.append(f)
 		available.remove(findir)
 		break

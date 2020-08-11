@@ -5,19 +5,30 @@
 import os
 import sys
 
-regions = (['signalregion','zgcontrolregion','wzcontrolregion','zzcontrolregion',
-	    'signalsideband_noossf','signalsideband_noz'])
-years = ['2016','2017','2018']
+regions = []
+regions.append('signalregion')
+for r in ['zgcontrolregion','wzcontrolregion','zzcontrolregion']: regions.append(r)
+#for r in ['signalsideband_noossf','signalsideband_noz']: regions.append(r)
+
+years = ['2016']
 events = ['MC','data']
 
-for region in regions:
-    for year in years:
-        for eventtype in events:
-            #inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/'+year+eventtype
-            inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'+year+eventtype
-	    outputfolder = '~/Files/tthid/'
-	    outputfolder += region+'/'+year+eventtype
-            cmd = 'python eventselector.py '+inputfolder+' '+outputfolder+' '+region
-            print('executing '+cmd)
-            os.system(cmd)
+selection_types = []
+selection_types.append('3tight')
+selection_types.append('3prompt')
+selection_types.append('fakerate')
+#selection_types.append('2tight')
 
+for year in years:
+    for eventtype in events:
+	for region in regions:
+	    for stype in selection_types:
+		#inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/'+year+eventtype
+		inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'+year+eventtype
+		samplelist = '../samplelists/'
+		samplelist += 'samplelist_tzq_'+year+'_'+eventtype+'.txt'
+		outputfolder = '~/Files/oldtzqid/'+year+eventtype+'/'+region+'_'+stype
+		cmd = 'python eventselector.py '+inputfolder+' '+samplelist+' '+outputfolder
+		cmd += ' '+region+' '+stype
+		print('executing '+cmd)
+		os.system(cmd)

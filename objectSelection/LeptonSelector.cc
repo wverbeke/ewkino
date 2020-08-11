@@ -2,11 +2,11 @@
 
 // define here what lepton ID to use throughout the whole framework!
 std::string leptonID(){
-    return "tth"; // choose from "tzq" or "tth"
+    return "tzq"; // choose from "tzq", "tth" or "oldtzq"
 }
 
 bool LeptonSelector::isLoose() const{
-    // common to tzq and tth ID!
+    // common to all ID's!
     if( !isLooseBase() ) return false;
 
     if( is2016() ){
@@ -19,41 +19,19 @@ bool LeptonSelector::isLoose() const{
 }
 
 bool LeptonSelector::isFO() const{
-    bool isFO = (leptonID()=="tth") ? isFOttH() :
-                    (leptonID()=="tzq") ? isFOtZq() :
+    bool isFO = (leptonID()=="tzq") ? isFOtZq() :
+		    (leptonID()=="tth") ? isFOttH() :
+                    (leptonID()=="oldtzq") ? isFOOldtZq() :
                     false;
     return isFO;
 }
 
 bool LeptonSelector::isTight() const{
-    bool isTight = (leptonID()=="tth") ? isTightttH() :
-		    (leptonID()=="tzq") ? isTighttZq() :
+    bool isTight = (leptonID()=="tzq") ? isTighttZq() :
+		    (leptonID()=="tth") ? isTightttH() :
+		    (leptonID()=="oldtzq") ? isTightOldtZq() :
 		    false;
     return isTight;
-}
-
-bool LeptonSelector::isFOttH() const{
-    if( !isFOBase() ) return false;
-
-    if( is2016() ){
-        return isFO2016();
-    } else if( is2017() ){
-        return isFO2017();
-    } else {
-        return isFO2018();
-    }
-}
-
-bool LeptonSelector::isTightttH() const{
-    if( !isTightBase() ) return false;
-    
-    if( is2016() ){
-        return isTight2016();
-    } else if( is2017() ){
-        return isTight2017();
-    } else {
-        return isTight2018();
-    }
 }
 
 bool LeptonSelector::isFOtZq() const{
@@ -72,4 +50,46 @@ bool LeptonSelector::isTighttZq() const{
     } else if( is2017() ){
         return isTight2017tZq();
     } else return isTight2018tZq();
+}
+
+bool LeptonSelector::isFOttH() const{
+    if( !isFOBasettH() ) return false;
+
+    if( is2016() ){
+        return isFO2016ttH();
+    } else if( is2017() ){
+        return isFO2017ttH();
+    } else {
+        return isFO2018ttH();
+    }
+}
+
+bool LeptonSelector::isTightttH() const{
+    if( !isTightBasettH() ) return false;
+    
+    if( is2016() ){
+        return isTight2016ttH();
+    } else if( is2017() ){
+        return isTight2017ttH();
+    } else {
+        return isTight2018ttH();
+    }
+}
+
+bool LeptonSelector::isFOOldtZq() const{
+    if(!isFOBaseOldtZq()) return false;
+    if( is2016() ){
+        return isFO2016OldtZq();
+    } else if( is2017() ){
+        return isFO2017OldtZq();
+    } else return isFO2018OldtZq();
+}
+
+bool LeptonSelector::isTightOldtZq() const{
+    if(!isTightBaseOldtZq()) return false;
+    if( is2016() ){
+        return isTight2016OldtZq();
+    } else if( is2017() ){
+        return isTight2017OldtZq();
+    } else return isTight2018OldtZq();
 }
