@@ -41,7 +41,7 @@ std::vector< std::string > fakeRate::listHistogramNamesInFile( TFile* filePtr ){
 }
 
 
-std::string extractTriggerName( const std::string& histogramName ){
+std::string fakeRate::extractTriggerName( const std::string& histogramName ){
 
     //assumes histogram names that end with the trigger name
     auto beginPos = histogramName.find( "HLT" );
@@ -66,7 +66,7 @@ std::vector< std::string > fakeRate::listTriggersWithHistogramInFile( TFile* fil
 }
 
 
-std::string extractYear( const std::string& histogramName ){
+std::string fakeRate::extractYear( const std::string& histogramName ){
     if( stringTools::stringContains( histogramName, "2016" ) ){
         return "2016";
     } else if( stringTools::stringContains( histogramName, "2017" ) ){
@@ -80,10 +80,12 @@ std::string extractYear( const std::string& histogramName ){
 
 
 std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* filePtr, const double min, const double max, bool doPlot ){
+    
+    // make vectors of all available trigger names and histogram names in a file
     std::vector< std::string > triggerNames = listTriggersWithHistogramInFile( filePtr );
     std::vector< std::string > histogramNames = listHistogramNamesInFile( filePtr );
 
-    //check which year the histograms belong to, and check the consistency
+    // check which year the histograms belong to, and check the consistency
     std::string year = extractYear( histogramNames.front() );
     for( const auto& histogram : histogramNames ){
         if( !stringTools::stringContains( histogram, year ) ){

@@ -19,7 +19,7 @@ isMCFR = True
 use_mt = False
 
 years = ['2016','2017','2018']
-flavours = ['electron','muon','']
+flavours = ['muon','electron']
 processes = ['TT','DY']
 
 # check if executable exists

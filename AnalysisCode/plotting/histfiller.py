@@ -76,9 +76,13 @@ def addinputfile(histlist,filelist,treename,index,variables,
 	    if not passextraselection(tree): continue
 	normweight = 1.
 	weight = 1.
+	scaledweight = 1.
+	nonleptonreweight = 1.
         if(usenormweight and not normalization==0):
+	    scaledweight = getattr(tree,'_scaledweight')
 	    normweight = getattr(tree,'_normweight')
 	    weight = getattr(tree,'_weight')*lumi*xsection/sumweights
+	    nonleptonreweight = getattr(tree,'_nonleptonreweight')
 	if removeoverlap:
 	    evtid = str(getattr(tree,'_runNb'))
 	    evtid += '/'+str(getattr(tree,'_lumiBlock'))
@@ -166,7 +170,12 @@ def savehistograms(mchistlist,datahistlist,npdatahistlist,histfile,normalization
 
 def passextraselection(tree):
     # warning: must have called tree.GetEntry(j) before calling this function
-    return getattr(tree,'_eventBDT')>0
+    passBDT = getattr(tree,'_eventBDT')>0
+    passlepptlead = getattr(tree,'_leptonPtLeading')>25.
+    passlepptsublead = getattr(tree,'_leptonPtSubLeading')>15.
+    passleppttrail = getattr(tree,'_leptonPtTrailing')>10.
+    return (passlepptlead and passlepptsublead and passleppttrail)
+    
 
 def input_from_cmd(arglist):
     # read command line arguments and return a dict.
@@ -196,9 +205,9 @@ if __name__ == '__main__':
     args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    args['mcrootdir'] = '/user/llambrec/Files/oldtzqid/2016MC/zgcontrolregion'
+    args['mcrootdir'] = '/user/llambrec/Files/tzqmedium0p4id/2016MC/wzcontrolregion'
     # folder to read data root files from
-    args['datarootdir'] = '/user/llambrec/Files/oldtzqid/2016data/zgcontrolregion'
+    args['datarootdir'] = '/user/llambrec/Files/tzqmedium0p4id/2016data/wzcontrolregion'
     #args['datarootdir'] = args['mcrootdir']
     # samplelist for simulation with process names and cross sections
     args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
@@ -225,12 +234,15 @@ if __name__ == '__main__':
         {'name':'_dRlWbtagged','bins':list(np.linspace(0,7,num=21))},
         {'name':'_M3l','bins':list(np.linspace(0,600,num=21))},
         {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21))},
-	{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=21))},
+	{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=16))},
 	{'name':'_nMuons','bins':list(np.linspace(-0.5,3.5,num=5))},
 	{'name':'_nElectrons','bins':list(np.linspace(-0.5,3.5,num=5))},
 	{'name':'_yield','bins':list(np.linspace(0,1,num=2))},
 	#{'name':'_leptonMVATOP_min','bins':list(np.linspace(-1,1,num=41))},
-	#{'name':'_leptonMVAttH_min','bins':list(np.linspace(-1,1,num=41))}
+	#{'name':'_leptonMVAttH_min','bins':list(np.linspace(-1,1,num=41))},
+	{'name':'_leptonPtLeading','bins':list(np.linspace(10,150,num=21))},
+	{'name':'_leptonPtSubLeading','bins':list(np.linspace(10,150,num=21))},
+	{'name':'_leptonPtTrailing','bins':list(np.linspace(10,150,num=21))}
     ]
     # name of tree to read for each input file:
     args['treename'] = 'blackJackAndHookersTree'
@@ -243,7 +255,7 @@ if __name__ == '__main__':
     args['lumi'] = 35900.
     args['doextraselection'] = False
     args['usedata'] = True # whether to include datapoints
-    args['npfromdata'] = True # whether to use fosideband files for nonprompt background
+    args['npfromdata'] = False # whether to use fosideband files for nonprompt background
 
     ### Overwrite using cmd args
     if(len(sys.argv)==13):

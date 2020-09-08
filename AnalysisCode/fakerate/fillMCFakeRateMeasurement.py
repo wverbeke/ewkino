@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
 years = ['2016','2017','2018']
-flavours = ['electron','muon']
+flavours = ['muon','electron']
 
 # check if executable exists
 if not os.path.exists('./fillMCFakeRateMeasurement'):

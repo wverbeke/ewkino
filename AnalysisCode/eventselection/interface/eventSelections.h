@@ -17,7 +17,6 @@ bool hasnTightLeptons(Event&, int, bool select);
 bool allLeptonsArePrompt(const Event&);
 // pass functions
 bool pass_signalregion(Event&, const std::string& selectiontype, const std::string& variation);
-//bool pass_signalregion_2tight(Event&, const std::string selectiontype, const std::string& variation);
 bool pass_wzcontrolregion(Event&, const std::string& selectiontype, const std::string& variation);
 bool pass_zzcontrolregion(Event&, const std::string& selectiontype, const std::string& variation);
 bool pass_zgcontrolregion(Event&, const std::string& selectiontype, const std::string& variation);

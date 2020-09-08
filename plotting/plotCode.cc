@@ -111,6 +111,14 @@ Color_t bkgColorHNL(const std::string& bkgName){
     else return kBlack;
 }
 
+Color_t bkgColorPrescale(const std::string bkgName){
+    // return colors for prescale measurement plots
+    if(bkgName=="WJets") return kBlue - 7;
+    else if(bkgName=="TT") return kMagenta - 7;
+    else if(bkgName=="DY") return kRed - 7;
+    else if(bkgName=="VV") return kOrange - 3;
+    else return kBlack;    
+}
 
 //FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
 Color_t bkgColorGeneral(const bool reset = false){
@@ -131,13 +139,11 @@ Color_t bkgColorGeneral(const bool reset = false){
 Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
     if(analysis == "ewkino" || analysis == "EWK" || analysis == "EWKino"){
         return bkgColorEWK(bkgName);
-    } else if(analysis == "HNL"){
-        return bkgColorHNL(bkgName);
-    } else if(analysis == "ewkinoDilep"){
-        return bkgColorEWKDilept(bkgName);
-    } else{
-        return bkgColorGeneral();
-    }
+    } 
+    else if(analysis == "HNL") return bkgColorHNL(bkgName);
+    else if(analysis == "ewkinoDilep") return bkgColorEWKDilept(bkgName);
+    else if(analysis == "prescale") return bkgColorPrescale(bkgName);
+    else return bkgColorGeneral();
 }
 
 
@@ -497,6 +503,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgErrors->SetLineColor(1);
     bkgErrors->GetYaxis()->SetRangeUser(0.,1.999);
     bkgErrors->GetYaxis()->SetTitle("Obs./Pred.");
+    bkgErrors->GetYaxis()->SetMaxDigits(3);
+    bkgErrors->GetYaxis()->SetNdivisions(4,5,0);
     bkgErrors->GetYaxis()->SetTitleOffset(1.25/((1.-xPad)/xPad));
     bkgErrors->GetYaxis()->SetTitleSize((1.-xPad)/xPad*0.06);
     bkgErrors->GetXaxis()->SetTitleSize((1.-xPad)/xPad*0.06);

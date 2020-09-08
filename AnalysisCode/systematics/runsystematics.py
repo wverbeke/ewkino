@@ -41,14 +41,17 @@ selection_type = sys.argv[5]
 signal_category = int(sys.argv[6]) # ignored if event_selection is not 'signalregion'
 
 # hard-code rest of arguments
-frdir = os.path.abspath('../fakerate/output_tthid/fakeRateMaps')
+#frdir = os.path.abspath('../fakerate/fakeRateMaps')
 path_to_xml_file = os.path.abspath('../bdt/outdata/weights/tmvatrain_BDT.weights.xml')
 # put dummy path here if not using BDT as a variable
 # (variables to use are hard-coded in runsystematics.cc, maybe change later...)
-systematics = (['JEC','JER','Uncl',
-                'muonID','electronID','pileup','bTag_heavy','bTag_light','prefire',
-                'fScale','rScale','scales','isrScale','fsrScale',
-                'pdfvar'])
+systematics = (['JEC','JER','Uncl', # acceptance
+                'muonIDSyst','muonIDStat', # weight
+		'electronIDSyst','electronIDStat', # weight
+		'pileup','bTag_heavy','bTag_light','prefire', # weight
+                'fScale','rScale','qcdScalesVar','isrScale','fsrScale', # scale
+		'electronReco', # electronreco
+                'pdfVar']) # pdfvar
 #systematics = ['JEC','pileup','fScale'] # smaller test set of systematics
 cwd = os.getcwd()
 
@@ -99,29 +102,31 @@ def parseprocessname(orig):
 
 def submitjob(cwd,inputfile,norm,output_directory,process_name,
 		event_selection,signal_category,selection_type,
-		frmap_muon,frmap_electron,
+		#frmap_muon,frmap_electron,
 		path_to_xml_file,systematics):
     script_name = 'runsystematics.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
 	output_file_path = os.path.join(output_directory,inputfile.split('/')[-1])
-        command = './runsystematics {} {} {} {} {} {} {} {} {} {}'.format(
+        command = './runsystematics {} {} {} {} {} {} {} {}'.format(
 		    inputfile, norm, output_file_path, process_name, 
 		    event_selection, signal_category, selection_type,
-		    frmap_muon, frmap_electron, path_to_xml_file)
+		    #frmap_muon, frmap_electron, 
+		    path_to_xml_file)
 	for systematic in systematics:
 	    command += ' {}'.format(systematic)
         script.write(command+'\n')
-    submitQsubJob(script_name)
+    #submitQsubJob(script_name)
     # alternative: run locally
-    #os.system('bash '+script_name)
+    os.system('bash '+script_name)
 
 # make output directory
 os.makedirs(output_directory)
 
 # loop over input files and submit jobs
-#inputfiles = [f for f in inputfiles if 'WGToLNuG' in f['sample_name']]
+inputfiles = [f for f in inputfiles if 'tZq' in f['sample_name']] # temp for testing
+print(inputfiles)
 for f in inputfiles:
     # get name and tag
     inputfile = f['file']
@@ -135,9 +140,9 @@ for f in inputfiles:
 	xsec = f['cross_section']
 	norm = xsec*lumi/float(hcounter)
     # set path to fake rate maps if needed
-    frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
-    frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
+    #frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
+    #frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
     submitjob(cwd, inputfile, norm, output_directory, process_name,
 		    event_selection, signal_category, selection_type, 
-		    frmap_muon, frmap_electron,
+		    #frmap_muon, frmap_electron,
 		    path_to_xml_file, systematics)

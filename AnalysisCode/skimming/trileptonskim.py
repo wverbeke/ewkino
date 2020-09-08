@@ -29,7 +29,7 @@ version_name = 'Run2017E_test'
 sample_list = '../samplelists/samplelist_all.txt'
 output_directory_base = '/storage_mnt/storage/user/llambrec/ewkino/test/testData/skimmed'
 # fixed argument for now, but should be easy to adapt to allow different skimming conditions
-skim_condition = 'singlelepton'
+skim_condition = 'trilepton'
 
 # if too few command line args, check with the user if default arguments can be used
 if len(sys.argv) < 4:
@@ -117,8 +117,8 @@ if not version_name=='':
 else:
     for sample in samples_dict:
         if os.path.exists(input_directory+'/'+sample['sample_name']+'/'+sample['version_name']):
-	    # TEMPORARY SELECTION FOR MC CLOSURE TEST
-	    #if not ('DYJets' in sample['sample_name'] or 'TTJets' in sample['sample_name'] or 'TTTo' in sample['sample_name']): continue
+	    # TEMPORARY SELECTION
+	    #if not ('tZq' in sample['sample_name'] or 'GluGlu' in sample['sample_name'] or 'VBF' in sample['sample_name'] or 'TTZ' in sample['sample_name']): continue
             sample_directories.append(input_directory+'/'+sample['sample_name'])
             sample_sub_directories.append(sample['version_name'])
         else:
@@ -151,8 +151,9 @@ for sample_directory, sub_directory, output_directory in zip( sample_directories
     print(sub_directory)
     print('number of root files: '+str(len(root_files)))
     # split files in lists of files_per_job
-    for chunk in listParts( root_files, files_per_job ):
-
+    chunks = list(listParts( root_files, files_per_job ))
+    #chunks = chunks[:int(len(chunks)/2)] # TEMPORARY TO PROCESS ONLY PART OF HUGE SAMPLE
+    for chunk in chunks:
         #make a job script 
         script_name = 'trileptonskim.sh'
         with open( script_name, 'w') as script:

@@ -21,7 +21,7 @@ for year in years:
     basename += '_histograms_'+year
     filename = basename + '.root'
     if os.path.exists(filename): continue
-    subfolder = 'prescaleMeasurementSubFiles'
+    subfolder = 'PrescaleMeasurementSubFiles'
     cmd = 'hadd '+filename+' '
     cmd += os.path.join(subfolder,basename+'_sample*.root')
     print(cmd)

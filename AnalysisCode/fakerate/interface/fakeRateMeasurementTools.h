@@ -24,21 +24,15 @@
 #include "../../../weights/interface/ConcreteLeptonReweighter.h"
 #include "../../../weights/interface/ConcreteReweighterLeptons.h"
 #include "../../../weights/interface/ConcreteSelection.h"
+#include "../../tools/progressTracker.h"
 
-HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, 
-			    const double max, const bool useMT = true);
 RangedMap< RangedMap< std::shared_ptr< TH1D > > > build2DHistogramMap( 
     const std::vector< double >& ptBinBorders, const std::vector< double >& etaBinBorders, 
     const HistInfo& mtHistInfo, const std::string& name );
+
 void write2DHistogramMap( const RangedMap< RangedMap< std::shared_ptr< TH1D > > >& histMap );
 std::shared_ptr< Reweighter > makeLeptonReweighter( const std::string& year, const bool isMuon, 
     const bool isFO);
-
-void fillPrescaleMeasurementHistograms( const std::string& year, 
-    const std::string& sampleDirectoryPath, 
-    const std::string& sampleListPath, const unsigned sampleIndex,
-    const std::vector< std::string >& triggerVector, const bool useMT = true, 
-    const double metCut = 0, double mtCut = 0);
 
 void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const std::string& year,
     const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,

@@ -5,16 +5,20 @@
 
 // define here what mva threshold to use in tZq ID's listed below
 double muonMVACut(){
-    //return 0.85; // for leptonMVAttH
-    //return 0.8; // for old leptonMVAtZq
-    return 0.9; // for leptonMVATOP
+    if(LeptonSelector::leptonID()=="tth") return 0.85;
+    else if(LeptonSelector::leptonID()=="oldtzq") return 0.8;
+    else if(LeptonSelector::leptonID()=="tzqtight") return 0.9;
+    else if(LeptonSelector::leptonID()=="tzqmedium0p4") return 0.4; 
+    else return 1.;
 }
 
 // define here what mva value to use in tZq ID's listed below
 double muonMVAValue(const Muon* muonPtr){
-    //return muonPtr->leptonMVAttH();
-    //return muonPtr->leptonMVAtZq();
-    return muonPtr->leptonMVATOP();
+    if(LeptonSelector::leptonID()=="tth") return muonPtr->leptonMVAttH();
+    else if(LeptonSelector::leptonID()=="oldtzq") return muonPtr->leptonMVAtZq();
+    else if(LeptonSelector::leptonID()=="tzqtight") return muonPtr->leptonMVATOP();
+    else if(LeptonSelector::leptonID()=="tzqmedium0p4") return muonPtr->leptonMVATOP();
+    else return 0;
 }
 
 // define here what b-tagger threshold to use in all tZq ID's listed below
@@ -32,9 +36,11 @@ double muonJetBTagValue(const Muon* muonPtr){
 }
 
 double muonConeCorrectionFactor(){
-    //return 0.75; // for ttH ID
-    //return 0.95; // for old tZq ID
-    return 0.8; // for new tZq ID
+    if(LeptonSelector::leptonID()=="tth") return 0.75;
+    else if(LeptonSelector::leptonID()=="oldtzq") return 0.95;
+    else if(LeptonSelector::leptonID()=="tzqtight") return 0.8;
+    else if(LeptonSelector::leptonID()=="tzqmedium0p4") return 0.67;
+    else return 0;
 }
 
 /*
@@ -50,7 +56,7 @@ bool MuonSelector::isLooseBase() const{
     if( fabs( muonPtr->dz() ) >= 0.1 ) return false;
     if( muonPtr->sip3d() >= 8 ) return false;
     if( muonPtr->miniIso() >= 0.4 ) return false;
-    if( !muonPtr->isLoosePOGMuon() ) return false;
+    if( !muonPtr->isMediumPOGMuon() ) return false;
     return true;
 }
 
@@ -90,7 +96,7 @@ double muonSlidingDeepFlavorThreshold( const double lowPt, const double lowPtWP,
 
 /*
 ---------------------------------------------------------------------------------
-FO muon selection for tZq ID
+FO muon selection for (tight) tZq ID
 ---------------------------------------------------------------------------------
 */
 
@@ -106,7 +112,7 @@ bool MuonSelector::isFOBasetZq() const{
 
 bool MuonSelector::isFO2016tZq() const{
     if( muonMVAValue(muonPtr) <= muonMVACut() ){
-	if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold(40, 0.02, 60, 0.03, muonPtr->pt())) return false;
+	if( muonPtr->closestJetDeepFlavor() > 0.015 ) return false;
 	if( muonPtr->ptRatio() < 0.5 ) return false;
     }
     return true;
@@ -115,8 +121,8 @@ bool MuonSelector::isFO2016tZq() const{
 
 bool MuonSelector::isFO2017tZq() const{
     if( muonMVAValue(muonPtr) <= muonMVACut() ){
-	if( muonPtr->closestJetDeepFlavor() > 0.03 ) return false;
-	if( muonPtr->ptRatio() < 0.5 ) return false;
+	if( muonPtr->closestJetDeepFlavor() > 0.02 ) return false;
+	if( muonPtr->ptRatio() < 0.6 ) return false;
     }
     return true;
 }
@@ -124,8 +130,53 @@ bool MuonSelector::isFO2017tZq() const{
 
 bool MuonSelector::isFO2018tZq() const{
     if( muonMVAValue(muonPtr) <= muonMVACut() ){
-	if( muonPtr->closestJetDeepFlavor() > 0.05 ) return false;
+	if( muonPtr->closestJetDeepFlavor() > 0.03 ) return false;
 	if( muonPtr->ptRatio() < 0.4 ) return false;
+    }
+    return true;
+}
+
+/*
+---------------------------------------------------------------------------------
+FO muon selection for medium 0.4 tZq ID
+---------------------------------------------------------------------------------
+*/
+
+bool MuonSelector::isFOBasetZqMedium0p4() const{
+    if( !isLoose() ) return false;
+    if( muonPtr->uncorrectedPt() <= 10 ) return false;
+    // put tunable FO-cuts below
+    //if( muonMVAValue(muonPtr) <= muonMVACut() ){
+    //}
+    return true;
+}
+
+
+bool MuonSelector::isFO2016tZqMedium0p4() const{
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 25., 0.03, 40., 0.015, 
+		muonPtr->uncorrectedPt()) ) return false;
+        if( muonPtr->ptRatio() < 0.35 ) return false;
+    }
+    return true;
+}
+
+
+bool MuonSelector::isFO2017tZqMedium0p4() const{
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 25., 0.05, 40., 0.02, 
+                muonPtr->uncorrectedPt()) ) return false;
+        if( muonPtr->ptRatio() < 0.35 ) return false;
+    }
+    return true;
+}
+
+
+bool MuonSelector::isFO2018tZqMedium0p4() const{
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 25., 0.04, 40., 0.02, 
+                muonPtr->uncorrectedPt()) ) return false;
+        if( muonPtr->ptRatio() < 0.35 ) return false;
     }
     return true;
 }
@@ -231,13 +282,12 @@ bool MuonSelector::isFO2018OldtZq() const{
 
 /*
 ----------------------------------------------------------------------------
-tight muon selection for tZq ID
+tight muon selection for (tight) tZq ID
 ----------------------------------------------------------------------------
 */
 
 bool MuonSelector::isTightBasetZq() const{
     if( !isFOtZq() ) return false;
-    if( !muonPtr->isMediumPOGMuon() ) return false;
     if( muonMVAValue(muonPtr) <= muonMVACut() ) return false;
     return true;
 }
@@ -254,6 +304,33 @@ bool MuonSelector::isTight2017tZq() const{
 
 
 bool MuonSelector::isTight2018tZq() const{
+    return true;
+}
+
+/*
+----------------------------------------------------------------------------
+tight muon selection for medium 0p4 tZq ID
+----------------------------------------------------------------------------
+*/
+
+bool MuonSelector::isTightBasetZqMedium0p4() const{
+    if( !isFOtZqMedium0p4() ) return false;
+    if( muonMVAValue(muonPtr) <= muonMVACut() ) return false;
+    return true;
+}
+
+
+bool MuonSelector::isTight2016tZqMedium0p4() const{
+    return true;
+}
+
+
+bool MuonSelector::isTight2017tZqMedium0p4() const{
+    return true;
+}
+
+
+bool MuonSelector::isTight2018tZqMedium0p4() const{
     return true;
 }
 

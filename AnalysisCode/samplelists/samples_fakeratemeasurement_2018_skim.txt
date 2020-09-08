@@ -1,0 +1,52 @@
+#### part 1: simulation
+# unskimmed size 14G
+#"DY" DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 18610
+# unskimmed size 2G + 374G extension
+#"DY" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 6077.22
+# warining: processed only about half of the following sample since it is huge!
+"DY" DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2018_ext2-v1_singlelepton_MC_2018_iTuple 6077.22
+# unskimmed size 88G
+#"WJets" WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2018-v2_singlelepton_MC_2018_iTuple 61526.7
+# already skimmed for magic factor determination!
+#"TT" TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 364.35080448
+# already skimmed for magic factor determination!
+#"TT" TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 87.31483776
+# missing sample VVTo2L2Nu
+#VV              VVTo2L2Nu_13TeV_amcatnloFXFX_madspin_pythia8_Autumn18.root                        11.95
+# unskimmed size 12G
+#"VV" WWTo1L1Nu2Q_13TeV_amcatnloFXFX_madspin_pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 45.72
+# unskimmed size 3G
+#"VV" WZTo1L3Nu_13TeV_amcatnloFXFX_madspin_pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 3.067
+# unskimmed size 49G
+#"VV" WZTo1L1Nu2Q_13TeV_amcatnloFXFX_madspin_pythia8/crab_MiniAOD2018-v1_singlelepton_MC_2018_iTuple 10.73 
+
+#### part 2: data
+#"data" EGamma/crab_Run2018A-17Sep2018-v2_singlelepton_data_2018_iTuple 0
+#"data" EGamma/crab_Run2018B-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" EGamma/crab_Run2018C-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" EGamma/crab_Run2018D-PromptReco-v2_singlelepton_data_2018_iTuple 0
+
+#"data" SingleMuon/crab_Run2018A-17Sep2018-v2_singlelepton_data_2018_iTuple 0
+#"data" SingleMuon/crab_Run2018B-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" SingleMuon/crab_Run2018C-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" SingleMuon/crab_Run2018D-PromptReco-v2_singlelepton_data_2018_iTuple 0
+
+#"data" DoubleMuon/crab_Run2018A-17Sep2018-v2_singlelepton_data_2018_iTuple 0
+#"data" DoubleMuon/crab_Run2018B-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" DoubleMuon/crab_Run2018C-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" DoubleMuon/crab_Run2018D-PromptReco-v2_singlelepton_data_2018_iTuple 0
+
+#"data" MuonEG/crab_Run2018A-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" MuonEG/crab_Run2018B-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" MuonEG/crab_Run2018C-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" MuonEG/crab_Run2018D-PromptReco-v2_singlelepton_data_2018_iTuple 0
+
+#"data" MET/crab_Run2018A-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" MET/crab_Run2018B-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" MET/crab_Run2018C-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" MET/crab_Run2018D-PromptReco-v2_singlelepton_data_2018_iTuple 0
+
+#"data" JetHT/crab_Run2018A-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" JetHT/crab_Run2018B-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" JetHT/crab_Run2018C-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+#"data" JetHT/crab_Run2018D-PromptReco-v2_singlelepton_data_2018_iTuple 0

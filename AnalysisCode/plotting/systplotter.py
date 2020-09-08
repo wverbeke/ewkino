@@ -68,24 +68,40 @@ def sethiststyle(hist,variable):
 def getcolorsyst(systematic):
     # return a color corresponding to a given systematic
     # for now return same color for up and down, maybe later asymmetrize
+
+    # acceptance uncertainties in shades of red
     if(systematic=='nominal'): return ROOT.kBlack
     if(systematic=='JECUp' or systematic=='JECDown'): return ROOT.kRed
     if(systematic=='JERUp' or systematic=='JERDown'): return ROOT.kRed+2
     if(systematic=='UnclUp' or systematic=='UnclDown'): return ROOT.kOrange-3
-    if(systematic=='pileupUp' or systematic=='pileupDown'): return ROOT.kCyan
+
+    # lepton uncertainties in shades of blue
     if(systematic=='muonIDUp' or systematic=='muonIDDown'): return ROOT.kBlue
-    if(systematic=='electronIDUp' or systematic=='electronIDDown'): return ROOT.kBlue-7
+    if(systematic=='muonIDSystUp' or systematic=='muonIDSystDown'): return ROOT.kBlue
+    if(systematic=='muonIDStatUp' or systematic=='muonIDStatDown'): return ROOT.kBlue+2
+    if(systematic=='electronIDUp' or systematic=='electronIDDown'): return ROOT.kBlue-9
+    if(systematic=='electronIDSystUp' or systematic=='electronIDSystDown'): return ROOT.kBlue-9
+    if(systematic=='electronIDStatUp' or systematic=='electronIDStatDown'): return ROOT.kBlue-10
+    if(systematic=='electronRecoUp' or systematic=='electronRecoDown'): return ROOT.kBlue-5
+
+    # other weights in shades of green
+    if(systematic=='pileupUp' or systematic=='pileupDown'): return ROOT.kGreen-7
     if(systematic=='bTag_heavyUp' or systematic=='bTag_heavyDown'): return ROOT.kGreen+1
     if(systematic=='bTag_lightUp' or systematic=='bTag_lightDown'): return ROOT.kGreen+3
     if(systematic=='prefireUp' or systematic=='prefireDown'): return ROOT.kGreen-5
-    if(systematic=='fScaleUp' or systematic=='fScaleDown'): return ROOT.kMagenta+1
-    if(systematic=='rScaleUp' or systematic=='rScaleDown'): return ROOT.kMagenta+3
-    if(systematic=='scalesUp' or systematic=='scalesDown'): return ROOT.kViolet
-    if(systematic=='isrScaleUp' or systematic=='isrScaleDown'): return ROOT.kYellow+1
-    if(systematic=='fsrScaleUp' or systematic=='fsrScaleDown'): return ROOT.kYellow-6
-    if('pdfvar' in systematic): return ROOT.kGray
-    if(systematic=='pdfEnvUp' or systematic=='pdfEnvDown'): return ROOT.kViolet+2
-    print('### WARNING ###: tag not recognized (in setcolorTZQ), returning default color')
+
+    # scales in shaded of purple
+    if(systematic=='fScaleUp' or systematic=='fScaleDown'): return ROOT.kMagenta
+    if(systematic=='rScaleUp' or systematic=='rScaleDown'): return ROOT.kMagenta-4
+    if(systematic=='scalesUp' or systematic=='scalesDown'): return ROOT.kMagenta-9
+    if(systematic=='isrScaleUp' or systematic=='isrScaleDown'): return ROOT.kViolet+1
+    if(systematic=='fsrScaleUp' or systematic=='fsrScaleDown'): return ROOT.kViolet+2
+
+    # pdf variations in yellow
+    if('pdfvar' in systematic): return ROOT.kYellow-7
+    if(systematic=='pdfEnvUp' or systematic=='pdfEnvDown'): return ROOT.kOrange
+
+    print('### WARNING ###: tag not recognized (in getcolorsyst): '+str(systematic))
     return ROOT.kBlack
 
 def clip(hist):
@@ -246,8 +262,8 @@ if __name__=="__main__":
     
     ### Configure input parameters (hard-coded)
     # file to read the histograms from
-    histdir = os.path.abspath('../systematics/output/2016MC/wzcontrolregion_3prompt')
-    variable = '_dPhill_max'
+    histdir = os.path.abspath('../systematics/output_tzqid/2016MC/zgcontrolregion_3prompt')
+    variable = '_M3l'
 
     ### Overwrite using cmd args
     if(len(sys.argv)==2):
@@ -263,6 +279,7 @@ if __name__=="__main__":
     filelist = [os.path.join(histdir,f) for f in os.listdir(histdir) if f[-5:]=='.root']
 
     for histfile in filelist:
+	print('running on '+histfile)
 	histlist = loadhistograms(histfile,mustcontain=[variable])
 	figname = os.path.join(figdir,histfile.split('/')[-1].rstrip('.root'))
 

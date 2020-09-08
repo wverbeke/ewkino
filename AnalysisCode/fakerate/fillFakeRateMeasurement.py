@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
-years = ['2017']
+years = ['2016','2017','2018']
 flavours = ['muon','electron']
 
 # check if executable exists
@@ -21,7 +21,7 @@ cwd = os.getcwd()
 for year in years:
     # check number of samples
     nsamples = 0
-    with open('../../fakeRate/sampleLists/samples_fakeRateMeasurement_'+year+'.txt') as sf:
+    with open('../samplelists/samples_fakeratemeasurement_'+year+'.txt') as sf:
         for sl in sf:
             if not sl[0] == '#': nsamples += 1
     print('found '+str(nsamples)+' samples for '+year)

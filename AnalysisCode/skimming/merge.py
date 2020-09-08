@@ -8,8 +8,10 @@ import os
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 from mergeTuples import listSkimmedSampleDirectories, sampleName
+# import functions from the merge and remove overlap script
+from mergeAndRemoveOverlap import mergefilesinfolders, samplenameisdata
 
-# this scipt reproduces the functionality of ewkino/skimmer/mergeTuples.py
+# this scipt reproduces and extends the functionality of ewkino/skimmer/mergeTuples.py
 # command line arguments (in sequence):
 # - input directory
 # - output directory
@@ -44,15 +46,18 @@ def sampleName_override(sample,mode):
     # override default sampleName function
     # default:
     name = sampleName(sample)
-    # merge samples which only differ by '_extx'
+    # for data, default sampleName is of the form SingleElectron_Summer16
+    # for sim, default sampleName is of the form tZq_ll_4f_PSweights_13TeV-amcatnlo-pythia8_Summer16
+    
+    # merge samples which only differ by '_extx' by removing that part from the name
     if '_ext' in name:
 	name = name[:name.find('_ext')]+name[name.find('_ext')+5:]
-    if mode=='trigger':
-	if '_Run' in sample:
-	    name = 'data' + sample[sample.find('_Run'):sample.find('_Run')+9]
+    # for data files used in trigger measurement, keep eras apart
+    if( mode=='trigger' and '_Run' in sample ):
+    	    name = name + sample[sample.find('_Run'):sample.find('_Run')+9]
     return name
 
-# reshape list into dict with unique sample names
+# reshape list of all skimmed samples in a directory into dict with unique sample names
 # structure: {sampleName1:[sample1,sample2,...],sampleName2:[sample3,...]}
 inputstruct = {}
 for sample in inputlist:
@@ -64,6 +69,17 @@ for sample in inputlist:
 print('found '+str(len(inputstruct))+' unique samples')
 for s in inputstruct:
     print(s+': '+str(inputstruct[s]))
+
+# for data files, also merge different primary datasets
+inputstruct_ext = {}
+for samplename in inputstruct:
+    if not samplenameisdata(samplename): continue
+    samplename_short = samplename.split('_',1)[1]
+    samplename_onlyyear = samplename_short.split('_',1)[0]
+    if not samplename_short in inputstruct_ext: inputstruct_ext[samplename_short] = []
+    for sample in inputstruct[samplename]: inputstruct_ext[samplename_short].append(sample)
+    if not samplename_onlyyear in inputstruct_ext: inputstruct_ext[samplename_onlyyear] = []
+    for sample in inputstruct[samplename]: inputstruct_ext[samplename_onlyyear].append(sample)
 
 # run hadd command for each element in input structure
 counter = 0
@@ -80,8 +96,21 @@ for samplename in inputstruct:
             sample = os.path.join(input_directory,sample)
             command += ' {}/*.root'.format(sample)
             command2 += ' {}'.format(sample)
+	print(command)
         script.write(command+'\n')
-        script.write(command2+'\n')
+	# warning: do not remove unmerged samples automatically anymore;
+	# it can interfere with additional mergeAndRemoveOverlap commands below.
+        #script.write(command2+'\n')
     submitQsubJob(script_name)
     counter += 1
-    print('submitted merging command for '+str(counter)+' sample directories.')	    
+    print('submitted hadd command for '+str(counter)+' sample directories.')
+
+# run mergeAndRemoveOverlap command for each element in extension of input struct
+counter = 0
+for samplename_short in inputstruct_ext:
+    samplelist = inputstruct_ext[samplename_short]
+    samplelist = [os.path.join(input_directory,s) for s in samplelist]
+    outfile = os.path.join(output_directory,'data_combined_'+samplename_short+'.root')
+    mergefilesinfolders(outfile,samplelist)
+    counter += 1
+    print('submitted hadd command for '+str(counter)+' sample directories.')

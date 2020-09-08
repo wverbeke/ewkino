@@ -12,20 +12,13 @@ from jobSubmission import submitQsubJob, initializeJobScript
 #import smalltools as tls
 import plottools as tools
 
-def submitjob(cwd,input_file_path,output_file_path,
-                        xlow, xhigh, nbins, variables):
+def submitjob(cwd, command):
     script_name = 'singlehistplotter.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
-        command = './singlehistplotter {} {} {} {} {}'.format(
-                    input_file_path, output_file_path, xlow, xhigh, nbins)
-        for variable in variables:
-            command += ' {}'.format(variable)
         script.write(command+'\n')
     submitQsubJob(script_name)
-    # alternative: run locally
-    #os.system('bash '+script_name)
 
 def loadhistograms(histfile):
     # load histograms from a root file.
@@ -168,55 +161,75 @@ def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,errorbars=False):
 
 if __name__=='__main__':
     
+    # intitializations
     dofill = False
     doplot = False
     doplotloop = False
 
+    # parse command line arguments
     if len(sys.argv) == 2:
 	# apply plotting to all files in given folder
+	dofill = False
+	doplot = False
 	doplotloop = True
 	hist_file_path = os.path.abspath(sys.argv[1])
 
     elif len(sys.argv) == 3:
+	dofill = False
 	doplot = True
+	doplotloop = False
 	hist_file_path = os.path.abspath(sys.argv[1])
 	output_file_path = os.path.abspath(sys.argv[2])
 
-    elif len(sys.argv) > 6:
+    elif len(sys.argv) > 7:
 	dofill = True
+	doplot = False
+	doplotloop = False
 	input_file_path = os.path.abspath(sys.argv[1])
 	hist_file_path = os.path.abspath(sys.argv[2])
+	event_selection = sys.argv[3]
 	if os.path.exists(hist_file_path):
 	    print('### WARNING ###: output file already exists. Overwrite it? (y/n)')
 	    go = raw_input()
 	    if not go=='y': sys.exit()
 	    os.system('rm '+hist_file_path)
-	xlow = float(sys.argv[3])
-	xhigh = float(sys.argv[4])
-	nbins = int(sys.argv[5])
+	xlow = float(sys.argv[4])
+	xhigh = float(sys.argv[5])
+	nbins = int(sys.argv[6])
 	variables = []
-	for i in range(6,len(sys.argv)):
+	for i in range(7,len(sys.argv)):
 	    variables.append(sys.argv[i])
 	cwd = os.getcwd()
 
     else:
-	print('### ERROR ###: singlehistplotter.py requires either 1, 2 or at least 6 command-line arguments.')
+	print('### ERROR ###: singlehistplotter.py requires either 1, 2 or at least 7 command-line arguments.')
 	print('Normal usage from the command line:')
 	print('  python singlehistplotter.py <hist_folder>')
 	print('OR')
 	print('  python singlehistplotter.py <hist_file> <output_file>')
 	print('OR')
-	print('  python singlehistplotter.py <input_file> <hist_file> <xlow> <xhigh> <nbins>')
-	print('       at least one <variable>')
+	print('  python singlehistplotter.py <input_file> <hist_file> <event_selection>')
+	print('				     <xlow> <xhigh> <nbins>')
+	print('				     at least one <variable>')
 	sys.exit()
 
+    # fill histograms if requested
     if dofill:
 	# check validity of arguments
 	for variable in variables:
 	    if variable not in ['leadingLeptonPt','subLeadingLeptonPt','trailingLeptonPt',
+				'leadingPtCorrection','subLeadingPtCorrection','trailingPtCorrection',
+				'leadingPtCorrectionRel','subLeadingPtCorrectionRel',
+				'trailingPtCorrectionRel',
 		                'minTOPMVA','mintZqMVA','minttHMVA']:
 		print('### ERROR ###: variable not in list of recognized variables.')
 		sys.exit()
+	if event_selection not in ['atLeastThreeLooseLightLeptons',
+				    'threeFOLightLeptons','threeTightLightLeptons',
+				    'threeFOLightLeptonsThreeTightVeto',
+				    'fullEventSelection']:
+	    print('### ERROR ###: event selection not in list of recognized selections.')
+            sys.exit()
 	# check if executable is present
 	if not os.path.exists('./singlehistplotter'):
 	    print('### ERROR ###: singlehistplotter executable was not found.')
@@ -224,7 +237,13 @@ if __name__=='__main__':
 	    sys.exit()
 
 	# run the command to make the histogram objects
-	submitjob(cwd,input_file_path, hist_file_path, xlow, xhigh, nbins, variables)
+	command = './singlehistplotter {} {} {} {} {} {}'.format(
+                    input_file_path, hist_file_path, event_selection, xlow, xhigh, nbins)
+        for variable in variables: command += ' {}'.format(variable)
+	# job submission
+	submitjob(cwd, command)
+	# alternative: run locally
+        #os.system(command)
 
     if doplot:
 
@@ -234,7 +253,8 @@ if __name__=='__main__':
 	    yaxtitle = 'normalized number of events / '+str(int(binwidth))
 	else:
 	    yaxtitle = 'normalized number of events / {0:.2f}'.format(binwidth)
-	xaxtitle = histlist[0].GetXaxis().GetTitle()
+	#xaxtitle = histlist[0].GetXaxis().GetTitle()
+	xaxtitle = r'p_{T} correction relative to reco-p_{T}'
 	plothistograms(histlist,yaxtitle,xaxtitle,output_file_path,errorbars=True)
 
     if doplotloop:

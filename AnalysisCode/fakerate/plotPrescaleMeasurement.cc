@@ -5,10 +5,13 @@
 #include <string>
 #include <iterator>
 #include <fstream>
+#include <iostream>
 
-// import tools 
-#include "interface/fakeRateMeasurementTools.h"
-// (also includes ewkino/fakeRate files!)
+// import parts of the framework 
+#include "../../fakeRate/interface/Prescale.h"
+
+// include tools in this folder
+#include "interface/prescaleMeasurementTools.h"
 
 int main( int argc, char* argv[] ){
     // check command line arguments
@@ -31,7 +34,7 @@ int main( int argc, char* argv[] ){
     std::string file_name = std::string( "prescaleMeasurement_" ) + ( use_mT ? "mT" : "met" );
     file_name.append("_histograms_" + year + ".root");
     TFile* prescale_filePtr = TFile::Open( file_name.c_str() );
-    prescaleMap = fakeRate::fitTriggerPrescales_cut( prescale_filePtr, mTLowerCut_prescaleFit,
+    prescaleMap = fitTriggerPrescales( prescale_filePtr, mTLowerCut_prescaleFit,
                     mTUpperCut_prescaleFit, true );
     prescale_filePtr->Close();
 }

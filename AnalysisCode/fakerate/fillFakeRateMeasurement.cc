@@ -7,6 +7,7 @@
 #include <fstream>
 
 // import tools
+#include "interface/prescaleMeasurementTools.h"
 #include "interface/fakeRateMeasurementTools.h"
 
 int main( int argc, char* argv[] ){
@@ -28,8 +29,8 @@ int main( int argc, char* argv[] ){
     const double metUpperCut_fakeRateMeasurement = 20; // 20
     const double mTUpperCut_fakeRateMeasurement = 160; // 160
     const bool use_mT = true; 
-    const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate";
-    const std::string& sampleList = "../../fakeRate/sampleLists/samples_fakeRateMeasurement_"+year+".txt";
+    const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate";
+    const std::string& sampleList = "../samplelists/samples_fakeratemeasurement_"+year+".txt";
 
     std::map< std::string, std::vector< std::string > > triggerVectorMap = {
         { "2016", std::vector< std::string >( {
@@ -54,14 +55,12 @@ int main( int argc, char* argv[] ){
     std::string file_name = std::string( "prescaleMeasurement_" ) + ( use_mT ? "mT" : "met" );
     file_name.append("_histograms_" + year + ".root");
     TFile* prescale_filePtr = TFile::Open( file_name.c_str() );
-    prescaleMap = fakeRate::fitTriggerPrescales_cut( prescale_filePtr, mTLowerCut_prescaleFit, 
+    prescaleMap = fitTriggerPrescales( prescale_filePtr, mTLowerCut_prescaleFit, 
 		    mTUpperCut_prescaleFit, false );
     prescale_filePtr->Close();
 
     fillFakeRateMeasurementHistograms(flavor, year, sampleDirectory, sampleList, sampleIndex,
 	triggerVectorMap[ year ], prescaleMap, mTUpperCut_fakeRateMeasurement, 
 	metUpperCut_fakeRateMeasurement );
-    // after fillFakeRateMeasurementHistograms the resulting files have to be hadded.
-
     return 0;
 }

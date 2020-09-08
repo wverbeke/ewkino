@@ -13,15 +13,15 @@
 "nonprompt" WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_iTuple 61334.9
 "nonprompt" WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_iTuple 61526.7
 
-# before 05/06:
-#"nonprompt" TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_iTuple 87.31
-### alternative, much larger sample
 "nonprompt" TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_iTuple 87.31
 "nonprompt" TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2NewPMX-v1_singlelepton_MC_2017_iTuple 182.75
 
 "t#bar{t}/t + X" TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_iTuple 0.2043
 
-"t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_iTuple 0.2529
+### older sample (not used anymore):
+#"t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_iTuple 0.2529
+### larger sample with PS weights:
+"t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_iTuple 0.2529
 
 "t#bar{t}/t + X" ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/crab_MiniAOD2017v2NewPMX-v1_singlelepton_MC_2017_iTuple 0.215
 
@@ -37,7 +37,6 @@
 "t#bar{t}/t + X" ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_iTuple 0.01103
 "t#bar{t}/t + X" TTTT_TuneCP5_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_iTuple 0.009103
 
-### extension of following sample was not found, so use only default one
 "X + #gamma" TGJets_TuneCP5_13TeV_amcatnlo_madspin_pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_iTuple 2.967
 "X + #gamma" TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_iTuple 3.697
 "X + #gamma" TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_iTuple 3.697
@@ -48,7 +47,10 @@
 ### cross section from AN-119-14
 "X + #gamma" ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v3_singlelepton_MC_2017_iTuple 59.21
 
-"WZ" WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_iTuple 5.26
+### WZ sample: powheg version
+#"WZ" WZTo3LNu_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v2_singlelepton_MC_2017_iTuple 4.42965
+### WZ sample: amcatnlo version: not completely sure about cross section
+"WZ" WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v1_singlelepton_MC_2017_iTuple 5.063
 
 "ZZ/H" ZZTo4L_13TeV_powheg_pythia8/crab_MiniAOD2017v2_ext1-v1_singlelepton_MC_2017_iTuple 1.256
 
@@ -70,4 +72,3 @@
 "ZZ/H" GluGluToContinToZZTo4e_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_iTuple 0.00334
 "ZZ/H" GluGluToContinToZZTo4mu_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_iTuple 0.00334
 "ZZ/H" GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/crab_MiniAOD2017v2_ext1-v2_singlelepton_MC_2017_iTuple 0.00334
-

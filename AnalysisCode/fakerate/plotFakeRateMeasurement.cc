@@ -25,7 +25,7 @@ int main( int argc, char* argv[] ){
     std::string flavor = argvStr[2];
     const bool use_mT = (argvStr[1]=="True" || argvStr[1]=="true");
 
-    const double maxFitValue = 20;
+    const double maxFitValue = 40; // 40
 
     setTDRStyle();
 

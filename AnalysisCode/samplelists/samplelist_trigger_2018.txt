@@ -1,0 +1,12 @@
+"data" MET/crab_Run2018A-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+"data" MET/crab_Run2018B-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+"data" MET/crab_Run2018C-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+"data" MET/crab_Run2018D-PromptReco-v2_singlelepton_data_2018_iTuple 0
+
+"data" JetHT/crab_Run2018A-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+"data" JetHT/crab_Run2018B-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+"data" JetHT/crab_Run2018C-17Sep2018-v1_singlelepton_data_2018_iTuple 0
+"data" JetHT/crab_Run2018D-PromptReco-v2_singlelepton_data_2018_iTuple 0
+
+"tZq" tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-madgraph-pythia8/crab_MiniAOD2018_ext1-v2_singlelepton_MC_2018_iTuple 0.0942
+

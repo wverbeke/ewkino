@@ -11,8 +11,12 @@ ULong_t _runNb = 0;
 ULong_t _lumiBlock = 0;
 ULong_t _eventNb = 0;
 // event weight for simulation
-Float_t _weight = 0;
-Float_t _normweight = 0;
+Float_t _weight = 0; // generator weight
+Float_t _scaledweight = 0; // generator weight scaled by cross section and lumi
+Float_t _normweight = 0; // total weight, including reweighting and fake rate
+Float_t _leptonreweight = 1; // lepton reweighting factor
+Float_t _nonleptonreweight = 1; // all other reweighting factors
+Float_t _fakerateweight = 0; // fake rate reweighting factor
 // event BDT variables
 Float_t _abs_eta_recoil = 0;
 Float_t _Mjj_max = 0;
@@ -39,6 +43,9 @@ Int_t _nElectrons = 0;
 Float_t _leptonMVATOP_min = 1.;
 Float_t _leptonMVAttH_min = 1.;
 Float_t _yield = 0.5; // fixed value
+Float_t _leptonPtLeading = 0.;
+Float_t _leptonPtSubLeading = 0.;
+Float_t _leptonPtTrailing = 0.;
 
 void eventFlattening::setVariables(std::map<std::string,double> varmap){
     // copy (and parse) the values contained in varmap to the TTree variables
@@ -49,7 +56,11 @@ void eventFlattening::setVariables(std::map<std::string,double> varmap){
     _eventNb = (unsigned long) varmap["_eventNb"];
 
     _weight = varmap["_weight"];
+    _scaledweight = varmap["_scaledweight"];
     _normweight = varmap["_normweight"];
+    _leptonreweight = varmap["_leptonreweight"];
+    _nonleptonreweight = varmap["_nonleptonreweight"];
+    _fakerateweight = varmap["_fakerateweight"];
 
     _abs_eta_recoil = varmap["_abs_eta_recoil"];
     _Mjj_max = varmap["_Mjj_max"]; 
@@ -76,6 +87,9 @@ void eventFlattening::setVariables(std::map<std::string,double> varmap){
     _leptonMVATOP_min = varmap["_leptonMVATOP_min"];
     _leptonMVAttH_min = varmap["_leptonMVAttH_min"];
     _yield = varmap["_yield"];
+    _leptonPtLeading = varmap["_leptonPtLeading"];
+    _leptonPtSubLeading = varmap["_leptonPtSubLeading"];
+    _leptonPtTrailing = varmap["_leptonPtTrailing"];
 }
 
 std::map< std::string, double > eventFlattening::initVarMap(){
@@ -83,7 +97,8 @@ std::map< std::string, double > eventFlattening::initVarMap(){
     std::map< std::string, double> varmap = {
 	{"_runNb", 0},{"_lumiBlock",0},{"_eventNb",0},
 
-	{"_weight",0},{"_normweight",0},
+	{"_weight",0},{"_scaledweight",0},{"_normweight",0},
+	{"_leptonreweight",1},{"_nonleptonreweight",1},{"_fakerateweight",0},
 
 	{"_abs_eta_recoil",0},{"_Mjj_max",0},{"_lW_asymmetry",0},
 	{"_deepCSV_max",0},{"_deepFlavor_max",0},{"_lT",0},
@@ -95,8 +110,12 @@ std::map< std::string, double > eventFlattening::initVarMap(){
 	{"_eventBDT",0},
 	
 	{"_nMuons",0},{"_nElectrons",0},
+	
 	{"_leptonMVATOP_min",1.},{"_leptonMVAttH_min",1.},
-	{"_yield",0.5}
+	
+	{"_yield",0.5},
+	
+	{"_leptonPtLeading",0.}, {"_leptonPtSubLeading",0.}, {"_leptonPtTrailing",0.},
     };
     return varmap;    
 }
@@ -111,8 +130,12 @@ void eventFlattening::initOutputTree(TTree* outputTree){
 
     // event weight for simulation (fill with ones for data)
     outputTree->Branch("_weight", &_weight, "_weight/F");
+    outputTree->Branch("_scaledweight", &_scaledweight, "_scaledweight/F");
     outputTree->Branch("_normweight", &_normweight, "_normweight/F");
-    
+    outputTree->Branch("_leptonreweight", &_leptonreweight, "_leptonreweight/F");
+    outputTree->Branch("_nonleptonreweight", &_nonleptonreweight, "_nonleptonreweight/F");
+    outputTree->Branch("_fakerateweight", &_fakerateweight, "_fakerateweight/F"); 
+   
     // event BDT variables
     outputTree->Branch("_abs_eta_recoil", &_abs_eta_recoil, "_abs_eta_recoil/F");
     outputTree->Branch("_Mjj_max", &_Mjj_max, "_Mjj_max/F");
@@ -141,6 +164,9 @@ void eventFlattening::initOutputTree(TTree* outputTree){
     outputTree->Branch("_leptonMVATOP_min", &_leptonMVATOP_min, "_leptonMVATOP_min/F");
     outputTree->Branch("_leptonMVAttH_min", &_leptonMVAttH_min, "_leptonMVAttH_min/F");
     outputTree->Branch("_yield", &_yield, "_yield/F");
+    outputTree->Branch("_leptonPtLeading", &_leptonPtLeading, "_leptonPtLeading/F");
+    outputTree->Branch("_leptonPtSubLeading", &_leptonPtSubLeading, "_leptonPtSubLeading/F");
+    outputTree->Branch("_leptonPtTrailing", &_leptonPtTrailing, "_leptonPtTrailing/F");
 }
 
 TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile ){
@@ -243,7 +269,7 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     // re-initialize all variables in the map
     std::map< std::string, double > varmap = initVarMap();
  
-    // sort leptons and jets by pt, get b-jet collection
+    // sort leptons and jets by pt
     event.sortJetsByPt();
     event.sortLeptonsByPt();
 
@@ -254,15 +280,25 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
 
     // event weight (note: 0 for data!)
     varmap["_weight"] = event.weight();
+    varmap["_scaledweight"] = event.weight()*norm;
     varmap["_normweight"] = event.weight()*norm;
-    if(event.isData()) varmap["_normweight"] = 1;
-    if(event.isMC()) varmap["_normweight"] *= reweighter.totalWeight(event);
+    if(event.isData()){ 
+	varmap["_scaledweight"] = 1;
+	varmap["_normweight"] = 1;
+    }
+    if(event.isMC()){ 
+	varmap["_normweight"] *= reweighter.totalWeight(event);
+	varmap["_leptonreweight"] = reweighter["muonID"]->weight(event) 
+				    * reweighter["electronID"]->weight(event);
+	varmap["_nonleptonreweight"] = reweighter.totalWeight(event)/varmap["_leptonreweight"];
+    }
 
     // in case of running in mode "fakerate", take into account fake rate weight
     if(selection_type=="fakerate"){
 	double frweight = fakeRateWeight(event,frMap_muon,frMap_electron);
 	if(event.isMC()) frweight *= -1;
 	varmap["_normweight"] *= frweight;
+	varmap["_fakerateweight"] = frweight;
     }
 
     // get correct jet collection and met (defined in eventSelections.cc!)
@@ -276,6 +312,13 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     // number of muons and electrons
     varmap["_nMuons"] = lepcollection.numberOfMuons();
     varmap["_nElectrons"] = lepcollection.numberOfElectrons();
+
+    // lepton pt
+    if(lepcollection.numberOfLightLeptons()==3 && lepcollection.size()==3){
+	varmap["_leptonPtLeading"] = lepcollection[0].pt();
+	varmap["_leptonPtSubLeading"] = lepcollection[1].pt();
+	varmap["_leptonPtTrailing"] = lepcollection[2].pt();
+    }
 
     // other more or less precomputed event variables
     varmap["_lT"] = lepcollection.scalarPtSum() + met.pt();
@@ -303,7 +346,7 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
 		 varmap["_leptonMVATOP_min"] = mu->leptonMVATOP();
 	    }
         }
-    }
+    }   
 
     int lWindex = 0;
     // set mT
@@ -420,10 +463,27 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     // at this point all variables have been calculated; now set TTree and TReader variables
     setVariables(varmap);
     // based on these variables: evaluate the BDT output if requested
-    if(doMVA){ 
-	varmap[" _eventBDT"] = reader->EvaluateMVA( "BDT" );
+    if(doMVA){
+	/*std::cout << "some variables: " << std::endl;
+	std::cout << _abs_eta_recoil << std::endl; 
+	std::cout << _Mjj_max << std::endl;
+	std::cout << _lW_asymmetry << std::endl;
+	std::cout << _deepCSV_max;
+	std::cout << _lT << std::endl;
+	std::cout << _MT << std::endl;;
+	std::cout << _dPhill_max << std::endl;
+	std::cout << _pTjj_max << std::endl;
+	std::cout << _dRlb_min << std::endl;
+	std::cout << _HT << std::endl;
+	std::cout << _dRlWrecoil << std::endl;
+	std::cout << _dRlWbtagged << std::endl;
+	std::cout << _M3l << std::endl;
+	std::cout << _abs_eta_max << std::endl;
+	std::cout << _nJets << std::endl;
+	std::cout << _nBJets << std::endl;*/
+	varmap["_eventBDT"] = reader->EvaluateMVA( "BDT" );
 	// also reset the TTree variable _eventBDT!
-	_eventBDT = varmap["eventBDT"];
+	_eventBDT = varmap["_eventBDT"];
     }
     // now return the varmap (e.g. to fill histograms)
     return varmap;

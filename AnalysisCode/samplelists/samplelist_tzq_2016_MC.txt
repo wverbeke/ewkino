@@ -3,8 +3,6 @@
 
 ### Formatting: "process name (may include spaces)" <space> sample name <space> cross-section
 
-#"tZq" tZq_ll_4f_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3_ext1-v1_singlelepton_MC_2016_iTuple 0.0942
-# new sample with PS weights is available, later switch to it:
 "tZq" tZq_ll_4f_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3-v1_singlelepton_MC_2016_iTuple 0.0942
 
 "nonprompt" DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3_ext2-v1_singlelepton_MC_2016_iTuple 6077.22
@@ -14,9 +12,7 @@
 "nonprompt" WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 61526.7
 "nonprompt" WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3_ext2-v2_singlelepton_MC_2016_iTuple 61526.7
 
-"nonprompt" TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 87.31
-### ext1 is not available in _iTuple, which is needed for the new tZq lepton MVA
-#"nonprompt" TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_v6 87.31
+"nonprompt" TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/crab_MiniAOD2016v3-v1_singlelepton_MC_2016_iTuple 87.31
 "nonprompt" TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 182.175
 "nonprompt" TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_iTuple 182.175
 "nonprompt" TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 182.175
@@ -46,8 +42,6 @@
 "t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3_ext2-v1_singlelepton_MC_2016_iTuple 0.2529
 "t#bar{t} + Z" TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3_ext3-v1_singlelepton_MC_2016_iTuple 0.2529
 
-### standard sample is not present with _iTuple, use only ext1
-#"X + #gamma" TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_v2 2.967
 "X + #gamma" TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_iTuple 2.967
 "X + #gamma" TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 3.697
 "X + #gamma" TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_iTuple 3.697
@@ -60,15 +54,19 @@
 #"X + #gamma" ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3_ext1-v1_singlelepton_MC_2016_v1 123.9
 "X + #gamma" ZGToLLG_01J_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3-v1_singlelepton_MC_2016_iTuple 59.21
 
-"WZ" WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/crab_MiniAOD2016v3-v1_singlelepton_MC_2016_iTuple 4.4297
-"WZ" WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/crab_MiniAOD2016v3_ext1-v1_singlelepton_MC_2016_iTuple 4.4297
-### alternative for standard WZ: use mllmin01 samples
+### WZ sample: powheg version
+# note: skim both powheg and amcatnlo version, decide later which one to use
+#"WZ" WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/crab_MiniAOD2016v3-v1_singlelepton_MC_2016_iTuple 4.42965
+#"WZ" WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/crab_MiniAOD2016v3_ext1-v1_singlelepton_MC_2016_iTuple 4.42965
+### WZ sample: amcatnlo version
+# note: skim both powheg and amcatnlo version, decide later which one to use
+### cross-section from skype conversation with Willem...
+"WZ" WZTo3LNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 4.666
+### alternative for standard WZ: use mllmin01 samples (do not use?)
 #"WZ" WZTo3LNu_mllmin01_13TeV-powheg-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 38.2
 #"WZ" WZTo3LNu_mllmin01_13TeV-powheg-pythia8_ext1/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_iTuple 38.2
 
-#"ZZ/H" ZZTo4L_13TeV_powheg_pythia8/crab_MiniAOD2016v3-v1_singlelepton_MC_2016_iTuple 1.256
-### found alternative sample that appears to be larger, later switch to it.
-### cross section from twiki
+### ZZ sample: cross section from twiki
 "ZZ/H" ZZTo4L_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3_ext1-v2_singlelepton_MC_2016_iTuple 1.212
 "multiboson" ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 0.01398
 "multiboson" WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3-v2_singlelepton_MC_2016_iTuple 0.05565

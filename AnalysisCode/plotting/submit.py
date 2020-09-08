@@ -10,17 +10,17 @@ from jobSubmission import initializeJobScript, submitQsubJob
 
 ### Define regions to make plots for
 regions = []
-for r in ['signalregion']: regions.append(r)
+#for r in ['signalregion']: regions.append(r)
 for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regions.append(r)
 #for r in ['signalsideband_noz','signalsideband_noossf']: regions.append(r)
 years = ['2016']
-ID = 'oldtzq' # does NOT set ID correctly, simply for folder management
+ID = 'tzqmedium0p4' # does NOT set ID correctly, simply for folder management
 usedata = True
 donpfromsim = True
-donpfromdata = True
+donpfromdata = False
 
 ### Global settings
-outdir = 'histograms_0731_oldtzqid'
+outdir = 'histograms_0904_mediumidcontrolregions'
 outdir = os.path.abspath(outdir)
 variables = [
     {'name':'_abs_eta_recoil','bins':list(np.linspace(0,5,num=21)),
@@ -58,8 +58,17 @@ variables = [
     {'name':'_nMuons','bins':list(np.linspace(-0.5,3.5,num=5)),
      'title':r'number of muons','unit':''},
     {'name':'_nElectrons','bins':list(np.linspace(-0.5,3.5,num=5)),
-     'title':r'number of electrons','unit':''}
+     'title':r'number of electrons','unit':''},
+    {'name':'_yield','bins':list(np.linspace(0.,1.,num=2)),
+    'title':r'total yield','unit':''},
+    {'name':'_leptonPtLeading','bins':list(np.linspace(10,150,num=21)),
+    'title':'p_{T}^{leading}','unit':'GeV'},
+    {'name':'_leptonPtSubLeading','bins':list(np.linspace(10,150,num=21)),
+    'title':'p_{T}^{subleading}','unit':'GeV'},
+    {'name':'_leptonPtTrailing','bins':list(np.linspace(10,150,num=21)),
+    'title':'p_{T}^{trailing}','unit':'GeV'}
 ]
+
 doextraselection = False
 
 ### Set output directory
@@ -87,6 +96,7 @@ for region in regions:
 currentdir = os.getcwd()
 if ID=='tth': interpendix='tthid'
 elif ID=='tzq': interpendix='tzqid'
+elif ID=='tzqmedium0p4': interpendix='tzqmedium0p4id'
 elif ID=='oldtzq': interpendix='oldtzqid'
 else:
     print('### ERROR ###: ID "'+ID+'"not recognized.')

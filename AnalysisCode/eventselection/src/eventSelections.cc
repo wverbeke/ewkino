@@ -18,7 +18,6 @@ bool passES(Event& event, const std::string& eventselection,
     static std::map< std::string, std::function< bool(Event&, const std::string&, const std::string&) > > 
     ESFunctionMap = {
         { "signalregion", pass_signalregion },
-	//{ "signalregion_2tight", pass_signalregion_2tight },
         { "wzcontrolregion", pass_wzcontrolregion },
         { "zzcontrolregion", pass_zzcontrolregion },
         { "zgcontrolregion", pass_zgcontrolregion },
@@ -172,28 +171,6 @@ bool pass_signalregion(Event& event, const std::string& selectiontype,
     if(eventCategory(event, variation)<0) return false;
     return true;
 }
-
-// following is deprecated, remove later
-/*
-bool pass_signalregion_2tight(Event& event, const bool fosideband,
-			    const std::string& variation){
-    // special selection for nonprompt simulation with relaxed requirement on tightness
-    cleanjetcollection(event);
-    cleanleptoncollection(event);
-    // select FO leptons
-    if(!hasnFOLeptons(event, 3, true)) return false;
-    // relaxed requirement: 2 tight leptons
-    if(!fosideband){ if(!hasnTightLeptons(event, 2, false)) return false; }
-    // do not use FO sideband selection here
-    if(fosideband) return false;
-    // Z boson candidate
-    if(!event.hasOSSFLightLeptonPair()) return false;
-    if(!event.hasZTollCandidate(halfwindow)) return false;
-    // number of jets and b-jets
-    if(eventCategory(event, variation)<0) return false;
-    return true;
-}
-*/
 
 bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype, 
 				const std::string& variation){

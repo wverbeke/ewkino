@@ -83,7 +83,7 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
     if(doMVA){ reader = eventFlattening::initializeReader(reader, pathToXMLFile); }
 
     // make reweighter
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( 
@@ -101,8 +101,9 @@ void eventloopEF_SR(const std::string& pathToFile, const double norm,
         int eventcategory = eventCategory(event, variation);
         if(eventcategory == -1) continue;
 	// set all high-level variables and make BDT output
-        eventFlattening::eventToEntry(event, norm, reweighter, selectiontype, 
-					frMap_muon, frMap_electron, variation, doMVA, reader);
+        std::map< std::string,double> varmap = eventFlattening::eventToEntry(event, 
+	    norm, reweighter, selectiontype, 
+	    frMap_muon, frMap_electron, variation, doMVA, reader);
         if(eventcategory == 1) treeCat1Ptr->Fill();
         else if(eventcategory == 2) treeCat2Ptr->Fill();
         else if(eventcategory == 3) treeCat3Ptr->Fill();
@@ -128,6 +129,7 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
 		    const bool doMVA = false,
 		    const std::string& pathToXMLFile = ""){
 
+    std::cout<<"start function eventloopEF_CR"<<std::endl;
     TreeReader treeReader;
     treeReader.initSampleFromFile( pathToFile );
     std::string year = "2016";
@@ -152,7 +154,7 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
     if(doMVA){ reader = eventFlattening::initializeReader(reader, pathToXMLFile); }
 
     // make reweighter
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( 
@@ -160,6 +162,7 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
     
     long unsigned numberOfEntries = treeReader.numberOfEntries();
     //unsigned numberOfEntries = 5000;
+    std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
         Event event = treeReader.buildEvent(entry);

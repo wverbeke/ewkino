@@ -1,6 +1,7 @@
 ########################################
 # some small functions for general use #
 ########################################
+import ROOT
 
 def year_and_lumi_from_samplelist(samplelist_name):
     # return year (string) and luminosity (float) associated to a sample list
@@ -68,6 +69,43 @@ def subselect_inputfiles(inputfiles,selection_type):
 	return [f for f in inputfiles if f['process_name']=='nonprompt']
     print('### ERROR ###: selection_type not recognized: '+selection_type)
     return None
+
+def loadallhistograms(histfile):
+    ### read a root file containing histograms and load all histograms to a list
+    f = ROOT.TFile.Open(histfile)
+    histlist = []
+    keylist = f.GetListOfKeys()
+    for key in keylist:
+        hist = f.Get(key.GetName())
+        hist.SetDirectory(0)
+        # check if histogram is readable
+        try:
+            nentries = hist.GetEntries() # maybe replace by more histogram-specific function
+	    nbins = hist.GetNbinsX()
+        except:
+            print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
+        # add hist to dict
+        histlist.append(hist)
+    f.Close()
+    return histlist
+
+def subselect(stringlist,tagstodiscard=[],tagstokeep=[]):
+    ### generic function to subselect strings from a list of strings
+    sellist = []
+    for s in stringlist:
+        # if tags to keep are specified, check if any is there, else discard
+        if(len(tagstokeep)>0):
+            keep = False
+            for t in tagstokeep:
+                if t in s: keep = True; break
+            if not keep: continue
+        # for all tags to discard, check if none is there, else discard
+        keep = True
+        for t in tagstodiscard:
+            if t in s: keep = False; break
+        if not keep: continue
+        sellist.append(s)
+    return sellist
 
 ### test section ###
 if __name__ == "__main__":

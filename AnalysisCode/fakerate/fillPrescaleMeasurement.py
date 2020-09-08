@@ -20,12 +20,13 @@ cwd = os.getcwd()
 for year in years:
     # check number of samples
     nsamples = 0
-    with open('../../fakeRate/sampleLists/samples_fakeRateMeasurement_'+year+'.txt') as sf:
+    with open('../samplelists/samples_fakeratemeasurement_'+year+'.txt') as sf:
 	for sl in sf: 
 	    if not sl[0] == '#': nsamples += 1
     print('found '+str(nsamples)+' samples for '+year)
     print('start submitting')
     for i in range(nsamples):
+    #for i in [0]:
 	script_name = 'fillPrescaleMeasurement.sh'
 	with open(script_name,'w') as script:
 	    initializeJobScript(script)

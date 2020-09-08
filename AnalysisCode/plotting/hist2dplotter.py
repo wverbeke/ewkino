@@ -19,12 +19,12 @@ def loadhistograms(histfile,mustcontain=[],mustnotcontain=[]):
     keylist = f.GetListOfKeys()
     for key in keylist:
         hist = f.Get(key.GetName())
-        hist.SetDirectory(0)
         # check if histogram is readable
         try:
-            nentries = hist.GetEntries() # maybe replace by more histogram-specific function
+            bincontent = hist.GetBin(1,1)
         except:
             print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
+	    continue
         # check if histogram needs to be included
         keep = True
         for el in mustcontain:
@@ -33,7 +33,10 @@ def loadhistograms(histfile,mustcontain=[],mustnotcontain=[]):
             if el in hist.GetTitle(): keep = False; break;
         if not keep: continue;
         # add hist to list
+	hist.SetDirectory(0)
         histlist.append(hist)
+	# make sure the name corresponds to the one displayed in rootbrowser
+	hist.SetName(key.GetName())
     return histlist
 
 def plot2dhistogram(hist, outfilepath, drawoptions='colztexte'):
@@ -80,7 +83,7 @@ def plot2dhistogram(hist, outfilepath, drawoptions='colztexte'):
 
 if __name__=='__main__':
     
-    histfile = '../../weights/weightFiles/bTagEff/bTagEff_deepFlavor_looseLeptonCleaned_2016.root'
+    histfile = 'egammaEffi.txt_EGM2D.root'
     outfolder = 'test'
 
     if len(sys.argv)==3:
@@ -101,4 +104,4 @@ if __name__=='__main__':
 
     histlist = loadhistograms(histfile) 
     for hist in histlist:
-	plot2dhistogram(hist,os.path.join(outfolder,hist.GetTitle()),'col z cjust')
+	plot2dhistogram(hist,os.path.join(outfolder,hist.GetName()),'col z cjust')

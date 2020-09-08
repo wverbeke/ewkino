@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wextra -O3
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= plotFakeRateMeasurement.cc src/fakeRateMeasurementTools.cc ../../codeLibrary.o
+SOURCES= plotFakeRateMeasurement.cc src/fakeRateMeasurementTools.cc ../tools/progressTracker.cc ../../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=plotFakeRateMeasurement
 

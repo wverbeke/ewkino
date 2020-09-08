@@ -5,7 +5,7 @@ import os
 import sys
 
 years = ['2016','2017','2018']
-flavours = ['electron','muon']
+flavours = ['muon','electron']
 
 # check if executable exists
 if not os.path.exists('./plotMCFakeRateMeasurement'):

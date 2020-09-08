@@ -108,10 +108,9 @@ def submitjob(cwd,inputfile,norm,output_directory,
 os.makedirs(output_directory)
 
 # loop over input files and submit jobs
+#inputfiles = [f for f in inputfiles if 'tZq' in f['file']] # temp for testing
 for f in inputfiles:
     inputfile = f['file']
-    # temporary selection for testing
-    #if not 'tZq' in inputfile: continue
     # create normalization variable:
     norm = 1.
     if dtype == 'MC':
@@ -119,7 +118,10 @@ for f in inputfiles:
 	hcounter = temp.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
 	xsec = f['cross_section']
 	norm = xsec*lumi/float(hcounter)
-    year = tls.year_from_filepath(inputfile)
+    #year = tls.year_from_filepath(inputfile) # does not work for 2017 sample used in 2016 
+    year = '2016'
+    if '2017' in inputfile: year = '2017'
+    if '2018' in inputfile: year = '2018'
     frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
     frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
     submitjob(cwd,inputfile,norm,output_directory,

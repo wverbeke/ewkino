@@ -1,8 +1,8 @@
 #include "../objects/interface/LeptonSelector.h"
 
 // define here what lepton ID to use throughout the whole framework!
-std::string leptonID(){
-    return "tzq"; // choose from "tzq", "tth" or "oldtzq"
+std::string LeptonSelector::leptonID(){
+    return "tzqtight"; // choose from "tzqtight", "tzqmedium0p4", "tth" or "oldtzq"
 }
 
 bool LeptonSelector::isLoose() const{
@@ -19,7 +19,8 @@ bool LeptonSelector::isLoose() const{
 }
 
 bool LeptonSelector::isFO() const{
-    bool isFO = (leptonID()=="tzq") ? isFOtZq() :
+    bool isFO = (leptonID()=="tzqtight") ? isFOtZq() :
+		    (leptonID()=="tzqmedium0p4") ? isFOtZqMedium0p4() :
 		    (leptonID()=="tth") ? isFOttH() :
                     (leptonID()=="oldtzq") ? isFOOldtZq() :
                     false;
@@ -27,7 +28,8 @@ bool LeptonSelector::isFO() const{
 }
 
 bool LeptonSelector::isTight() const{
-    bool isTight = (leptonID()=="tzq") ? isTighttZq() :
+    bool isTight = (leptonID()=="tzqtight") ? isTighttZq() :
+		    (leptonID()=="tzqmedium0p4") ? isTighttZqMedium0p4() :
 		    (leptonID()=="tth") ? isTightttH() :
 		    (leptonID()=="oldtzq") ? isTightOldtZq() :
 		    false;
@@ -43,6 +45,15 @@ bool LeptonSelector::isFOtZq() const{
     } else return isFO2018tZq();
 }
 
+bool LeptonSelector::isFOtZqMedium0p4() const{
+    if(!isFOBasetZqMedium0p4()) return false;
+    if( is2016() ){
+        return isFO2016tZqMedium0p4();
+    } else if( is2017() ){
+        return isFO2017tZqMedium0p4();
+    } else return isFO2018tZqMedium0p4();
+}
+
 bool LeptonSelector::isTighttZq() const{
     if(!isTightBasetZq()) return false;
     if( is2016() ){
@@ -50,6 +61,15 @@ bool LeptonSelector::isTighttZq() const{
     } else if( is2017() ){
         return isTight2017tZq();
     } else return isTight2018tZq();
+}
+
+bool LeptonSelector::isTighttZqMedium0p4() const{
+    if(!isTightBasetZqMedium0p4()) return false;
+    if( is2016() ){
+        return isTight2016tZqMedium0p4();
+    } else if( is2017() ){
+        return isTight2017tZqMedium0p4();
+    } else return isTight2018tZqMedium0p4();
 }
 
 bool LeptonSelector::isFOttH() const{

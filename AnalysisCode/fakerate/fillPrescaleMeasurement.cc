@@ -9,10 +9,9 @@
 // import framework
 #include "../../plotting/tdrStyle.h"
 #include "../../Event/interface/Event.h"
-//#include "../../fakeRate/interface/fakeRateTools.h"
 
-// import tools
-#include "interface/fakeRateMeasurementTools.h"
+// import tools in this folder
+#include "interface/prescaleMeasurementTools.h"
 
 int main( int argc, char* argv[] ){
     // check number of command line arguments
@@ -31,8 +30,8 @@ int main( int argc, char* argv[] ){
     const double metLowerCut_prescaleMeasurement = 40;
     const double mTLowerCut_prescaleMeasurement = 0;
     const bool use_mT = true;
-    const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/wverbeke/ntuples_ewkino_fakerate";
-    const std::string& sampleList = "../../fakeRate/sampleLists/samples_fakeRateMeasurement_"+year+".txt";
+    const std::string& sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate";
+    const std::string& sampleList = "../samplelists/samples_fakeratemeasurement_"+year+".txt";
 
     std::map< std::string, std::vector< std::string > > triggerVectorMap = {
         { "2016", std::vector< std::string >( {
@@ -58,5 +57,3 @@ int main( int argc, char* argv[] ){
 					mTLowerCut_prescaleMeasurement );
     return 0;
 }
-// probably after fillPrescaleMeasurementHistograms the resulting root files
-// have to be hadded before continuing?

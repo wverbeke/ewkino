@@ -11,6 +11,8 @@ class GeneratorInfo{
         GeneratorInfo( const TreeReader& );
 
         unsigned numberOfLheWeights() const{ return _numberOfLheWeights; }
+	unsigned numberOfScaleVariations() const{ return _numberOfScaleVariations; }
+	unsigned numberOfPdfVariations() const{ return _numberOfPdfVariations; }
         double relativeWeightScaleVar( const unsigned scaleIndex ) const;
         double relativeWeight_MuR_1_MuF_1() const{ return relativeWeightScaleVar( 0 ); }
         double relativeWeight_MuR_1_MuF_2() const{ return relativeWeightScaleVar( 1 ); }
@@ -21,7 +23,6 @@ class GeneratorInfo{
         double relativeWeight_MuR_0p5_MuF_1() const{ return relativeWeightScaleVar( 6 ); }
         double relativeWeight_MuR_0p5_MuF_2() const{ return relativeWeightScaleVar( 7 ); }
         double relativeWeight_MuR_0p5_MuF_0p5() const{ return relativeWeightScaleVar( 8 ); }
-
         double relativeWeightPdfVar( const unsigned pdfIndex ) const;
 
         unsigned numberOfPsWeights() const{ return _numberOfPsWeights; }
@@ -60,6 +61,11 @@ class GeneratorInfo{
         double _prefireWeight;
         double _prefireWeightDown;
         double _prefireWeightUp;
+
+	unsigned _firstScaleIndex;
+	unsigned _numberOfScaleVariations;
+	unsigned _firstPdfIndex;
+	unsigned _numberOfPdfVariations;
 
         unsigned _ttgEventType;
         unsigned _zgEventType;

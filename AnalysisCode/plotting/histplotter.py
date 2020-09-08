@@ -352,7 +352,10 @@ if __name__=="__main__":
 	{'name':'_nElectrons','title':r'number of electrons in event','unit':''},
 	{'name':'_yield','title':r'total yield','unit':''},
 	#{'name':'_leptonMVATOP_min','title':r'minimum TOP MVA value in event','unit':''},
-	#{'name':'_leptonMVAttH_min','title':r'minimum ttH MVA value in event','unit':''}
+	#{'name':'_leptonMVAttH_min','title':r'minimum ttH MVA value in event','unit':''},
+	{'name':'_leptonPtLeading','title':r'p_T^{leading}','unit':'GeV'},
+	{'name':'_leptonPtSubLeading','title':r'p_T^{subleading}','unit':'GeV'},
+	{'name':'_leptonPtTrailing','title':r'p_T^{trailing}','unit':'GeV'}	
     ]
 
     ### Overwrite using cmd args

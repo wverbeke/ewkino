@@ -23,7 +23,7 @@ for year in years:
 	basename += '_histograms'
 	filename = basename + '.root'
 	if os.path.exists(filename): continue
-	subfolder = 'fakeRateMeasurementSubFiles'
+	subfolder = 'FakeRateMeasurementSubFiles'
 	cmd = 'hadd '+filename+' '
 	cmd += os.path.join(subfolder,basename+'_sample*.root')
 	print(cmd)

@@ -1,25 +1,6 @@
 // include header
 #include "../interface/fakeRateMeasurementTools.h"
 
-// help function for histogram info
-HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, const double max, 
-			    const bool useMT){
-    if( cut >= max ){
-	std::string errorm("Cut should be smaller than ");
-	errorm.append(std::to_string(cut));
-	errorm.append("; while maximum allowed value is ");
-	errorm.append(std::to_string(max));
-	errorm.append("!");
-        throw std::invalid_argument(errorm);
-    }
-    unsigned numberOfBinsToUse = static_cast< unsigned >( ( max - cut )/max * numberOfBins );
-    if( useMT ){
-        return HistInfo( "mT", "m_{T} (GeV)", numberOfBinsToUse, cut, max );
-    } else {
-        return HistInfo( "met", "E_{T}^{miss} (GeV)", numberOfBinsToUse, cut, max );
-    }
-}
-
 // help function for creating a 2D histogram map
 RangedMap< RangedMap< std::shared_ptr< TH1D > > > build2DHistogramMap( 
     const std::vector< double >& ptBinBorders, const std::vector< double >& etaBinBorders, 
@@ -85,113 +66,6 @@ void write2DHistogramMap( const RangedMap< RangedMap< std::shared_ptr< TH1D > > 
     }
 }*/
 
-// function for filling prescale histograms for a single sample
-void fillPrescaleMeasurementHistograms( const std::string& year, 
-    const std::string& sampleDirectoryPath, const std::string& sampleListPath,
-    const unsigned sampleIndex, const std::vector< std::string >& triggerVector, 
-    const bool useMT, const double metCut, double mtCut){
-
-    std::cout<<"start function fillPrescaleMeasurementHistograms"<<std::endl;
-    analysisTools::checkYearString( year );
-
-    static constexpr unsigned numberOfBins = 16;
-    static constexpr double maxBin = 160;
-    HistInfo histInfo;
-    if( useMT ){ histInfo = makeVarHistInfo( numberOfBins, mtCut, maxBin, true );} 
-    else { histInfo = makeVarHistInfo( numberOfBins, metCut, maxBin, false );}
-
-    std::map< std::string, std::shared_ptr< TH1D > > prompt_map;
-    std::map< std::string, std::shared_ptr< TH1D > > nonprompt_map;
-    std::map< std::string, std::shared_ptr< TH1D > > data_map;
-
-    for( const auto& trigger : triggerVector ){
-        prompt_map[trigger] = histInfo.makeHist( "prompt_mT_" + year + "_" + trigger );
-        nonprompt_map[trigger] = histInfo.makeHist( "nonprompt_mT_" + year + "_" + trigger );
-        data_map[trigger] = histInfo.makeHist( "data_mT_" + year + "_" + trigger );
-    }
-
-    std::map<std::string,double> leptonPtCutMap = fakeRate::mapTriggerToLeptonPtThreshold( 
-						    triggerVector );
-    std::map<std::string,double> jetPtCutMap = fakeRate::mapTriggerToJetPtThreshold( 
-						triggerVector );
-
-    // initialize TreeReader and select correct sample
-    std::cout<<"creating TreeReader and set to sample n. "<<sampleIndex<<std::endl;
-    TreeReader treeReader( sampleListPath, sampleDirectoryPath);
-    treeReader.initSample();
-    for(unsigned idx=1; idx<=sampleIndex; ++idx){
-	treeReader.initSample();
-    }
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
-    CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../../weights/", 
-							year, treeReader.sampleVector() );
-    
-    //long unsigned numberOfEntries = 1000;
-    long unsigned numberOfEntries = treeReader.numberOfEntries();
-    std::cout<<"start event loop for "<<numberOfEntries<<" events"<<std::endl;
-    for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
-        Event event = treeReader.buildEvent( entry, true, false );
-	
-	// check if event passes necessary selections
-	// consider both electrons and muons, only tight leptons and events with a jet.
-	if(!fakeRate::passFakeRateEventSelection(event,false,false,true,true,0.7,40)) continue;
-        LightLepton& lepton = event.lightLepton(0);
-        double mT = mt( lepton, event.met() );
-        if( mT <= mtCut ) continue;
-        if( event.metPt() <= metCut ) continue;
-        if( mT > maxBin ) continue;
-
-	// determine event weight
-	// use scaledWeight to include xsection, lumi and sum of weights!
-	double weight = event.scaledWeight();
-	//std::cout<<"bare weight: "<<event.weight()<<std::endl;
-	//std::cout<<"scaled weight: "<<event.scaledWeight()<<std::endl;
-        if( event.isMC() ) weight *= reweighter.totalWeight( event );
-	else weight = 1;
-
-	for( const auto& trigger : triggerVector ){
-	    if( !event.passTrigger( trigger ) ) continue;
-	    if( stringTools::stringContains( trigger, "Mu" ) ){
-		    if( !lepton.isMuon() ) continue;
-	    } else if( stringTools::stringContains( trigger, "Ele" ) ){
-		if( !lepton.isElectron() ) continue;
-	    } else {
-		std::string errorm("Can not measure prescale for trigger ");
-		errorm.append(trigger);
-		errorm.append(" since it is neither a muon nor electron trigger.");
-                throw std::invalid_argument(errorm);
-            }
-	    if(lepton.uncorrectedPt() <= leptonPtCutMap[trigger]) continue;
-	    if( !fakeRate::passTriggerJetSelection( event, trigger, jetPtCutMap ) ) continue;
-	    double valueToFill = ( useMT ? mT : event.metPt() );
-	    if( event.isData() ){
-		data_map[ trigger ]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight );
-	    } else {
-		if( lepton.isPrompt() ){
-		    prompt_map[ trigger ]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), 
-		    				weight ); 
-		} else {
-		    nonprompt_map[ trigger ]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), 
-							weight );
-		}
-	    }
-	}
-    }
-    std::cout<<"finished event loop"<<std::endl;
-    std::string outfilename("prescaleMeasurement_");
-    outfilename.append(useMT?"mT":"met");
-    outfilename.append("_histograms_"+year+"_sample_"+std::to_string(sampleIndex)+".root");
-    std::cout<<"writing to file "<<outfilename<<std::endl;
-    TFile* histogram_file = TFile::Open( outfilename.c_str(), "RECREATE" );
-    for( const auto& trigger : triggerVector ){
-	data_map[ trigger ]->Write();
-	prompt_map[ trigger ]->Write();
-	nonprompt_map[ trigger ]->Write();
-    }
-    histogram_file->Close();
-    std::cout<<"finished function fillPrescaleMeasurementHistograms"<<std::endl;
-}
-
 // function for filling fake rate histograms for a single sample
 void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const std::string& year, 
     const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,
@@ -199,6 +73,10 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet){ 
  
     std::cout<<"start function fillFakeRateMeasurementHistograms"<<std::endl;
+
+    progressTracker progress = progressTracker("fillFakeRateMeasurement_progress_"+year+"_"
+                                +leptonFlavor+"_sample_"+std::to_string(sampleIndex)+".txt");
+
     fakeRate::checkFlavorString( leptonFlavor );
     analysisTools::checkYearString( year );
     for( const auto& trigger : triggerVector ){
@@ -268,7 +146,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
         treeReader.initSample();
     }
     std::cout<<"building reweighter"<<std::endl;
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../../weights/", year, 
 					treeReader.sampleVector() );
 
@@ -281,6 +159,9 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     long unsigned numberOfEntries = treeReader.numberOfEntries();
     std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
     for(long unsigned entry=0; entry<numberOfEntries; ++entry){
+
+	if( entry%50000 == 0 ) progress.writeProgress( static_cast<double>(entry)/numberOfEntries );
+
 	Event event = treeReader.buildEvent( entry, true, false );
 	// original
 	if( !fakeRate::passFakeRateEventSelection( event, isMuonMeasurement, 
@@ -319,6 +200,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 	    //std::cout<<lepton.pt()<<std::endl;
 	    //std::cout<<"prescale: "<<prescale.value()<<", reweighter: "<<reweighter.totalWeight(event)<<std::endl;
         }
+	else weight = 1;
 
 	if( lepton.isTight() ){
             double tightWeight = 1.;
@@ -348,8 +230,8 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 		std::min( mT, mtHistInfo.maxBinCenter() ), weight );
         }
     }
+    progress.close();
     std::cout<<"finished event loop"<<std::endl;
-
     std::string file_name = "fakeRateMeasurement_data_" + leptonFlavor + "_" + year;
     file_name.append("_mT_histograms_sample_"+std::to_string(sampleIndex)+".root");
     TFile* histogram_file = TFile::Open( file_name.c_str(), "RECREATE" );
