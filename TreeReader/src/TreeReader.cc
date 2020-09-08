@@ -713,7 +713,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_lheWeight",                 &_lheWeight,                 "_lheWeight[_nLheWeights]/D");
         outputTree->Branch("_weight",                    &_weight,                    "_weight/D");
         outputTree->Branch("_nPsWeights",                &_nPsWeights,                "_nPsWeights/i");
-        outputTree->Branch("_psWeight",                  &_psWeight,                  "_psWeight/D");
+        outputTree->Branch("_psWeight",                  &_psWeight,                  "_psWeight[_nPsWeights]/D");
         outputTree->Branch("_nTrueInt",                  &_nTrueInt,                  "_nTrueInt/F");
         outputTree->Branch("_lheHTIncoming",             &_lheHTIncoming,             "_lheHTIncoming/D");
         outputTree->Branch("_lIsPrompt",                 &_lIsPrompt,                 "_lIsPrompt[_nL]/O");
