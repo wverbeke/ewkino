@@ -39,7 +39,7 @@ GeneratorInfo::GeneratorInfo( const TreeReader& treeReader ) :
     _numberOfTrueInteractions( treeReader._nTrueInt ),
     _genMetPtr( new GenMet( treeReader ) )
 { 
-    if( _numberOfLheWeights > 148 ){
+    if( _numberOfLheWeights > maxNumberOfLheWeights ){
         throw std::out_of_range( "_numberOfLheWeights is larger than 148, which is the maximum array size of _lheWeights." );
     }
     for( unsigned i = 0; i < _numberOfLheWeights; ++i  ){
