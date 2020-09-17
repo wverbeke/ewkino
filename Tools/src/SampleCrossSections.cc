@@ -32,7 +32,18 @@ SampleCrossSections::SampleCrossSections( const Sample& sample ){
     }
 
     double nominalSumOfWeights = hCounter->GetBinContent( 1 );
-    
+
+    //get the scale and pdf weight order from first event
+    TreeReader treeReader;
+    treeReader.initSample( sample );
+    if(treeReader.numberOfEntries() > 0){
+	Event event = treeReader.buildEvent(0);
+	_firstScaleIndex = event.generatorInfo().firstScaleIndex(); // usually zero
+	_numberOfScaleVariations = event.generatorInfo().numberOfScaleVariations(); // usually 9
+	_firstPdfIndex = event.generatorInfo().firstPdfIndex(); // usually 9
+	_numberOfPdfVariations = event.generatorInfo().numberOfPdfVariations(); // usually about 100
+    }
+ 
     //store all lhe variations
     for( int bin = 1; bin < lheCounter->GetNbinsX() + 1; ++bin ){
         double lheVariedSumOfWeights = lheCounter->GetBinContent( bin );
@@ -64,19 +75,12 @@ double SampleCrossSections::crossSectionRatio_lheVar( const size_type index ) co
 
 
 double SampleCrossSections::crossSectionRatio_pdfVar( const size_type index ) const{
-
-    //the tenth entry in the lhe cross section ratios is the first one that corresponds to pdfs
-    return crossSectionRatio_lheVar( index + 9 );
+    return crossSectionRatio_lheVar( _firstPdfIndex + index );
 }
 
 
 double SampleCrossSections::crossSectionRatio_scaleVar( const size_type index ) const{
-
-    //entries up to the ninth one in the lhe cross sectio ratios correspond to scales
-    if( index > 8 ){
-        throw std::out_of_range( "Requesting scale variation " + std::to_string( index ) + " while only 9 scale variations are defined." );
-    }
-    return crossSectionRatio_lheVar( index );
+    return crossSectionRatio_lheVar( _firstScaleIndex + index );
 }
 
 

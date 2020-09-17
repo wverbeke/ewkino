@@ -20,7 +20,8 @@ def readhistfile(histfile,variable,doprint=True):
     counter = 1
     keylist = f.GetListOfKeys()
     # temporary: define a limited list of systematics to ignore
-    excludesystematics = (['isrScale','fsrScale'])
+    excludesystematics = []
+    #excludesystematics = (['isrScale','fsrScale'])
     # loop over all histograms in the file
     for key in keylist:
         hist = f.Get(key.GetName())
@@ -45,10 +46,8 @@ def readhistfile(histfile,variable,doprint=True):
 	if systematic == 'nominal': 
 	    pinfo[process]['yield'] += hist.Integral()
 	    continue
-	if systematic in excludesystematics: continue # TEMP!!!
+	if systematic in excludesystematics: continue
 	# else fill systematic impacts
-	# TEMPORALILY REMOVE ISR AND FSR SCALES SINCE THEY ARE ZERO FOR MOST SAMPLES
-	#if(systematic=='fsrScale' or systematic=='isrScale'): continue 
 	if not systematic in slist: slist.append(systematic)
         if not systematic in pinfo[process]['systematics'].keys():
             pinfo[process]['systematics'][systematic] = 1
@@ -109,13 +108,13 @@ def makealigned(stringlist):
 if __name__=="__main__":
 
     # define subdirectory to put datacard and root file in
-    datacarddir = 'datacards'
+    datacarddir = 'datacards_defaultbins_regionsbdts'
     # set parameters to read channels
-    topdir = '../systematics/output_tzqid'
+    topdir = '../systematics/output_tzqid_regionbdts'
     npfromdata = True
     cnames = (['signalregion_1','signalregion_2','signalregion_3',
 		'wzcontrolregion','zzcontrolregion','zgcontrolregion'])
-    years = ['2016']
+    years = ['2016','2017']
     # make dict to read channels
     channels = {}
     suffix = 'npfromdata' if npfromdata else 'npfromsim'
@@ -123,7 +122,7 @@ if __name__=="__main__":
 	for year in years:
 	    channels[c+'_'+year] = os.path.join(topdir,year+'combined',c,suffix,'combined.root')
     # define variable to fit on
-    signalvariable = '_rebinnedeventBDT' # for signal regions
+    signalvariable = '_eventBDT' # for signal regions
     controlvariable = '_yield' # for control regions
 
     if os.path.exists(datacarddir):
@@ -135,18 +134,27 @@ if __name__=="__main__":
     os.makedirs(datacarddir)
 
     for channel in channels:
-
+	year = channel[-4:]
 	# define variable to use
 	variable = controlvariable
 	if 'signalregion' in channel: variable = signalvariable
 	# set lumi uncertainty
-	unc_lumi = 1.025 # for 2016 and 2018
-	year = channel[-4:]
-	if year=='2017': unc_lumi = 1.023 # for 2017
+	unc_lumi = {}
+	if year=='2016': unc_lumi = {'lumi':1.009, # correlated
+				     'lumi_2016': 1.022, # uncorrelated
+				     'lumi_20162017': 1.008} # partially correlated
+	elif year=='2017': unc_lumi = {'lumi':1.008,
+				       'lumi_2017':1.02,
+				       'lumi_20161017':1.006,
+				       'lumi_20172018':1.004}
+	elif year=='2018': unc_lumi = {'lumi':1.02,
+				       'lumi_2018':1.015,
+				       'lumi_20172018':1.003}
 	# set trigger uncertainty
-	unc_trigger = 1.02 # preliminary dummy value
+	unc_trigger = {'trigger_'+year:1.02} # preliminary dummy value
+					     # uncorrelated
 	# set individual normalization uncertainties
-	norm = {'norm_WZ':1.1,'norm_ZZH':1.1,'norm_tbartZ':1.15,'norm_Xgamma':1.1,'norm_nonprompt':1.3}
+	unc_norm = {'norm_WZ':1.1,'norm_ZZH':1.1,'norm_tbartZ':1.15,'norm_Xgamma':1.1,'norm_nonprompt':1.3}
 	# check if histogram file exists
 	if not os.path.exists(channels[channel]):
 	    print('### WARNING ###: '+channels[channel]+' not found, skipping it.')
@@ -185,18 +193,22 @@ if __name__=="__main__":
 	# make rows
 	rows = []
 	# lumi uncertainty:
-	rows.append(makerow('lumi_'+year,'lnN',processinfo,
-			{'tZq':unc_lumi,'tbarttX':unc_lumi,'tbartZ':unc_lumi,
-			'Xgamma':unc_lumi,'WZ':unc_lumi,'ZZH':unc_lumi,
-			'multiboson':unc_lumi}))
+	for lumisource in unc_lumi.keys():
+	    rows.append(makerow(lumisource,'lnN',processinfo,
+			{'tZq':unc_lumi[lumisource],'tbarttX':unc_lumi[lumisource],
+			'tbartZ':unc_lumi[lumisource],'Xgamma':unc_lumi[lumisource],
+			'WZ':unc_lumi[lumisource],'ZZH':unc_lumi[lumisource],
+			'multiboson':unc_lumi[lumisource]}))
 	# trigger uncertainty:
-	rows.append(makerow('trigger_'+year,'lnN',processinfo,
-                        {'tZq':unc_trigger,'tbarttX':unc_trigger,'tbartZ':unc_trigger,
-			'Xgamma':unc_trigger,'WZ':unc_trigger,'ZZH':unc_trigger,
-			'multiboson':unc_trigger}))
+	for triggersource in unc_trigger.keys():
+	    rows.append(makerow(triggersource,'lnN',processinfo,
+                        {'tZq':unc_trigger[triggersource],'tbarttX':unc_trigger[triggersource],
+			'tbartZ':unc_trigger[triggersource],'Xgamma':unc_trigger[triggersource],
+			'WZ':unc_trigger[triggersource],'ZZH':unc_trigger[triggersource],
+			'multiboson':unc_trigger[triggersource]}))
 	# norm uncertainties
-	for normunc in norm:
-	    rows.append(makerow(normunc,'lnN',processinfo,{normunc.split('_')[-1]:norm[normunc]}))
+	for normsource in unc_norm.keys():
+	    rows.append(makerow(normsource,'lnN',processinfo,{normsource.split('_')[-1]:unc_norm[normsource]}))
 	# add rows to columns
 	for row in rows:
 	    for rowel,c in zip(row,columns):

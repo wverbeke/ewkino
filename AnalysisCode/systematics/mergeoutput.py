@@ -26,10 +26,28 @@ def clipallhistograms(histfile):
 	    if hist.GetBinContent(i)<0:
 		hist.SetBinContent(i,0)
 		hist.SetBinError(i,0)
+	# special: check if histogram is empty after clipping and if so, fill it with dummy value
+	if hist.GetSumOfWeights()<1e-12: hist.SetBinContent(1,1e-6)
     tempfilename = histfile[:-5]+'_temp.root'
     f = ROOT.TFile.Open(tempfilename,'recreate')
     for hist in histlist:
 	hist.Write()
+    f.Close()
+    os.system('mv '+tempfilename+' '+histfile)
+
+def removehistogramsbytags(histfile,tags=[]):
+    ### read a root file and delete histograms containing ALL tags in tags
+    histlist = tls.loadallhistograms(histfile)
+    newhistlist = []
+    for hist in histlist:
+	keep = False
+        for tag in tags:
+            if tag not in hist.GetName(): keep = True
+	if keep: newhistlist.append(hist)
+    tempfilename = histfile[:-5]+'_temp.root'
+    f = ROOT.TFile.Open(tempfilename,'recreate')
+    for hist in newhistlist:
+        hist.Write()
     f.Close()
     os.system('mv '+tempfilename+' '+histfile)
 
@@ -125,14 +143,21 @@ if __name__=='__main__':
 
     regionlist = []
     for r in ['signalregion_1','signalregion_2','signalregion_3']: regionlist.append(r)
-    for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regionlist.append(r)
+    regionlist.append('wzcontrolregion')
+    regionlist.append('zzcontrolregion')
+    regionlist.append('zgcontrolregion')
+    #for r in ['signalsideband_noossf_1']: regionlist.append(r)
+    #for r in ['signalsideband_noz_1']: regionlist.append(r)
     yearlist = []
     yearlist.append('2016')
     yearlist.append('2017')
-    yearlist.append('2018')
+    #yearlist.append('2018')
     npmodelist = []
     npmodelist.append('npfromsim')
     npmodelist.append('npfromdata')
+    removesystematics = []
+    removesystematics.append(['_rScale'])
+    removesystematics.append(['_fScale'])
 
     for year in yearlist:
 	for region in regionlist:
@@ -148,12 +173,17 @@ if __name__=='__main__':
 		outputfile = os.path.join(combpath,'combined.root')
 		print('found following files:')
 		filestomerge = getfilestomerge(topdir,year,region,npmode) # implicit printing
+		if len(filestomerge)==0: continue
 		# do hadd
 		print('running hadd command...')
 		command = 'hadd '+outputfile
 		for f in filestomerge:
 		    command += ' '+f
 		os.system(command)
+		# remove some histograms from the file
+		print('removing superfluous histograms...')
+		for tags in removesystematics:
+		    removehistogramsbytags(outputfile,tags)
 		# clip histograms to minimum zero
 		print('clipping all histograms...')
 		clipallhistograms(outputfile)

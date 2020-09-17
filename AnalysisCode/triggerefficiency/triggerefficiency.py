@@ -46,7 +46,8 @@ cwd = os.getcwd()
 # define tags to identify files to process 
 # (files must contain at least one tag in list, if list is empty then take all files)
 keeptags = []
-keeptags.append('TTTo2L2Nu') if ('_3tightveto' in event_selection) else keeptags.append('tZq')
+keeptags.append('TTTo2L2Nu')
+keeptags.append('tZq')
 keeptags.append('data_combined')
 
 # fill list of inputfiles

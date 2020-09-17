@@ -69,8 +69,6 @@ def getallsystematics(histdict,variable):
         if(systematic[-2:]=='Up'): systematic = systematic[:-2]
         elif(systematic[-4:]=='Down'): systematic = systematic[:-4]
         if systematic == 'nominal': continue
-        # TEMPORALILY REMOVE ISR AND FSR SCALES SINCE THEY ARE ZERO FOR MOST SAMPLES
-        if(systematic=='fsrScale' or systematic=='isrScale'): continue
         if not systematic in slist: slist.append(systematic)
     return slist
 
@@ -264,13 +262,15 @@ if __name__=="__main__":
 	print('histplotter_prefit.py will run on the following files:')
 	print(histfiles)
 	#histfiles = histfiles[:1] # temp for testing
-	script_name = 'histplotter_prefit.sh'
-	with open(script_name,'w') as script:
-	    initializeJobScript( script )
-	    for f in histfiles:
+	for f in histfiles:
+	    script_name = 'histplotter_prefit.sh'
+	    with open(script_name,'w') as script:
+		initializeJobScript( script )
 		command = 'python histplotter_prefit.py '+f+'\n'
 		script.write(command)
-	submitQsubJob(script_name)
+	    #submitQsubJob(script_name)
+	    os.system('bash '+script_name)
+
     else:
 	print('### ERROR ###: unrecognized command line arguments.')
 	sys.exit()

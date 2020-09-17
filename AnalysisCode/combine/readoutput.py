@@ -5,7 +5,7 @@ import os
 import sys
 
 def readr(filename):
-    ### read signal strength (r) from the output of a combine command direct to a file
+    ### read signal strength (r) from the output of a combine command directed to a file
     r = 0.
     uperror = 0.
     downerror = 0.
@@ -19,16 +19,28 @@ def readr(filename):
 		downerror = l[2].split('/')[0].strip('-')
     return (float(r),float(uperror),float(downerror))
 
-def formatline(title,value,uperror,downerror):
+def readsigma(filename):
+    ### read significance (sigma) from the output of a combine command directed to a file
+    s = 0.
+    with open(filename,'r') as f:
+	for l in f.readlines():
+	    if l[:13]=='Significance:':
+		s = float(l.replace('Significance:','').strip(' '))
+    return s
+
+def formatline(title,strength=0,uperror=0,downerror=0,significance=0):
     titlelen = 25
     numlen = 8
     res = str('{:<'+str(titlelen)+'}').format(title)
     res += ':'
-    res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(value))
-    res += '+'
-    res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(uperror))
-    res += '-'
-    res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(downerror))
+    if significance!=0:
+	res += str('s = {:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(significance))
+    if strength!=0:
+	res += str('r = {:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(strength))
+	res += '+'
+	res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(uperror))
+	res += '-'
+	res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(downerror))
     res += '\n'
     res += '-'*(titlelen+3*numlen)+'\n'
     return res
@@ -42,11 +54,21 @@ if __name__=='__main__':
 	print('### ERROR ###: need one command line argument.')
 	print('               normal use: python readoutput.py <datacard directory>')
 
-    outputfiles = sorted([f for f in os.listdir(datacarddir) if f[-8:]=='_out.txt'])
-    reslist = []
-    for f in outputfiles:
-	(r,uperror,downerror) = readr(os.path.join(datacarddir,f))
-	reslist.append({'card':f.replace('datacard_','').replace('dc_combined','').replace('_out.txt',''),
-			'r':r,'uperror':uperror,'downerror':downerror})
-    for res in reslist:
-	print(formatline(res['card'],res['r'],res['uperror'],res['downerror']))
+    tags = ['significance_exp','significance_obs','signalstrength_exp','signalstrength_obs']
+    for tag in tags:
+	outputfiles = sorted([f for f in os.listdir(datacarddir) if '_out_'+tag+'.txt' in f])
+	print('---------------------------------------------')
+	print('--- '+tag+' ---')
+	print('---------------------------------------------')
+	reslist = []
+	for f in outputfiles:
+	    card = f.replace('datacard_','').replace('dc_combined','').replace('_out_'+tag+'.txt','')
+	    if 'significance' in tag:
+		s = readsigma(os.path.join(datacarddir,f))
+                reslist.append({'card':card,'r':0,'uperror':0,'downerror':0,'s':s})
+	    if 'signalstrength' in tag:
+		(r,uperror,downerror) = readr(os.path.join(datacarddir,f))
+		reslist.append({'card':card,'r':r,'uperror':uperror,'downerror':downerror,'s':0})
+	for res in reslist:
+	    print(formatline(res['card'],strength=res['r'],uperror=res['uperror'],
+			    downerror=res['downerror'],significance=res['s']))

@@ -9,10 +9,10 @@ class SampleCrossSections{
 	public:
 		using size_type = std::vector< double >::size_type;
 
-        SampleCrossSections() = default;
+		SampleCrossSections() = default;
 		SampleCrossSections( const Sample& );
 
-        size_type numberOfLheVariations() const{ return lheCrossSectionRatios.size(); }
+		size_type numberOfLheVariations() const{ return lheCrossSectionRatios.size(); }
 		double crossSectionRatio_pdfVar( const size_type ) const;
 
 		double crossSectionRatio_scaleVar( const size_type ) const;
@@ -26,7 +26,7 @@ class SampleCrossSections{
 		double crossSectionRatio_MuR_0p5_MuF_0p5() const{ return crossSectionRatio_scaleVar( 8 ); }
 
 
-        size_type numberOfPsVariations() const{ return psCrossSectionRatios.size(); }
+		size_type numberOfPsVariations() const{ return psCrossSectionRatios.size(); }
 		double crossSectionRatio_psVar( const size_type ) const;
 		double crossSectionRatio_ISR_InverseSqrt2() const{ return crossSectionRatio_psVar( 2 ); }
 		double crossSectionRatio_FSR_InverseSqrt2() const{ return crossSectionRatio_psVar( 3 ); }
@@ -43,9 +43,12 @@ class SampleCrossSections{
 
 	private:
 		std::vector< double > lheCrossSectionRatios;
-        std::vector< double > psCrossSectionRatios;
-
-        double crossSectionRatio_lheVar( const size_type ) const;
+		std::vector< double > psCrossSectionRatios;
+		unsigned _firstScaleIndex;
+		unsigned _numberOfScaleVariations;
+		unsigned _firstPdfIndex;
+		unsigned _numberOfPdfVariations;
+		double crossSectionRatio_lheVar( const size_type ) const;
 };
 
 

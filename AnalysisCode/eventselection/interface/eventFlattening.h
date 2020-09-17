@@ -17,7 +17,9 @@ namespace eventFlattening{
     void setVariables(std::map<std::string,double>);
     std::map< std::string, double > initVarMap();
     void initOutputTree(TTree*);
-    TMVA::Reader* initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile );
+    TMVA::Reader* initializeReader( TMVA::Reader* reader, 
+				    const std::string& pathToXMLFile,
+				    const std::string& bdtCombineMode="all" );
     std::shared_ptr< TH2D > readFRMap( const std::string&, const std::string&, const std::string&);
     double fakeRateWeight( const Event&, 
     			const std::shared_ptr< TH2D >&, const std::shared_ptr< TH2D >&);

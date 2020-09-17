@@ -71,22 +71,35 @@ def addcombinecommands(script,datacard,runblind):
     workspace = datacard.replace('.txt','.root')
     name = datacard.replace('.txt','')
     # make outputfile
-    outfile = datacard.replace('.txt','_out.txt')
-    # run FitDiagnostics
-    script.write('combine -M FitDiagnostics '+workspace+' -n '+name)
-    if runblind: script.write(' -t -1 --expectSignal=1')
-    #script.write(' --rMin 0 --rMax 5')
-    script.write(' --saveShapes --saveWithUncertainties')
-    #script.write(' --cminDefaultMinimizerStrategy 0')
-    #script.write(' --robustFit=1')
-    script.write(' > '+outfile+' 2> '+outfile+'\n')
+    ss_obs_outfile = datacard.replace('.txt','_out_signalstrength_obs.txt')
+    ss_exp_outfile = datacard.replace('.txt','_out_signalstrength_exp.txt')
+    sig_obs_outfile = datacard.replace('.txt','_out_significance_obs.txt')
+    sig_exp_outfile = datacard.replace('.txt','_out_significance_exp.txt')
+
+    # run FitDiagnostics to compute signal strength
+    ss_command = 'combine -M FitDiagnostics '+workspace+' -n '+name
+    ss_command += ' --rMin 0 --rMax 5'
+    #ss_command += ' --saveShapes --saveWithUncertainties'
+    ss_command += ' --cminDefaultMinimizerStrategy 0'
+    ss_command += ' --robustFit=1'
+    # run blind:
+    script.write(ss_command+' -t -1 --expectSignal=1 > '+ss_exp_outfile+' 2> '+ss_exp_outfile+'\n')
+    # run with data:
+    if not runblind: script.write(ss_command+' > '+ss_obs_outfile+' 2> '+ss_obs_outfile+'\n')
+
+    # run ProfileLikelihood to compute significance
+    sig_command = 'combine -M Significance '+workspace+' -n '+name+' --signif'
+    sig_command += ' --cminDefaultMinimizerStrategy 0'
+    # run blind:
+    script.write(sig_command+' -t -1 --expectSignal=1 > '+sig_exp_outfile+' 2> '+sig_exp_outfile+'\n')
+    if not runblind: script.write(sig_command+' > '+sig_obs_outfile+' 2> '+sig_obs_outfile+'\n')
     
 if __name__=="__main__":
 
     # global settings    
-    datacarddir = 'datacards_oldbins'
+    datacarddir = 'datacards_defaultbins_regionbdts'
     runblind = True
-    only2016 = True
+    only2016 = False
 
     # remove all previous output
     cleandatacarddir(datacarddir)

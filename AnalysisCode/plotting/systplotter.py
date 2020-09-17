@@ -262,8 +262,8 @@ if __name__=="__main__":
     
     ### Configure input parameters (hard-coded)
     # file to read the histograms from
-    histdir = os.path.abspath('../systematics/output_tzqid/2016MC/zgcontrolregion_3prompt')
-    variable = '_M3l'
+    histdir = os.path.abspath('../systematics/output_tzqid_new/2016MC/wzcontrolregion_3prompt')
+    variable = '_MT'
 
     ### Overwrite using cmd args
     if(len(sys.argv)==2):

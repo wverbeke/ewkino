@@ -205,9 +205,9 @@ if __name__ == '__main__':
     args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    args['mcrootdir'] = '/user/llambrec/Files/tzqmedium0p4id/2016MC/wzcontrolregion'
+    args['mcrootdir'] = '/user/llambrec/Files/tzqid/2016MC/wzcontrolregion'
     # folder to read data root files from
-    args['datarootdir'] = '/user/llambrec/Files/tzqmedium0p4id/2016data/wzcontrolregion'
+    args['datarootdir'] = '/user/llambrec/Files/tzqid/2016data/wzcontrolregion'
     #args['datarootdir'] = args['mcrootdir']
     # samplelist for simulation with process names and cross sections
     args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     args['lumi'] = 35900.
     args['doextraselection'] = False
     args['usedata'] = True # whether to include datapoints
-    args['npfromdata'] = False # whether to use fosideband files for nonprompt background
+    args['npfromdata'] = True # whether to use fosideband files for nonprompt background
 
     ### Overwrite using cmd args
     if(len(sys.argv)==13):

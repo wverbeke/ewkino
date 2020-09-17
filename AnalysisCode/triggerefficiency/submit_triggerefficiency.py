@@ -9,15 +9,15 @@ years = []
 years.append('2016')
 years.append('2017')
 years.append('2018')
-years.append('allyears')
+#years.append('allyears')
 event_selections = []
-#event_selections.append('3tight')
+event_selections.append('3tight') # still to find more decent way than appending _ !
 event_selections.append('3tight_ptcuts')
-#event_selections.append('3fo')
-#event_selections.append('3fo_recoptcuts')
-#event_selections.append('3fo_coneptcuts')
+event_selections.append('3fo') # still to find more decent way than appending _ !
+event_selections.append('3fo_recoptcuts')
+event_selections.append('3fo_coneptcuts')
 event_selections.append('3fo_3tightveto_recoptcuts')
-#event_selections.append('3fo_3tightveto_coneptcuts')
+event_selections.append('3fo_3tightveto_coneptcuts')
 for year in years:
     for event_selection in event_selections:
 	inputfolder = '~/Files/trileptonskim/'+year+'trigger'

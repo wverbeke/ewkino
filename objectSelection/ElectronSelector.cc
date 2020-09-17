@@ -179,33 +179,33 @@ bool ElectronSelector::isFOBasetZqMedium0p4() const{
 
 bool ElectronSelector::isFO2016tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-        //if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(30,0.55,50,0.2,
-	//    electronPtr->uncorrectedPt()) ) return false;
-	if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+        if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(30,0.55,50,0.2,
+	    electronPtr->uncorrectedPt()) ) return false;
+	//if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
-        if( !electronPtr->passElectronMVAFall17NoIsoWP80() ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
 }
 
 bool ElectronSelector::isFO2017tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-	//if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(30,0.6,60,0.05,
-	//    electronPtr->uncorrectedPt()) ) return false;
-        if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(30,0.6,60,0.05,
+	    electronPtr->uncorrectedPt()) ) return false;
+        //if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
 	if( electronPtr->ptRatio() < 0.5 ) return false;
-        if( !electronPtr->passElectronMVAFall17NoIsoWP80() ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
 }
 
 bool ElectronSelector::isFO2018tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-        //if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.6,45,0.08,
-	//    electronPtr->uncorrectedPt())) return false;
-	if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+        if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.6,45,0.08,
+	    electronPtr->uncorrectedPt())) return false;
+	//if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
-        if( !electronPtr->passElectronMVAFall17NoIsoWP80() ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
 }

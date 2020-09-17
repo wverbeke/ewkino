@@ -11,7 +11,9 @@ class GeneratorInfo{
         GeneratorInfo( const TreeReader& );
 
         unsigned numberOfLheWeights() const{ return _numberOfLheWeights; }
+	unsigned firstScaleIndex() const{ return _firstScaleIndex; }
 	unsigned numberOfScaleVariations() const{ return _numberOfScaleVariations; }
+	unsigned firstPdfIndex() const{ return _firstPdfIndex; }
 	unsigned numberOfPdfVariations() const{ return _numberOfPdfVariations; }
         double relativeWeightScaleVar( const unsigned scaleIndex ) const;
         double relativeWeight_MuR_1_MuF_1() const{ return relativeWeightScaleVar( 0 ); }

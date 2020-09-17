@@ -41,7 +41,16 @@ for directory in directories:
     if not skipmerging:
 	if os.path.exists(path_to_file):
 	    os.system('rm '+path_to_file)
-	command = 'hadd '+path_to_file+' '+os.path.join(directory,'*.root')
+	# list files in directory and choose what MC to use (tZq or TT)
+	datafiles = [f for f in os.listdir(directory) if (f[-5:]=='.root' and 'data' in f)]
+	tag = 'TTTo2L2Nu' if '3tightveto' in directory else 'tZq'
+	mcfile = [f for f in os.listdir(directory) if (f[-5:]=='.root' and tag in f)]
+	if len(mcfile)!=1:
+	    print('### WARNING ###: found unexpected number of MC files in directory '+directory)
+	    continue
+	command = 'hadd '+path_to_file
+	for f in datafiles+mcfile:
+	    command += ' '+os.path.join(directory,f)
 	os.system(command)
 
     # plotting
@@ -65,7 +74,11 @@ for directory in directories:
                     sys.exit()
                 mcgraph = mcgraphlist[0]
                 mchist = loadobjects(path_to_file,mustcontain=['mc',variable['name']+'_tot'])[0]
-                # set plot properties
+                datahistlist = loadobjects(path_to_file,mustcontain=['data',variable['name']+'_tot'])
+		# make sure the order in datagraphlist and datahistlist corresponds
+                datagraphlist.sort(key = lambda x: x.GetTitle())
+                datahistlist.sort(key = lambda x: x.GetTitle())
+		# set plot properties
                 yaxtitle = 'trigger efficiency'
                 xaxtitle = variable['xaxtitle']
                 lumi = 0.
@@ -75,8 +88,8 @@ for directory in directories:
                 elif 'allyears' in path_to_file: lumi = 137100.
                 figname = os.path.join(directory,filename.rstrip('.root')+'_'
                                                     +variable['name']+'.png')
-                plotefficiencies(datagraphlist,mcgraph,mchist=mchist,mcsysthist=None,
-                                mode=mode,yaxtitle=yaxtitle,xaxtitle=xaxtitle,lumi=lumi,
+                plotefficiencies(datagraphlist,mcgraph,datahistlist=datahistlist,mchist=mchist,
+				mcsysthist=None,mode=mode,yaxtitle=yaxtitle,xaxtitle=xaxtitle,lumi=lumi,
                                 outfile=figname)
             except:
                 print('### WARNING ###: something went wrong for '+path_to_file+','+variable['name'])

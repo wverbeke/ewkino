@@ -13,19 +13,27 @@
 import sys
 import os
 import ROOT
+import numpy as np
 sys.path.append(os.path.abspath('../tools'))
 import smalltools as tls
 
 def getcorrelations():
     # define correlations to be implemented
-    uncorrelated_years = ['JER','Uncl','bTag_heavy','bTag_light']
-    uncorrelated_processes = ['scales','rScale','fScale']
-    partially_correlated_years = []
-    # partial correlations not yet implemented.
-    # idea is to make e.g. [{'JER':0.5},...] and to include degree of correlation in histogram name
+    uncorrelated_years = (['JER','Uncl','bTag_heavy','bTag_light',
+			    'muonIDStat','electronIDStat'])
+    uncorrelated_processes = ['qcdScalesEnv','rScale','fScale']
+    #partially_correlated_years = {'prefire':0.5,'pileup':0.3} # just to test, not realistic
+    partially_correlated_years = {}
+    # partial correlations not yet implemented in combine code!
     return {'uncorrelated_years':uncorrelated_years,
 	    'uncorrelated_processes':uncorrelated_processes,
 	    'partially_correlated_years':partially_correlated_years}
+
+def getpcorrfactors(correlationvalue):
+    # input is a given correlation value (e.g. 0.5 = 50% correlated over the years)
+    # output is a tuple of two scaling factors, first for correlated part and second for uncorrelated part
+    # note: exact implementation not sure yet, e.g. 0.5 -> (0.5,1-0.5) or (sqrt(0.5),sqrt(1-0.5)) ?    
+    return (np.sqrt(correlationvalue),np.sqrt(1-correlationvalue))
 
 def implementcorrelations(histfilename,outputfilename):
     # main function in this script
@@ -46,21 +54,35 @@ def implementcorrelations(histfilename,outputfilename):
     conf = getcorrelations()
     uncorrelated_years = conf['uncorrelated_years']
     uncorrelated_processes = conf['uncorrelated_processes']
+    partially_correlated_years = conf['partially_correlated_years']
 
     # loop over histograms and copy to new list, some with modified naming
     newhists = []
     for hist in allhists:
 	histname = hist.GetName()
 	process = histname.split('_')[0] # depends on arbitrary naming convention!
-	newname = histname
+	newnames = [histname] # for partial correlations will need multiple names
+	# first modify newname based on full decorrelations in years and/or processes
 	for systematic in uncorrelated_years:
 	    if systematic in histname:
-		newname = newname.replace(systematic,systematic+'_'+year)
+		newnames[0] = newnames[0].replace(systematic,systematic+'_'+year)
 	for systematic in uncorrelated_processes:
 	    if systematic in histname:
-		newname = newname.replace(systematic,systematic+'_'+process)
-	hist.SetName(newname)
-	newhists.append(hist)	
+		newnames[0] = newnames[0].replace(systematic,systematic+'_'+process)
+	# next treat partial correlations between years
+	for systematic in partially_correlated_years.keys():
+            if systematic in histname:
+                basename = newnames[0]
+		pcorrfactors = getpcorrfactors(partially_correlated_years[systematic])
+		
+		newnames[0] = basename.replace(systematic,systematic+'_pcorr'
+						+'{:.2f}'.format(pcorrfactors[0]).replace('.','p'))
+		newnames.append(basename.replace(systematic,systematic+'_'+year+'_pcorr'
+						+'{:.2f}'.format(pcorrfactors[1]).replace('.','p')))
+	for name in newnames:
+	    newhist = hist.Clone()
+	    newhist.SetName(name)
+	    newhists.append(newhist)
 
     # open output file and write all histograms
     f = ROOT.TFile.Open(outputfilename,'recreate')

@@ -18,11 +18,12 @@ import smalltools as tls
 # but instead of a skimmer, a systematics executable is called.
 # command line arguments: see below
 
-if len(sys.argv) != 7:
+if len(sys.argv) != 8:
     print('### ERROR ###: runsystematics.py requires a different number of command-line arguments.')
     print('Normal usage from the command line:')
     print('python runsystematics.py input_directory samplelist output_directory,')
-    print('                         event_selection, selection_type, event_category')
+    print('                         event_selection, selection_type, event_category,')
+    print('			    bdt_combine_mode')
     # maybe add more command line arguments later, keep hard coded for now
     sys.exit()
 
@@ -38,13 +39,9 @@ if not os.path.exists(samplelist):
 output_directory = sys.argv[3]
 event_selection = sys.argv[4]
 selection_type = sys.argv[5]
-signal_category = int(sys.argv[6]) # ignored if event_selection is not 'signalregion'
+signal_category = int(sys.argv[6]) # put 0 for control regions
+bdt_combine_mode = sys.argv[7]
 
-# hard-code rest of arguments
-#frdir = os.path.abspath('../fakerate/fakeRateMaps')
-path_to_xml_file = os.path.abspath('../bdt/outdata/weights/tmvatrain_BDT.weights.xml')
-# put dummy path here if not using BDT as a variable
-# (variables to use are hard-coded in runsystematics.cc, maybe change later...)
 systematics = (['JEC','JER','Uncl', # acceptance
                 'muonIDSyst','muonIDStat', # weight
 		'electronIDSyst','electronIDStat', # weight
@@ -66,14 +63,35 @@ if os.path.exists(output_directory):
     #if not go=='y': sys.exit()
     os.system('rm -r '+output_directory)
 output_directory = os.path.abspath(output_directory)
+if bdt_combine_mode not in (['all','years','regions','years']):
+    print('### ERROR ###: bdt_combine_mode not in list of recognized modes')
+    sys.exit()
 
 # determine data taking year and luminosity from sample list name
 (year,lumi) = tls.year_and_lumi_from_samplelist(samplelist)
 if lumi<0. : sys.exit()
 
 # determine data type from sample name
-dtype = tls.data_type_from_samplelist(samplelist)    
+dtype = tls.data_type_from_samplelist(samplelist)
 if len(dtype)==0 : sys.exit()
+
+# set path to BDT:
+path_to_xml_file = ''
+if( bdt_combine_mode=='all' or signal_category not in [1,2,3] ):
+    path_to_xml_file = os.path.abspath('../bdt/out_all_data/weights/tmvatrain_BDT.weights.xml')
+    bdt_combine_mode='all' # reset bdt_combine_mode to 'all' for control regions
+elif( bdt_combine_mode=='years' ):
+    path_to_xml_file = os.path.abspath('../bdt/out_treeCat'+str(signal_category)+'_data/'
+					+'weights/tmvatrain_BDT.weights.xml')
+elif( bdt_combine_mode=='regions' ):
+    path_to_xml_file = os.path.abspath('../bdt/out_'+year+'_data/'
+					+'weights/tmvatrain_BDT.weights.xml')
+elif( bdt_combine_mode=='none' ):
+    path_to_xml_file = os.path.abspath('../bdt/out_'+year+'_treeCat'+str(signal_category)+'_data/'
+					+'weights/tmvatrain_BDT.weights.xml')
+if( not os.path.exists( path_to_xml_file ) or path_to_xml_file=='' ):
+    print('### ERROR ###: requested xml file '+path_to_xml_file+' does not seem to exist...')
+    sys.exit()
 
 # make a list of input files in samplelist and compare to content of input directory 
 inputfiles = extendsamplelist(samplelist,input_directory)
@@ -102,31 +120,30 @@ def parseprocessname(orig):
 
 def submitjob(cwd,inputfile,norm,output_directory,process_name,
 		event_selection,signal_category,selection_type,
-		#frmap_muon,frmap_electron,
-		path_to_xml_file,systematics):
+		bdt_combine_mode,path_to_xml_file,systematics):
     script_name = 'runsystematics.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
 	output_file_path = os.path.join(output_directory,inputfile.split('/')[-1])
-        command = './runsystematics {} {} {} {} {} {} {} {}'.format(
+        command = './runsystematics {} {} {} {} {} {} {} {} {}'.format(
 		    inputfile, norm, output_file_path, process_name, 
 		    event_selection, signal_category, selection_type,
-		    #frmap_muon, frmap_electron, 
-		    path_to_xml_file)
+		    bdt_combine_mode, path_to_xml_file)
 	for systematic in systematics:
 	    command += ' {}'.format(systematic)
         script.write(command+'\n')
-    #submitQsubJob(script_name)
+    submitQsubJob(script_name)
     # alternative: run locally
-    os.system('bash '+script_name)
+    #os.system('bash '+script_name)
 
 # make output directory
 os.makedirs(output_directory)
 
 # loop over input files and submit jobs
-inputfiles = [f for f in inputfiles if 'tZq' in f['sample_name']] # temp for testing
-print(inputfiles)
+#inputfiles = [f for f in inputfiles if 'tZq' in f['sample_name']] # temp for testing
+#inputfiles = [f for f in inputfiles if 'combined' in f['file']] # temp for testing
+#print(inputfiles)
 for f in inputfiles:
     # get name and tag
     inputfile = f['file']
@@ -140,9 +157,6 @@ for f in inputfiles:
 	xsec = f['cross_section']
 	norm = xsec*lumi/float(hcounter)
     # set path to fake rate maps if needed
-    #frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
-    #frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
     submitjob(cwd, inputfile, norm, output_directory, process_name,
 		    event_selection, signal_category, selection_type, 
-		    #frmap_muon, frmap_electron,
-		    path_to_xml_file, systematics)
+		    bdt_combine_mode, path_to_xml_file, systematics)

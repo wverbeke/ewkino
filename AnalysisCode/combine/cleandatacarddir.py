@@ -6,7 +6,7 @@ def cleandatacarddir(datacarddir,rmtxt=True,rmroot=True):
     if rmtxt:
         alltxtfiles = [f for f in os.listdir(datacarddir) if f[-4:]=='.txt']
         for f in alltxtfiles:
-            if '_out.txt' in f: os.system('rm '+os.path.join(datacarddir,f))
+            if '_out_' in f: os.system('rm '+os.path.join(datacarddir,f))
             if 'combined' in f: os.system('rm '+os.path.join(datacarddir,f))
     if rmroot:
         allrootfiles = [f for f in os.listdir(datacarddir) if f[-5:]=='.root']

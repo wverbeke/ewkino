@@ -6,18 +6,22 @@ import os
 import sys
 
 regions = []
-regions.append('signalregion')
-regions.append('wzcontrolregion')
-regions.append('zzcontrolregion')
-regions.append('zgcontrolregion')
+#regions.append('signalregion')
+#regions.append('wzcontrolregion')
+#regions.append('zzcontrolregion')
+#regions.append('zgcontrolregion')
+regions.append('signalsideband_noossf')
+regions.append('signalsideband_noz')
 
-years = ['2018']
+years = ['2016','2017','2018']
 events = ['MC','data']
 
 selection_types = []
 selection_types.append('3tight')
 selection_types.append('3prompt')
 selection_types.append('fakerate')
+
+bdt_combine_mode = 'all' # choose from 'all', 'years', 'regions' or 'none'
 
 outputfolder = 'output_tzqid' # only top-level directory needed here
 
@@ -39,6 +43,6 @@ for year in years:
 		    if i>0: suffix = '_'+str(i)
 		    thisoutputfolder = os.path.join(outputfolder,year+eventtype,region+suffix+'_'+stype)
 		    cmd = 'python runsystematics.py '+inputfolder+' '+samplelist+' '
-		    cmd += thisoutputfolder+' '+region+' '+stype+' '+str(i)
+		    cmd += thisoutputfolder+' '+region+' '+stype+' '+str(i)+' '+bdt_combine_mode
 		    print('executing '+cmd)
 		    os.system(cmd)

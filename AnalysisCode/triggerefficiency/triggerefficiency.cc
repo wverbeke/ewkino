@@ -121,6 +121,8 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
     // initialize list of event id's for data overlap removal
     std::set<std::tuple<long,long,long>> evtlist;
 
+    int debugcounter = 0;
+
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
     //long unsigned numberOfEntries = 1000;
@@ -131,15 +133,18 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
         Event event = treeReader.buildEvent(entry,false,false);
 	event.applyLeptonConeCorrection();
 
+	// split the event selection string into a list
+	std::vector<std::string> selectionTags = stringTools::split(eventSelection,"_");
+
 	// full event selection -> too little statistics
-	if(eventSelection=="full"){
+	if(std::find(selectionTags.begin(),selectionTags.end(),"full")!=selectionTags.end()){
 	    if(!passES(event, "signalregion", "3tight", "nominal")) continue;
 	    int eventcategory = eventCategory(event, "nominal");
 	    if(eventcategory == -1) continue;
 	}
 
 	// select 3 loose leptons
-	if(stringTools::stringContains(eventSelection,"3loose_")){
+	if(std::find(selectionTags.begin(),selectionTags.end(),"3loose")!=selectionTags.end()){
 	    event.selectLooseLeptons();
 	    event.cleanElectronsFromLooseMuons();
 	    event.cleanTausFromLooseLightLeptons();
@@ -148,20 +153,20 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
 	}
 
 	// select three FO light leptons
-	if(stringTools::stringContains(eventSelection,"3fo_")){
+	if(std::find(selectionTags.begin(),selectionTags.end(),"3fo")!=selectionTags.end()){
 	    event.selectLooseLeptons();
 	    event.cleanElectronsFromLooseMuons();
 	    event.cleanTausFromLooseLightLeptons();
 	    event.removeTaus();
 	    event.selectFOLeptons();
 	    if(event.leptonCollection().size()!=3) continue;
-	    if(stringTools::stringContains(eventSelection,"_3tightveto")){
+	    if(std::find(selectionTags.begin(),selectionTags.end(),"3tightveto")!=selectionTags.end()){
 		if(event.leptonCollection().numberOfTightLeptons()==3) continue;
 	    }
 	}
 
 	// select three tight light leptons
-	if(stringTools::stringContains(eventSelection,"3tight_")){
+	if(std::find(selectionTags.begin(),selectionTags.end(),"3tight")!=selectionTags.end()){
 	    event.selectLooseLeptons();
 	    event.cleanElectronsFromLooseMuons();
 	    event.cleanTausFromLooseLightLeptons();
@@ -171,7 +176,7 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
 	}
 
 	// additional selection: reco pt cuts
-	if(stringTools::stringContains(eventSelection,"_recoptcuts")){
+	if(std::find(selectionTags.begin(),selectionTags.end(),"recoptcuts")!=selectionTags.end()){
 	    std::vector<double> recopt;
 	    recopt.push_back(event.leptonCollection()[0].uncorrectedPt());
 	    recopt.push_back(event.leptonCollection()[1].uncorrectedPt());
@@ -181,12 +186,16 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
 	}
 
 	// additional selection: cone pt cuts
-	if(stringTools::stringContains(eventSelection,"_ptcuts") || 
-	    stringTools::stringContains(eventSelection,"_coneptcuts")){
+	if(std::find(selectionTags.begin(),selectionTags.end(),"ptcuts")!=selectionTags.end() || 
+	    std::find(selectionTags.begin(),selectionTags.end(),"coneptcuts")!=selectionTags.end()){
+	    //std::cout << "checking pt cuts" << std::endl;
+	    //std::cout << event.leptonCollection()[0].pt() << event.leptonCollection()[1].pt();
+	    //std::cout << event.leptonCollection()[2].pt() << std::endl;
 	    event.sortLeptonsByPt();
 	    if(event.leptonCollection()[0].pt() < 25. 
 		|| event.leptonCollection()[1].pt() < 15. 
 		|| event.leptonCollection()[2].pt() < 10.) continue;
+	    //std::cout << "passed" << std::endl;
 	}
 
 	double weight = event.weight();
@@ -205,8 +214,12 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
 	    else evtlist.insert(evtid);
 	    weight = 1.;
         }
+	debugcounter++;
         fillEvent(event, weight, variables, histMap);
     }
+
+    std::cout << debugcounter << " events passed selection." << std::endl;
+
     // for MC it can happen that #pass > #tot (due to negative weights).
     // this gives errors when doing correct division, so need to manually fix here.
     // it could also happen that #tot < 0 or #trig < 0, so put minimum to zero first.
@@ -270,9 +283,8 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
 		    0,0);
 	    }    
 	}*/
-	// prints for debugging
-	/*	
-	for(int j=0; j<histMap[varname+"_trig"]->GetNbinsX()+2; ++j){
+	// prints for debugging	
+	/*for(int j=0; j<histMap[varname+"_trig"]->GetNbinsX()+2; ++j){
 	    std::cout << "--------------" <<std::endl;
 	    // print bin
 	    std::cout << "bin: " << histMap[varname+"_trig"]->GetBinLowEdge(j) << " -> "
@@ -305,7 +317,7 @@ int main( int argc, char* argv[] ){
     std::cerr<<"###starting###"<<std::endl;
     if( argc != 4 ){
         std::cerr << "### ERROR ###: triggerefficiency.cc requires 3 arguments to run: ";
-        std::cerr << "input_file_path, output_file_path event_selection";
+        std::cerr << "input_file_path, output_file_path event_selection" << std::endl;
         return -1;
     }
     // parse arguments
@@ -318,9 +330,9 @@ int main( int argc, char* argv[] ){
     if(!validInput) return -1;
     // define variables (arbitrary names, only used for histogram titles)
     std::vector< std::tuple<std::string,double,double,int> > variables;
-    variables.push_back(std::make_tuple("leptonptleading",0.,250,10));
-    variables.push_back(std::make_tuple("leptonptsubleading",0.,150.,10));
-    variables.push_back(std::make_tuple("leptonpttrailing",0.,100,10));
+    variables.push_back(std::make_tuple("leptonptleading",0.,300.,12));
+    variables.push_back(std::make_tuple("leptonptsubleading",0.,180.,12));
+    variables.push_back(std::make_tuple("leptonpttrailing",0.,120,12));
     variables.push_back(std::make_tuple("yield",0.,1.,1));
     // fill the histograms
     fillTriggerEfficiencyHistograms(input_file_path, output_file_path, event_selection, variables);

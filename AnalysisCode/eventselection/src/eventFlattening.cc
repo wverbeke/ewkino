@@ -169,7 +169,9 @@ void eventFlattening::initOutputTree(TTree* outputTree){
     outputTree->Branch("_leptonPtTrailing", &_leptonPtTrailing, "_leptonPtTrailing/F");
 }
 
-TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, const std::string& pathToXMLFile ){
+TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, 
+		const std::string& pathToXMLFile, 
+		const std::string& bdtCombineMode ){
     // make sure it is consistent with bdt training!
     reader->AddVariable("_abs_eta_recoil", &_abs_eta_recoil);
     reader->AddVariable("_Mjj_max", &_Mjj_max);
@@ -185,8 +187,12 @@ TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, const std
     reader->AddVariable("_dRlWbtagged", &_dRlWbtagged);
     reader->AddVariable("_M3l", &_M3l);
     reader->AddVariable("_abs_eta_max", &_abs_eta_max);
-    reader->AddVariable("_nJets", &_nJets);
-    reader->AddVariable("_nBJets", &_nBJets);
+    if( bdtCombineMode=="all" or bdtCombineMode=="regions" ){
+	// the variables nJets and nBJets are not present 
+	// if trained on regions separately
+	reader->AddVariable("_nJets", &_nJets);
+	reader->AddVariable("_nBJets", &_nBJets);
+    }
 
     reader->BookMVA("BDT", pathToXMLFile);
     return reader;

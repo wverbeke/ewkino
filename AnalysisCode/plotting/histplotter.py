@@ -123,12 +123,12 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     rfrac = 0.25 # fraction of ratio plot in canvas
     # fonts and sizes:
     #titlefont = 6; titlesize = 60
-    labelfont = 5; labelsize = 22
+    labelfont = 5; labelsize = 15
     axtitlefont = 5; axtitlesize = 22
     #infofont = 6; infosize = 40
     #legendfont = 4; legendsize = 40
     # title offset
-    ytitleoffset = 1.9
+    ytitleoffset = 2.1
     xtitleoffset = 4.5
     # margins:
     p1topmargin = 0.07
@@ -141,7 +141,7 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     # marker properties for data
     markerstyle = 20
     markercolor = 1
-    markersize = 0.5  
+    markersize = 0.75  
 
     ### order mc histograms
     # order by sumofweights
@@ -259,7 +259,7 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     xax.SetLabelSize(0)
     # Y-axis layout
     yax = mcerror.GetYaxis()
-    yax.SetMaxDigits(3)
+    yax.SetMaxDigits(4)
     yax.SetNdivisions(8,4,0,ROOT.kTRUE)
     yax.SetLabelFont(10*labelfont+3)
     yax.SetLabelSize(labelsize)

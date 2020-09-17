@@ -111,21 +111,29 @@ def getweightedvalue(valuegraph,spectrumhist):
     # make sure that the bins in spectrumhist correspond to the points in valuegraph!
     
     avgval = avgup = avgdown = 0
-    sumweighting = 0
+    sumweighting = 0.
     for i in range(valuegraph.GetN()):
 	# check that bin and point align
 	if valuegraph.GetX()[i] != spectrumhist.GetBinCenter(i+1):
 	    print('### ERROR ###: points in graph and bin centers in hist do not correspond')
 	    return (0,0,0)
 	# weight factor consists of two components: width of this datapoint and spectrum value
-	weightfactor = spectrumhist.GetBinWidth(i+1)*spectrumhist.GetBinContent(i+1)
+	# does the width need to be included??? probably not, just use number of events = bin content
+	#weightfactor = spectrumhist.GetBinWidth(i+1)*spectrumhist.GetBinContent(i+1)
+	weightfactor = spectrumhist.GetBinContent(i+1)
 	sumweighting += weightfactor
 	avgval += valuegraph.GetY()[i]*weightfactor
-	avgup += valuegraph.GetErrorYhigh(i)*weightfactor
-	avgdown += valuegraph.GetErrorYlow(i)*weightfactor
+	avgup += np.power(valuegraph.GetErrorYhigh(i),2)*weightfactor
+	avgdown += np.power(valuegraph.GetErrorYlow(i),2)*weightfactor
+	#print('--- point '+str(i)+' ---')
+	#print('weightfactor: '+str(weightfactor))
+	#print('value: '+str(valuegraph.GetY()[i]))
+	#print('uperror:'+str(valuegraph.GetErrorYhigh(i)))
+	#print('uperror:'+str(valuegraph.GetErrorYlow(i)))
     avgval /= sumweighting
-    avgup /= sumweighting
-    avgdown /= sumweighting
+    avgup = np.sqrt(avgup/sumweighting)
+    avgdown = np.sqrt(avgdown/sumweighting)
+    print((avgval,avgup,avgdown))
     return (avgval,avgup,avgdown)
 
 def drawExtraInfo(infos):
@@ -144,10 +152,13 @@ def drawExtraInfo(infos):
 	    tinfo.SetTextFont(info['textfont'])
 	tinfo.DrawLatexNDC(info['posx'],info['posy'],info['text'])
 
-def plotefficiencies(datagraphlist,mcgraph,mchist=None,mcsysthist=None,
+def plotefficiencies(datagraphlist,mcgraph,datahistlist=None,mchist=None,mcsysthist=None,
 		    mode='random',yaxtitle='',xaxtitle='',lumi=0.,
 		    outfile='plotefficiencies.png'):
     # note: datagraphlist and mcgraph contain efficiencies and are of type (list of) TGraphAsymmError
+    #	    datahistlist is of type list of TH1D and contains absolute numbers instead of efficiency
+    #	    if datahistlist is not None it is assumed to match datagraphlist,
+    #	    but individual elements can still be None in order not to plot them.
     #	    mchist is of type TH1D and contains the absolute numbers instead of efficiency
     #	    mcsyshist is of type TH1D and contains systematic variations to be applied to mcgraph
     #	    both of the above can be None
@@ -179,28 +190,47 @@ def plotefficiencies(datagraphlist,mcgraph,mchist=None,mcsysthist=None,
     markerstyle = 20
     markersize = 0.5
     # y axis range
-    yaxmin = 0.
+    yaxmin = 0. # note: spectrum plotting will not work well for yaxmin > 0
+		# could introduce offset but this gives issues with weighting in averaging
     yaxmax = 1.5
     # x axis range
     xaxmin = mcgraph.GetX()[0]-mcgraph.GetErrorXlow(0)
     xaxmax = mcgraph.GetX()[mcgraph.GetN()-1]+mcgraph.GetErrorXhigh(mcgraph.GetN()-1)
 
     ### set properties of absolute MC histogram showing the spectrum
-    plotspectrum = False
+    csurface = (yaxmax-yaxmin)*(xaxmax-xaxmin)
     if mchist is not None:
-	plotspectrum = True
 	mchist.SetFillColor(ROOT.kGray)
 	mchist.SetLineColor(ROOT.kBlack)
 	mchist.SetLineWidth(1)
 	# normalization and offset
-	mchistmax = 0
-	for i in range(1,mchist.GetNbinsX()+1):
-	    if mchist.GetBinContent(i)>mchistmax: mchistmax=mchist.GetBinContent(i)
-	scale = 0.5*(yaxmax-yaxmin)/mchistmax
+	integral = mchist.Integral("width")
+	scale = 0.15*csurface/integral
 	mchist.Scale(scale)
 	for i in range(1,mchist.GetNbinsX()+1):
-	    mchist.SetBinContent(i,mchist.GetBinContent(i)+yaxmin)
-   
+	    # set bins with zero error to zero.
+	    # (they could be filled with arbitrary value to avoid effiency errors but dont plot these)
+	    if mchist.GetBinError(i)==0:
+		mchist.SetBinContent(i,0)
+
+    ### set properties of absolute data histograms showing the spectrum
+    if datahistlist is not None:
+	for i,datahist in enumerate(datahistlist):
+	    if datahist is not None:
+		color = getcolor(datagraphlist[i],mode) # choose color of corresponding graph
+		datahist.SetLineWidth(1)
+		datahist.SetLineColor(color)
+		# highlight graph plotted in red
+		if color==ROOT.kRed:
+		    datahist.SetLineWidth(2)
+		# normalization and offset
+		integral = datahist.Integral("width")
+		scale = 0.15*csurface/integral
+		datahist.Scale(scale)
+		for i in range(1,datahist.GetNbinsX()+1):
+		    if datahist.GetBinError(i)==0:
+			datahist.SetBinContent(i,0) 
+
     ### calculate statistical and total mc error and set graph properties
     # note: mcstaterror is a copy of mcgraph before modifying it, containing statistical errors;
     #       mcerror starts as a copy of mcgraph but contains both statistical and systematic errors;
@@ -293,9 +323,10 @@ def plotefficiencies(datagraphlist,mcgraph,mchist=None,mcsysthist=None,
                         +'_{-'+'{:.4}'.format(mctup[2])+'}',
                         'posx':0.65,'posy':0.45,
                         'textsize':infosize,'textfont':infofont} )
-	for datagraph in datagraphlist:
-	    if getcolor(datagraph,mode)==ROOT.kRed:
-		datatup = getweightedvalue(datagraph,mchist)
+    if datahistlist is not None:
+	for i,datahist in enumerate(datahistlist):
+	    if(datahist is not None and getcolor(datagraphlist[i],mode)==ROOT.kRed):
+		datatup = getweightedvalue(datagraph,datahist)
 		info.append( { 'text':'weighted data eff:',
 				'posx':0.65,'posy':0.35,
 				'textsize':infosize*0.75,'textfont':infofont,
@@ -315,7 +346,7 @@ def plotefficiencies(datagraphlist,mcgraph,mchist=None,mcsysthist=None,
     legend.AddEntry(mcerror,"total sim. unc.","f")
     for datagraph in datagraphlist:
 	legend.AddEntry(datagraph,formathisttitle(datagraph.GetTitle()),"lpe")
-    if plotspectrum: legend.AddEntry(mchist,"simulated spectrum")
+    if mchist is not None: legend.AddEntry(mchist,"simulated spectrum")
 
     ### make legend for lower plot and add all histograms
     legend2 = ROOT.TLegend(p2legendbox[0],p2legendbox[1],p2legendbox[2],p2legendbox[3])
@@ -367,7 +398,10 @@ def plotefficiencies(datagraphlist,mcgraph,mchist=None,mcsysthist=None,
 
     # draw mcerror first to get range correct
     mcerror.Draw("A 2") # option A to draw axes, option 2 to draw error as rectangular bands
-    if plotspectrum: mchist.Draw("hist same")
+    if mchist is not None: mchist.Draw("hist same")
+    if datahistlist is not None:
+	for datahist in datahistlist:
+	    if datahist is not None: datahist.Draw("hist same")
     # draw data graphs
     # note: drawing two times to have perpendicular bars at vertical but not at horizontal error bars
     for datagraph in datagraphlist: 
@@ -446,12 +480,13 @@ if __name__=="__main__":
     ### search for histogram files to run on
     # note: the directory 'histdir' will be scanned for files matching the ones in 'histfilenames'.
     #	    plots will be made for all variable names in 'variables'
-    histdir = os.path.abspath('../triggerefficiency/output')
+    histdir = os.path.abspath('../triggerefficiency/output/3tight_ptcuts_2017')
     histfilenames = ['combined.root']
     variables = [
 		  {'name':'leptonptleading','xaxtitle':r'lepton p_{T}^{leading} (GeV)'},
-		  {'name':'leptonptsubleading','xaxtitle':r'lepton p_{T}^{subleading} (GeV)'},
-		  {'name':'leptonpttrailing','xaxtitle':r'lepton p_{T}^{trailing} (GeV)'}
+		  #{'name':'leptonptsubleading','xaxtitle':r'lepton p_{T}^{subleading} (GeV)'},
+		  #{'name':'leptonpttrailing','xaxtitle':r'lepton p_{T}^{trailing} (GeV)'},
+		  {'name':'yield','xaxtitle':r'total efficiency'}
 		]
     if not os.path.exists(histdir):
         print('### ERROR ###: requested to run on '+histdir+' but it does not seem to exist...')
@@ -480,6 +515,10 @@ if __name__=="__main__":
 		    sys.exit()
 		mcgraph = mcgraphlist[0]
 		mchist = loadobjects(histfile,mustcontain=['mc',variable['name']+'_tot'])[0]
+		datahistlist = loadobjects(histfile,mustcontain=['data',variable['name']+'_tot'])
+		# make sure the order in datagraphlist and datahistlist corresponds
+		datagraphlist.sort(key = lambda x: x.GetTitle())
+		datahistlist.sort(key = lambda x: x.GetTitle())
 		# set plot properties
 		yaxtitle = 'trigger efficiency'
 		xaxtitle = variable['xaxtitle']
@@ -490,8 +529,8 @@ if __name__=="__main__":
 		elif 'allyears' in histfile: lumi = 137100.
 		figname = os.path.join(localhistdir,histfile.rstrip('.root')+'_'
 						    +variable['name']+'.png')
-		plotefficiencies(datagraphlist,mcgraph,mchist=mchist,mcsysthist=None,
-				mode=mode,yaxtitle=yaxtitle,xaxtitle=xaxtitle,lumi=lumi,
-				outfile=figname)
+		plotefficiencies(datagraphlist,mcgraph,datahistlist=datahistlist,mchist=mchist,
+				mcsysthist=None,mode=mode,yaxtitle=yaxtitle,xaxtitle=xaxtitle,
+				lumi=lumi,outfile=figname)
 	    #except:
 		#print('### WARNING ###: something went wrong for '+histfile+','+variable['name'])
