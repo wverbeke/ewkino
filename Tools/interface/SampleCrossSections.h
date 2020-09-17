@@ -16,7 +16,7 @@ class SampleCrossSections{
 		double crossSectionRatio_pdfVar( const size_type ) const;
 
 		double crossSectionRatio_scaleVar( const size_type ) const;
-		double crossSectionRatio_MuR_1_MuF_1() const{ return crossSectionRatio_scaleVar( 1 ); }
+		double crossSectionRatio_MuR_1_MuF_2() const{ return crossSectionRatio_scaleVar( 1 ); }
 		double crossSectionRatio_MuR_1_MuF_0p5() const{ return crossSectionRatio_scaleVar( 2 ); }
 		double crossSectionRatio_MuR_2_MuF_1() const{ return crossSectionRatio_scaleVar( 3 ); }
 		double crossSectionRatio_MuR_2_MuF_2() const{ return crossSectionRatio_scaleVar( 4 ); }
