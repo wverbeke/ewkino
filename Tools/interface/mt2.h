@@ -9,7 +9,8 @@ Even though its short, do the computation in a separate cc file to avoid having 
 #include "../../objects/interface/PhysicsObject.h"
 #include "../../objects/interface/Met.h"
 
-
-double mt2( const PhysicsObject&, const PhysicsObject&, const Met& );
+namespace mt2{
+    double mt2( const PhysicsObject&, const PhysicsObject&, const Met& );
+}
 
 #endif 
