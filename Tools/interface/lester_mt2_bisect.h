@@ -357,8 +357,6 @@ class asymm_mt2_lester_bisect {
       ) {
 
 
-    disableCopyrightMessage(true); // By supplying an argument to disable, we actually ask for the message to be printed, if printing is not already disabled.   This counterintuitive function naming is to avoid the need to introduce static variable initialisations ....
-
     const double m1Min = mVis1+mInvis1; // when parent has this mass, ellipse 1 has smallest physical size
     const double m2Min = mVis2+mInvis2; // when parent has this mass, ellipse 2 has smallest physical size
 
