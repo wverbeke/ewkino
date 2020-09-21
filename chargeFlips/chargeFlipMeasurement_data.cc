@@ -14,6 +14,7 @@
 #include "../Tools/interface/histogramTools.h"
 #include "../Tools/interface/ConstantFit.h"
 #include "../Tools/interface/systemTools.h"
+#include "../Tools/interface/mt2.h"
 #include "../Event/interface/Event.h"
 #include "interface/chargeFlipSelection.h"
 #include "interface/chargeFlipTools.h"
@@ -35,6 +36,9 @@ std::vector< HistInfo > makeDistributionInfo(){
         HistInfo( "ht", "H_{T} (GeV)", 40, 0, 600 ),
         HistInfo( "mt2l", "M_{T}^{2l} (GeV)", 40, 0, 300 ),
 
+        HistInfo( "ptll", "P_{T}^{ll} (GeV)", 40, 0, 300 ),
+        HistInfo( "mt2ll", "M_{T2}^{ll} (GeV)", 40, 0, 120 ),
+
         HistInfo( "nJets", "number of jets", 8, 0, 8 ),
         HistInfo( "nBJets", "number of b-jets (tight deep CSV)", 4, 0, 4 ),
         HistInfo( "nVertex", "number of vertices", 40, 0, 70 )
@@ -55,6 +59,8 @@ std::vector< double > computeVariables( const Event& event ){
         ( event.electron( 0 ).pt() + event.electron( 1 ).pt() + event.metPt() ),
         event.jetCollection().scalarPtSum(),
         mt( electronSum, event.met() ),
+        electronSum.pt(),
+        mt2::mt2( event.electron( 0 ), event.electron( 1 ), event.met() ),
         static_cast< double >( event.numberOfJets() ),
         static_cast< double >( event.numberOfTightBTaggedJets() ),
         static_cast< double >( event.numberOfVertices() )
