@@ -39,6 +39,7 @@
 #include "Tools/src/ConstantFit.cc"
 #include "Tools/src/SampleCrossSections.cc"
 #include "Tools/src/QuantileBinner.cc"
+#include "Tools/src/mt2.cc"
 
 //include TreeReader code 
 #include "TreeReader/src/TreeReader.cc"
