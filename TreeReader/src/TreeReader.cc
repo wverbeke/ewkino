@@ -287,6 +287,9 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
 
     //check whether current sample is a SUSY sample
     _isSusy = containsSusyMassInfo();
+
+    //set scale so weights don't become 0 when building the event
+    scale = 1.;
 }
 
 
@@ -797,6 +800,17 @@ std::vector< std::shared_ptr< TH1 > > TreeReader::getHistogramsFromCurrentFile()
 void TreeReader::removeBSMSignalSamples(){
     for( auto it = samples.begin(); it != samples.end(); ){
         if( it->isNewPhysicsSignal() ){
+            it = samples.erase( it );
+        } else {
+            ++it;
+        }
+    }
+}
+
+
+void TreeReader::keepOnlySignalsWithName( const std::string& signalName ){
+    for( auto it = samples.begin(); it != samples.end(); ){
+        if( it->isNewPhysicsSignal() && it->processName() != signalName ){
             it = samples.erase( it );
         } else {
             ++it;
