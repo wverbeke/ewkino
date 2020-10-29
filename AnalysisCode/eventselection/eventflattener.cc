@@ -180,6 +180,7 @@ void eventloopEF_CR(const std::string& pathToFile, const double norm,
 } 
 
 int main( int argc, char* argv[] ){
+    std::cerr<<"###starting###"<<std::endl;
     if( argc != 12  ){
         std::cerr << "### ERROR ###: event flattening requires different number of arguments: ";
         std::cerr << "input_file_path, norm, output_directory, output_file_name,";
@@ -224,6 +225,6 @@ int main( int argc, char* argv[] ){
     else eventloopEF_CR( input_file_path, norm, output_directory, output_file_name, 
 			event_selection, selection_type, variation, frMap_muon, frMap_electron,
 			doMVA, pathToXMLFile);
-    std::cout<<"done"<<std::endl;
+    std::cerr<<"###done###"<<std::endl;
     return 0;
 }

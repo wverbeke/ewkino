@@ -130,8 +130,8 @@ bool MuonSelector::isFO2017tZq() const{
 
 bool MuonSelector::isFO2018tZq() const{
     if( muonMVAValue(muonPtr) <= muonMVACut() ){
-	if( muonPtr->closestJetDeepFlavor() > 0.03 ) return false;
-	if( muonPtr->ptRatio() < 0.4 ) return false;
+	if( muonPtr->closestJetDeepFlavor() > 0.02 ) return false;
+	if( muonPtr->ptRatio() < 0.6 ) return false;
     }
     return true;
 }
@@ -154,9 +154,9 @@ bool MuonSelector::isFOBasetZqMedium0p4() const{
 
 bool MuonSelector::isFO2016tZqMedium0p4() const{
     if( muonMVAValue(muonPtr) <= muonMVACut() ){
-        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 25., 0.03, 40., 0.015, 
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 20., 0.02, 40., 0.015, 
 		muonPtr->uncorrectedPt()) ) return false;
-        if( muonPtr->ptRatio() < 0.35 ) return false;
+        if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
 }
@@ -164,9 +164,9 @@ bool MuonSelector::isFO2016tZqMedium0p4() const{
 
 bool MuonSelector::isFO2017tZqMedium0p4() const{
     if( muonMVAValue(muonPtr) <= muonMVACut() ){
-        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 25., 0.05, 40., 0.02, 
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 20., 0.025, 40., 0.015, 
                 muonPtr->uncorrectedPt()) ) return false;
-        if( muonPtr->ptRatio() < 0.35 ) return false;
+        if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
 }
@@ -174,9 +174,9 @@ bool MuonSelector::isFO2017tZqMedium0p4() const{
 
 bool MuonSelector::isFO2018tZqMedium0p4() const{
     if( muonMVAValue(muonPtr) <= muonMVACut() ){
-        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 25., 0.04, 40., 0.02, 
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 20., 0.025, 40., 0.015, 
                 muonPtr->uncorrectedPt()) ) return false;
-        if( muonPtr->ptRatio() < 0.35 ) return false;
+        if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
 }

@@ -40,5 +40,6 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet);
 
 void fillMCFakeRateMeasurementHistograms(const std::string& leptonFlavor, const std::string& year,
-    const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex);
+    const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,
+    const bool isTestRun = false );
 

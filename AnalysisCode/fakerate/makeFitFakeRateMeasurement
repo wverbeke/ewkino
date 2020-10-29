@@ -1,0 +1,13 @@
+CC=g++ -Wall -Wextra -O3
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= fitFakeRateMeasurement.cc src/fakeRateMeasurementTools.cc ../tools/progressTracker.cc ../../codeLibrary.o
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=fitFakeRateMeasurement
+
+all:
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+
+clean:
+	rm -rf *o $(EXECUTABLE)
+

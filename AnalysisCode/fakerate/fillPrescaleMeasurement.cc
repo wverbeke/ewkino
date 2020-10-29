@@ -14,6 +14,8 @@
 #include "interface/prescaleMeasurementTools.h"
 
 int main( int argc, char* argv[] ){
+
+    std::cerr << "###starting###" << std::endl;
     // check number of command line arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
     if( !( argvStr.size() == 3 ) ){
@@ -55,5 +57,6 @@ int main( int argc, char* argv[] ){
 					triggerVectorMap[ year ], use_mT, 
 					metLowerCut_prescaleMeasurement, 
 					mTLowerCut_prescaleMeasurement );
+    std::cerr << "###done###" << std::endl;
     return 0;
 }

@@ -36,7 +36,7 @@ def sortbyauc(logfiles,printout=True):
 	else:
 	    print('### ERROR ###: something is wrong with the output log file '+fname)
 	    print('               cannot read info; check and/or change required format!')
-	    sys.exit()
+	    continue
     # sort and print output
     reslist.sort(key=lambda pair: pair[2])
     if printout:
@@ -54,7 +54,7 @@ def plotauc(reslist):
     plt.xlabel('configuration number (sorted by resulting AUC)')
     plt.ylabel('AUC (ROC)')
     plt.title('BDT parameters grid search results')
-    plt.savefig('figure.png')
+    plt.savefig('gridsearch_aucs.png')
 
 def getrocs(sdirname):
     # get list of effB and corresponding effS
@@ -66,7 +66,7 @@ def getrocs(sdirname):
 	for fname in flist:
 	    if not '.root' in fname: continue
 	    tfile = ROOT.TFile(os.path.join(root,fname))
-	    roc = tfile.Get("outdata/Method_BDT/BDT/MVA_BDT_rejBvsS")
+	    roc = tfile.Get("out_all_data/Method_BDT/BDT/MVA_BDT_rejBvsS")
 	    # check if roc histogram was actually found
 	    try: nbins = roc.GetNbinsX()
 	    except:
@@ -179,4 +179,4 @@ if __name__=="__main__":
 	if idx>=0: label = str(int(path[idx+4])+1)+' variables'
 	labels.append(label)
     colors = list(range(len(effB)))
-plotROCroot(effB,effS,colors,labels,'','test','a plot')'''
+    plotROCroot(effB,effS,colors,labels,'','test','a plot')'''

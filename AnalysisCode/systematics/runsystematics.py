@@ -43,12 +43,15 @@ signal_category = int(sys.argv[6]) # put 0 for control regions
 bdt_combine_mode = sys.argv[7]
 
 systematics = (['JEC','JER','Uncl', # acceptance
-                'muonIDSyst','muonIDStat', # weight
-		'electronIDSyst','electronIDStat', # weight
+		#'muonID','electronID', # (for ttH ID)
+                'muonIDSyst','muonIDStat', # weight (for TOP ID)
+		'electronIDSyst','electronIDStat', # weight (for TOP ID)
 		'pileup','bTag_heavy','bTag_light','prefire', # weight
-                'fScale','rScale','qcdScalesVar','isrScale','fsrScale', # scale
+                'fScale','rScale','rfScales','isrScale','fsrScale', # scale
 		'electronReco', # electronreco
-                'pdfVar']) # pdfvar
+                'pdfShapeVar','pdfNorm', # lhe
+		'qcdScalesShapeVar','qcdScalesNorm' # lhe
+		]) 
 #systematics = ['JEC','pileup','fScale'] # smaller test set of systematics
 cwd = os.getcwd()
 

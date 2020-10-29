@@ -234,6 +234,7 @@ double eventFlattening::fakeRateWeight( const Event& event,
 	if( !(leptonPtr->isFO() && !leptonPtr->isTight()) ) continue;
             
 	double ptMax = 44.9; // limit to bin up to 45 GeV
+	//double ptMax = 29.9; // limit to bin up to 30 GeV 
 	double croppedPt = std::min( leptonPtr->pt(), ptMax );
         double croppedAbsEta = std::min( leptonPtr->absEta(), (leptonPtr->isMuon() ? 2.4 : 2.5) );
 

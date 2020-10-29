@@ -111,12 +111,18 @@ Color_t bkgColorHNL(const std::string& bkgName){
     else return kBlack;
 }
 
-Color_t bkgColorPrescale(const std::string bkgName){
-    // return colors for prescale measurement plots
-    if(bkgName=="WJets") return kBlue - 7;
-    else if(bkgName=="TT") return kMagenta - 7;
-    else if(bkgName=="DY") return kRed - 7;
-    else if(bkgName=="VV") return kOrange - 3;
+Color_t bkgColorFakeRate(const std::string bkgName){
+    // return colors for prescale/fake-rate measurement plots
+    // separate processes
+    if(bkgName=="WJets" || bkgName=="WJets_prompt") return kRed - 7;
+    else if(bkgName=="TT" || bkgName=="TT_prompt") return kRed - 9;
+    else if(bkgName=="DY" || bkgName=="DY_prompt") return kViolet - 4 ;
+    else if(bkgName=="VV" || bkgName=="VV_prompt") return kMagenta + 2;
+    else if(bkgName=="QCD" || bkgName=="QCD_nonprompt") return kBlue - 7;
+    else if(bkgName=="other" || bkgName=="other_nonprompt") return kCyan - 9;
+    // grouped
+    else if(bkgName=="prompt") return kMagenta - 7;
+    else if(bkgName=="nonprompt") return kBlue - 7;
     else return kBlack;    
 }
 
@@ -142,7 +148,7 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
     } 
     else if(analysis == "HNL") return bkgColorHNL(bkgName);
     else if(analysis == "ewkinoDilep") return bkgColorEWKDilept(bkgName);
-    else if(analysis == "prescale") return bkgColorPrescale(bkgName);
+    else if(analysis == "fakerate") return bkgColorFakeRate(bkgName);
     else return bkgColorGeneral();
 }
 
@@ -245,7 +251,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
         StackCol(bkg[h], bkgColor(names[h + 1], analysis) ); //first name is data
     }    
 
-	//reset internal coloring counter
+    //reset internal coloring counter
     if( analysis == "" ) bkgColorGeneral(true);
 
     //color signal histgrams if they are to be plotted
@@ -261,6 +267,8 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
 
     //set Poisonian errors to data
     data->SetBinErrorOption(TH1::kPoisson);
+    data->SetMarkerStyle(20);
+    //data->SetMarkerSize(0.5);
 
     //Replace data by TGRaphAsymmErrors for plotting
     TGraphAsymmErrors* dataGraph = new TGraphAsymmErrors(data);

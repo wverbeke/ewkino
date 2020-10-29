@@ -77,12 +77,23 @@ int main( int argc, char* argv[] ){
 	}
     }*/
     
+    // make the plot
     systemTools::makeDirectory("fakeRateMaps");
-    plot2DHistogram( ratio.get(), ( "fakeRateMaps/fakeRateMap_MC_" + instanceName + ".pdf").c_str() );
+    plot2DHistogram( ratio.get(), ( "fakeRateMaps/fakeRateMap_MC_" + instanceName + ".png").c_str() );
+    // for testing purposes: also plot the numerator and denominator separately
+    /*gStyle->SetPaintTextFormat("5.3g"); // scientific notation of bin contents 
+    plot2DHistogram( numerator.get(), ( "fakeRateMaps/fakeRateMap_MC_" + instanceName 
+					+ "_numerator.png").c_str() );
+    std::cout << "numerator: " << numerator.get()->GetEntries() << std::endl;
+    plot2DHistogram( denominator.get(), ( "fakeRateMaps/fakeRateMap_MC_" + instanceName 
+                                        + "_denominator.png").c_str() );
+    std::cout << "denominator: " << denominator.get()->GetEntries() << std::endl;*/
 
+    // write the corresponding histogram to a root file
     TFile* writeFile = TFile::Open( ( "fakeRateMaps/fakeRateMap_MC_" + instanceName + ".root" ).c_str(),
                                         "RECREATE" );
     ratio->Write( ("fakeRate_" + instanceName).c_str() );
+    // also write the heavy and light fake rates and their ratio to the file
     lightratio->Write( ("fakeRate_lightflavor_"+instanceName).c_str() );
     heavyratio->Write( ("fakeRate_heavyflavor_"+instanceName).c_str() );
     heavytolight->Write( ("heavytolight"+instanceName).c_str() );

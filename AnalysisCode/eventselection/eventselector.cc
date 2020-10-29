@@ -76,6 +76,7 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
 }
 
 int main( int argc, char* argv[] ){
+    std::cerr<<"###starting###"<<std::endl;
     if( argc != 7 ){
         std::cerr << "event selection requires exactly 6 arguments to run: " << std::endl;
 	std::cerr << "input_file_path, output_directory, output_file_name, ";
@@ -93,6 +94,6 @@ int main( int argc, char* argv[] ){
     if(!validInput){return -1;}
     eventloopES( input_file_path, output_directory, output_file_name, 
 		    event_selection, selection_type, variation );
-    std::cout<<"done"<<std::endl;
+    std::cerr<<"###done###"<<std::endl;
     return 0;
 }

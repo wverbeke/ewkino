@@ -7,8 +7,9 @@ import os
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
-years = ['2016','2017','2018']
-flavours = ['muon','electron']
+years = ['2016']
+flavours = ['electron','muon']
+istestrun = False
 
 # check if executable exists
 if not os.path.exists('./fillMCFakeRateMeasurement'):
@@ -29,13 +30,17 @@ for year in years:
 		nsamples += 1
 	print('found '+str(nsamples)+' samples for '+year+' '+flavour+'s.')
         for i in range(nsamples):
+	    if(istestrun and i!=11): continue
             script_name = 'fillMCFakeRateMeasurement.sh'
             with open(script_name,'w') as script:
                 initializeJobScript(script)
                 script.write('cd {}\n'.format(cwd))
-                command = './fillMCFakeRateMeasurement {} {} {}'.format(flavour,year,i)
+                command = './fillMCFakeRateMeasurement {} {} {} {}'.format(
+			    flavour,year,i,istestrun)
                 script.write(command+'\n')
-            submitQsubJob(script_name)
+	    if not istestrun:
+		submitQsubJob(script_name)
             # alternative: run locally
-            #os.system('bash '+script_name)
+	    else:
+		os.system('bash '+script_name)
 

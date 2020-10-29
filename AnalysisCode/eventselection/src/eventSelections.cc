@@ -24,7 +24,6 @@ bool passES(Event& event, const std::string& eventselection,
         { "ttzcontrolregion", pass_ttzcontrolregion },
 	{ "signalsideband_noossf", pass_signalsideband_noossf },
 	{ "signalsideband_noz", pass_signalsideband_noz },
-	{ "npcontrolregion" , pass_npcontrolregion}
     };
     auto it = ESFunctionMap.find( eventselection );
     if( it == ESFunctionMap.cend() ){
@@ -114,6 +113,25 @@ int eventCategory(Event& event, const std::string& variation){
     return 3;
 }
 
+// help functions for trigger and pt-threshold selections //
+
+bool passAnyTrigger(Event& event){
+    bool passanytrigger = event.passTriggers_e() || event.passTriggers_ee()
+                        || event.passTriggers_eee() || event.passTriggers_m()
+                        || event.passTriggers_mm() || event.passTriggers_mmm()
+                        || event.passTriggers_em() || event.passTriggers_eem()
+                        || event.passTriggers_emm();
+    return passanytrigger;
+}
+
+bool passLeptonPtThresholds(Event& event){
+    event.sortLeptonsByPt();
+    if(event.leptonCollection()[0].pt() < 25.
+	|| event.leptonCollection()[1].pt() < 15.
+        || event.leptonCollection()[2].pt() < 10.) return false;
+    return true; 
+}
+
 // help functions for determining the number of leptons with correct ID //
 
 bool hasnFOLeptons(Event& event, int n, bool select){
@@ -149,8 +167,11 @@ bool pass_signalregion(Event& event, const std::string& selectiontype,
 			const std::string& variation){
     // apply basic object selection
     cleanLeptonsAndJets(event);
+    // apply trigger thresholds
+    if(not passAnyTrigger(event)) return false;
     // select FO leptons
     if(!hasnFOLeptons(event, 3, true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){ 
 	if(!hasnTightLeptons(event, 3, true)) return false; 
@@ -175,7 +196,10 @@ bool pass_signalregion(Event& event, const std::string& selectiontype,
 bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype, 
 				const std::string& variation){
     cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event, 3, true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -199,7 +223,10 @@ bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype,
 bool pass_signalsideband_noz(Event& event, const std::string& selectiontype,
 				const std::string& variation){
     cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -225,7 +252,10 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
 				const std::string& variation){
     // very similar to signal region but b-jet veto and other specificities
     cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -256,7 +286,10 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
 bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
 				const std::string& variation){
     cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,4,true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 4, true)) return false;
@@ -295,7 +328,10 @@ bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
 bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
 			    const std::string& variation){
     cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -334,30 +370,4 @@ bool pass_ttzcontrolregion(Event& event, const std::string& selectiontype,
     // dummy condition on variation to avoid warnings
     if(variation=="all") return false;
     return false;
-}
-
-bool pass_npcontrolregion(Event& event, const std::string& selectiontype,
-                                const std::string& variation){
-    cleanLeptonsAndJets(event);
-    if(!hasnFOLeptons(event, 3, true)) return false;
-    // do lepton selection for different types of selections
-    if(selectiontype=="3tight"){
-        if(!hasnTightLeptons(event, 3, true)) return false;
-    } else if(selectiontype=="3prompt"){
-        if(!hasnTightLeptons(event, 3, true)) return false;
-        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
-    } else if(selectiontype=="fakerate"){
-        if(hasnTightLeptons(event, 3, false)) return false;
-        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
-    } else if(selectiontype=="2tight"){
-        if(!hasnTightLeptons(event, 2, false)) return false;
-        if(hasnTightLeptons(event, 3, false)) return false;
-    } else return false;
-    // either no OSSF or OSSF off Z-mass:
-    if(event.hasOSSFLightLeptonPair() and event.hasZTollCandidate(halfwindow)) return false;
-    // at least two jets of which at least one b-jet (? mabye leave out?)
-    //if(eventCategory(event, variation)<0) return false;
-    // dummy condition on variation to avoid warnings
-    if(variation=="all") return true;
-    return true;
 }

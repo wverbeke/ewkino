@@ -9,7 +9,7 @@ std::map< std::string,unsigned > getWeightIndices( const TreeReader& treeReader 
     std::map< std::string,unsigned > resMap;
     // case 1: 2016 ZGToLLG sample
     if( stringTools::stringContains( treeReader.currentSamplePtr()->fileName(),
-            std::string("ZGToLLG_01J_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8") ) ){
+            std::string("ZGToLLG_01J_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16") ) ){
 	// the order of the pdf and scale variations is swapped. 
 	// moreover, the scale variations give nonsensical results so ignore for now.
         resMap["firstScaleIndex"] = 104;
@@ -17,6 +17,16 @@ std::map< std::string,unsigned > getWeightIndices( const TreeReader& treeReader 
         resMap["firstPdfIndex"] = 1;
         resMap["numberOfPdfVariations"] = 103;
         // (to be checked by someone who knows more about this than I do...)
+	return resMap;
+    }
+    if( stringTools::stringContains( treeReader.currentSamplePtr()->fileName(),
+	    std::string("ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8_Fall17") ) ){
+	// number of pdf variations seems to be zero for some events but not for most.
+	// ignore all lhe variations for safety.
+	resMap["firstScaleIndex"] = 0;
+	resMap["numberOfScaleVariations"] = 0;
+	resMap["firstPdfIndex"] = 0;
+	resMap["numberOfPdfVariations"] = 0;
 	return resMap;
     }
     // default case for most samples
@@ -79,7 +89,7 @@ GeneratorInfo::GeneratorInfo( const TreeReader& treeReader ) :
 
 double retrieveWeight( const double* array, const unsigned index, const unsigned startindex, 
 			const unsigned nindices, const std::string& name ){
-    if( index > nindices ){
+    if( index >= nindices ){
         throw std::out_of_range( "Only " + std::to_string(nindices) + " " + name 
 		+ " variations are available, and an index larger or equal than " + std::to_string(nindices) + " is requested." );
     }

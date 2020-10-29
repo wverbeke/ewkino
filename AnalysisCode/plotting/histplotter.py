@@ -163,6 +163,8 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
 	clip(hist) # set negative bins to zero!
         mchistsum.Add(hist)
         mchiststack.Add(hist)
+
+    print('checkpoint 1')
     
     ### calculate total mc error and set its histogram properties
     mcerror = mchistsum.Clone()
@@ -195,6 +197,8 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     scstaterror.SetMarkerStyle(1)
     scerror.SetMarkerStyle(1)
 
+    print('checkpoint 2')
+
     ### operations on data histogram
     datahist.SetMarkerStyle(markerstyle)
     datahist.SetMarkerColor(markercolor)
@@ -218,7 +222,9 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     legend.AddEntry(datahist,datahist.GetTitle(),"pe1")
     for hist in mchistlist:
         legend.AddEntry(hist,hist.GetTitle(),"f")
-    legend.AddEntry(mcerror,"total sim. unc.","f")    
+    legend.AddEntry(mcerror,"total sim. unc.","f")
+
+    print('checkpoint 3')
 
     ### make legend for lower plot and add all histograms
     legend2 = ROOT.TLegend(p2legendbox[0],p2legendbox[1],p2legendbox[2],p2legendbox[3])
@@ -243,6 +249,8 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     pad2.SetLeftMargin(leftmargin)
     pad2.SetRightMargin(rightmargin)
     pad2.Draw()
+
+    print('checkpoint 4')
     
     ### make upper part of the plot
     pad1.cd()
@@ -347,7 +355,7 @@ if __name__=="__main__":
         {'name':'_dRlWbtagged','title':r'#Delta R(lep_{W},jet_{b-tagged})','unit':''},
         {'name':'_M3l','title':r'M_{3l}','unit':'GeV'},
         {'name':'_abs_eta_max','title':r'#||{#eta}_{max}','unit':''},
-	{'name':'_eventBDT','title':r'event BDT output score','unit':''},
+	#{'name':'_eventBDT','title':r'event BDT output score','unit':''},
 	{'name':'_nMuons','title':r'number of muons in event','unit':''},
 	{'name':'_nElectrons','title':r'number of electrons in event','unit':''},
 	{'name':'_yield','title':r'total yield','unit':''},

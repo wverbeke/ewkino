@@ -1,6 +1,6 @@
-#####################################################
-# script to call combineCards.py and add rateParams #
-#####################################################
+######################################################
+# script to run combine executable on all datacards  #
+######################################################
 import os
 import sys
 sys.path.append(os.path.abspath('../../skimmer'))
@@ -26,15 +26,27 @@ def getcardcombinations(datacarddir,doprint=True):
     combineddict = {}
     cards_all = [f for f in os.listdir(datacarddir) if f[-4:]=='.txt']
     cards_all = subselect(cards_all,maynotcontain=['out.txt'])
-    ### TEMPORARY FIX FOR PROBLEMS WITH NULL NORM IN ZZCONTROLREGION: LEAVE IT OUT
-    #cards_all = subselect(cards_all,maynotcontain=['zzcontrolregion'])
-    cards_signalregion = subselect(cards_all,mustcontain=['signalregion'])
-    combineddict['dc_combined_signalregion_2016'] = subselect(cards_signalregion,mustcontain=['2016'])
-    combineddict['dc_combined_signalregion_2017'] = subselect(cards_signalregion,mustcontain=['2017'])
-    combineddict['dc_combined_signalregion_2018'] = subselect(cards_signalregion,mustcontain=['2018'])
+    cards_sr = subselect(cards_all,mustcontain=['signalregion'])
+    cards_cr = subselect(cards_all,mustcontain=['controlregion'])
+    # combinations of signal regions per year
+    combineddict['dc_combined_signalregion_2016'] = subselect(cards_sr,mustcontain=['2016'])
+    combineddict['dc_combined_signalregion_2017'] = subselect(cards_sr,mustcontain=['2017'])
+    combineddict['dc_combined_signalregion_2018'] = subselect(cards_sr,mustcontain=['2018'])
+    combineddict['dc_combined_signalregion_1617'] = (subselect(cards_sr,mustcontain=['2016']) 
+						    + subselect(cards_sr,mustcontain=['2017']))
+    # combinations of years per signal region (+ control regions!)
+    combineddict['dc_combined_signalregion_1'] = (subselect(cards_sr,mustcontain=['_1_'])
+						    + cards_cr)
+    combineddict['dc_combined_signalregion_2'] = (subselect(cards_sr,mustcontain=['_2_'])
+                                                    + cards_cr)
+    combineddict['dc_combined_signalregion_3'] = (subselect(cards_sr,mustcontain=['_3_'])
+                                                    + cards_cr)
+    # combinations of signal regions per year (+ control regions!)
     combineddict['dc_combined_2016'] = subselect(cards_all,mustcontain=['2016'])
     combineddict['dc_combined_2017'] = subselect(cards_all,mustcontain=['2017'])
     combineddict['dc_combined_2018'] = subselect(cards_all,mustcontain=['2018'])
+    combineddict['dc_combined_1617'] = (subselect(cards_all,mustcontain=['2016'])
+					+ subselect(cards_all,mustcontain=['2017']))
     combineddict['dc_combined_all'] = cards_all
     if not doprint: return combineddict
     for comb in sorted(list(combineddict.keys())):
@@ -97,7 +109,7 @@ def addcombinecommands(script,datacard,runblind):
 if __name__=="__main__":
 
     # global settings    
-    datacarddir = 'datacards_defaultbins_regionbdts'
+    datacarddir = 'datacards_newbins'
     runblind = True
     only2016 = False
 
@@ -117,14 +129,17 @@ if __name__=="__main__":
             script.write('cd {}\n'.format( datacarddir ) )
 	    addcombinecommands(script,card,runblind)
         # submit job and catch errors 
-        submitQsubJob( script_name )
+        #submitQsubJob( script_name )
         # alternative: run locally (for testing and debugging)
-        #os.system('bash '+script_name)
+        os.system('bash '+script_name)
 
     # part 2: run combine command for a number of combination of cards
     combineddict = makecombinedcards(datacarddir)
     for comb in sorted(list(combineddict.keys())):
 	if(only2016 and not '2016' in comb): continue
+	#if( not ('dc_combined_2016' in comb
+	#	 or 'dc_combined_2017' in comb 
+	#	 or 'dc_combined_1617' in comb) ): continue # temp!!!
 	print('running combine for '+comb)
 	card = comb+'.txt'
 	#make a job script 
@@ -134,6 +149,6 @@ if __name__=="__main__":
             script.write('cd {}\n'.format( datacarddir ) )
             addcombinecommands(script,card,runblind)
         # submit job and catch errors 
-        submitQsubJob( script_name )
+        #submitQsubJob( script_name )
         # alternative: run locally (for testing and debugging)
-        #os.system('bash '+script_name)
+        os.system('bash '+script_name)

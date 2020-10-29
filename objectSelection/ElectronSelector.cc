@@ -53,7 +53,8 @@ loose electron selection (common for ttH and tZq ID)
 ----------------------------------------------------------------
 */
 bool ElectronSelector::isLooseBase() const{
-    if( electronPtr->uncorrectedPt() < 7 ) return false;
+    //if( electronPtr->uncorrectedPt() < 7 ) return false;
+    if( electronPtr->uncorrectedPt() < 5 ) return false; // temp for syncing with TT
     if( electronPtr->absEta() >= 2.5 ) return false;
     if( fabs( electronPtr->dxy() ) >= 0.05 ) return false;
     if( fabs( electronPtr->dz() ) >= 0.1 ) return false;
@@ -125,27 +126,35 @@ bool ElectronSelector::isFOBasetZq() const{
 bool ElectronSelector::isFO2016tZq() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
         if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+	if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoWP80() ) return false;	
+    
+	/*if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.1,50,0.05,
+            electronPtr->uncorrectedPt()) ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
-        if( !electronPtr->passElectronMVAFall17NoIsoWP80() ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoWP90() ) return false; */
     }
     return true;
 }
 
 bool ElectronSelector::isFO2017tZq() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-        if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+        //if( electronPtr->closestJetDeepFlavor() > 0.05 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.1,50,0.05,
+            electronPtr->uncorrectedPt()) ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
-        if( !electronPtr->passElectronMVAFall17NoIsoWP80() ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoWP90() ) return false;
     }
     return true;
 }
 
 bool ElectronSelector::isFO2018tZq() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-	if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(30,0.15,60,0.07,
-						    electronPtr->uncorrectedPt())) return false;
+	//if( electronPtr->closestJetDeepFlavor() > 0.05 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.1,50,0.05,
+            electronPtr->uncorrectedPt()) ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
-        if( !electronPtr->passElectronMVAFall17NoIsoWP80() ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoWP90() ) return false;
     }
     return true;
 }
@@ -179,7 +188,7 @@ bool ElectronSelector::isFOBasetZqMedium0p4() const{
 
 bool ElectronSelector::isFO2016tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-        if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(30,0.55,50,0.2,
+        if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.05,
 	    electronPtr->uncorrectedPt()) ) return false;
 	//if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
@@ -190,7 +199,7 @@ bool ElectronSelector::isFO2016tZqMedium0p4() const{
 
 bool ElectronSelector::isFO2017tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-	if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(30,0.6,60,0.05,
+	if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.08,
 	    electronPtr->uncorrectedPt()) ) return false;
         //if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
 	if( electronPtr->ptRatio() < 0.5 ) return false;
@@ -201,7 +210,7 @@ bool ElectronSelector::isFO2017tZqMedium0p4() const{
 
 bool ElectronSelector::isFO2018tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-        if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.6,45,0.08,
+        if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.4,50,0.05,
 	    electronPtr->uncorrectedPt())) return false;
 	//if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;

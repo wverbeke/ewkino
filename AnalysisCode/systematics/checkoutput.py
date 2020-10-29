@@ -1,13 +1,19 @@
-#################################################################################
-# check current directory for .sh.e files and scanning for failed skim commands #
-#################################################################################
+############################################################################
+# check current directory for .sh.e files and scanning for failed commands #
+############################################################################
 import os
 
-def check_done(filename,filetext):
-    ndone = filetext.count('done')
-    if(ndone==1): return 0
+def check_start_done(filename,filetext):
+    nstarted = filetext.count('###starting###')
+    if(nstarted==0):
+        print('### WARNING: file '+fname+' contains no valid starting tag.')
+        print('             does the process write the correct tags to the error files?')
+        return 1
+    ndone = filetext.count('###done###')
+    if(nstarted==ndone): return 0
     print('found issue in file '+filename+':')
-    print('   finishing command "done" was not written')
+    print('   '+str(nstarted)+' commands were initiated.')
+    print('   '+str(ndone)+' seem to have finished normally.')
     return 1
 
 def check_content(filename,filetext,contentlist):
@@ -29,15 +35,8 @@ for fname in files:
     f = open(fname)
     c = f.read()
     f.close()
-    nerror += check_content(fname,c,['SysError'])
-
-files = [fname for fname in os.listdir(os.getcwd()) if '.sh.o' in fname]
-for fname in files:
-    f = open(fname)
-    c = f.read()
-    f.close()
-    nerror += check_done(fname,c)
-    nerror += check_content(fname,c,['SysError'])
+    nerror += check_start_done(fname,c)
+    nerror += check_content(fname,c,['SysError','/var/torque/mom_priv/jobs'])
 
 if(nerror==0):
     print('no problematic files were found by this automated checking!')

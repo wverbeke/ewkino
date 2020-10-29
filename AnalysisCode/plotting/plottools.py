@@ -125,7 +125,7 @@ def setTDRstyle():
     ROOT.gStyle.SetAxisColor(1, "XYZ");
     ROOT.gStyle.SetStripDecimals(ROOT.kTRUE);
     ROOT.gStyle.SetTickLength(0.03, "XYZ");
-    ROOT.gStyle.SetNdivisions(505, "XYZ");
+    ROOT.gStyle.SetNdivisions(510, "XYZ");
     ROOT.gStyle.SetPadTickX(1);  # to get tick marks on the opposite side of the frame
     ROOT.gStyle.SetPadTickY(1);
 
@@ -197,3 +197,13 @@ def drawLumi(pad, extratext="Preliminary", lumitext="<lumi> fb^{-1} (13 TeV)"):
 
 ############################################################
 
+def printHistogram(hist):
+
+    print('### {} ###'.format(hist.GetName()))
+    for i in range(0,hist.GetNbinsX()+2):
+	bininfo = '  -----------\n'
+	bininfo += '  bin: {} -> {}\n'.format(hist.GetBinLowEdge(i),
+					    hist.GetBinLowEdge(i)+hist.GetBinWidth(i))
+	bininfo += '  content: {}\n'.format(hist.GetBinContent(i))
+	bininfo += '  error: {}\n'.format(hist.GetBinError(i))
+	print(bininfo)

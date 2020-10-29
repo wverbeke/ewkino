@@ -1,6 +1,6 @@
-#################################################################################
-# check current directory for .sh.e files and scanning for failed skim commands #
-#################################################################################
+############################################################################
+# check current directory for .sh.e files and scanning for failed commands #
+############################################################################
 import os
 
 def check_start_done(filename,filetext):

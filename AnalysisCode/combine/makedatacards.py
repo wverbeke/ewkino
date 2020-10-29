@@ -108,13 +108,15 @@ def makealigned(stringlist):
 if __name__=="__main__":
 
     # define subdirectory to put datacard and root file in
-    datacarddir = 'datacards_defaultbins_regionsbdts'
+    datacarddir = 'datacards_newbins'
     # set parameters to read channels
-    topdir = '../systematics/output_tzqid_regionbdts'
+    topdir = '../systematics/output_tzqid_copyforrebinning'
     npfromdata = True
-    cnames = (['signalregion_1','signalregion_2','signalregion_3',
-		'wzcontrolregion','zzcontrolregion','zgcontrolregion'])
-    years = ['2016','2017']
+    cnames = ['signalregion_1','signalregion_2','signalregion_3']
+    cnames.append('wzcontrolregion')
+    cnames.append('zzcontrolregion')
+    cnames.append('zgcontrolregion')
+    years = ['2016','2017','2018']
     # make dict to read channels
     channels = {}
     suffix = 'npfromdata' if npfromdata else 'npfromsim'
@@ -122,14 +124,14 @@ if __name__=="__main__":
 	for year in years:
 	    channels[c+'_'+year] = os.path.join(topdir,year+'combined',c,suffix,'combined.root')
     # define variable to fit on
-    signalvariable = '_eventBDT' # for signal regions
+    signalvariable = '_rebinnedeventBDT' # for signal regions
     controlvariable = '_yield' # for control regions
 
     if os.path.exists(datacarddir):
-	print('### WARNING ###: directory already exists. Clean it? (y/n)')
-	go = raw_input()
-	if not go=='y':
-	    sys.exit()
+	#print('### WARNING ###: directory already exists. Clean it? (y/n)')
+	#go = raw_input()
+	#if not go=='y':
+	#    sys.exit()
 	os.system('rm -r '+datacarddir)
     os.makedirs(datacarddir)
 

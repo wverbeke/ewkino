@@ -205,15 +205,15 @@ if __name__ == '__main__':
     args = {}
     ### Configure input parameters (hard-coded)
     # folder to read mc root files from
-    args['mcrootdir'] = '/user/llambrec/Files/tzqid/2016MC/wzcontrolregion'
+    args['mcrootdir'] = '/user/llambrec/Files/tzqid/2017MC/signalregion'
     # folder to read data root files from
-    args['datarootdir'] = '/user/llambrec/Files/tzqid/2016data/wzcontrolregion'
+    args['datarootdir'] = '/user/llambrec/Files/tzqid/2017data/signalregion'
     #args['datarootdir'] = args['mcrootdir']
     # samplelist for simulation with process names and cross sections
-    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_MC.txt'
+    args['mcsamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2017_MC.txt'
     ##args['mcsamplelist'] = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_oldtuples/samplelist_tzq_2016_MC.txt'
     # samplelist for data with dataset names
-    args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2016_data.txt' 
+    args['datasamplelist'] = '/user/llambrec/ewkino/AnalysisCode/samplelists/samplelist_tzq_2017_data.txt' 
     #args['datasamplelist'] = args['mcsamplelist']
     # file to store histograms in:
     args['histfile'] = '/user/llambrec/ewkino/AnalysisCode/plotting/histograms/histograms.root'
@@ -234,7 +234,7 @@ if __name__ == '__main__':
         {'name':'_dRlWbtagged','bins':list(np.linspace(0,7,num=21))},
         {'name':'_M3l','bins':list(np.linspace(0,600,num=21))},
         {'name':'_abs_eta_max','bins':list(np.linspace(0,5,num=21))},
-	{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=16))},
+	#{'name':'_eventBDT','bins':list(np.linspace(-1,1,num=16))},
 	{'name':'_nMuons','bins':list(np.linspace(-0.5,3.5,num=5))},
 	{'name':'_nElectrons','bins':list(np.linspace(-0.5,3.5,num=5))},
 	{'name':'_yield','bins':list(np.linspace(0,1,num=2))},
@@ -245,7 +245,7 @@ if __name__ == '__main__':
 	{'name':'_leptonPtTrailing','bins':list(np.linspace(10,150,num=21))}
     ]
     # name of tree to read for each input file:
-    args['treename'] = 'blackJackAndHookersTree'
+    args['treename'] = 'treeCat3'
     # normalization:
     args['normalization'] = 1
     # (normalization parameter: 0 = no normalization, weights, xsection and lumi set to 1.)
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     args['lumi'] = 35900.
     args['doextraselection'] = False
     args['usedata'] = True # whether to include datapoints
-    args['npfromdata'] = True # whether to use fosideband files for nonprompt background
+    args['npfromdata'] = False # whether to use fosideband files for nonprompt background
 
     ### Overwrite using cmd args
     if(len(sys.argv)==13):

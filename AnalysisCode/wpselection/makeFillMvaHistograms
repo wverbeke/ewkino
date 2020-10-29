@@ -1,13 +1,12 @@
 CC=g++ -Wall -Wextra -O3
-CFLAGS= -Wl,--no-as-needed
+CFLAGS= -Wl,--no-as-needed,-lTMVA
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= plotFakeRateMeasurement.cc src/fakeRateMeasurementTools.cc ../tools/progressTracker.cc ../../codeLibrary.o
+SOURCES= fillmvahistograms.cc ../../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=plotFakeRateMeasurement
+EXECUTABLE=fillmvahistograms
 
 all:
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
 
 clean:
 	rm -rf *o $(EXECUTABLE)
-

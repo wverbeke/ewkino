@@ -19,9 +19,9 @@ import smalltools as tls
 
 def getcorrelations():
     # define correlations to be implemented
-    uncorrelated_years = (['JER','Uncl','bTag_heavy','bTag_light',
-			    'muonIDStat','electronIDStat'])
-    uncorrelated_processes = ['qcdScalesEnv','rScale','fScale']
+    uncorrelated_years = (['_JER','_Uncl','_bTag_heavy','_bTag_light',
+			    '_muonIDStat','_electronIDStat'])
+    uncorrelated_processes = ['_qcdScalesShapeEnv','_rScale','_fScale','_rfScales']
     #partially_correlated_years = {'prefire':0.5,'pileup':0.3} # just to test, not realistic
     partially_correlated_years = {}
     # partial correlations not yet implemented in combine code!

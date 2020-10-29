@@ -132,6 +132,27 @@ CombinedReweighter EmptyReweighterFactory::buildReweighter( const std::string& w
     // dummy condition on args to avoid compilation warnings
     if(weightDirectory=="" && year=="" && samples.size()==0) return combinedReweighter;
 
+    // add all reweighters you need formally, but each reweighter returns unity for each event
+    combinedReweighter.addReweighter( "muonID", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "muonIDSyst", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "muonIDStat", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "electronID", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "electronIDSyst", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "electronIDStat", std::make_shared< ReweighterEmpty >() );
+    if( year == "2016" || year == "2017" ){
+	combinedReweighter.addReweighter( "electronReco_pTBelow20",
+            std::make_shared< ReweighterEmpty >() );
+        combinedReweighter.addReweighter( "electronReco_pTAbove20",
+            std::make_shared< ReweighterEmpty >() );
+    } else if( year == "2018" ){
+	combinedReweighter.addReweighter( "electronReco",
+            std::make_shared< ReweighterEmpty >() );
+    }
+    combinedReweighter.addReweighter( "pileup", std::make_shared<ReweighterEmpty>() );
+    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterEmpty >() );
+
     return combinedReweighter;
 }
 
@@ -159,8 +180,9 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     }
 
     // make muon ID Reweighter
-    TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
-	+ "weightFiles/leptonSF/SFTOPLeptonID"+interpendix+"_" + year + "_muon.root" ).c_str() );
+    std::string muonSFFileName = stringTools::formatDirectoryName( weightDirectory )
+        + "weightFiles/leptonSF/SFTOPLeptonID"+interpendix+"_" + year + "_muon.root";
+    TFile* muonSFFile = TFile::Open( (muonSFFileName).c_str() );
     // load the scalefactor histogram and set the errors to zero,
     // load the systematic errors and set the bin contents to one and errors relative,
     // (note: the histogram _syst contains the SF as bin contents and the uncertainties as bin errors!)
@@ -178,12 +200,33 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     muonSFFile->Close();
     for(int i = 0; i <= muonSFHist_nom->GetNbinsX()+1; ++i){
 	for(int j = 0; j <= muonSFHist_nom->GetNbinsY()+1; ++j){
+
+	    // prints for testing
+	    /*std::cout << muonSFFileName << std::endl;
+	    std::cout << "--- bin " << i << "," << j << "(raw values) ---" << std::endl;
+            std::cout << muonSFHist_nom->GetBinContent(i,j) << std::endl;
+            std::cout << muonSFHist_nom->GetBinError(i,j) << std::endl;
+            std::cout << muonSFHist_syst->GetBinContent(i,j) << std::endl;
+            std::cout << muonSFHist_syst->GetBinError(i,j) << std::endl;
+            std::cout << muonSFHist_stat->GetBinContent(i,j) << std::endl;
+	    std::cout << muonSFHist_stat->GetBinError(i,j) << std::endl;*/
+
+	    // process values
 	    muonSFHist_nom->SetBinError(i,j,0.);
 	    double sf = muonSFHist_nom->GetBinContent(i,j);
 	    muonSFHist_syst->SetBinError(i,j,muonSFHist_syst->GetBinError(i,j)/sf);
 	    muonSFHist_syst->SetBinContent(i,j,1.);
 	    muonSFHist_stat->SetBinError(i,j,muonSFHist_stat->GetBinError(i,j)/sf);
             muonSFHist_stat->SetBinContent(i,j,1.);
+	
+	    // print for testing
+	    /*std::cout << "--- bin (processed values) ---" << std::endl;
+	    std::cout << muonSFHist_nom->GetBinContent(i,j) << std::endl;
+	    std::cout << muonSFHist_nom->GetBinError(i,j) << std::endl;
+	    std::cout << muonSFHist_syst->GetBinContent(i,j) << std::endl;
+            std::cout << muonSFHist_syst->GetBinError(i,j) << std::endl;
+	    std::cout << muonSFHist_stat->GetBinContent(i,j) << std::endl;
+            std::cout << muonSFHist_stat->GetBinError(i,j) << std::endl;*/
 	}
     }
 

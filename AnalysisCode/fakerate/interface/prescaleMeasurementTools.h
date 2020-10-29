@@ -38,6 +38,3 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     const std::string& sampleListPath, const unsigned sampleIndex,
     const std::vector< std::string >& triggerVector, const bool useMT = true,
     const double metCut = 0, double mtCut = 0);
-
-std::map< std::string, Prescale > fitTriggerPrescales( TFile* filePtr,
-                                    const double min, const double max, const bool doPlot );

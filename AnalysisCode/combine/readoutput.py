@@ -45,6 +45,64 @@ def formatline(title,strength=0,uperror=0,downerror=0,significance=0):
     res += '-'*(titlelen+3*numlen)+'\n'
     return res
 
+def formatlatextableentries(reslist,kind):
+    tableentries = {}
+    for res in reslist:
+	key = res['card']
+	value = ''
+	if kind=='significance':
+	    value = '{:.2f}'.format(res['s'])
+	if kind=='signalstrength':
+	    value = '${:.2f}_{{-{:.2f} }}^{{+{:.2f} }}$'.format(res['r'],res['downerror'],res['uperror'])
+	tableentries[key] = value
+    return tableentries
+
+def get(adict,akey):
+    if akey in adict.keys(): return adict[akey]
+    else: return '0'
+
+def formatlatextable(resdict_obs, resdict_exp):
+    t = r'\begin{table}[h]'+'\n'
+    t += '\t'+r'\begin{center}'+'\n'
+    t += '\t\t'+r'\caption{}'+'\n'
+    t += '\t\t'+r'\label{}'+'\n'
+    t += '\t\t'+r'\begin{tabular}{|l|c|c|c|}'+'\n'
+    t += '\t\t\t'+r'\hline'+'\n'
+    t += '\t\t\t'+r'channel & 2016 & 2017 & 2018 \\'+'\n'
+    t += '\t\t\t'+r'\hline \hline'+'\n'
+    t += '\t\t\t'+r'1 b-jet, 2-3 jets & '+'{} ({}) & {} ({}) & {} ({}) '.format(
+		    get(resdict_obs,'signalregion_1_2016'),get(resdict_exp,'signalregion_1_2016'),
+		    get(resdict_obs,'signalregion_1_2017'),get(resdict_exp,'signalregion_1_2017'),
+		    get(resdict_obs,'signalregion_1_2018'),get(resdict_exp,'signalregion_1_2018')
+	 )+r'\\'+'\n'
+    t += '\t\t\t'+r'\hline'+'\n'
+    t += '\t\t\t'+r'1 b-jet, $\geq$ 4 jets & '+'{} ({}) & {} ({}) & {} ({}) '.format(
+                    get(resdict_obs,'signalregion_2_2016'),get(resdict_exp,'signalregion_2_2016'),
+                    get(resdict_obs,'signalregion_2_2017'),get(resdict_exp,'signalregion_2_2017'),
+                    get(resdict_obs,'signalregion_2_2018'),get(resdict_exp,'signalregion_2_2018')
+         )+r'\\'+'\n'
+    t += '\t\t\t'+r'\hline'+'\n'
+    t += '\t\t\t'+r'$\geq$ 2 b-jets & '+'{} ({}) & {} ({}) & {} ({}) '.format(
+                    get(resdict_obs,'signalregion_3_2016'),get(resdict_exp,'signalregion_3_2016'),
+                    get(resdict_obs,'signalregion_3_2017'),get(resdict_exp,'signalregion_3_2017'),
+                    get(resdict_obs,'signalregion_3_2018'),get(resdict_exp,'signalregion_3_2018')
+         )+r'\\'+'\n'
+    t += '\t\t\t'+r'\hline'+'\n'
+    t += '\t\t\t'+r'combination (+ control regions) & '+'{} ({}) & {} ({}) & {} ({}) '.format(
+                    get(resdict_obs,'_2016'),get(resdict_exp,'_2016'),
+                    get(resdict_obs,'_2017'),get(resdict_exp,'_2017'),
+                    get(resdict_obs,'_2018'),get(resdict_exp,'_2018')
+         )+r'\\'+'\n'
+    t += '\t\t\t'+r'\hline'+'\n'
+    t += '\t\t\t'+r'total combination (+ control regions) & \multicolumn{3}{c|}{'+'{} ({})'.format(
+		    get(resdict_obs,'_all'),get(resdict_exp,'_all')
+	 )+r'} \\'+'\n'
+    t += '\t\t\t'+r'\hline'+'\n'
+    t += '\t\t'+r'\end{tabular}'+'\n'
+    t += '\t'+r'\end{center}'+'\n'
+    t += r'\end{table}'
+    return t
+
 if __name__=='__main__':
 
     datacarddir = ''
@@ -55,6 +113,7 @@ if __name__=='__main__':
 	print('               normal use: python readoutput.py <datacard directory>')
 
     tags = ['significance_exp','significance_obs','signalstrength_exp','signalstrength_obs']
+    resdict = {}
     for tag in tags:
 	outputfiles = sorted([f for f in os.listdir(datacarddir) if '_out_'+tag+'.txt' in f])
 	print('---------------------------------------------')
@@ -72,3 +131,6 @@ if __name__=='__main__':
 	for res in reslist:
 	    print(formatline(res['card'],strength=res['r'],uperror=res['uperror'],
 			    downerror=res['downerror'],significance=res['s']))
+	resdict[tag] = formatlatextableentries(reslist,tag.split('_')[0])
+    print(formatlatextable(resdict['significance_obs'],resdict['significance_exp']))
+    print(formatlatextable(resdict['signalstrength_obs'],resdict['signalstrength_exp']))

@@ -19,22 +19,23 @@ if not os.path.exists('./fillFakeRateMeasurement'):
 cwd = os.getcwd()
 
 for year in years:
-    # check number of samples
-    nsamples = 0
-    with open('../samplelists/samples_fakeratemeasurement_'+year+'.txt') as sf:
-        for sl in sf:
-            if not sl[0] == '#': nsamples += 1
-    print('found '+str(nsamples)+' samples for '+year)
-    print('start submitting')
     for flavour in flavours:
+	# check number of samples
+	samplelist = os.path.abspath('../samplelists/samples_fakeratemeasurement_'+flavour+'_'+year+'.txt')
+        nsamples = 0
+	with open(samplelist) as sf:
+	    for sl in sf:
+		if not sl[0] == '#': nsamples += 1
+	print('found '+str(nsamples)+' samples for '+year+' '+flavour+'s')
+	print('start submitting')
 	for i in range(nsamples):
 	    script_name = 'fillFakeRateMeasurement.sh'
 	    with open(script_name,'w') as script:
 		initializeJobScript(script)
 		script.write('cd {}\n'.format(cwd))
-		command = './fillFakeRateMeasurement {} {} {}'.format(flavour,year,i)
+		command = './fillFakeRateMeasurement {} {} {} {}'.format(flavour,year,samplelist,i)
 		script.write(command+'\n')
 	    submitQsubJob(script_name)
 	    # alternative: run locally
-	    #os.system('bash '+script_name)
+	    #if i==0: os.system('bash '+script_name)
 

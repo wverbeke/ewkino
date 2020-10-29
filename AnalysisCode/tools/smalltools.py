@@ -2,6 +2,8 @@
 # some small functions for general use #
 ########################################
 import ROOT
+import numpy as np
+from array import array
 
 def year_and_lumi_from_samplelist(samplelist_name):
     # return year (string) and luminosity (float) associated to a sample list
@@ -70,20 +72,27 @@ def subselect_inputfiles(inputfiles,selection_type):
     print('### ERROR ###: selection_type not recognized: '+selection_type)
     return None
 
-def loadallhistograms(histfile):
+def loadallhistograms(histfile,mustcontain=[]):
     ### read a root file containing histograms and load all histograms to a list
+    # if mustcontain is not empty, histogram names are required to contain all elements in it.
     f = ROOT.TFile.Open(histfile)
     histlist = []
     keylist = f.GetListOfKeys()
     for key in keylist:
         hist = f.Get(key.GetName())
-        hist.SetDirectory(0)
         # check if histogram is readable
         try:
             nentries = hist.GetEntries() # maybe replace by more histogram-specific function
 	    nbins = hist.GetNbinsX()
+	    hist.SetDirectory(0)
         except:
             print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
+	    continue
+	keep = True
+	if len(mustcontain)>0:
+	    for tag in mustcontain:
+		if not tag in hist.GetName(): keep = False; break
+	if not keep: continue
         # add hist to dict
         histlist.append(hist)
     f.Close()
@@ -106,6 +115,30 @@ def subselect(stringlist,tagstodiscard=[],tagstokeep=[]):
         if not keep: continue
         sellist.append(s)
     return sellist
+
+def tgraphtohist( graph ):
+    
+    # get list of x values and sort them
+    xvals = []
+    for i in range(graph.GetN()): xvals.append(graph.GetX()[i])
+    xvals = np.array(xvals)
+    sortedindices = np.argsort(xvals)
+    # make bins
+    bins = []
+    for i in sortedindices: bins.append(graph.GetX()[i]-graph.GetErrorXlow(i))
+    bins.append(graph.GetX()[i]+graph.GetErrorXhigh(i))
+    # make histogram
+    hist = ROOT.TH1D("","",len(bins)-1,array('f',bins))
+    # set bin contents
+    for i in range(1,hist.GetNbinsX()+1):
+	bincontent = graph.GetY()[sortedindices[i-1]]
+	binerror = max(graph.GetErrorYlow(sortedindices[i-1]),
+			graph.GetErrorYhigh(sortedindices[i-1]))
+	hist.SetBinContent(i,bincontent)
+	hist.SetBinError(i,binerror)
+    hist.SetName(graph.GetName())
+    hist.SetTitle(graph.GetTitle())
+    return hist
 
 ### test section ###
 if __name__ == "__main__":

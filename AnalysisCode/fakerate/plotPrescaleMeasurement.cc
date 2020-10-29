@@ -9,9 +9,8 @@
 
 // import parts of the framework 
 #include "../../fakeRate/interface/Prescale.h"
-
-// include tools in this folder
-#include "interface/prescaleMeasurementTools.h"
+#include "../../fakeRate/interface/fakeRateTools.h"
+#include "../../plotting/tdrStyle.h"
 
 int main( int argc, char* argv[] ){
     // check command line arguments
@@ -28,13 +27,13 @@ int main( int argc, char* argv[] ){
     const double mTLowerCut_prescaleFit = 90; // 90
     const double mTUpperCut_prescaleFit = 130; // 130
 
-    setTDRStyle();
+    //setTDRStyle();
 
     std::map< std::string, Prescale > prescaleMap;
     std::string file_name = std::string( "prescaleMeasurement_" ) + ( use_mT ? "mT" : "met" );
     file_name.append("_histograms_" + year + ".root");
     TFile* prescale_filePtr = TFile::Open( file_name.c_str() );
-    prescaleMap = fitTriggerPrescales( prescale_filePtr, mTLowerCut_prescaleFit,
+    prescaleMap = fakeRate::fitTriggerPrescales_cut( prescale_filePtr, mTLowerCut_prescaleFit,
                     mTUpperCut_prescaleFit, true );
     prescale_filePtr->Close();
 }

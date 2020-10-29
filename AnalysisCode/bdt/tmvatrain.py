@@ -197,8 +197,12 @@ def tmvatrain(tloader,tfactory_options,outfilename):
 def argsfromcmd(args):
     ### Check input args from command line
     argkeys = []
-    rqargkeys = (['combine','indirs','sidebanddirs','treenames','sigtag',
+    rqargkeys = (['indirs','sidebanddirs','treenames','sigtag',
 		    'varlist','lopts','fopts'])
+    # set defaults for non-required arguments
+    combine = 'all'
+    outputdir = '.'
+    # loop over given arguments
     for arg in args:
 	(key,value) = tuple(arg.split('=',1))
 	if key=='combine': combine=value; argkeys.append(key)
@@ -220,6 +224,7 @@ def argsfromcmd(args):
 	    argkeys.append(key)
 	elif key=='lopts': lopts=value; argkeys.append(key)
 	elif key=='fopts': fopts=value; argkeys.append(key)
+	elif key=='outputdir': outputdir=value; argkeys.append(key)
 	else:
 	    print('### WARNING ###: argument not recognized: '+str(arg))
 	    print('                 skipping it...')
@@ -231,16 +236,19 @@ def argsfromcmd(args):
 	print('### ERROR ###: following required arguments are missing:')
 	print(missargkeys)
 	sys.exit()
-    return (combine,years,indirs,sidebanddirs,treenames,sigtag,varlist,lopts,fopts)
+    return (combine,years,indirs,sidebanddirs,treenames,sigtag,varlist,lopts,fopts,outputdir)
 
 if __name__=="__main__":
-    
+   
+    sys.stderr.write('###starting###\n')
+ 
     if len(sys.argv)>1:
 	args = sys.argv[1:]
-	(combine,years,indirs,sidebanddirs,treenames,sigtag,varlist,lopts,fopts) = argsfromcmd(args)
+	(combine,years,indirs,sidebanddirs,treenames,sigtag,varlist,lopts,fopts,outputdir) = argsfromcmd(args)
     else:
 	### Set global switches
-	combine = 'years' # choose from 'none', 'years', 'regions', 'all'
+	combine = 'all' # choose from 'none', 'years', 'regions', 'all'
+	outputdir = 'test'
 	### Set list of input files
 	years = []
 	years.append('2016')
@@ -248,7 +256,7 @@ if __name__=="__main__":
 	years.append('2018')
 	indirs = []
 	for year in years: 
-	    indirs.append('/user/llambrec/Files/tzqid/'+year+'MC/signalregion_3tight_flat')
+	    indirs.append('/user/llambrec/Files/tzqid_new/'+year+'MC/signalregion_3tight_flat')
 	sidebanddirs = []
 	#sidebanddirs = [f.replace('_flat','_2tight_flat') for f in indirs]
 	treenames = ["blackJackAndHookers/treeCat1"]
@@ -259,10 +267,10 @@ if __name__=="__main__":
 	lopts = "SplitMode=Random:NormMode=None"
 	### BDT options
 	fopts = "!H:!V" # help and verbosity level
-	fopts += ":NTrees=1000:BoostType=Grad" # options for ensemble
-	fopts += ":MinNodeSize=5%:MaxDepth=4:nCuts=200" # options for single tree
-	fopts += ":UseBaggedGrad=True:BaggedSampleFraction=0.5"
-	fopts += ":Shrinkage=0.05"
+	fopts += ":NTrees=1500:BoostType=Grad" # options for ensemble
+	fopts += ":MinNodeSize=1%:MaxDepth=6:nCuts=200" # options for single tree
+	fopts += ":UseBaggedGrad=True:BaggedSampleFraction=1."
+	fopts += ":Shrinkage=0.03"
 	#fopts += ":IgnoreNegWeightsInTraining=True"
 	### variables
 	varlist = (['_abs_eta_recoil','_Mjj_max','_lW_asymmetry',
@@ -270,9 +278,13 @@ if __name__=="__main__":
 		'_pTjj_max','_dRlb_min','_HT','_dRlWrecoil','_dRlWbtagged',
 		'_M3l','_abs_eta_max'])
 	varlist += (['_nJets','_nBJets']) # parametrized learning
+
+    ### Make output directory if needed
+    if not os.path.exists(outputdir): os.makedirs(outputdir)
+
     ### Function call
     if(combine=='all'):
-	outfilename = 'out_all.root'
+	outfilename = os.path.join(outputdir,'out_all.root')
 	# train a BDT on all years and regions together
 	# option 1: use output from getmvatreesfromdirs directly to add to the TMVA.DataLoader
 	(sigchains,bckchains,bckchains_onlytrain,bckchains_onlytest,_,_) = getmvatreesfromdirs(
@@ -291,7 +303,8 @@ if __name__=="__main__":
 	if '_nBJets' in varlist: varlist.remove('_nBJets')
 	for indir,year in zip(indirs,years):
 	    for treename in treenames:
-		outfilename = 'out_'+year+'_'+treename.split('/')[-1]+'.root'
+		outfilename = os.path.join(outputdir,
+				'out_'+year+'_'+treename.split('/')[-1]+'.root')
 		(sigcs,bckcs,bckcs_train,bckcs_test,_,_) = getmvatreesfromdirs([indir],[treename],
 							    sigtag,sidebanddirs=sidebanddirs)
 		tloader = tloader_fromchains(sigcs,bckcs,bckcs_train,bckcs_test,
@@ -304,7 +317,7 @@ if __name__=="__main__":
 	if '_nJets' in varlist: varlist.remove('_nJets')
         if '_nBJets' in varlist: varlist.remove('_nBJets')
         for treename in treenames:
-	    outfilename = 'out_'+treename.split('/')[-1]+'.root'
+	    outfilename = os.path.join(outputdir,'out_'+treename.split('/')[-1]+'.root')
 	    (sigcs,bckcs,bckcs_train,bckcs_test,_,_) = getmvatreesfromdirs(indirs,[treename],
 							sigtag,sidebanddirs=sidebanddirs)
 	    tloader = tloader_fromchains(sigcs,bckcs,bckcs_train,bckcs_test,
@@ -315,7 +328,7 @@ if __name__=="__main__":
 	    print(str(aucroc))
     elif(combine=='regions'):
         for indir,year in zip(indirs,years):
-            outfilename = 'out_'+year+'.root'
+            outfilename = os.path.join(outputdir,'out_'+year+'.root')
             (sigcs,bckcs,bckcs_train,bckcs_test,_,_) = getmvatreesfromdirs([indir],treenames,
 							sigtag,sidebanddirs=sidebanddirs)
             tloader = tloader_fromchains(sigcs,bckcs,bckcs_train,bckcs_test,
@@ -326,3 +339,5 @@ if __name__=="__main__":
             print(str(aucroc))
     else:
 	print('not yet implemented')
+
+    sys.stderr.write('###done###\n')

@@ -26,7 +26,7 @@
 
 bool checkReadability(const std::string& pathToFile){
     // temporary function to perform error handling when file cannot be read.
-    // to be replaced by exception throwing in eventloopEF once figured out how this works in c++.
+    // maybe to be replaced by exception throwing
     TreeReader treeReader;
     try{treeReader.initSampleFromFile( pathToFile );}
     catch( std::domain_error& ){
@@ -42,19 +42,21 @@ std::string systematicType(const std::string systematic){
 	return std::string("acceptance");
     }
     if(
-	    //systematic=="muonID" // split into syst and stat
-	    systematic=="muonIDSyst"
-	    or systematic=="muonIDStat"
-	    //or systematic=="electronID" // split into syst and stat
-	    or systematic=="electronIDSyst"
-	    or systematic=="electronIDStat"
+	    //systematic=="muonID" // for ttH ID
+	    systematic=="muonIDSyst" // for TOP ID
+	    or systematic=="muonIDStat" // for TOP ID
+	    //or systematic=="electronID" // for ttH ID
+	    or systematic=="electronIDSyst" // for TOP ID
+	    or systematic=="electronIDStat" // for TOP ID
 	    or systematic=="pileup" 
-	    or systematic=="bTag_heavy" or systematic=="bTag_light"
+	    or systematic=="bTag_heavy" 
+	    or systematic=="bTag_light"
 	    or systematic=="prefire"){
 	return std::string("weight");
     }
-    if(	    systematic=="fScale" 
-	    or systematic=="rScale"
+    if(	    systematic=="fScale" // replaced by qcdScalesShape
+	    or systematic=="rScale" // replaced by qcdScalesShape
+	    or systematic=="rfScales" // replaced by qcdScalesShape
 	    or systematic=="isrScale" 
 	    or systematic=="fsrScale"){
 	return std::string("scale");
@@ -65,9 +67,6 @@ std::string systematicType(const std::string systematic){
     if(systematic=="pdfShapeVar" or systematic=="pdfNorm" 
 	or systematic=="qcdScalesShapeVar" or systematic=="qcdScalesNorm"){
 	return std::string("lhe");
-    }
-    if(systematic=="muonID" or systematic=="electronID"){
-	return std::string("ignore");
     }
     std::cerr<<"### ERROR ###: systematic '"<<systematic<<"' not recognized."<<std::endl;
     return std::string("ERROR");
@@ -119,7 +118,8 @@ std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap
 	histMap[variable]["nominal"]->SetTitle(processName.c_str());
         // loop over systematics
         for(std::string systematic : systematics){
-            // special case for PDF variations: store variations as well as envelope
+            // special case for PDF variations: store variations as well as envelope 
+	    // as well as rms
             if(systematic=="pdfShapeVar"){
                 for(unsigned i=0; i<numberOfPdfVariations; ++i){
                     std::string temp = systematic + std::to_string(i);
@@ -132,8 +132,15 @@ std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap
 		temp = "pdfShapeEnvDown";
                 histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
 		histMap[variable][temp]->SetTitle(processName.c_str());
+		temp = "pdfShapeRMSUp";
+                histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
+                histMap[variable][temp]->SetTitle(processName.c_str());
+                temp = "pdfShapeRMSDown";
+                histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
+                histMap[variable][temp]->SetTitle(processName.c_str());
             }
-	    // special case for QCD scales: store 6 variations (see TopSystematics) as well as envelope
+	    // special case for QCD scales: store 6 variations (see TopSystematics) 
+	    // as well as envelope
 	    else if(systematic=="qcdScalesShapeVar"){
 		for(int i=0; i<6; ++i){
                     std::string temp = systematic + std::to_string(i);
@@ -164,7 +171,7 @@ std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap
 void fillEnvelope( std::map< std::string, std::map< std::string,std::shared_ptr<TH1D> >> histMap, 
 		    std::string variable, std::string upname, std::string downname, std::string tag ){
     // calculate bin-per-bin envelope of a series of histograms containing "tag" in name
-    // note: the envelope entries must beadded to the histMap as empty hist before this function!
+    // note: the envelope entries must be initialized in histMap before this function!
     for( const auto& el : histMap[variable] ){
 	if(!stringTools::stringContains(el.first,tag)) continue;
 	if(stringTools::stringContains(el.first,upname)) continue;
@@ -178,6 +185,39 @@ void fillEnvelope( std::map< std::string, std::map< std::string,std::shared_ptr<
 		histMap[variable][downname]->SetBinContent(i,hist->GetBinContent(i));
 	    }
 	}
+    }
+}
+
+void fillRMS( std::map< std::string, std::map< std::string,std::shared_ptr<TH1D> >> histMap,
+                    std::string variable, std::string upname, std::string downname, std::string tag ){
+    // calculate bin-per-bin rms of a series of histograms containing "tag" in name
+    // note: the rms entries must be added to the histMap as empty hist before this function!
+    // note: the histmap must contain the nominal histograms as well!
+    std::shared_ptr<TH1D> nominalHist = histMap[variable]["nominal"];
+    std::shared_ptr<TH1D> varRMSHist = std::shared_ptr<TH1D>( dynamic_cast<TH1D*>(
+					nominalHist.get()->Clone()) );
+    varRMSHist->Reset();
+    int nElements = 0;
+    for( const auto& el : histMap[variable] ){
+        if(!stringTools::stringContains(el.first,tag)) continue;
+        if(stringTools::stringContains(el.first,upname)) continue;
+        if(stringTools::stringContains(el.first,downname)) continue;
+        std::shared_ptr<TH1D> hist = el.second;
+	nElements++;
+        for(int i=1; i<hist->GetNbinsX()+1; ++i){
+	    double var = hist->GetBinContent(i) - nominalHist->GetBinContent(i);
+	    varRMSHist->SetBinContent(i,varRMSHist->GetBinContent(i)+var*var);
+	}
+    }
+    // catch exception of zero elements to average over 
+    // (the denominator can be changed arbitrarily since numerator is zero as well)
+    if( nElements==0 ) nElements=1;
+    for(int i=1; i<nominalHist->GetNbinsX()+1; ++i){
+        varRMSHist->SetBinContent(i,std::sqrt(varRMSHist->GetBinContent(i)/nElements));
+	histMap[variable][upname]->SetBinContent(i,nominalHist->GetBinContent(i)
+						    +varRMSHist->GetBinContent(i));
+	histMap[variable][downname]->SetBinContent(i,nominalHist->GetBinContent(i)
+						    -varRMSHist->GetBinContent(i));
     }
 }
 
@@ -237,32 +277,47 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
     }
 
     // make reweighter
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
+    std::shared_ptr< ReweighterFactory> reweighterFactory;
+    /*if( LeptonSelector::leptonID()=="tzqtight" || LeptonSelector::leptonID()=="tzqmedium0p4" ){ 
+	reweighterFactory = std::shared_ptr<ReweighterFactory>(new tZqReweighterFactory()); 
+	// (tZqReweighterFactory internally checks for medium or tight ID !)
+    } else if( LeptonSelector::leptonID()=="tth"){
+	reweighterFactory = std::shared_ptr<ReweighterFactory>(new EwkinoReweighterFactory());
+    } else{
+	std::cerr << "ERROR: reweighter for this lepton ID not yet implemented" << std::endl;
+	// (will cause nullpointerexception?)
+    }*/
+    // FOR TESTING //
+    reweighterFactory = std::shared_ptr<ReweighterFactory>( new EmptyReweighterFactory() );
+
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( 
 					"../../weights/", year, thissample );
     
     // determine global sample properties related to pdf and scale variations
-    unsigned firstScaleIndex = 0;
+    //unsigned firstScaleIndex = 0; // not used
     unsigned numberOfScaleVariations = 0;
-    unsigned firstPdfIndex = 0;
+    //unsigned firstPdfIndex = 0; // not used
     unsigned numberOfPdfVariations = 0;
     std::shared_ptr< SampleCrossSections > xsecs;
     std::vector< double > qcdScalesXSecRatios;
-    double qcdScalesMinXSecRatio;
-    double qcdScalesMaxXSecRatio;
+    double qcdScalesMinXSecRatio = 1.;
+    double qcdScalesMaxXSecRatio = 1.;
     std::vector<double> pdfXSecRatios;
-    double pdfMinXSecRatio;
-    double pdfMaxXSecRatio;
-    bool considerlhe = false; // check whether lhe parameters are needed (autmatically exclude data)
+    double pdfMinXSecRatio = 1.;
+    double pdfMaxXSecRatio = 1.;
+    bool considerlhe = false; // check whether lhe parameters are needed
     for( std::string systematic : systematics){
 	if( systematicType(systematic)=="lhe" ){ considerlhe=true; break; }
-    if( treeReader.numberOfEntries()>0 and considerlhe ){
+    }
+    if( treeReader.numberOfEntries()>0 
+	&& considerlhe 
+	&& !treeReader.isData() ){
 	Event event = treeReader.buildEvent(0); 
-	firstScaleIndex = event.generatorInfo().firstScaleIndex();
+	//firstScaleIndex = event.generatorInfo().firstScaleIndex(); // not used
         numberOfScaleVariations = event.generatorInfo().numberOfScaleVariations();
-        firstPdfIndex = event.generatorInfo().firstPdfIndex();
+        //firstPdfIndex = event.generatorInfo().firstPdfIndex(); // not used
 	numberOfPdfVariations = event.generatorInfo().numberOfPdfVariations();	
 	// make vector of cross-section modifications due to pdf and qcd scale variations
 	// the vectors contain the ratio of the varied cross-section to the nominal one
@@ -275,27 +330,27 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    qcdScalesXSecRatios.push_back( xsecs.get()->crossSectionRatio_MuR_2_MuF_2() );
 	    qcdScalesXSecRatios.push_back( xsecs.get()->crossSectionRatio_MuR_0p5_MuF_0p5() );
 	    // note: order doesnt matter here as it is only used for min and max calculation
-	    qcdScalesMinXSecRatio = std::min_element( qcdScalesXSecRatios.begin(), 
+	    qcdScalesMinXSecRatio = *std::min_element( qcdScalesXSecRatios.begin(), 
 							qcdScalesXSecRatios.end() );
-	    qcdScalesMaxXSecRatio = std::max_element( qcdScalesXSecRatios.begin(), 
+	    qcdScalesMaxXSecRatio = *std::max_element( qcdScalesXSecRatios.begin(), 
 							qcdScalesXSecRatios.end() );
 	}
 	if(numberOfPdfVariations>=100){
 	    for(unsigned i=0; i<numberOfPdfVariations; i++){ 
 		pdfXSecRatios.push_back( xsecs.get()->crossSectionRatio_pdfVar(i) ); }
-	    pdfMinXSecRatio = std::min_element( pdfXSecRatios.begin(), pdfXSecRatios.end() );
-	    pdfMaxXSecRatio = std::max_element( pdfXSecRatios.begin(), pdfXSecRatios.end() );
+	    pdfMinXSecRatio = *std::min_element( pdfXSecRatios.begin(), pdfXSecRatios.end() );
+	    pdfMaxXSecRatio = *std::max_element( pdfXSecRatios.begin(), pdfXSecRatios.end() );
 	}
     }
 
     // make output collection of histograms
     std::cout<<"making output collection of histograms"<<std::endl;
     std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > histMap =
-        initHistMap(vars,systematics,processName,numberOfPdfVariations);
+        initHistMap(vars,systematics,processName,numberOfPdfVariations=numberOfPdfVariations);
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 1000; 
+    //long unsigned numberOfEntries = 10; 
     numberOfEntries = std::min(numberOfEntries,treeReader.numberOfEntries());
     std::cout<<"starting event loop for "<<numberOfEntries<<" events."<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
@@ -316,8 +371,6 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
 			frmap_muon, frmap_electron, "nominal", doBDT, reader);
 	    for(std::string variable : variables){
-		if(variable=="_eventBDT"){
-		}
 		fillVarValue(histMap[variable][std::string("nominal")],
 			    getVarValue(variable,varmap),varmap["_normweight"]);
 		// for data carrying a different processName than "data" (e.g. fakes from data),
@@ -396,12 +449,17 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    if(systematic=="fScale" && event.generatorInfo().numberOfScaleVariations()==9){
 		// warning: use numberOfScaleVariations() instead of numberOfLheWeights() here!
 		// warning: replaced by qcdScales envelope (see further on), remove from further analysis
-		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_1_MuF_2();
-		double downweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_1_MuF_0p5();
+		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_1_MuF_2()
+							    / xsecs.get()->crossSectionRatio_MuR_1_MuF_2();
+		double downweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_1_MuF_0p5()
+							    / xsecs.get()->crossSectionRatio_MuR_1_MuF_0p5();
+		// prints for testing:
 		/*std::cout << "nominal weight: " << varmap["_normweight"] << std::endl;
 		std::cout << "fScale:" << std::endl;
-		std::cout << "  relative upweight: " << event.generatorInfo().relativeWeight_MuR_1_MuF_2() << std::endl;
-		std::cout << "  relative downweight " << event.generatorInfo().relativeWeight_MuR_1_MuF_0p5() << std::endl;*/
+		std::cout << "  relative upweight: ";
+		std::cout << event.generatorInfo().relativeWeight_MuR_1_MuF_2() << std::endl;
+		std::cout << "  relative downweight ";
+		std::cout << event.generatorInfo().relativeWeight_MuR_1_MuF_0p5() << std::endl;*/
 		for(std::string variable : variables){
 		    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
 		    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
@@ -410,20 +468,38 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    else if(systematic=="rScale" && event.generatorInfo().numberOfScaleVariations()==9){
 		// warning: use numberOfScaleVariations() instead of numberOfLheWeights() here!
 		// warning: replaced by qcdScales envelope (see further on), remove from further analysis
-		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_2_MuF_1();
-                double downweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_0p5_MuF_1();
+		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_2_MuF_1()
+							    / xsecs.get()->crossSectionRatio_MuR_2_MuF_1();
+                double downweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_0p5_MuF_1()
+							    / xsecs.get()->crossSectionRatio_MuR_0p5_MuF_1();
+		// prints for testing:
 		/*std::cout << "nominal weight: " << varmap["_normweight"] << std::endl;
 		std::cout << "rScale:" << std::endl;
-                std::cout << "  relative upweight: " << event.generatorInfo().relativeWeight_MuR_2_MuF_1() << std::endl;
-                std::cout << "  relative downweight " << event.generatorInfo().relativeWeight_MuR_0p5_MuF_1() << std::endl;*/
+                std::cout << "  relative upweight: ";
+		std::cout << event.generatorInfo().relativeWeight_MuR_2_MuF_1() << std::endl;
+                std::cout << "  relative downweight ";
+		std::cout << event.generatorInfo().relativeWeight_MuR_0p5_MuF_1() << std::endl;*/
 		for(std::string variable : variables){
 		    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
 		    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
 		}
 	    }
+	    else if(systematic=="rfScales" && event.generatorInfo().numberOfScaleVariations()==9){
+		// warning: use numberOfScaleVariations() instead of numberOfLheWeights() here!
+                // warning: replaced by qcdScales envelope (see further on), remove from further analysis
+                double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_2_MuF_2()
+							    / xsecs.get()->crossSectionRatio_MuR_2_MuF_2();
+                double downweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_0p5_MuF_0p5()
+							    / xsecs.get()->crossSectionRatio_MuR_0p5_MuF_0p5();
+                for(std::string variable : variables){
+                    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
+                    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
+                }
+	    }
 	    else if(systematic=="isrScale" && event.generatorInfo().numberOfPsWeights()==14){
 		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_ISR_2();
                 double downweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_ISR_0p5();
+		// prints for testing:
 		/*std::cout << "--- event ---" << std::endl;
 		std::cout << varmap["_normweight"] << std::endl;
 		std::cout << upweight << std::endl;
@@ -482,13 +558,16 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 					    / xsecs.get()->crossSectionRatio_MuR_1_MuF_0p5() );
                 qcdvariations.push_back( event.generatorInfo().relativeWeight_MuR_0p5_MuF_0p5()
 					    / xsecs.get()->crossSectionRatio_MuR_0p5_MuF_0p5() );
-                for(std::string variable : variables){
-                    for(unsigned i=0; i<qcdvariations.size(); ++i){
-                        std::string temp = systematic + std::to_string(i);
-                        double qcdweight = varmap["_normweight"]
-                                            * qcdvariations[i];
+		for(unsigned i=0; i<qcdvariations.size(); ++i){
+                    std::string temp = systematic + std::to_string(i);
+		    double reweight = qcdvariations[i];
+		    // temporary condition upon observation of very large reweights in pdf shape
+                    // (not yet fully justified)
+                    if( std::abs(reweight) > 5 ){ reweight = 1.; }
+                    double qcdweight = varmap["_normweight"] * reweight;
+		    for(std::string variable : variables){
                         fillVarValue(histMap[variable][temp],getVarValue(variable,varmap),qcdweight);
-                    }
+		    }
                 }
             }
 	    else if(systematic=="qcdScalesNorm" && numberOfScaleVariations==9){
@@ -501,17 +580,30 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    }
 	    // run over pdf variations to calculate envelope later
 	    else if(systematic=="pdfShapeVar" && numberOfPdfVariations>=100){
-		for(std::string variable : variables){
-		    for(unsigned i=0; i<numberOfPdfVariatons; ++i){
-			std::string temp = systematic + std::to_string(i);
-			double pdfweight = varmap["_normweight"] 
-					    * event.generatorInfo().relativeWeightPdfVar(i)
-					    / xsecs.crossSectionRatio_pdfVar(i);
+		for(unsigned i=0; i<numberOfPdfVariations; ++i){
+                    std::string temp = systematic + std::to_string(i);
+		    double reweight = event.generatorInfo().relativeWeightPdfVar(i)
+                                        / xsecs.get()->crossSectionRatio_pdfVar(i);
+		    // temporary condition upon observation of very large reweights
+		    // (not yet fully justified)
+		    if( std::abs(reweight) > 5 ){ reweight = 1.; }
+                    double pdfweight = varmap["_normweight"] * reweight;
+		    for(std::string variable : variables){
 			fillVarValue(histMap[variable][temp],getVarValue(variable,varmap),pdfweight);
 		    }
+		    // for testing: 
+                    /*double relweight = event.generatorInfo().relativeWeightPdfVar(i);
+                    double xsecrat = xsecs.get()->crossSectionRatio_pdfVar(i);
+		    double reweight = relweight / xsecrat;
+                    if(reweight<0){
+                        std::cout << "event: " << event.eventNumber() << ", ";
+                        std::cout << "variation: " << i << ": ";
+                        std::cout << "relative weight: " << relweight << ", ";
+			std::cout << "xsec ratio: " << xsecrat << std::endl;
+                    }*/
 		}
 	    }
-	    else if(systematic=="pdfNorm" && numberOfScaleVariations>100){
+	    else if(systematic=="pdfNorm" && numberOfPdfVariations>=100){
 		for(std::string variable : variables){
                     double upweight = varmap["_normweight"]*pdfMaxXSecRatio;
                     double downweight = varmap["_normweight"]*pdfMinXSecRatio;
@@ -552,6 +644,34 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
                     std::cout << histMap[variable][downvar]->GetBinContent(i) << std::endl;
                 }*/
 	    }
+	    upvar = "pdfShapeRMSUp";
+            downvar = "pdfShapeRMSDown";
+            for(std::string variable : variables){
+                // first initialize the up and down variations to be equal to nominal
+                // (needed for correct envelope computation)
+                for(int i=1; i<histMap[variable]["nominal"]->GetNbinsX()+1; ++i){
+                    histMap[variable][upvar]->SetBinContent(i,histMap[variable]["nominal"]
+                                                                ->GetBinContent(i));
+                    histMap[variable][downvar]->SetBinContent(i,histMap[variable]["nominal"]
+                                                                ->GetBinContent(i));
+                }
+		// print for testing
+                /*std::cout << variable << " before rmsing" << std::endl;
+                for(int i=1; i<histMap[variable]["nominal"]->GetNbinsX()+1; ++i){
+                    std::cout << "bin " << i << std::endl;
+                    std::cout << histMap[variable][upvar]->GetBinContent(i) << std::endl;
+                    std::cout << histMap[variable][downvar]->GetBinContent(i) << std::endl;
+                }*/
+                // then fill envelope
+                fillRMS(histMap, variable, upvar, downvar, "pdfShapeVar");
+		// print for testing
+		/*std::cout << variable << " after rmsing" << std::endl;
+                for(int i=1; i<histMap[variable]["nominal"]->GetNbinsX()+1; ++i){
+                    std::cout << "bin " << i << std::endl;
+                    std::cout << histMap[variable][upvar]->GetBinContent(i) << std::endl;
+                    std::cout << histMap[variable][downvar]->GetBinContent(i) << std::endl;
+                }*/
+            }
 	}
 	else if(systematic=="qcdScalesShapeVar"){
 	    std::string upvar = "qcdScalesShapeEnvUp";
@@ -598,9 +718,9 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    if( stringTools::stringContains(mapelement.second->GetName(),"nominal")){ continue; }
 	    std::shared_ptr<TH1D> hist = mapelement.second;
 	    // selection: do not store all individual pdf variations
-	    if(stringTools::stringContains(hist->GetName(),"pdfVar")) continue;
+	    if(stringTools::stringContains(hist->GetName(),"pdfShapeVar")) continue;
 	    // selection: do not store all individual qcd scale variations
-	    if(stringTools::stringContains(hist->GetName(),"qcdScalesVar")) continue;
+	    if(stringTools::stringContains(hist->GetName(),"qcdScalesShapeVar")) continue;
 	    // special treatment of histograms with zero entries or all weights zero
 	    if(hist->GetEntries()==0 or std::abs(hist->GetSumOfWeights())<1e-12){
 		// use nominal histogram instead
@@ -627,6 +747,9 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 }
 
 int main( int argc, char* argv[] ){
+
+    std::cerr << "###starting###" << std::endl;
+
     if( argc < 11 ){
         std::cerr << "### ERROR ###: runsystematics.cc requires at least 9 arguments to run: ";
         std::cerr << "input_file_path, norm, output_file_path, process_name, ";
@@ -685,7 +808,9 @@ int main( int argc, char* argv[] ){
 	std::string interpendix = "";
 	if(LeptonSelector::leptonID()=="tzqtight") interpendix = "output_tzqtightid";
 	else if(LeptonSelector::leptonID()=="tzqmedium0p4") interpendix = "output_tzqmedium0p4id";
+	else if(LeptonSelector::leptonID()=="tth") interpendix = "output_tthid";
 	std::string frdir = "/user/llambrec/ewkino/AnalysisCode/fakerate/"+interpendix+"/fakeRateMaps";
+	//std::string frdir = "/user/llambrec/ewkino/AnalysisCode/fakerate/fakeRateMaps";
 	std::string frmap_muon_name = frdir+"/fakeRateMap_data_muon_"+year+"_mT.root";
 	std::string frmap_electron_name = frdir+"/fakeRateMap_data_electron_"+year+"_mT.root";
         frmap_muon = eventFlattening::readFRMap(frmap_muon_name,"muon",year);
@@ -720,6 +845,6 @@ int main( int argc, char* argv[] ){
 				    vars, reader, systematics);
 
     delete reader;
-    std::cout<<"done"<<std::endl;
+    std::cerr << "###done###" << std::endl;
     return 0;
 }

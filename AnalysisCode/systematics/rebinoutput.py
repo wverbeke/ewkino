@@ -11,12 +11,15 @@ import os
 import sys
 import ROOT
 
-if len(sys.argv)!=2:
-    print('### ERROR ###: rebinoutput.py needs one command line argument.')
-    print('		  normal usage: rebinoutput <output_directory>')
+if len(sys.argv)!=4:
+    print('### ERROR ###: rebinoutput.py needs three command line arguments.')
+    print('		  normal usage: rebinoutput <output_directory> <first_bin_count>')
+    print('                             <bin_factor>')
     sys.exit()
 
 output_directory = sys.argv[1]
+firstbincount = sys.argv[2]
+binfactor = sys.argv[3]
 rootfiles = []
 
 if not os.path.exists('./rebinoutput'):
@@ -31,11 +34,11 @@ for root,dirs,files in os.walk(output_directory):
 	rootfiles.append(fulldirname)
 
 for rootfile in rootfiles:
-    outputfile = rootfile[-5:]+'_temp.root'
+    outputfile = rootfile[:-5]+'_temp.root'
     if os.path.exists(outputfile):
 	os.system('rm '+outputfile)
-    command = './rebinoutput '+rootfile+' '+outputfile+' _fineBinnedEventBDT 1 2'
-    print(command)
+    command = './rebinoutput '+rootfile+' '+outputfile+' _fineBinnedeventBDT '
+    command += firstbincount + ' ' + binfactor
     # do not use job submission here since need to finish command before continuing
     os.system(command)
     # overwrite original file since original histograms are kept in new file anyway

@@ -12,6 +12,8 @@ void cleanLeptonsAndJets(Event&);
 JetCollection getjetcollection(const Event&, const std::string& variation);
 Met getmet(const Event&, const std::string& variation);
 int eventCategory(Event&, const std::string& variation);
+bool passAnyTrigger(Event&);
+bool passLeptonPtSelections(Event&);
 bool hasnFOLeptons(Event&, int, bool select);
 bool hasnTightLeptons(Event&, int, bool select);
 bool allLeptonsArePrompt(const Event&);
@@ -23,6 +25,5 @@ bool pass_zgcontrolregion(Event&, const std::string& selectiontype, const std::s
 bool pass_ttzcontrolregion(Event&, const std::string& selectiontype, const std::string& variation);
 bool pass_signalsideband_noossf(Event&, const std::string& selectiontype, const std::string& variation);
 bool pass_signalsideband_noz(Event&, const std::string& selectiontype, const std::string& variation);
-bool pass_npcontrolregion(Event&, const std::string& selectiontype, const std::string& variation);
 
 #endif

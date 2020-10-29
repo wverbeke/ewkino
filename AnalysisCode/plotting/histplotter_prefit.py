@@ -82,11 +82,16 @@ def getsystematichistogram(histdict,variedprocesses,nominalprocesses,variable,sy
 
     # for each systematic, sum up and down variations for all processes
     totalvar = {}
+
     for systematic in systematicslist:
 	for suffix in ['Up','Down']:
 	    histlist = []
 	    # for all varied processes, check if variation is found, if not, use nominal
 	    for p in variedprocesses:
+
+		# temp for testing:
+		#if(systematic=='pdfShapeRMS' and p=='nonprompt'): continue	
+
 		hists = selecthistograms(histdict,[p],variable,systematic+suffix)
 		if len(hists)==1:
 		    histlist.append(hists[0])
@@ -143,12 +148,15 @@ def histplotter_prefit(histfile,variables,mcprocesses,dataprocesses,npdataproces
     if '2016' in histfile: lumi = 35900
     elif '2017' in histfile: lumi = 41500
     elif '2018' in histfile: lumi = 59700
+    elif '1617' in histfile: lumi = 77400
+    elif 'allyears' in histfile: lumi = 137100
 
     # loop over input variables
     for k,vardict in enumerate(variables):
         varname = str(vardict['name'])
+	print('running on variable: '+varname)
         # (explicit conversion from unicode to str seems necessary...)
-
+	
         # load all histograms for this variable
         allhists = loadallhistograms(histfile,varname)
 	# if no histograms are found, skip to next variable without crashing
@@ -192,6 +200,10 @@ def histplotter_prefit(histfile,variables,mcprocesses,dataprocesses,npdataproces
         if not vardict['unit']=='':
             xaxtitle += '('+vardict['unit']+')'
         figname = os.path.join(histdir,varname)
+
+	print(datahist)
+	print(mchistlist)
+	print(syshist)
 
         hp.plotdatavsmc(datahist,mchistlist,syshist,yaxtitle,False,xaxtitle,lumi,figname+'_lin')
         hp.plotdatavsmc(datahist,mchistlist,syshist,yaxtitle,True,xaxtitle,lumi,figname+'_log')
@@ -268,8 +280,8 @@ if __name__=="__main__":
 		initializeJobScript( script )
 		command = 'python histplotter_prefit.py '+f+'\n'
 		script.write(command)
-	    #submitQsubJob(script_name)
-	    os.system('bash '+script_name)
+	    submitQsubJob(script_name)
+	    #os.system('bash '+script_name)
 
     else:
 	print('### ERROR ###: unrecognized command line arguments.')

@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wextra -O3
-CFLAGS= -Wl,--no-as-needed
+CFLAGS= -Wl,--no-as-needed,-lTMVA
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= closureTest_MC.cc ../../codeLibrary.o
+SOURCES= closureTest_MC.cc ../eventselection/src/eventSelections.cc ../eventselection/src/eventFlattening.cc ../../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=closureTest_MC
 

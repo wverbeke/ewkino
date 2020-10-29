@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rm MCFakeRateMeasurementSubFiles/*
 rm -r closurePlots_MC_*
 rm closureTest_MC

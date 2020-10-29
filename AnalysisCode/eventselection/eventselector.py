@@ -56,6 +56,12 @@ if len(dtype)==0 : sys.exit()
 
 # make a list of input files in samplelist and compare to content of input directory 
 inputfiles = extendsamplelist(sample_list,input_directory)
+# the above does not work well for data, as it does not include the data_combined files
+if dtype=='data':
+    inputfiles = []
+    files = [f for f in os.listdir(input_directory) if f[-5:]=='.root']
+    for f in files:
+        inputfiles.append({'file':os.path.join(input_directory,f),'process_name':'data'})
 
 # check if executable is present
 if not os.path.exists('./eventselector'):

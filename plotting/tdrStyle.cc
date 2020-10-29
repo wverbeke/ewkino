@@ -146,7 +146,7 @@ void setTDRStyle() {
     // gStyle->SetHistMinimumZero(kTRUE);
 
     //For error in SF maps
-    gStyle->SetMarkerSize(0.9); //TEMPORARY SIZE FOR DILEPTON PLOTS. SET BACK TO DEFAULT FOR TRILEPTON
+    gStyle->SetMarkerSize(1.);
     gStyle->SetPaintTextFormat("4.2f");  //4.2
     //gStyle->SetHatchesLineWidth(5);
     //gStyle->SetHatchesSpacing(0.05);

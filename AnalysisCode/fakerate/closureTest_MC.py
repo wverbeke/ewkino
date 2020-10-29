@@ -18,9 +18,12 @@ use_mt = sys.argv[2]'''
 isMCFR = True
 use_mt = False
 
-years = ['2016','2017','2018']
-flavours = ['muon','electron']
+years = ['2016']
+flavours = ['muon','electron','both'] 
+# (put any string different from 'muon' or 'electron' to include both)
 processes = ['TT','DY']
+path_to_xml_file = '/user/llambrec/ewkino/AnalysisCode/bdt/out_all_data/weights/'
+path_to_xml_file += 'tmvatrain_BDT.weights.xml'
 
 # check if executable exists
 if not os.path.exists('./closureTest_MC'):
@@ -37,7 +40,8 @@ for year in years:
 	    with open(script_name,'w') as script:
 		initializeJobScript(script)
 		script.write('cd {}\n'.format(cwd))
-		command = './closureTest_MC {} {} {} {} {}'.format(isMCFR,use_mt,process,year,flavour)
+		command = './closureTest_MC {} {} {} {} {} {}'.format(
+			    isMCFR,use_mt,process,year,flavour,path_to_xml_file)
 		script.write(command+'\n')
 	    submitQsubJob(script_name)
 	    # alternative: run locally
