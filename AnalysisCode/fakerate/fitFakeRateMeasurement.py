@@ -1,6 +1,6 @@
-##################################################
-# a python looper for plotFakeRateMeasurement.cc #
-##################################################
+######################################################################
+# a python looper over years and flavours to determine the fake rate #
+######################################################################
 import os
 import sys
 sys.path.append(os.path.abspath('../../skimmer'))
