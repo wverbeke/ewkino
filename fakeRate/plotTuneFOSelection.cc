@@ -10,16 +10,16 @@ The goal of the tuning is having a fake-rate (tight/FO) that is equal for light 
 #include "TF1.h"
 
 //include other parts of code 
-#include "../../Tools/interface/stringTools.h"
-#include "../../Tools/interface/Categorization.h"
-#include "../../Tools/interface/HistInfo.h"
-#include "../../plotting/plotCode.h"
-#include "../../plotting/tdrStyle.h"
-#include "../../Tools/interface/systemTools.h"
-#include "../../Tools/interface/analysisTools.h"
-#include "../../fakeRate/interface/CutsFitInfo.h"
-#include "../../fakeRate/interface/fakeRateTools.h"
-#include "../../fakeRate/interface/SlidingCut.h"
+#include "../Tools/interface/stringTools.h"
+#include "../Tools/interface/Categorization.h"
+#include "../Tools/interface/HistInfo.h"
+#include "../plotting/plotCode.h"
+#include "../plotting/tdrStyle.h"
+#include "../Tools/interface/systemTools.h"
+#include "../Tools/interface/analysisTools.h"
+#include "interface/CutsFitInfo.h"
+#include "interface/fakeRateTools.h"
+#include "interface/SlidingCut.h"
 
 #include "interface/tuneFOSelectionTools.h"
 
@@ -87,6 +87,7 @@ bool isLowStatistics( const TH1* hist ){
 
 int main( int argc, char* argv[] ){
 
+    std::cerr << "###starting###" << std::endl;
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
 
     if( argc != 3 ){
@@ -195,6 +196,7 @@ int main( int argc, char* argv[] ){
     fitInfoCollection.sortByLossFunction( epsilon );
     fitInfoCollection.printBestCuts( keepNbest );
     fitInfoCollection.plotBestCuts( keepNbest, plotDirectory );
-   
+  
+    std::cerr << "###done###" << std::endl; 
     return 0;
 }

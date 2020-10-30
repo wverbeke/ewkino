@@ -4,11 +4,11 @@
 import os
 import sys
 # in order to import local functions: append location to sys.path
-sys.path.append(os.path.abspath('../../skimmer'))
+sys.path.append(os.path.abspath('../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
-flavours = ['electron','muon']
-years = ['2016','2017','2018']
+flavours = ['muon']
+years = ['2016']
 
 # check if executable exists
 if not os.path.exists('./plotTuneFOSelection'):
