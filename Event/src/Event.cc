@@ -16,11 +16,8 @@ Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , 
     _susyMassInfoPtr( treeReader.isSusy() ? new SusyMassInfo( treeReader ) : nullptr ),
     _numberOfVertices( treeReader._nVertex ),
 
-    // WARNING: renamed _weight to _scaledWeight (including lumi and xsection)!
-    // the property _weight now refers to the generator weight only! 
-    // (more consistent naming between ntuples and Event)
-    _weight( treeReader._weight ),
-    _scaledWeight( treeReader._scaledWeight ),
+    //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes
+    _weight( treeReader._scaledWeight ),
     _samplePtr( treeReader.currentSamplePtr() )
     {}
 
