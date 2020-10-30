@@ -56,6 +56,7 @@ class Event{
 
         unsigned numberOfVertices() const{ return _numberOfVertices; }
         double weight() const{ return _weight; }
+	double scaledWeight() const{ return _scaledWeight; }
 
         double HT() const{ return _jetCollectionPtr->scalarPtSum(); }
         double LT() const{ return _leptonCollectionPtr->scalarPtSum(); }
@@ -217,6 +218,7 @@ class Event{
         SusyMassInfo* _susyMassInfoPtr = nullptr;
         unsigned _numberOfVertices = 0;
         double _weight = 1;
+	double _scaledWeight = 1;
         const Sample* _samplePtr = nullptr;
 
         //presence of Z boson
