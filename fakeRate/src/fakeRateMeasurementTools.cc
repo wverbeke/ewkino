@@ -151,7 +151,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     std::map<std::string,double> triggerToJetPtMap = fakeRate::mapTriggerToJetPtThreshold(triggerVector);
     
     std::cout<<"building reweighter"<<std::endl;
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, 
@@ -188,7 +188,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 	if( !fakeRate::passTriggerJetSelection( event, triggerToUse, triggerToJetPtMap ) ) continue;
 
 	// determine correct event weight
-	double weight = event.scaledWeight();
+	double weight = event.weight();
         if( event.isMC() ){
             const Prescale& prescale = prescaleMap.find( triggerToUse )->second;
             weight *= prescale.value();
@@ -366,14 +366,13 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
 	    //std::cout << "event passed FO selection" << std::endl;
 	    std::cout << "event ID: " << event.runNumber() << "/" << event.luminosityBlock();
             std::cout << "/" << event.eventNumber() << std::endl;
-	    std::cout << "unscaled: " << event.weight();
-	    std::cout << ", scaled: " << event.scaledWeight() << std::endl;
+	    std::cout << "(scaled) weight: " << event.weight() << std::endl;
 	    //if( event.eventNumber()==3088713 ){
 		//std::cout << lepton << std::endl;
 	    //}
 	}
 
-	double weight = event.scaledWeight();
+	double weight = event.weight();
 
         // fill 2D denominator histogram 
         histogram::fillValues( denominatorMap.get(), lepton.pt(), lepton.absEta(), weight );
