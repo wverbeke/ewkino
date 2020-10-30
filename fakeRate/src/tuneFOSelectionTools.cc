@@ -3,13 +3,13 @@
 
 const double minPtRatioCut = 0.;
 const double maxPtRatioCut = 0.9;
-const unsigned numberOfPtRatioCuts = 18;
+const unsigned numberOfPtRatioCuts = 2; // small number for testing
 
 const double minSlidePt = 10;
 const double maxSlidePt = 60;
 const double minDeepFlavorCut = 0.1;
 const double maxDeepFlavorCut = 0.9;
-const double deepFlavorGranularity = 0.05;
+const double deepFlavorGranularity = 0.4; // coarse granularity for testing
 
 std::map< std::string, double > getCutParameters(){
     std::map< std::string, double> res;

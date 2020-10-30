@@ -10,19 +10,18 @@ The goal of the tuning is having a fake-rate (tight/FO) that is equal for light 
 #include "TF1.h"
 
 //include other parts of code 
-#include "../../Tools/interface/stringTools.h"
-#include "../../Tools/interface/Categorization.h"
-#include "../../Tools/interface/HistInfo.h"
-#include "../../TreeReader/interface/TreeReader.h"
-#include "../../Event/interface/Event.h"
-#include "../../plotting/plotCode.h"
-#include "../../plotting/tdrStyle.h"
-#include "../../Tools/interface/systemTools.h"
-#include "../../Tools/interface/analysisTools.h"
-#include "../../fakeRate/interface/CutsFitInfo.h"
-#include "../../fakeRate/interface/fakeRateTools.h"
-#include "../../fakeRate/interface/SlidingCut.h"
-
+#include "../Tools/interface/stringTools.h"
+#include "../Tools/interface/Categorization.h"
+#include "../Tools/interface/HistInfo.h"
+#include "../TreeReader/interface/TreeReader.h"
+#include "../Event/interface/Event.h"
+#include "../plotting/plotCode.h"
+#include "../plotting/tdrStyle.h"
+#include "../Tools/interface/systemTools.h"
+#include "../Tools/interface/analysisTools.h"
+#include "interface/CutsFitInfo.h"
+#include "interface/fakeRateTools.h"
+#include "interface/SlidingCut.h"
 #include "interface/tuneFOSelectionTools.h"
 
 // main function
@@ -42,13 +41,15 @@ void fillTuneFOSelection( const std::string& leptonFlavor, const std::string& ye
 
     analysisTools::checkYearString( year );
 
+    std::cout << "making grid of ptRatio and deepFlavor cuts" << std::endl;
     // categorization will include one 'category' for every ptRatio and deepFlavor cut
     // note: the function is in interface/tuneFOSelectionTools
     std::tuple< std::vector<double>, SlidingCutCollection, Categorization > temp = getCutCollection();
     std::vector<double> ptRatioCuts = std::get<0>(temp);
     SlidingCutCollection deepFlavorCutCollection = std::get<1>(temp);
     Categorization categories = std::get<2>(temp);
-        
+    
+    std::cout << "initialize histograms" << std::endl;
     // binning of fakerate as a function of pT 
     const unsigned numberOfPtBins = 10; 
     const double minPt = 10;
@@ -70,6 +71,7 @@ void fillTuneFOSelection( const std::string& leptonFlavor, const std::string& ye
     }
 
     // create TreeReader and set to right sample
+    std::cout << "initializing TreeReader and setting to sample no. " << sampleIndex << std::endl;
     TreeReader treeReader( sampleList, sampleDirectory );
     treeReader.initSample();
     for( unsigned i = 1; i <= sampleIndex; ++i ){
@@ -171,23 +173,22 @@ void fillTuneFOSelection( const std::string& leptonFlavor, const std::string& ye
 
 int main( int argc, char* argv[] ){
 
+    std::cerr << "###starting###" << std::endl;
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
 
-    if( argc != 4 ){
+    if( argc != 6 ){
 	std::cout<<"### ERROR ###: unrecognized number of arguments."<<std::endl;
 	return -1;
     }
     std::string flavor = argvStr[1];
     std::string year = argvStr[2]; 
-    unsigned sampleIndex = std::stoi(argvStr[3]);
-
+    std::string sampleDirectory = argvStr[3];
+    std::string sampleList = argvStr[4];
+    unsigned sampleIndex = std::stoi(argvStr[5]);
     fakeRate::checkFlavorString( flavor );
     analysisTools::checkYearString( year );
 
-    std::string sampleList = "/user/llambrec/ewkino/AnalysisCode/samplelists/";
-    sampleList += "samples_tunefoselection_"+flavor+"_"+year+".txt";
-    std::string sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate/";
-
     fillTuneFOSelection( flavor, year, sampleList, sampleDirectory, sampleIndex );
+    std::cerr << "###done###" << std::endl;
     return 0;
 }
