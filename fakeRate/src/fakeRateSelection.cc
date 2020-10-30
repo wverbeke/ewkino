@@ -155,8 +155,6 @@ bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool on
     return true;
 }
 
-
-
 RangedMap< std::string > fakeRate::mapLeptonPtToTriggerName( const std::vector< std::string >& triggerNames, const bool isMuon ){
 
     //make an std::map that maps the lower bounds of the RangedMap to strings, this will be used to initialize the RangedMap
