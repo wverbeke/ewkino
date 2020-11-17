@@ -8,10 +8,10 @@ sys.path.append(os.path.abspath('../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
 # set global properties
-years = ['2016']
+years = ['2016','2017','2018']
 flavours = ['electron','muon']
 istestrun = False
-samplelistdirectory = os.path.abspath('../AnalysisCode/samplelists')
+samplelistdirectory = os.path.abspath('sampleListsNew')
 # (see also below in loop to set the correct sample list name per flavour/year!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'
 
