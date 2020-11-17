@@ -167,6 +167,8 @@ bool pass_signalregion(Event& event, const std::string& selectiontype,
 			const std::string& variation){
     // apply basic object selection
     cleanLeptonsAndJets(event);
+    // apply MET filters
+    if(not event.passMetFilters()) return false;
     // apply trigger thresholds
     if(not passAnyTrigger(event)) return false;
     // select FO leptons
@@ -197,6 +199,7 @@ bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype,
 				const std::string& variation){
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event, 3, true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
@@ -224,6 +227,7 @@ bool pass_signalsideband_noz(Event& event, const std::string& selectiontype,
 				const std::string& variation){
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
@@ -253,6 +257,7 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
     // very similar to signal region but b-jet veto and other specificities
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
@@ -287,6 +292,7 @@ bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
 				const std::string& variation){
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,4,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
@@ -329,6 +335,7 @@ bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
 			    const std::string& variation){
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;

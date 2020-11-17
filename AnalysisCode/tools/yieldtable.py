@@ -4,7 +4,9 @@
 import ROOT
 import os
 import sys
+import math
 import smalltools as tls
+import histtools
 sys.path.append(os.path.abspath('../samplelists'))
 from extendsamplelist import extendsamplelist
 
@@ -157,12 +159,15 @@ def histogramyield(hist):
     ### determine the yield of a single histogram
     # input arguments:
     # - a TH1 object
-    return {'name':hist.GetName(),'yield':hist.Integral()}
+    error = ROOT.Double(0)
+    integral = hist.IntegralAndError(0,hist.GetNbinsX()+2,error)
+    # (sets integral and error simultaneously)
+    return {'name':hist.GetName(),'yield':integral,'error':error}
 
 def histogramfileyield(histfile,mustcontain=[],doprint=True):
     ### determine the yield of all histograms in histfile
     # if mustcontain is not empty, histogram names are required to contain all elements in it
-    histlist = tls.loadallhistograms(histfile,mustcontain)
+    histlist = histtools.loadallhistograms(histfile,mustcontain)
     yieldlist = []
     for hist in histlist:
         yieldlist.append(histogramyield(hist))
@@ -175,7 +180,9 @@ def formathistogramfileyield(yieldlist):
     ### print the output of histogramfileyield to screen
     wcol1 = '40'
     wcol2 = '25'
-    info = str('{:<'+wcol1+'}{:<'+wcol2+'}').format('Name','Yield (integral)')
+    wcol3 = '25'
+    info = (str('{:<'+wcol1+'}{:<'+wcol2+'}{:<'+wcol3+'}')
+		.format('Name','Yield (integral)','Stat. error'))
     width = len(info)
     print('_'*width)
     print(info)
@@ -187,6 +194,7 @@ def formathistogramfileyield(yieldlist):
         if len(name)>int(wcol1)-1: name = name[:int(wcol1)-5]
         info = str('{:<'+wcol1+'}').format(name)
         info += str('{:<'+wcol2+'}').format('{0:.5E}'.format(yielddict['yield']))
+	info += str('{:<'+wcol3+'}').format('{0:.5E}'.format(yielddict['error']))
         print(info)
     print('-'*width)
     info = str('{:<'+wcol1+'}').format('Total:')
@@ -215,21 +223,22 @@ def formatlatextable(table,rows=[],columns=[]):
     t += '\t'+r'\begin{center}'+'\n'
     t += '\t\t'+r'\caption{}'+'\n'
     t += '\t\t'+r'\label{}'+'\n'
+    t += '\t\t'+r'\resizebox*{1\textwidth}{!}{'+'\n'
     t += '\t\t'+r'\begin{tabular}{|l|'
     for s in ['c|']*len(colkeys): t += s
     t += '}\n'
     t += '\t\t\t'+r'\hline'+'\n'
     t += '\t\t\t'+r'process '
-    for s in colkeys: t += ' & '+s
+    for s in colkeys: t += ' & '+s.replace('_',' ')
     t += r' \\'+'\n'
     t += '\t\t\t'+r'\hline \hline'+'\n'
     for rowkey in rowkeys:
-	t += '\t\t\t'+rowkey
+	t += '\t\t\t'+rowkey.replace('_',' ')
 	for colkey in colkeys:
 	    t += ' & '+str(table[rowkey][colkey])
 	t += r' \\'+'\n'
     t += '\t\t\t'+r'\hline'+'\n'
-    t += '\t\t'+r'\end{tabular}'+'\n'
+    t += '\t\t'+r'\end{tabular}}'+'\n'
     t += '\t'+r'\end{center}'+'\n'
     t += r'\end{table}'
     return t
@@ -276,25 +285,64 @@ if __name__=="__main__":
 
     elif mode=='histogramSR':
 	print('mode = histogramSR, required args: <topdir> <npmode>')
+	print('                    optional args: includeCR')
 	# note: depends on naming convention of the files and folders!
+	# parse arguments
 	topdir = os.path.abspath(sys.argv[2])
 	npmode = sys.argv[3]
+	includeCR = False
+	for arg in sys.argv[4:]:
+	    if arg=='includeCR': includeCR = True
+	# fill table
 	mustcontain = ['nominal','yield']
-	for yeardir in [year+'combined' for year in ['2016','2017','2018']]:
-	    signalregions = ['signalregion_'+str(i) for i in [1,2,3]]
+	for yeardir in [year+'combined' for year in ['years']]:
+	    regions = ['signalregion_'+str(i) for i in [1,2,3]]
+	    if includeCR:
+		regions += ['wzcontrolregion','zgcontrolregion','zzcontrolregion']
+	    srsum = {}
+	    srsumsqerr = {}
 	    table = {}
-	    for signalregiondir in signalregions:
-		totdir = os.path.join(topdir,yeardir,signalregiondir,npmode,'combined.root')
+	    # loop and fill all regions
+	    for regiondir in regions:
+		totdir = os.path.join(topdir,yeardir,regiondir,npmode,'combined.root')
 		yieldlist = histogramfileyield(totdir,mustcontain=mustcontain)
 		yielddict = {}
 		totmc = 0.
+		totmcsqerr = 0.
 		for el in yieldlist:
+		    # put in table
 		    name = el['name'].split('_')[0]
-		    yielddict[name] = '{:.2f}'.format(el['yield'])
-		    if not name=='data': totmc += el['yield']
-		yielddict['total simulation'] = '{:.2f}'.format(totmc)
-		table[signalregiondir] = yielddict
-	    rows = table.keys()
+		    yielddict[name] = ('{:.2f} $\pm$ {:.2f}'
+					.format(el['yield'],el['error']))
+		    # if signal region, add to sum of signal regions
+		    if 'signalregion' in regiondir:
+			if name in srsum: 
+			    srsum[name] += el['yield']
+			    srsumsqerr[name] += el['error']**2
+			else:
+			    srsum[name] = el['yield']
+                            srsumsqerr[name] = el['error']**2
+		    # if simulation, add it to sum of simulation
+		    if not name=='data': 
+			totmc += el['yield']
+			totmcsqerr += el['error']**2
+		yielddict['total simulation'] = ('{:.2f} $\pm$ {:.2f}'
+					.format(totmc,math.sqrt(totmcsqerr)))
+		table[regiondir] = yielddict
+	    # format sum of signalregions
+	    yielddict = {}
+	    totmc = 0.
+            totmcsqerr = 0.
+	    for name in srsum.keys():
+		yielddict[name] = ('{:.2f} $\pm$ {:.2f}'
+                                        .format(srsum[name],math.sqrt(srsumsqerr[name])))
+		if not name=='data':
+		    totmc += srsum[name]
+                    totmcsqerr += srsumsqerr[name]
+            yielddict['total simulation'] = ('{:.2f} $\pm$ {:.2f}'
+                                        .format(totmc,math.sqrt(totmcsqerr)))
+	    table['signalregions'] = yielddict
+	    rows = sorted(table.keys())
 	    columns = table[rows[0]].keys()
 	    # bring tZq to front
 	    columns.insert(0, columns.pop(columns.index('tZq')))

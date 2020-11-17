@@ -107,10 +107,12 @@ def makealigned(stringlist):
 
 if __name__=="__main__":
 
-    # define subdirectory to put datacard and root file in
-    datacarddir = 'datacards_newbins'
-    # set parameters to read channels
-    topdir = '../systematics/output_tzqid_copyforrebinning'
+    if len(sys.argv)!=3:
+	print('### ERROR ###: need different number of command line args:')
+	print('               <input directory> and <datacard directory>')
+	sys.exit()
+    topdir = sys.argv[1]
+    datacarddir = sys.argv[2]
     npfromdata = True
     cnames = ['signalregion_1','signalregion_2','signalregion_3']
     cnames.append('wzcontrolregion')
@@ -124,8 +126,8 @@ if __name__=="__main__":
 	for year in years:
 	    channels[c+'_'+year] = os.path.join(topdir,year+'combined',c,suffix,'combined.root')
     # define variable to fit on
-    signalvariable = '_rebinnedeventBDT' # for signal regions
-    controlvariable = '_yield' # for control regions
+    signalvariable = '_eventBDT' # for signal regions
+    controlvariable = '_nJets' # for control regions
 
     if os.path.exists(datacarddir):
 	#print('### WARNING ###: directory already exists. Clean it? (y/n)')

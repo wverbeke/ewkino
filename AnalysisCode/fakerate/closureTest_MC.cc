@@ -48,6 +48,10 @@ std::vector< HistInfo > makeDistributionInfoNew(){
 	HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
 	HistInfo( "leptonEtaTrailing", "|#eta|^{trailing lepton}", 10, 0, 2.5 ),
 
+	HistInfo( "leptonEtaLeadingFine", "|#eta|^{leading lepton}", 30, 0, 2.5 ),
+        HistInfo( "leptonEtaSubLeadingFine", "|#eta|^{subleading lepton}", 30, 0, 2.5 ),
+        HistInfo( "leptonEtaTrailingFine", "|#eta|^{trailing lepton}", 30, 0, 2.5 ),
+
 	HistInfo("_abs_eta_recoil","#||{#eta}_{recoil}",20,0.,5.),
 	HistInfo("_Mjj_max","M_{jet+jet}^{max}",20,0.,1200.),
 	HistInfo("_lW_asymmetry","asymmetry (lepton from W)",20,-2.5,2.5),
@@ -147,6 +151,20 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
     return weight;
 }
 
+std::string eventOriginFlavour( const Event& event ){
+    // retrieve composition of nonprompt leptons
+    unsigned nlight = 0;
+    unsigned nheavy = 0;
+    for( auto& leptonPtr : event.lightLeptonCollection() ){
+        if( !leptonPtr->isPrompt() ){
+	    if( leptonPtr->provenanceCompressed()==1 
+		|| leptonPtr->provenanceCompressed()==2) nheavy++;
+	    else nlight++;
+	}
+    }
+    return std::to_string(nlight)+"light"+std::to_string(nheavy)+"heavy";
+}
+
 int main( int argc, char* argv[] ){
 
     std::cerr << "###starting###" << std::endl;
@@ -201,15 +219,30 @@ int main( int argc, char* argv[] ){
     //std::vector< HistInfo > histInfoVec = makeDistributionInfo();
 
     // make collection of histograms (NEW)
+    // vector of observed histograms (one element per variable)
     std::vector< std::shared_ptr< TH1D > > observedHists; 
+    // vector of total predicted histograms (one element per variable)
     std::vector< std::shared_ptr< TH1D > > predictedHists;
+    // structure of split predicted histograms 
+    // (one map per variable, mapping split sources of prediction)
+    std::vector< std::string > predictionCategories = {"light","heavy","other"};
+    std::vector< std::map< std::string, std::shared_ptr<TH1D> > > predictedHistsSplit;
     std::vector< HistInfo > histInfoVec = makeDistributionInfoNew();
     std::map<std::string,double> varmap = eventFlattening::initVarMap();
 
     for( const auto& histInfo : histInfoVec ){
         observedHists.push_back( histInfo.makeHist( histInfo.name()+ "_observed_"+process+"_"+year) );
         predictedHists.push_back( histInfo.makeHist( histInfo.name()+"_predicted_"+process+"_"+year) );
+	std::map< std::string, std::shared_ptr<TH1D>> thisVarMap;
+	for( std::string cat: predictionCategories ){
+	    thisVarMap[cat] = histInfo.makeHist(histInfo.name()+"_predicted_"+process+"_"+cat+"_"+year);
+	}
+	predictedHistsSplit.push_back( thisVarMap );
     }
+
+    // make additional collection of histograms containing some diagnostics
+    HistInfo failPtInfo = HistInfo( "leptonPtFailing", "P_{T}^{failing leptons} (GeV)", 10, 10, 100 );
+    std::shared_ptr<TH1D> failPtHist = failPtInfo.makeHist( failPtInfo.name()+"_"+process+"_"+year );
     
     // read fake-rate map corresponding to this year and flavor 
     std::shared_ptr< TH2D > fakeRateMap_muon = readFRMap( "muon", year, isMCFR, use_mT );
@@ -272,9 +305,10 @@ int main( int argc, char* argv[] ){
 				    fakeRateMap_muon, fakeRateMap_electron, "nominal", doBDT, reader);
 	    std::vector< double > variables = {
 		lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
+		lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta(),
 		lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta()
 	    };
-	    for( unsigned j=6; j<histInfoVec.size(); ++j){
+	    for( unsigned j=9; j<histInfoVec.size(); ++j){
 		variables.push_back( varmap[histInfoVec[j].name()] );
 	    }
 
@@ -293,13 +327,28 @@ int main( int argc, char* argv[] ){
 					    weight );
                 }
             } else {
-
 		//compute event weight with fake-rate
 		weight = weight*fakeRateWeight( event, fakeRateMap_muon, fakeRateMap_electron );
+		// find origin of nonprompt leptons
+		std::string raworigin = eventOriginFlavour( event );
+		std::string origin = (raworigin=="1light0heavy") ? "light" :
+				     (raworigin=="0light1heavy") ? "heavy" :
+				     "other";
+		// fill histograms
 		for( std::vector< double >::size_type v = 0; v < variables.size(); ++v ){
                     predictedHists[v]->Fill( std::min( variables[v],  histInfoVec[v].maxBinCenter() ), 
 						weight );
+
+		    predictedHistsSplit[v][origin]->Fill( std::min( variables[v],  
+						histInfoVec[v].maxBinCenter() ), weight);
                 }
+
+		// fill histogram with pt of failing leptons
+		for( const auto& leptonPtr : event.lightLeptonCollection() ){
+		    if( leptonPtr->isFO() && !leptonPtr->isTight() ){
+			failPtHist->Fill( leptonPtr->pt(), event.scaledWeight() );
+		    }
+		}
             }
 	    /*std::cout<<"----- event ------"<<std::endl;
 	    for(const auto& leptonPtr : lightLeptons ){
@@ -319,17 +368,24 @@ int main( int argc, char* argv[] ){
 	std::cout<<"predicted: "<<predictedHists[0]->GetBinContent(i)<<std::endl;
     }*/
 
-    //make plot output directory
+    // make plot output directory
     std::string outputDirectory_name = "closurePlots_MC_" + process + "_" + year; 
     if( flavor != "" ){
         outputDirectory_name += ( "_" + flavor );
     }
     systemTools::makeDirectory( outputDirectory_name );
     
-    //make plots 
+    // make plots 
     for( std::vector< HistInfo >::size_type v = 0; v < histInfoVec.size(); ++v ){
 	std::string names[2] = {"MC observed", "fake-rate prediction"};
         std::vector< TH1D* > predicted = { predictedHists[v].get() };
+	std::string namesSplit[1+predictionCategories.size()];
+	TH1D* predictedSplit[predictionCategories.size()];
+	namesSplit[0] = "MC observed";
+	for( unsigned i=0; i<predictionCategories.size(); i++){
+	    namesSplit[i+1] = predictionCategories[i];
+	    predictedSplit[i] = predictedHistsSplit[v][predictionCategories[i]].get();
+	}
         std::string header;
         if( year == "2016" ){
             header = "35.9 fb^{-1}";
@@ -344,16 +400,36 @@ int main( int argc, char* argv[] ){
         }
         if( flavor == "" ){
 	    plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, 
-			    stringTools::formatDirectoryName( outputDirectory_name ) 
-			    + histInfoVec[v].name() + "_" + process + "_" + year + ".pdf", 
+			stringTools::formatDirectoryName( outputDirectory_name ) 
+			+ histInfoVec[v].name() + "_" + process + "_" + year + ".pdf", 
 			    "", false, false, header, systUnc);
+	    plotDataVSMC( observedHists[v].get(), predictedSplit, namesSplit, 
+			predictionCategories.size(),
+                        stringTools::formatDirectoryName( outputDirectory_name )
+                        + histInfoVec[v].name() + "_" + process + "_" + year + "_split.pdf",
+                            "", false, false, header, systUnc);
         } else {
 	    plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, 
-			stringTools::formatDirectoryName( outputDirectory_name ) + histInfoVec[v].name() 
-			+ "_" + process + "_" + year + "_" + flavor + ".pdf", 
+			stringTools::formatDirectoryName( outputDirectory_name ) 
+			+ histInfoVec[v].name() + "_" + process + "_" + year + "_" + flavor + ".pdf", 
 			"", false, false, header, systUnc);
+	    plotDataVSMC( observedHists[v].get(), predictedSplit, namesSplit, 
+                        predictionCategories.size(),
+                        stringTools::formatDirectoryName( outputDirectory_name )
+                        + histInfoVec[v].name() + "_" + process + "_" + year 
+			+ "_" + flavor + "_split.pdf",
+                            "", false, false, header, systUnc);
         }
     }
+
+    // make addtional plots
+    std::string flavorInterpendix = (flavor=="")? "": "_"+flavor;
+    std::string names[1] = {""};
+    TH1D* hists[1] = {failPtHist.get()};
+    plotHistograms( hists, 1, names, 
+			stringTools::formatDirectoryName( outputDirectory_name )
+                        + failPtInfo.name() + "_" + process + "_" + year 
+			+ flavorInterpendix + ".pdf", false, false);
 
     std::cerr << "###done###" << std::endl;
     return 0;

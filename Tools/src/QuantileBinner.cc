@@ -109,8 +109,16 @@ std::vector< double > exponentialBinningQuantiles( const double totalYield, cons
     quantileVector.push_back( lastQuantile );
 
     double quantileSum = lastQuantile;
+    std::cout << "adding following quantiles: " << std::endl;
     while( quantileSum <= 1. ){
         double nextQuantile = quantileVector.back() * binRatio;
+	// if a binRatio < 1 is being used, one risks ending up with too many bins,
+	// or being stuck in an infinite loop (if quantileSum=1 is never reached)
+	// a (preliminary?) solution: avoid bins with less than 5% content
+	if( binRatio<1. && nextQuantile < 0.05 ){
+	    nextQuantile  = 1. - quantileSum + 1e-3;
+	}
+	std::cout << nextQuantile << " ";
         quantileVector.push_back( nextQuantile );
         quantileSum += nextQuantile;
     }

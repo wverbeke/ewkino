@@ -9,7 +9,7 @@ from copy import copy
 sys.path.append('../../skimmer')
 from jobSubmission import initializeJobScript
 sys.path.append('../tools')
-from smalltools import loadallhistograms,tgraphtohist
+from histtools import loadallhistograms,tgraphtohist
 
 def readptetabins(inputfile,basename):
     # read pt and eta bins from a root file containing histograms with names

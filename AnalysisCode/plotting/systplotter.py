@@ -308,11 +308,12 @@ if __name__=="__main__":
                 '_M3l','_abs_eta_max','_nJets'])
     variables += ['_eventBDT']
     variables += ['_nMuons','_nElectrons']
+    #variables += ['_rebinnedeventBDT']
 
     # systematics to draw
     #systematictags = [] # empty list for all systematics in file
     systematictags = []
-    systematictags += ['_rfScales','_qcdScale']
+    systematictags += ['_rfScale','_qcdScale']
     # systematics to exclude
     excludetags = [] # empty list to exclude nothing
     #excludetags = ['Var','rScale','fScale']
@@ -347,7 +348,7 @@ if __name__=="__main__":
 		for systematictag in systematictags+['nominal']:
 		    histlist += loadhistograms(histfile,mustcontain=[variable,systematictag],
 						    mustnotcontain=excludetags)
-		figname = os.path.join(figdir,histfile.split('/')[-1].rstrip('.root')+'_'+variable)
+	    figname = os.path.join(figdir,histfile.split('/')[-1].rstrip('.root')+'_'+variable)
 
 	    ### Set plot properties
 	    binwidth = histlist[0].GetBinWidth(1)

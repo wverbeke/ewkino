@@ -8,9 +8,9 @@ import sys
 regions = []
 regions.append('signalregion')
 for r in ['zgcontrolregion','wzcontrolregion','zzcontrolregion']: regions.append(r)
-#for r in ['signalsideband_noossf','signalsideband_noz']: regions.append(r)
+for r in ['signalsideband_noossf','signalsideband_noz']: regions.append(r)
 
-years = ['2016']
+years = ['2016','2017','2018']
 events = ['MC','data']
 
 selection_types = []
@@ -26,7 +26,7 @@ for year in years:
 		inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'+year+eventtype
 		samplelist = '../samplelists/'
 		samplelist += 'samplelist_tzq_'+year+'_'+eventtype+'.txt'
-		outputfolder = '~/Files/tzqid_test/'+year+eventtype+'/'+region+'_'+stype
+		outputfolder = '~/Files/tzqidmedium0p4/'+year+eventtype+'/'+region+'_'+stype
 		cmd = 'python eventselector.py '+inputfolder+' '+samplelist+' '+outputfolder
 		cmd += ' '+region+' '+stype
 		print('executing '+cmd)

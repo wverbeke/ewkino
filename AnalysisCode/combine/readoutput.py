@@ -3,6 +3,7 @@
 ######################################################################
 import os
 import sys
+import math
 
 def readr(filename):
     ### read signal strength (r) from the output of a combine command directed to a file
@@ -28,7 +29,7 @@ def readsigma(filename):
 		s = float(l.replace('Significance:','').strip(' '))
     return s
 
-def formatline(title,strength=0,uperror=0,downerror=0,significance=0):
+def formatline(title,strength=0,uperror=0,downerror=0,uperror_stat=0,downerror_stat=0,significance=0):
     titlelen = 25
     numlen = 8
     res = str('{:<'+str(titlelen)+'}').format(title)
@@ -39,8 +40,16 @@ def formatline(title,strength=0,uperror=0,downerror=0,significance=0):
 	res += str('r = {:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(strength))
 	res += '+'
 	res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(uperror))
+	if uperror_stat > 0:
+	    res += '(stat: '
+	    res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(uperror_stat))
+	    res += ') '
 	res += '-'
 	res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(downerror))
+	if downerror_stat > 0:
+            res += '(stat: '
+            res += str('{:<'+str(numlen)+'}').format(str('{:.'+str(numlen-3)+'f}').format(downerror_stat))
+            res += ') '
     res += '\n'
     res += '-'*(titlelen+3*numlen)+'\n'
     return res
@@ -53,7 +62,18 @@ def formatlatextableentries(reslist,kind):
 	if kind=='significance':
 	    value = '{:.2f}'.format(res['s'])
 	if kind=='signalstrength':
-	    value = '${:.2f}_{{-{:.2f} }}^{{+{:.2f} }}$'.format(res['r'],res['downerror'],res['uperror'])
+	    uperror = res['uperror']
+	    upstat = res['uperror_stat']
+	    upsys = math.sqrt(uperror**2-upstat**2)
+	    downerror = res['downerror']
+	    downstat = res['downerror_stat']
+	    downsys = math.sqrt(downerror**2-downstat**2)
+	    if upstat < 1e-12 or downstat < 1e-12:
+		value = '${:.2f}_{{-{:.2f} }}^{{+{:.2f} }}$'.format(res['r'],res['downerror'],res['uperror'])
+	    else:
+		value = '${:.2f}_{{-{:.2f} ({:.2f} / {:.2f}) }}'
+		value += '^{{+{:.2f} ({:.2f} / {:.2f}) }}$'
+		value = value.format(res['r'],downerror,downsys,downstat,uperror,upsys,upstat)
 	tableentries[key] = value
     return tableentries
 
@@ -122,15 +142,30 @@ if __name__=='__main__':
 	reslist = []
 	for f in outputfiles:
 	    card = f.replace('datacard_','').replace('dc_combined','').replace('_out_'+tag+'.txt','')
+	    # read significance
 	    if 'significance' in tag:
 		s = readsigma(os.path.join(datacarddir,f))
-                reslist.append({'card':card,'r':0,'uperror':0,'downerror':0,'s':s})
+                reslist.append({'card':card,'r':0,'uperror':0,'downerror':0,'s':s,
+				    'uperror_stat':0,'downerror_stat':0})
+	    # read signal strength
 	    if 'signalstrength' in tag:
 		(r,uperror,downerror) = readr(os.path.join(datacarddir,f))
-		reslist.append({'card':card,'r':r,'uperror':uperror,'downerror':downerror,'s':0})
+		reslist.append({'card':card,'r':r,'uperror':uperror,'downerror':downerror,'s':0,
+				    'uperror_stat':0,'downerror_stat':0})
+		# check if stat only file exists and if so, read it as well
+		fstat = f.replace('.txt','_stat.txt')
+		if os.path.exists(os.path.join(datacarddir,fstat)):
+		    (rstat,uperror,downerror) = readr(os.path.join(datacarddir,fstat))
+		    if abs(r-rstat) > 1e-12:
+			print('### WARNING ###: best fit signal strength does not agree.')
+		    else:
+			reslist[-1]['uperror_stat'] = uperror
+			reslist[-1]['downerror_stat'] = downerror
 	for res in reslist:
-	    print(formatline(res['card'],strength=res['r'],uperror=res['uperror'],
-			    downerror=res['downerror'],significance=res['s']))
+	    print(formatline(res['card'],strength=res['r'],
+			    uperror=res['uperror'],downerror=res['downerror'],
+			    uperror_stat=res['uperror_stat'],downerror_stat=res['downerror_stat'],
+			    significance=res['s']))
 	resdict[tag] = formatlatextableentries(reslist,tag.split('_')[0])
     print(formatlatextable(resdict['significance_obs'],resdict['significance_exp']))
     print(formatlatextable(resdict['signalstrength_obs'],resdict['signalstrength_exp']))

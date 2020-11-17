@@ -15,7 +15,7 @@ import os
 import ROOT
 import numpy as np
 sys.path.append(os.path.abspath('../tools'))
-import smalltools as tls
+import histtools
 
 def getcorrelations():
     # define correlations to be implemented
@@ -48,7 +48,7 @@ def implementcorrelations(histfilename,outputfilename):
 	return
 
     # load all histograms in this file
-    allhists = tls.loadallhistograms(histfilename)
+    allhists = histtools.loadallhistograms(histfilename)
 
     # get correlation settings
     conf = getcorrelations()

@@ -144,7 +144,7 @@ def submitjob(cwd,inputfile,norm,output_directory,process_name,
 os.makedirs(output_directory)
 
 # loop over input files and submit jobs
-#inputfiles = [f for f in inputfiles if 'tZq' in f['sample_name']] # temp for testing
+#inputfiles = [f for f in inputfiles if 'ZGToLLG' in f['sample_name']] # temp for testing
 #inputfiles = [f for f in inputfiles if 'combined' in f['file']] # temp for testing
 #print(inputfiles)
 for f in inputfiles:

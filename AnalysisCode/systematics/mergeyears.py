@@ -12,7 +12,7 @@ import os
 import sys
 import ROOT
 sys.path.append(os.path.abspath('../tools'))
-import smalltools as tls
+import histtools
 
 def getfilestomerge(topdir,region,npmode):
     ### get a list of files to merge for this specific region and nonprompt mode
@@ -57,13 +57,13 @@ if __name__=='__main__':
 
     regionlist = []
     regionlist.append('signalregion_1')
-    #regionlist.append('signalregion_2')
-    #regionlist.append('signalregion_3')
-    #regionlist.append('wzcontrolregion')
-    #regionlist.append('zzcontrolregion')
-    #regionlist.append('zgcontrolregion')
-    #for r in ['signalsideband_noossf_1']: regionlist.append(r)
-    #for r in ['signalsideband_noz_1']: regionlist.append(r)
+    regionlist.append('signalregion_2')
+    regionlist.append('signalregion_3')
+    regionlist.append('wzcontrolregion')
+    regionlist.append('zzcontrolregion')
+    regionlist.append('zgcontrolregion')
+    for r in ['signalsideband_noossf_1']: regionlist.append(r)
+    for r in ['signalsideband_noz_1']: regionlist.append(r)
     npmodelist = []
     #npmodelist.append('npfromsim')
     npmodelist.append('npfromdata')
@@ -84,7 +84,7 @@ if __name__=='__main__':
 	    # get nominal histograms
 	    nominalhists = {}
 	    for year in filestomerge.keys():
-		histlist = tls.loadallhistograms(filestomerge[year])
+		histlist = histtools.loadallhistograms(filestomerge[year])
 		nominalhists[year] = []
 		for hist in histlist:
 		    if 'nominal' in hist.GetName(): nominalhists[year].append(hist.Clone())
@@ -98,7 +98,7 @@ if __name__=='__main__':
 	    os.system(command)
 	    # take care of uncorrelated variations between years
 	    print('adding nominals to uncorrelated variations...')
-	    histlist = tls.loadallhistograms(outputfile)
+	    histlist = histtools.loadallhistograms(outputfile)
 	    addnominals(histlist,nominalhists)
 	    tempfilename = outputfile[:-5]+'_temp.root'
 	    f = ROOT.TFile.Open(tempfilename,'recreate')
@@ -107,7 +107,7 @@ if __name__=='__main__':
 	    f.Close()
 	    os.system('mv '+tempfilename+' '+outputfile)
 	    # re-do rebinning of eventBDT
-	    print('rebinning...')
+	    '''print('rebinning...')
             if not os.path.exists('./rebinoutput'):
 		print('### WARNING ###: rebinoutput executable does not seem to exist')
                 print('                 calling make command but program will crash if that command fails')
@@ -117,6 +117,4 @@ if __name__=='__main__':
                 os.system('rm '+tempfilename)
             command = './rebinoutput '+outputfile+' '+tempfilename+' _fineBinnedeventBDT 1 2'
             os.system(command)
-            os.system('mv '+tempfilename+' '+outputfile) 
-
-		
+            os.system('mv '+tempfilename+' '+outputfile) '''	

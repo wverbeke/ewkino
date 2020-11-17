@@ -84,7 +84,9 @@ def addcombinecommands(script,datacard,runblind):
     name = datacard.replace('.txt','')
     # make outputfile
     ss_obs_outfile = datacard.replace('.txt','_out_signalstrength_obs.txt')
+    ss_obs_stat_outfile = datacard.replace('.txt','_out_signalstrength_obs_stat.txt')
     ss_exp_outfile = datacard.replace('.txt','_out_signalstrength_exp.txt')
+    ss_exp_stat_outfile = datacard.replace('.txt','_out_signalstrength_exp_stat.txt')
     sig_obs_outfile = datacard.replace('.txt','_out_significance_obs.txt')
     sig_exp_outfile = datacard.replace('.txt','_out_significance_exp.txt')
 
@@ -92,14 +94,19 @@ def addcombinecommands(script,datacard,runblind):
     ss_command = 'combine -M FitDiagnostics '+workspace+' -n '+name
     ss_command += ' --rMin 0 --rMax 5'
     #ss_command += ' --saveShapes --saveWithUncertainties'
-    ss_command += ' --cminDefaultMinimizerStrategy 0'
-    ss_command += ' --robustFit=1'
+    #ss_command += ' --cminDefaultMinimizerStrategy 0'
+    #ss_command += ' --robustFit=1'
+    ss_command_stat = ss_command + ' --profilingMode=none'
     # run blind:
     script.write(ss_command+' -t -1 --expectSignal=1 > '+ss_exp_outfile+' 2> '+ss_exp_outfile+'\n')
+    # run blind statistical uncertainties only:
+    script.write(ss_command_stat+' -t -1 --expectSignal=1 > '+ss_exp_stat_outfile+' 2> '+ss_exp_stat_outfile+'\n')
     # run with data:
     if not runblind: script.write(ss_command+' > '+ss_obs_outfile+' 2> '+ss_obs_outfile+'\n')
+    # run with data and statistical uncertainties only:
+    if not runblind: script.write(ss_command_stat+' > '+ss_obs_stat_outfile+' 2> '+ss_obs_stat_outfile+'\n')
 
-    # run ProfileLikelihood to compute significance
+    # compute significance
     sig_command = 'combine -M Significance '+workspace+' -n '+name+' --signif'
     sig_command += ' --cminDefaultMinimizerStrategy 0'
     # run blind:
@@ -108,10 +115,18 @@ def addcombinecommands(script,datacard,runblind):
     
 if __name__=="__main__":
 
-    # global settings    
-    datacarddir = 'datacards_newbins'
-    runblind = True
+    # parse command line args
+    if len(sys.argv)<2:
+	print('### ERROR ###: need at least one command line arg (input folder)')
+	sys.exit()
+    datacarddir = os.path.abspath(sys.argv[1])
+    usedata = False
     only2016 = False
+    runlocal = False
+    for arg in sys.argv[2:]:
+	if arg=='usedata': usedata = True
+	elif arg=='only2016': only2016 = True
+	elif arg=='runlocal': runlocal = True
 
     # remove all previous output
     cleandatacarddir(datacarddir)
@@ -127,11 +142,11 @@ if __name__=="__main__":
         with open( script_name, 'w') as script:
             initializeJobScript( script )
             script.write('cd {}\n'.format( datacarddir ) )
-	    addcombinecommands(script,card,runblind)
+	    addcombinecommands(script,card, not usedata)
         # submit job and catch errors 
-        #submitQsubJob( script_name )
+        if( not runlocal ): submitQsubJob( script_name )
         # alternative: run locally (for testing and debugging)
-        os.system('bash '+script_name)
+        else: os.system('bash '+script_name)
 
     # part 2: run combine command for a number of combination of cards
     combineddict = makecombinedcards(datacarddir)
@@ -147,8 +162,8 @@ if __name__=="__main__":
         with open( script_name, 'w') as script:
             initializeJobScript( script )
             script.write('cd {}\n'.format( datacarddir ) )
-            addcombinecommands(script,card,runblind)
+            addcombinecommands(script,card, not usedata)
         # submit job and catch errors 
-        #submitQsubJob( script_name )
+        if( not runlocal ): submitQsubJob( script_name )
         # alternative: run locally (for testing and debugging)
-        os.system('bash '+script_name)
+        else: os.system('bash '+script_name)

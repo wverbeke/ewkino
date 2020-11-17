@@ -22,6 +22,8 @@ def makeimpactplot(workspace,runblind):
 	command = 'combineTool.py -M Impacts -d '+workspace
 	command += ' -m 100' # seems to be required argument, put any value?
 	command += ' --rMin 0 --rMax 5'
+	#command += ' --cminDefaultMinimizerStrategy 0'
+	#command += ' --robustFit=1'
 	if runblind: command += ' -t -1 --expectSignal=1'
 	initfit = command + ' --doInitialFit\n'
 	impacts = command + ' --doFits\n'

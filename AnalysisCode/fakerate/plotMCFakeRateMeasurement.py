@@ -4,7 +4,7 @@
 import os
 import sys
 
-years = ['2016']
+years = ['2016','2017','2018']
 flavours = ['muon','electron']
 
 # check if executable exists
