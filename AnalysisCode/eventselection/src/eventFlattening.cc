@@ -46,6 +46,10 @@ Float_t _yield = 0.5; // fixed value
 Float_t _leptonPtLeading = 0.;
 Float_t _leptonPtSubLeading = 0.;
 Float_t _leptonPtTrailing = 0.;
+Float_t _leptonEtaLeading = 0.;
+Float_t _leptonEtaSubLeading = 0.;
+Float_t _leptonEtaTrailing = 0.;
+
 
 void eventFlattening::setVariables(std::map<std::string,double> varmap){
     // copy (and parse) the values contained in varmap to the TTree variables
@@ -90,6 +94,9 @@ void eventFlattening::setVariables(std::map<std::string,double> varmap){
     _leptonPtLeading = varmap["_leptonPtLeading"];
     _leptonPtSubLeading = varmap["_leptonPtSubLeading"];
     _leptonPtTrailing = varmap["_leptonPtTrailing"];
+    _leptonEtaLeading = varmap["_leptonEtaLeading"];
+    _leptonEtaSubLeading = varmap["_leptonEtaSubLeading"];
+    _leptonEtaTrailing = varmap["_leptonEtaTrailing"];
 }
 
 std::map< std::string, double > eventFlattening::initVarMap(){
@@ -116,6 +123,7 @@ std::map< std::string, double > eventFlattening::initVarMap(){
 	{"_yield",0.5},
 	
 	{"_leptonPtLeading",0.}, {"_leptonPtSubLeading",0.}, {"_leptonPtTrailing",0.},
+	{"_leptonEtaLeading",0.}, {"_leptonEtaSubLeading",0.}, {"_leptonEtaTrailing",0.},
     };
     return varmap;    
 }
@@ -167,6 +175,9 @@ void eventFlattening::initOutputTree(TTree* outputTree){
     outputTree->Branch("_leptonPtLeading", &_leptonPtLeading, "_leptonPtLeading/F");
     outputTree->Branch("_leptonPtSubLeading", &_leptonPtSubLeading, "_leptonPtSubLeading/F");
     outputTree->Branch("_leptonPtTrailing", &_leptonPtTrailing, "_leptonPtTrailing/F");
+    outputTree->Branch("_leptonEtaLeading", &_leptonEtaLeading, "_leptonEtaLeading/F");
+    outputTree->Branch("_leptonEtaSubLeading", &_leptonEtaSubLeading, "_leptonEtaSubLeading/F");
+    outputTree->Branch("_leptonEtaTrailing", &_leptonEtaTrailing, "_leptonEtaTrailing/F");
 }
 
 TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, 
@@ -320,11 +331,14 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     varmap["_nMuons"] = lepcollection.numberOfMuons();
     varmap["_nElectrons"] = lepcollection.numberOfElectrons();
 
-    // lepton pt
+    // lepton pt and eta
     if(lepcollection.numberOfLightLeptons()==3 && lepcollection.size()==3){
 	varmap["_leptonPtLeading"] = lepcollection[0].pt();
 	varmap["_leptonPtSubLeading"] = lepcollection[1].pt();
 	varmap["_leptonPtTrailing"] = lepcollection[2].pt();
+	varmap["_leptonEtaLeading"] = lepcollection[0].eta();
+        varmap["_leptonEtaSubLeading"] = lepcollection[1].eta();
+        varmap["_leptonEtaTrailing"] = lepcollection[2].eta();
     }
 
     // other more or less precomputed event variables

@@ -79,6 +79,9 @@ dtype = tls.data_type_from_samplelist(samplelist)
 if len(dtype)==0 : sys.exit()
 
 # set path to BDT:
+# (update: moved bdt's to subdirectories within bdt folder)
+# (        keep here same code (apart from existence check) but add subdirectories in .cc)
+# (        cannot do it here since C++ function needed to decide on subdirectory...)
 path_to_xml_file = ''
 if( bdt_combine_mode=='all' or signal_category not in [1,2,3] ):
     path_to_xml_file = os.path.abspath('../bdt/out_all_data/weights/tmvatrain_BDT.weights.xml')
@@ -92,7 +95,8 @@ elif( bdt_combine_mode=='regions' ):
 elif( bdt_combine_mode=='none' ):
     path_to_xml_file = os.path.abspath('../bdt/out_'+year+'_treeCat'+str(signal_category)+'_data/'
 					+'weights/tmvatrain_BDT.weights.xml')
-if( not os.path.exists( path_to_xml_file ) or path_to_xml_file=='' ):
+#if( not os.path.exists( path_to_xml_file ) or path_to_xml_file=='' ):
+if( path_to_xml_file=='' ):
     print('### ERROR ###: requested xml file '+path_to_xml_file+' does not seem to exist...')
     sys.exit()
 
@@ -144,7 +148,7 @@ def submitjob(cwd,inputfile,norm,output_directory,process_name,
 os.makedirs(output_directory)
 
 # loop over input files and submit jobs
-#inputfiles = [f for f in inputfiles if 'ZGToLLG' in f['sample_name']] # temp for testing
+#inputfiles = [f for f in inputfiles if 'tZq' in f['sample_name']] # temp for testing
 #inputfiles = [f for f in inputfiles if 'combined' in f['file']] # temp for testing
 #print(inputfiles)
 for f in inputfiles:

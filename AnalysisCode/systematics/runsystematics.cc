@@ -750,10 +750,10 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    std::shared_ptr<TH1D> hist = mapelement.second;
 	    // selection: do not store all individual pdf variations
 	    if(stringTools::stringContains(hist->GetName(),"pdfShapeVar") 
-		&& !storeLheVars) continue;
+	    	&& !storeLheVars) continue;
 	    // selection: do not store all individual qcd scale variations
 	    if(stringTools::stringContains(hist->GetName(),"qcdScalesShapeVar")
-		&& !storeLheVars) continue;
+	    	&& !storeLheVars) continue;
 	    // special treatment of histograms with zero entries or all weights zero
 	    if(hist->GetEntries()==0 or std::abs(hist->GetSumOfWeights())<1e-12){
 		// use nominal histogram instead
@@ -784,10 +784,10 @@ int main( int argc, char* argv[] ){
     std::cerr << "###starting###" << std::endl;
 
     if( argc < 11 ){
-        std::cerr << "### ERROR ###: runsystematics.cc requires at least 9 arguments to run: ";
+        std::cerr << "### ERROR ###: runsystematics.cc requires at least 10 arguments to run: ";
         std::cerr << "input_file_path, norm, output_file_path, process_name, ";
 	std::cerr << "event_selection, signal_category, selection_type, bdtCombineMode, ";
-	std::cerr << "pathToXMLFile ";
+	std::cerr << "pathToXMLFile, ";
 	std::cerr << "at least one systematic" << std::endl;
         return -1;
     }
@@ -807,6 +807,8 @@ int main( int argc, char* argv[] ){
     for(int i=10; i<argc; i++){
 	systematics.push_back(argvStr[i]);
     }
+
+    std::cout << "done parsing arguments" << std::endl;
 
     // make structure for variables
     std::vector<std::tuple<std::string,double,double,int>> vars;
@@ -830,6 +832,14 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_nMuons",-0.5,3.5,4));
     vars.push_back(std::make_tuple("_nElectrons",-0.5,3.5,4));
     vars.push_back(std::make_tuple("_yield",0.,1.,1));
+    vars.push_back(std::make_tuple("_leptonPtLeading",0.,300.,12));
+    vars.push_back(std::make_tuple("_leptonPtSubLeading",0.,180.,12));
+    vars.push_back(std::make_tuple("_leptonPtTrailing",0.,120.,12));
+    vars.push_back(std::make_tuple("_leptonEtaLeading",-2.5,2.5,20));
+    vars.push_back(std::make_tuple("_leptonEtaSubLeading",-2.5,2.5,20));
+    vars.push_back(std::make_tuple("_leptonEtaTrailing",-2.5,2.5,20));
+
+    std::cout << "added all variables" << std::endl;
 
     // load fake rate maps if needed
     std::shared_ptr<TH2D> frmap_muon;
@@ -848,6 +858,8 @@ int main( int argc, char* argv[] ){
 	std::string frmap_electron_name = frdir+"/fakeRateMap_data_electron_"+year+"_mT.root";
         frmap_muon = eventFlattening::readFRMap(frmap_muon_name,"muon",year);
         frmap_electron = eventFlattening::readFRMap(frmap_electron_name,"electron",year);
+
+	std::cout << "read fake rate maps" << std::endl;
     }
     
     // load a TMVA Reader if needed
@@ -856,7 +868,16 @@ int main( int argc, char* argv[] ){
         if(std::get<0>(vars[i])=="_eventBDT") doBDT=true;
     }
     TMVA::Reader* reader = new TMVA::Reader();
-    if(doBDT){ reader = eventFlattening::initializeReader(reader, pathToXMLFile, bdtCombineMode); }
+    if(doBDT){
+	std::string subDir = "bdts_"+LeptonSelector::leptonID();
+	std::string::size_type pos = pathToXMLFile.find("/bdt/");
+	if( pos != std::string::npos ){
+	    pathToXMLFile.erase( pos, 5 );
+	    pathToXMLFile.insert( pos, "/bdt/"+subDir+"/" );
+	}
+	reader = eventFlattening::initializeReader(reader, pathToXMLFile, bdtCombineMode); 
+    }
+    std::cout << "read BDT reader" << std::endl;
 
     // check validity
     bool validInput = checkReadability( input_file_path );

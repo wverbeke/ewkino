@@ -313,7 +313,7 @@ if __name__=="__main__":
     # systematics to draw
     #systematictags = [] # empty list for all systematics in file
     systematictags = []
-    systematictags += ['_rfScale','_qcdScale']
+    systematictags += ['bTag']
     # systematics to exclude
     excludetags = [] # empty list to exclude nothing
     #excludetags = ['Var','rScale','fScale']

@@ -237,7 +237,13 @@ if __name__=="__main__":
 	{'name':'_yield','title':r'total yield','unit':''},
         #{'name':'_leptonMVATOP_min','title':r'minimum TOP MVA value in event','unit':''},
         #{'name':'_leptonMVAttH_min','title':r'minimum ttH MVA value in event','unit':''},
-	{'name':'_rebinnedeventBDT','title':'event BDT output score','unit':''}
+	{'name':'_rebinnedeventBDT','title':'event BDT output score','unit':''},
+	{'name':'_leptonPtLeading','title':r'leading lepton p_{T}','unit':'GeV'},
+	{'name':'_leptonPtSubLeading','title':r'subleading lepton p_{T}','unit':'GeV'},
+	{'name':'_leptonPtTrailing','title':r'trailing lepton p_{T}','unit':'GeV'},
+	{'name':'_leptonEtaLeading','title':r'leading lepton #eta','unit':''},
+        {'name':'_leptonEtaSubLeading','title':r'subleading lepton #eta','unit':''},
+        {'name':'_leptonEtaTrailing','title':r'trailing lepton #eta','unit':''},
     ]
     # some more arguments, hard coded for now
     mcprocesses = (['tZq','WZ','multiboson','tbarttX','tbartZ','ZZH'])

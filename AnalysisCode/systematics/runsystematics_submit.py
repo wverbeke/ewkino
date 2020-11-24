@@ -7,13 +7,13 @@ import sys
 
 regions = []
 regions.append('signalregion')
-regions.append('wzcontrolregion')
-regions.append('zzcontrolregion')
-regions.append('zgcontrolregion')
-regions.append('signalsideband_noossf')
-regions.append('signalsideband_noz')
+#regions.append('wzcontrolregion')
+#regions.append('zzcontrolregion')
+#regions.append('zgcontrolregion')
+#regions.append('signalsideband_noossf')
+#regions.append('signalsideband_noz')
 
-years = ['2018']
+years = ['2016','2017','2018']
 events = ['MC','data']
 
 selection_types = []
@@ -23,7 +23,7 @@ selection_types.append('fakerate')
 
 bdt_combine_mode = 'all' # choose from 'all', 'years', 'regions' or 'none'
 
-outputfolder = 'output_tzqidmedium0p4' # only top-level directory needed here
+outputfolder = 'output_tzqidmedium0p4_temp' # only top-level directory needed here
 
 for year in years:
     for eventtype in events:
