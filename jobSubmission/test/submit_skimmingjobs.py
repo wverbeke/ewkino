@@ -14,9 +14,14 @@ outdir = os.path.abspath('.')
 cmds = [exe+' '+infile+' '+outdir+' trilepton' for infile in infiles]
 
 # make and submit the jobs
-# method 1: different cluster for each job
-#for cmd in cmds:
-#    ct.submitCommandAsCondorJob('test',cmd)
+# method 1: different cluster/job for each command
+for cmd in cmds:
+    ct.submitCommandAsCondorJob('test',cmd)
 
 # method 2: group jobs in a cluster
 ct.submitCommandsAsCondorCluster('test',cmds)
+
+# method 3: group into larger jobs
+job1 = cmds[:4]
+job2 = cmds[4:]
+ct.submitCommandsAsCondorJobs('test',[job1,job2])
