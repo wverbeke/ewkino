@@ -133,7 +133,7 @@ def submitCommandsAsCondorJob(name, commands, stdout=None, stderr=None, log=None
     ### commands is a list of strings, each string represents a single command (executable + args)
     ### the commands can be anything and are not necessarily same executable or same number of args.
     submitCommandsAsCondorJobs(name, [commands], stdout=stdout, stderr=stderr, log=log,
-                        cpus=cupus, mem=mem, disk=disk, cmssw_version=cmssw_version)
+                        cpus=cpus, mem=mem, disk=disk, cmssw_version=cmssw_version)
 
 def submitCommandsAsCondorJobs(name, commands, stdout=None, stderr=None, log=None,
 			cpus=1, mem=1024, disk=10240,

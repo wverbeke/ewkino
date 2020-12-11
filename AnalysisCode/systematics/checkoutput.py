@@ -27,6 +27,7 @@ def check_content(filename,filetext,contentlist):
     return 0
 
 files = [fname for fname in os.listdir(os.getcwd()) if '.sh.e' in fname]
+files += [fname for fname in os.listdir(os.getcwd()) if '_err_' in fname]
 print('found '+str(len(files))+' error log files.')
 print('start scanning...')
 
@@ -36,8 +37,9 @@ for fname in files:
     c = f.read()
     f.close()
     nerror += check_start_done(fname,c)
-    nerror += check_content(fname,c,['SysError','/var/torque/mom_priv/jobs',
-					'segmentation violation'])
+    nerror += check_content(fname,c,['SysError','/var/torque/mom_priv/jobs'])
+    #nerror += check_content(fname,c,['Error'])
+    # known issue in condor jobs, seems not to affect job itself, but keep for later when resolved
 
 if(nerror==0):
     print('no problematic files were found by this automated checking!')

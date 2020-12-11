@@ -23,6 +23,7 @@ namespace eventFlattening{
     std::shared_ptr< TH2D > readFRMap( const std::string&, const std::string&, const std::string&);
     double fakeRateWeight( const Event&, 
     			const std::shared_ptr< TH2D >&, const std::shared_ptr< TH2D >&);
+    int fakeRateFlavour( const Event& );
     std::map< std::string, double > eventToEntry(Event& event, double norm,
 				const CombinedReweighter& reweighter,
 				const std::string& selection_type, 

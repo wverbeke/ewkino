@@ -808,8 +808,6 @@ int main( int argc, char* argv[] ){
 	systematics.push_back(argvStr[i]);
     }
 
-    std::cout << "done parsing arguments" << std::endl;
-
     // make structure for variables
     std::vector<std::tuple<std::string,double,double,int>> vars;
     vars.push_back(std::make_tuple("_abs_eta_recoil",0.,5.,20));
@@ -838,8 +836,7 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_leptonEtaLeading",-2.5,2.5,20));
     vars.push_back(std::make_tuple("_leptonEtaSubLeading",-2.5,2.5,20));
     vars.push_back(std::make_tuple("_leptonEtaTrailing",-2.5,2.5,20));
-
-    std::cout << "added all variables" << std::endl;
+    vars.push_back(std::make_tuple("_numberOfVertices",-0.5,70.5,71));
 
     // load fake rate maps if needed
     std::shared_ptr<TH2D> frmap_muon;

@@ -6,10 +6,10 @@ import sys
 import os
 import glob
 # in order to import local functions: append location to sys.path
-sys.path.append(os.path.abspath('../../skimmer'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
-#sys.path.append(os.path.abspath('../tools'))
-#import smalltools as tls
+sys.path.append(os.path.join(os.path.dirname(__file__),'../tools'))
+import histtools
 import plottools as tools
 
 def submitjob(cwd, command):
@@ -19,24 +19,6 @@ def submitjob(cwd, command):
         script.write('cd {}\n'.format(cwd))
         script.write(command+'\n')
     submitQsubJob(script_name)
-
-def loadhistograms(histfile):
-    # load histograms from a root file.
-    # 'histfile' is a string containing the path to the input root file.
-    # the output is a list of histograms
-    print('loading histograms...')
-    f = ROOT.TFile.Open(histfile)
-    histlist = []
-    keylist = f.GetListOfKeys()
-    for key in keylist:
-        hist = f.Get(key.GetName())
-        hist.SetDirectory(0)
-        try:
-            nentries = hist.GetEntries() # maybe replace by more histogram-specific function
-        except:
-            print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
-        histlist.append(hist)
-    return histlist
 
 def getminmax(histlist):
     # get suitable minimum and maximum values for plotting a hist collection (not stacked)
@@ -53,7 +35,9 @@ def getminmax(histlist):
     return (0,totmax+topmargin)
     #return(totmin/10.,totmax*10.)
 
-def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,errorbars=False):
+def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,
+		    errorbars=False,normalize=False,
+		    clist=None,labels=None):
 
     tools.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -80,14 +64,16 @@ def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,errorbars=False):
     plegendbox = [leftmargin+0.03,1-ptopmargin-0.15,1-rightmargin-0.03,1-ptopmargin-0.03]
 
     ### operations on mc histograms
-    clist = [ROOT.kAzure,ROOT.kCyan+1,ROOT.kViolet]
+    if clist is None:
+	clist = [ROOT.kAzure,ROOT.kCyan+1,ROOT.kViolet]
     if len(mchistlist)>len(clist):
 	print('### ERROR ###: add colors to clist to support plotting this many histograms.')
 	sys.exit()
     for i,hist in enumerate(mchistlist):
 	hist.SetLineWidth(2)
 	hist.SetLineColor(clist[i])
-	scale = hist.Integral("width")
+	scale = 1
+	if normalize: scale = hist.Integral("width")
         for j in range(0,hist.GetNbinsX()+2):
             if hist.GetBinContent(j)<=0:
                 hist.SetBinContent(j,0.)
@@ -101,8 +87,10 @@ def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,errorbars=False):
     legend = ROOT.TLegend(plegendbox[0],plegendbox[1],plegendbox[2],plegendbox[3])
     legend.SetNColumns(1)
     legend.SetFillStyle(0)
-    for hist in mchistlist:
-        legend.AddEntry(hist,hist.GetTitle(),"l")
+    for i,hist in enumerate(mchistlist):
+	label = hist.GetTitle()
+	if labels is not None: label = labels[i]
+        legend.AddEntry(hist,label,"l")
 
     ### make canvas and pads
     c1 = ROOT.TCanvas("c1","c1")
@@ -175,6 +163,7 @@ if __name__=='__main__':
 	hist_file_path = os.path.abspath(sys.argv[1])
 
     elif len(sys.argv) == 3:
+	# apply plotting to a single file
 	dofill = False
 	doplot = True
 	doplotloop = False

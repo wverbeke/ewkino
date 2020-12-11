@@ -11,6 +11,8 @@ import plottools as tools
 import histplotter as hp
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 
 def loadallhistograms(histfile,variable):
     ### read file and load all histograms for a given variable in a dictionary 
@@ -280,14 +282,19 @@ if __name__=="__main__":
 	print('histplotter_prefit.py will run on the following files:')
 	print(histfiles)
 	#histfiles = histfiles[:1] # temp for testing
+	commands = []
 	for f in histfiles:
-	    script_name = 'histplotter_prefit.sh'
-	    with open(script_name,'w') as script:
-		initializeJobScript( script )
-		command = 'python histplotter_prefit.py '+f+'\n'
-		script.write(command)
-	    submitQsubJob(script_name)
+	    command = 'python histplotter_prefit.py '+f
+	    # old qsub way:
+	    #script_name = 'histplotter_prefit.sh'
+	    #with open(script_name,'w') as script:
+	    #	initializeJobScript( script )
+	    #	script.write(command)
+	    #submitQsubJob(script_name)
+	    # alternative: run locally
 	    #os.system('bash '+script_name)
+	    commands.append(command)
+	ct.submitCommandsAsCondorCluster('histplotter_prefit_cjob',commands)
 
     else:
 	print('### ERROR ###: unrecognized command line arguments.')

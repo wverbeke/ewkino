@@ -98,8 +98,7 @@ std::shared_ptr< TH2D > readFRMap( const std::string& flavor, const std::string&
     return frMap;
 }
 
-bool passClosureTestEventSelection( Event& event, const bool requireMuon = false, 
-				    const bool requireElectron = false ){
+bool passBasicEventSelection( Event& event ){
     event.removeTaus();
     event.applyLeptonConeCorrection();
     event.cleanElectronsFromLooseMuons();
@@ -108,20 +107,50 @@ bool passClosureTestEventSelection( Event& event, const bool requireMuon = false
     event.selectGoodJets();
     event.cleanJetsFromFOLeptons();
     event.sortLeptonsByPt();
-    
+    return true;
+}
+
+bool hasAtLeastOneNonPrompt( Event& event, const bool requireMuon = false,
+			    const bool requireElectron = false ){
     size_t numberOfNonPromptLeptons = 0;
     size_t numberOfPromptLeptons = 0;
     for( auto& leptonPtr : event.lightLeptonCollection() ){
         if( !leptonPtr->isPrompt() ){
-	    if( requireMuon && !leptonPtr->isMuon() ) continue;
+            if( requireMuon && !leptonPtr->isMuon() ) continue;
             if( requireElectron && !leptonPtr->isElectron() ) continue;
             ++numberOfNonPromptLeptons;
         }
-	else if( leptonPtr->isPrompt() ) ++numberOfPromptLeptons;
+        else if( leptonPtr->isPrompt() ) ++numberOfPromptLeptons;
     }
     if( numberOfNonPromptLeptons < 1 ) return false;
     if( ( numberOfNonPromptLeptons + numberOfPromptLeptons ) != 3 ) return false;
     return true;
+}
+
+bool passClosureTestEventSelection( Event& event, const std::string& selection,
+				    const bool requireMuon = false, 
+				    const bool requireElectron = false ){
+    
+    if( selection=="default" ){
+	if( !passBasicEventSelection( event ) ){ return false; } 
+	if( !hasAtLeastOneNonPrompt( event, requireMuon, requireElectron ) ){ return false; }
+	return true;
+    }
+    // alternative: same as in data!
+    else if( selection=="noossf"){
+	if( !passBasicEventSelection( event ) ){ return false; } 
+        if( !hasAtLeastOneNonPrompt( event, requireMuon, requireElectron ) ){ return false; }
+	if( event.hasOSSFLightLeptonPair() ){ return false; }
+	return true;
+    }
+    else if( selection=="noz"){
+	if( !passBasicEventSelection( event ) ){ return false; }
+        if( !hasAtLeastOneNonPrompt( event, requireMuon, requireElectron ) ){ return false; }
+        if( !event.hasOSSFLightLeptonPair() ){ return false; }
+	if( event.hasZTollCandidate(7.5) ){ return false; }
+        return true;
+    }
+    else return false;
 }
 
 double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_muon,  
@@ -130,8 +159,8 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
     for( const auto& leptonPtr : event.lightLeptonCollection() ){
         if( leptonPtr->isFO() && !leptonPtr->isTight() ){
 
-            double croppedPt = std::min( leptonPtr->pt(), 99. );
-	    //double croppedPt = std::min( leptonPtr->pt(), 44.9 );
+            //double croppedPt = std::min( leptonPtr->pt(), 99. );
+	    double croppedPt = std::min( leptonPtr->pt(), 44.9 );
 	    // (test, to be more consistent with fake rate application in data)
             double croppedAbsEta = std::min( leptonPtr->absEta(), (leptonPtr->isMuon() ? 2.4 : 2.5) );
 
@@ -171,24 +200,25 @@ int main( int argc, char* argv[] ){
     
     // check command line arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-    if( !(argvStr.size() == 6 || argvStr.size() == 7) ){
-        std::cerr<<"found "<<argc - 1<<" command line args, while 5 or 6 are needed."<<std::endl;
-        std::cerr<<"usage: ./closureTest_MC isMCFR use_mT process year flavour [path_to_xml]"<<std::endl;
+    if( !(argvStr.size() == 7 || argvStr.size() == 8) ){
+        std::cerr<<"found "<<argc - 1<<" command line args, while 6 or 7 are needed."<<std::endl;
+        std::cerr<<"usage: ./closureTest_MC isMCFR use_mT selection process year flavour [path_to_xml]"<<std::endl;
         return 1;
     }
     
     // parse command line arguments
     const bool isMCFR = (argvStr[1]=="True" or argvStr[1]=="true");
     const bool use_mT = (argvStr[2]=="True" or argvStr[2]=="true");
-    std::string process = argvStr[3];
-    std::string year = argvStr[4];
-    std::string flavor = argvStr[5];
+    std::string selection = argvStr[3];
+    std::string process = argvStr[4];
+    std::string year = argvStr[5];
+    std::string flavor = argvStr[6];
     if( flavor!="electron" && flavor!="muon" ){ flavor=""; }
     bool doBDT = false;
     std::string path_to_xml = "";
     if( argvStr.size()==7 ){
 	doBDT = true;
-	path_to_xml = argvStr[6];
+	path_to_xml = argvStr[7];
     }
 
     // make TMVA reader
@@ -270,7 +300,8 @@ int main( int argc, char* argv[] ){
             Event event = treeReader.buildEvent( entry );
 
             // apply event selection
-            if( !passClosureTestEventSelection( event, onlyMuonFakes, onlyElectronFakes ) ) continue;
+            if( !passClosureTestEventSelection( event, selection, 
+		    onlyMuonFakes, onlyElectronFakes ) ) continue;
 	    LightLeptonCollection lightLeptons = event.lightLeptonCollection();
 
 	    // fill variables (OLD)

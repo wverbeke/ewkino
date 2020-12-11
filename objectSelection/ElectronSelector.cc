@@ -199,33 +199,51 @@ bool ElectronSelector::isFOBasetZqMedium0p4() const{
 
 bool ElectronSelector::isFO2016tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-        if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.05,
-	    electronPtr->uncorrectedPt()) ) return false;
-	//if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+	// modification attempt:
+	//if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.1,
+        //    electronPtr->uncorrectedPt()) ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
-        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;	
+	// Tu Thong's original FO ID:
+        /*if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.05,
+	    electronPtr->uncorrectedPt()) ) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;*/
     }
     return true;
 }
 
 bool ElectronSelector::isFO2017tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-	if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.08,
-	    electronPtr->uncorrectedPt()) ) return false;
-        //if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
-	if( electronPtr->ptRatio() < 0.5 ) return false;
+	// modification attempt:
+	//if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.1,
+        //    electronPtr->uncorrectedPt()) ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+	// Tu Thong's original FO ID:
+	/*if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.08,
+	    electronPtr->uncorrectedPt()) ) return false;
+	if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;*/
     }
     return true;
 }
 
 bool ElectronSelector::isFO2018tZqMedium0p4() const{
     if( electronMVAValue(electronPtr) < electronMVACut() ){
-        if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.4,50,0.05,
-	    electronPtr->uncorrectedPt())) return false;
-	//if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
-        if( electronPtr->ptRatio() < 0.5 ) return false;
+	// modification attempt:
+	//if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.5,50,0.1,
+        //    electronPtr->uncorrectedPt()) ) return false;
+        if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+	if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+	// Tu Thong's original FO ID:
+        /*if( electronPtr->closestJetDeepFlavor() > electronSlidingDeepFlavorThreshold(25,0.4,50,0.05,
+	    electronPtr->uncorrectedPt())) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;*/
     }
     return true;
 }

@@ -6,8 +6,10 @@ import sys
 import os
 import glob
 # in order to import local functions: append location to sys.path
-sys.path.append(os.path.abspath('../../skimmer'))
-from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../skimmer')) # old qsub 
+from jobSubmission import submitQsubJob, initializeJobScript # old qsub
+sys.path.append('../../jobSubmission') # new condor
+import condorTools as ct # new condor
 sys.path.append(os.path.abspath('../samplelists'))
 from extendsamplelist import extendsamplelist
 sys.path.append(os.path.abspath('../tools'))
@@ -69,18 +71,22 @@ if not os.path.exists('./eventselector'):
     print('Run make -f makeEventSelector before running this script.')
     sys.exit()
 
-def submitjob(cwd,inputfile,output_directory,event_selection,selection_type,variation):
+def submitjob_qsub(cwd,inputfile,output_directory,event_selection,selection_type,variation):
     script_name = 'eventselector.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
         command = './eventselector {} {} {} {} {} {}'.format(inputfile,output_directory,
-			inputfile.split('/')[-1],event_selection,selection_type,variation)
+    			inputfile.split('/')[-1],event_selection,selection_type,variation)
         script.write(command+'\n')
-	print(command)
+    	print(command)
     submitQsubJob(script_name)
     # alternative: run locally
     #os.system('bash '+script_name)
+
+def submitjob_condor(args):
+    cmds = ['./eventselector '+argstring for argstring in args]
+    ct.submitCommandsAsCondorCluster('eventselector_cjob',cmds)
 
 # select input files based on type of selection
 inputfiles = tls.subselect_inputfiles(inputfiles,selection_type)
@@ -89,7 +95,16 @@ if inputfiles is None: sys.exit()
 # create output directory
 os.makedirs(output_directory)
 
-# loop over input files and submit jobs
+# loop over input files and submit jobs (old way)
+#for f in inputfiles:
+#    inputfile = f['file']
+#    submitjob_qsub(cwd,inputfile,output_directory,event_selection,selection_type,variation)
+    
+# loop over input files and submit jobs (new way)
+args = []
 for f in inputfiles:
     inputfile = f['file']
-    submitjob(cwd,inputfile,output_directory,event_selection,selection_type,variation)
+    outputfile = inputfile.split('/')[-1]
+    args.append('{} {} {} {} {} {}'.format(inputfile,output_directory,outputfile,
+		    event_selection,selection_type,variation))
+submitjob_condor(args)

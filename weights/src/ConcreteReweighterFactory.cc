@@ -87,11 +87,10 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     //make pileup Reweighter
     combinedReweighter.addReweighter( "pileup", std::make_shared< ReweighterPileup >( samples, weightDirectory ) );
     
-    //make b-tagging Reweighter 
+    // make b-tagging Reweighter 
     const std::string& bTagWP = "medium";
 
-    //read MC b-tagging efficiency histograms
-    // and scalefactor files
+    // read MC b-tagging efficiency histograms and scalefactor files
     const std::string& leptonCleaning = "looseLeptonCleaned";
     TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/bTagEff/bTagEff_" + leptonCleaning + "_" + year + ".root" ).c_str() );
     std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_udsg" ).c_str() ) ) );
@@ -326,6 +325,9 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
 
     // make b-tagging Reweighter 
     const std::string& bTagWP = "medium";
+    const std::string& bTagReweighterWP = "medium"; // temp since "reshaping" is not in the csv files
+    // (need different 'WP' for reweighter than for selection as we need to use scale factors
+    // that correct the whole shape of the b-tagger output, as it is used in the BDT!)
 
     // read MC b-tagging efficiency histograms
     const std::string& leptonCleaning = "looseLeptonCleaned";
@@ -355,11 +357,11 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
 
     combinedReweighter.addReweighter( "bTag_heavy", 
-	std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath, bTagWP, 
-	    bTagEffMCHist_c, bTagEffMCHist_b ) );
+	std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath, 
+	    bTagReweighterWP, bTagEffMCHist_c, bTagEffMCHist_b ) );
     combinedReweighter.addReweighter( "bTag_light", 
-	std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath, bTagWP, 
-	    bTagEffMCHist_udsg ) );   
+	std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath, 
+	    bTagReweighterWP, bTagEffMCHist_udsg ) );   
 
     // make prefire Reweighter
     combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );

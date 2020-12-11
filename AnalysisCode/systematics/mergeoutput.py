@@ -13,6 +13,8 @@ import ROOT
 # imports for job submission
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 # imports for sample list reading 
 sys.path.append(os.path.abspath('../samplelists'))
 from readsamplelist import readsamplelist
@@ -168,18 +170,23 @@ if __name__=='__main__':
 
     cwd = os.getcwd()
     if runmultiple:
+	commands = []
 	for year in yearlist:
 	    for region in regionlist:
+		command = 'python mergeoutput.py {} {} {}'.format(
+                        topdir, year, region )
+		# old qsub way:
 		script_name = 'mergeoutput.sh'
 		with open(script_name,'w') as script:
 		    initializeJobScript(script)
 		    script.write('cd {}\n'.format(cwd))
-		    command = 'python mergeoutput.py {} {} {}'.format(
-			topdir, year, region )
 		    script.write(command+'\n')
-		submitQsubJob(script_name)
+		#submitQsubJob(script_name)
 		# alternative: run locally
 		#os.system('bash '+script_name)
+		commands.append(command)
+	# new condor way:
+	ct.submitCommandsAsCondorCluster('mergeoutput_cjob',commands)
     
     else:
 	for npmode in npmodelist:

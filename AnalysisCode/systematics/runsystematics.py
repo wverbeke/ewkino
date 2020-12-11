@@ -6,13 +6,16 @@ import sys
 import os
 import glob
 # in order to import local functions: append location to sys.path
-sys.path.append(os.path.abspath('../../skimmer'))
-from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../skimmer')) # old qsub way
+from jobSubmission import submitQsubJob, initializeJobScript # old qsub way
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 sys.path.append(os.path.abspath('../samplelists'))
 from readsamplelist import readsamplelist
 from extendsamplelist import extendsamplelist
 sys.path.append(os.path.abspath('../tools'))
 import smalltools as tls
+import jobsplitting
 
 # this script is analogous to ewkino/AnalysisCode/skimming/trileptonskim.py
 # but instead of a skimmer, a systematics executable is called.
@@ -125,45 +128,46 @@ def parseprocessname(orig):
     # move other parsing to .cc file in order to use full name as hist title!
     return res
 
-def submitjob(cwd,inputfile,norm,output_directory,process_name,
-		event_selection,signal_category,selection_type,
-		bdt_combine_mode,path_to_xml_file,systematics):
-    script_name = 'runsystematics.sh'
-    with open(script_name,'w') as script:
-        initializeJobScript(script)
-        script.write('cd {}\n'.format(cwd))
-	output_file_path = os.path.join(output_directory,inputfile.split('/')[-1])
-        command = './runsystematics {} {} {} {} {} {} {} {} {}'.format(
-		    inputfile, norm, output_file_path, process_name, 
-		    event_selection, signal_category, selection_type,
-		    bdt_combine_mode, path_to_xml_file)
-	for systematic in systematics:
-	    command += ' {}'.format(systematic)
-        script.write(command+'\n')
-    submitQsubJob(script_name)
-    # alternative: run locally
-    #os.system('bash '+script_name)
-
 # make output directory
 os.makedirs(output_directory)
 
+# group files for more efficient job submission
+inputfiles = jobsplitting.splitbynentries(inputfiles)
+# (now inputfiles is a list of lists of sample info dicts!)
+
 # loop over input files and submit jobs
-#inputfiles = [f for f in inputfiles if 'tZq' in f['sample_name']] # temp for testing
-#inputfiles = [f for f in inputfiles if 'combined' in f['file']] # temp for testing
-#print(inputfiles)
-for f in inputfiles:
-    # get name and tag
-    inputfile = f['file']
-    process_name = parseprocessname(f['process_name'])
-    if selection_type == 'fakerate': process_name = 'nonprompt'
-    # create normalization variable:
-    norm = 1.
-    if dtype == 'MC':
-	temp = ROOT.TFile(inputfile)
-	hcounter = temp.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
-	xsec = f['cross_section']
-	norm = xsec*lumi/float(hcounter)
-    # set path to fake rate maps if needed
-    submitjob(cwd, inputfile, norm, output_directory, process_name,
-		    event_selection, signal_category, selection_type, 
-		    bdt_combine_mode, path_to_xml_file, systematics)
+commandgroups = []
+for jobgroup in inputfiles:
+    commands = []
+    for f in jobgroup:
+	# get name and tag
+	inputfile = f['file']
+	process_name = parseprocessname(f['process_name'])
+	if selection_type == 'fakerate': process_name = 'nonprompt'
+	# create normalization variable:
+	norm = 1.
+	if dtype == 'MC':
+	    temp = ROOT.TFile(inputfile)
+	    hcounter = temp.Get("blackJackAndHookers/hCounter").GetSumOfWeights()
+	    xsec = f['cross_section']
+	    norm = xsec*lumi/float(hcounter)
+	# get command for this file
+	output_file_path = os.path.join(output_directory,inputfile.split('/')[-1])
+        command = './runsystematics {} {} {} {} {} {} {} {} {}'.format(
+                    inputfile, norm, output_file_path, process_name,
+                    event_selection, signal_category, selection_type,
+                    bdt_combine_mode, path_to_xml_file)
+        for systematic in systematics:
+            command += ' {}'.format(systematic)
+	commands.append(command)
+    commandgroups.append(commands)
+    # old qsub way:
+    #script_name = 'runsystematics.sh'
+    #with open(script_name,'w') as script:
+    #    initializeJobScript(script)
+    #    script.write('cd {}\n'.format(cwd))
+    #    for c in commands: script.write(c+'\n')
+    #submitQsubJob(script_name)
+    # alternative: run locally
+    #os.system('bash '+script_name)
+ct.submitCommandsAsCondorJobs('runsystematics_cjob',commandgroups)

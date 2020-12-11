@@ -8,6 +8,8 @@ import sys
 import ROOT
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 from systematicstools import getfilestomerge
 sys.path.append(os.path.abspath('../tools'))
 import histtools as histtools
@@ -113,7 +115,7 @@ if __name__=='__main__':
 	npmode = sys.argv[7]
 	runmultiple = False
     else:
-        print('### ERROR ###: rebinoutput.py needs three command line arguments.')
+        print('### ERROR ###: rebinoutput.py needs four command line arguments.')
         print('           normal usage: rebinoutput <output_directory> <mode> ')
 	print('                         <first_bin_count> <bin_factor>')
         sys.exit()
@@ -156,18 +158,23 @@ if __name__=='__main__':
 
     if runmultiple:
 	cwd = os.getcwd()
+	commands = []
 	for year in yearlist:
 	    for region in regionlist:
+		command = 'python rebinoutput.py {} {} {} {} {} {} {}'.format(
+                            topdir, mode, firstbincount, binfactor, year, region, npmode )
+		# old qsub way
 		script_name = 'rebinoutput.sh'
 		with open(script_name,'w') as script:
 		    initializeJobScript(script)
 		    script.write('cd {}\n'.format(cwd))
-		    command = 'python rebinoutput.py {} {} {} {} {} {} {}'.format(
-				    topdir, mode, firstbincount, binfactor, year, region, npmode )
 		    script.write(command+'\n')
-		submitQsubJob(script_name)
+		#submitQsubJob(script_name)
 		# alternative: run locally
-		#os.system('bash '+script_name)
+		os.system('bash '+script_name)
+		commands.append(command)
+	# new condor way
+	#ct.submitCommandsAsCondorCluster('rebinoutput_cjob',commands)
 
     else:
 	rebinoutput(topdir,year,region,npmode,mode,firstbincount,binfactor)

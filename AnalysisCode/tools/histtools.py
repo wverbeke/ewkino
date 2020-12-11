@@ -9,9 +9,10 @@ import ROOT
 
 ### histogram reading and loading ###
 
-def loadallhistograms(histfile,mustcontain=[]):
+def loadallhistograms(histfile,mustcontain=[],maynotcontain=[]):
     ### read a root file containing histograms and load all histograms to a list
     # if mustcontain is not empty, histogram names are required to contain all elements in it.
+    # if maynotcontain is not empty, histogram names are required to contain no element in it.
     f = ROOT.TFile.Open(histfile)
     histlist = []
     keylist = f.GetListOfKeys()
@@ -29,6 +30,9 @@ def loadallhistograms(histfile,mustcontain=[]):
         if len(mustcontain)>0:
             for tag in mustcontain:
                 if not tag in hist.GetName(): keep = False; break
+	if len(maynotcontain)>0:
+	    for tag in maynotcontain:
+		if tag in hist.GetName(): keep = False; break
         if not keep: continue
         # add hist to dict
         histlist.append(hist)

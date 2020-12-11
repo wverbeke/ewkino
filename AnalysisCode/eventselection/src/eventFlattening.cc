@@ -49,6 +49,8 @@ Float_t _leptonPtTrailing = 0.;
 Float_t _leptonEtaLeading = 0.;
 Float_t _leptonEtaSubLeading = 0.;
 Float_t _leptonEtaTrailing = 0.;
+Float_t _numberOfVertices = 0.;
+Int_t _fakeRateFlavour = -1;
 
 
 void eventFlattening::setVariables(std::map<std::string,double> varmap){
@@ -97,6 +99,8 @@ void eventFlattening::setVariables(std::map<std::string,double> varmap){
     _leptonEtaLeading = varmap["_leptonEtaLeading"];
     _leptonEtaSubLeading = varmap["_leptonEtaSubLeading"];
     _leptonEtaTrailing = varmap["_leptonEtaTrailing"];
+    _numberOfVertices = varmap["_numberOfVertices"];
+    _fakeRateFlavour = varmap["_fakeRateFlavour"];
 }
 
 std::map< std::string, double > eventFlattening::initVarMap(){
@@ -124,6 +128,10 @@ std::map< std::string, double > eventFlattening::initVarMap(){
 	
 	{"_leptonPtLeading",0.}, {"_leptonPtSubLeading",0.}, {"_leptonPtTrailing",0.},
 	{"_leptonEtaLeading",0.}, {"_leptonEtaSubLeading",0.}, {"_leptonEtaTrailing",0.},
+
+	{"_numberOfVertices",0},
+	
+	{"_fakeRateFlavour",-1}
     };
     return varmap;    
 }
@@ -178,6 +186,8 @@ void eventFlattening::initOutputTree(TTree* outputTree){
     outputTree->Branch("_leptonEtaLeading", &_leptonEtaLeading, "_leptonEtaLeading/F");
     outputTree->Branch("_leptonEtaSubLeading", &_leptonEtaSubLeading, "_leptonEtaSubLeading/F");
     outputTree->Branch("_leptonEtaTrailing", &_leptonEtaTrailing, "_leptonEtaTrailing/F");
+    outputTree->Branch("_numberOfVertices", &_numberOfVertices, "_numberOfVertices/F");
+    outputTree->Branch("_fakeRateFlavour",&_fakeRateFlavour, "_fakeRateFlavour/I");
 }
 
 TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, 
@@ -268,6 +278,21 @@ double eventFlattening::fakeRateWeight( const Event& event,
     //std::cout<<"weight: "<<weight<<std::endl;
     return weight;
 }
+
+int eventFlattening::fakeRateFlavour( const Event& event ){
+    // return flavour of failing lepton
+    // (-1 if none, 2 if more than one)
+    int frflav = -1;
+    for( const auto& leptonPtr : event.lightLeptonCollection() ){
+        if( !(leptonPtr->isFO() && !leptonPtr->isTight()) ) continue;
+        if( frflav==-1 && leptonPtr->isMuon() ){
+	    frflav = 0;
+        } else if( frflav==-1 && leptonPtr->isElectron() ) {
+	    frflav = 1;
+        } else{ frflav = 2; }
+    }
+    return frflav;
+}
  
 // main function //
 
@@ -296,6 +321,9 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     varmap["_lumiBlock"] = event.luminosityBlock();
     varmap["_eventNb"] = event.eventNumber();
 
+    // other global precomputed event variables
+    varmap["_numberOfVertices"] = event.numberOfVertices();
+
     // event weight (note: 0 for data!)
     varmap["_weight"] = event.weight();
     varmap["_scaledweight"] = event.weight()*norm;
@@ -317,6 +345,7 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
 	if(event.isMC()) frweight *= -1;
 	varmap["_normweight"] *= frweight;
 	varmap["_fakerateweight"] = frweight;
+	varmap["_fakeRateFlavour"] = fakeRateFlavour(event);
     }
 
     // get correct jet collection and met (defined in eventSelections.cc!)

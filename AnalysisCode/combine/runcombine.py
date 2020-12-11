@@ -5,6 +5,8 @@ import os
 import sys
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 from cleandatacarddir import cleandatacarddir
 
 def subselect(stringlist,mustcontain=[],maynotcontain=[]):
@@ -131,6 +133,7 @@ if __name__=="__main__":
     # remove all previous output
     cleandatacarddir(datacarddir)
  
+    counter = 0
     # part 1: run combine command for all signal regions separately
     cards_all = [f for f in os.listdir(datacarddir) if f[-4:]=='.txt']
     cards_signalregion = subselect(cards_all,mustcontain=['signalregion'])
@@ -138,15 +141,19 @@ if __name__=="__main__":
 	if(only2016 and not '2016' in card): continue
         print('running combine for '+card)
 	#make a job script 
-        script_name = 'runcombine.sh'
+        script_name = 'runcombine{}.sh'.format(counter)
         with open( script_name, 'w') as script:
             initializeJobScript( script )
             script.write('cd {}\n'.format( datacarddir ) )
 	    addcombinecommands(script,card, not usedata)
         # submit job and catch errors 
-        if( not runlocal ): submitQsubJob( script_name )
+        #if( not runlocal ): submitQsubJob( script_name )
+	if( not runlocal ):
+	    ct.makeJobDescription( script_name.replace('.sh','_cjob.txt'), script_name )
+	    ct.submitCondorJob( script_name.replace('.sh','_cjob.txt') )
         # alternative: run locally (for testing and debugging)
         else: os.system('bash '+script_name)
+	counter += 1
 
     # part 2: run combine command for a number of combination of cards
     combineddict = makecombinedcards(datacarddir)
@@ -158,12 +165,16 @@ if __name__=="__main__":
 	print('running combine for '+comb)
 	card = comb+'.txt'
 	#make a job script 
-        script_name = 'runcombine.sh'
+        script_name = 'runcombine{}.sh'.format(counter)
         with open( script_name, 'w') as script:
             initializeJobScript( script )
             script.write('cd {}\n'.format( datacarddir ) )
             addcombinecommands(script,card, not usedata)
         # submit job and catch errors 
-        if( not runlocal ): submitQsubJob( script_name )
+        #if( not runlocal ): submitQsubJob( script_name )
+	if( not runlocal ):
+            ct.makeJobDescription( script_name.replace('.sh','_cjob.txt'), script_name )
+            ct.submitCondorJob( script_name.replace('.sh','_cjob.txt') )
         # alternative: run locally (for testing and debugging)
         else: os.system('bash '+script_name)
+	counter += 1

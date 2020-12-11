@@ -94,6 +94,14 @@ def makerow(systematic,stype,processinfo,processimpacts):
 	    row.append('-')
     return row
 
+def makeraterows(name,processinfo,processimpacts):
+    ### make rows corresponding to a rateParam declaration
+    ### inputs are for example 'rate_WZ', readhistfile(...)[0], {'WZ':0.08}
+    # note that processimpacts can only contain one key-value pair, unlike in makerow
+    row1 = [name,'rateParam','*',processimpacts.keys()[0],'1.0']
+    row2 = [name,'param','1.0',processimpacts[processimpacts.keys()[0]]]
+    return [row1]
+
 def makealigned(stringlist):
     ### append spaces to all strings in stringlist until they have the same length
     # get maximum length of strings in list
@@ -105,6 +113,13 @@ def makealigned(stringlist):
     for i,s in enumerate(stringlist):
 	stringlist[i] = str('{:<'+str(maxlen)+'}').format(s)
 
+def makestringfromrow(row):
+    res = ''
+    for rowel in row:
+	res += str(rowel)+'\t'
+    res += '\n'
+    return res
+
 if __name__=="__main__":
 
     if len(sys.argv)!=3:
@@ -114,25 +129,20 @@ if __name__=="__main__":
     topdir = sys.argv[1]
     datacarddir = sys.argv[2]
     npfromdata = True
-    cnames = []
-    cnames.append({'region':'signalregion_1','var':'_eventBDT'})
-    cnames.append({'region':'signalregion_2','var':'_eventBDT'})
-    cnames.append({'region':'signalregion_3','var':'_eventBDT'})
-    cnames.append({'region':'wzcontrolregion','var':'_MT'})
-    cnames.append({'region':'zzcontrolregion','var':'_MT'})
-    cnames.append({'region':'zgcontrolregion','var':'_nJets'})
-    cnames.append({'region':'signalsideband_noossf_1','var':'_yield'})
-    cnames.append({'region':'signalsideband_noz_1','var':'_yield'})
+    cnames = ['signalregion_1','signalregion_2','signalregion_3']
+    cnames.append('wzcontrolregion')
+    cnames.append('zzcontrolregion')
+    cnames.append('zgcontrolregion')
     years = ['2016','2017','2018']
     # make dict to read channels
-    channels = []
+    channels = {}
     suffix = 'npfromdata' if npfromdata else 'npfromsim'
     for c in cnames:
-	region = c['region']
 	for year in years:
-	    channels.append( {'name':region+'_'+year,
-		    'path':os.path.join(topdir,year+'combined',region,suffix,'combined.root'),
-		    'var':c['var'] })
+	    channels[c+'_'+year] = os.path.join(topdir,year+'combined',c,suffix,'combined.root')
+    # define variable to fit on
+    signalvariable = '_eventBDT' # for signal regions
+    controlvariable = '_nJets' # for control regions
 
     if os.path.exists(datacarddir):
 	#print('### WARNING ###: directory already exists. Clean it? (y/n)')
@@ -143,9 +153,10 @@ if __name__=="__main__":
     os.makedirs(datacarddir)
 
     for channel in channels:
-	year = channel['name'][-4:]
+	year = channel[-4:]
 	# define variable to use
-	variable = channel['var']
+	variable = controlvariable
+	if 'signalregion' in channel: variable = signalvariable
 	# set lumi uncertainty
 	unc_lumi = {}
 	if year=='2016': unc_lumi = {'lumi':1.009, # correlated
@@ -162,29 +173,32 @@ if __name__=="__main__":
 	unc_trigger = {'trigger_'+year:1.02} # preliminary dummy value
 					     # uncorrelated
 	# set individual normalization uncertainties
-	unc_norm = {'norm_WZ':1.1,'norm_ZZH':1.1,'norm_tbartZ':1.15,'norm_Xgamma':1.1,'norm_nonprompt':1.3}
+	# ttZ, Xgamma and nonpromt take the usual lnN uncertainties
+	unc_norm = {'norm_tbartZ':1.15,'norm_Xgamma':1.1,'norm_nonprompt':1.3}
+	# WZ and ZZH take rate parameters
+	unc_rate = {'rate_WZ':0.08,'rate_ZZH':0.08}
 	# check if histogram file exists
-	if not os.path.exists(channel['path']):
-	    print('### WARNING ###: '+channel['path']+' not found, skipping it.')
+	if not os.path.exists(channels[channel]):
+	    print('### WARNING ###: '+channels[channel]+' not found, skipping it.')
 	    continue
-	print('making datacard for '+channel['path']+'...')
+	print('making datacard for '+channels[channel]+'...')
 	# copy root file to location
-	os.system('cp '+channel['path']+' '+datacarddir+'/histograms_'+channel['name']+'.root')
+	os.system('cp '+channels[channel]+' '+datacarddir+'/histograms_'+channel+'.root')
 	# get necessary info
-	(processinfo,systematiclist) = readhistfile(channel['path'],variable,doprint=True)
+	(processinfo,systematiclist) = readhistfile(channels[channel],variable,doprint=False)
 	# open (recreate) datacard file
-	datacard = open(os.path.join(datacarddir,'datacard_'+channel['name']+'.txt'),'w')
+	datacard = open(os.path.join(datacarddir,'datacard_'+channel+'.txt'),'w')
 	# write nchannels, nprocesses and nparameters
 	datacard.write('imax\t1'+'\n') # write 1 for now, combine channels later
 	datacard.write('jmax\t'+str(len(processinfo)-1)+'\n')
 	datacard.write('kmax\t'+'*\n')
 	datacard.write(getseparator())
 	# write file info (WARNING: depends on convention how to rename the copied root files, see above)
-	datacard.write('shapes * '+channel['name']+' histograms_'+channel['name']+'.root $PROCESS_'+variable+'_nominal $PROCESS_'+variable+'_$SYSTEMATIC\n')
-	datacard.write('shapes data_obs '+channel['name']+' histograms_'+channel['name']+'.root data_'+variable+'_nominal\n')
+	datacard.write('shapes * '+channel+' histograms_'+channel+'.root $PROCESS_'+variable+'_nominal $PROCESS_'+variable+'_$SYSTEMATIC\n')
+	datacard.write('shapes data_obs '+channel+' histograms_'+channel+'.root data_'+variable+'_nominal\n')
 	datacard.write(getseparator())
 	# write bin info
-	datacard.write('bin\t\t'+channel['name']+'\n')
+	datacard.write('bin\t\t'+channel+'\n')
 	datacard.write('observation\t-1\n')
 	datacard.write(getseparator())
 	# make first and second column
@@ -196,10 +210,11 @@ if __name__=="__main__":
 	# make rest of the columns
 	columns = [c1,c2]
 	for process in processinfo:
-	    pcolumn = makecolumn(channel['name'],processinfo,process,systematiclist)
+	    pcolumn = makecolumn(channel,processinfo,process,systematiclist)
 	    columns.append(pcolumn)
 	# make rows
-	rows = []
+	rows = [] # normal rows for shape and flat uncertainties
+	raterows = [] # rows for rate parameters
 	# lumi uncertainty:
 	for lumisource in unc_lumi.keys():
 	    rows.append(makerow(lumisource,'lnN',processinfo,
@@ -216,7 +231,12 @@ if __name__=="__main__":
 			'multiboson':unc_trigger[triggersource]}))
 	# norm uncertainties
 	for normsource in unc_norm.keys():
-	    rows.append(makerow(normsource,'lnN',processinfo,{normsource.split('_')[-1]:unc_norm[normsource]}))
+	    rows.append(makerow(normsource,'lnN',processinfo,
+				{normsource.split('_')[-1]:unc_norm[normsource]}))
+	for normsource in unc_rate.keys():
+	    for row in makeraterows(normsource,processinfo,
+			{normsource.split('_')[-1]:unc_rate[normsource]}): 
+		raterows.append(row)
 	# add rows to columns
 	for row in rows:
 	    for rowel,c in zip(row,columns):
@@ -231,9 +251,13 @@ if __name__=="__main__":
 	    datacard.write('\n')
 	    if(row==3): datacard.write(getseparator())
 	datacard.write(getseparator())
+	for row in raterows:
+	    datacard.write(makestringfromrow(row))
+	datacard.write(getseparator())
+	    
 	# manage statistical uncertainties
 	threshold = 10
-	datacard.write(channel['name']+' autoMCStats '+str(threshold))
+	datacard.write(channel+' autoMCStats '+str(threshold))
     
 	# close datacard
 	datacard.close()
