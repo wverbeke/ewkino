@@ -9,6 +9,7 @@
 #include "JetCollection.h"
 #include "GeneratorInfo.h"
 #include "TriggerInfo.h"
+#include "JetInfo.h"
 #include "EventTags.h"
 #include "SusyMassInfo.h"
 #include "../../objects/interface/Met.h"
@@ -21,6 +22,7 @@ class ElectronCollection;
 class TauCollection;
 class Met;
 class TriggerInfo;
+class JetInfo;
 class GeneratorInfo;
 class Sample;
 
@@ -29,7 +31,11 @@ class Sample;
 class Event{
 
     public:
-        Event( const TreeReader&, const bool readIndividualTriggers = false, const bool readIndividualMetFilters = false );
+        Event( const TreeReader&, 
+		const bool readIndividualTriggers = false, 
+		const bool readIndividualMetFilters = false,
+		const bool readAllJECVariations = false,
+		const bool readGroupedJECVariations = false );
         Event( const Event& );
         Event( Event&& ) noexcept;
 
@@ -43,12 +49,15 @@ class Event{
         JetCollection& jetCollection() const{ return *_jetCollectionPtr; }
         Met& met() const{ return *_metPtr; }
         TriggerInfo& triggerInfo() const{ return *_triggerInfoPtr; }
+	JetInfo& jetInfo() const{ return *_jetInfoPtr; }
         EventTags& eventTags() const{ return *_eventTagsPtr; }
         GeneratorInfo& generatorInfo() const;
         SusyMassInfo& susyMassInfo() const;
 
-        Lepton& lepton( const LeptonCollection::size_type leptonIndex ) const{ return (*_leptonCollectionPtr)[ leptonIndex ]; }
-        Jet& jet( const JetCollection::size_type jetIndex ) const{ return (*_jetCollectionPtr)[ jetIndex ]; }
+        Lepton& lepton( const LeptonCollection::size_type leptonIndex ) const{ 
+	    return (*_leptonCollectionPtr)[ leptonIndex ]; }
+        Jet& jet( const JetCollection::size_type jetIndex ) const{ 
+	    return (*_jetCollectionPtr)[ jetIndex ]; }
 
 
         void sortLeptonsByPt() const{ _leptonCollectionPtr->sortByPt(); }
@@ -212,6 +221,7 @@ class Event{
         JetCollection* _jetCollectionPtr = nullptr;
         Met* _metPtr = nullptr;
         TriggerInfo* _triggerInfoPtr = nullptr;
+	JetInfo* _jetInfoPtr = nullptr;
         EventTags* _eventTagsPtr = nullptr;
         GeneratorInfo* _generatorInfoPtr = nullptr;
         SusyMassInfo* _susyMassInfoPtr = nullptr;
