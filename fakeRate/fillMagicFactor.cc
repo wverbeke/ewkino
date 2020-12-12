@@ -27,6 +27,7 @@ void determineMagicFactor( const std::string& leptonFlavor, const std::string& y
 			    const unsigned sampleIndex ){
     // determine the 'magic factor' for a given lepton flavor, lepton MVA and threshold.
     // leptonMVA can only have the values 'leptonMVAttH', 'leptonMVAtZq', 'leptonMVATOP'
+    // note: leptonMVATOP not yet in master branch of ewkino? Comment out for now.
 
     // check flavour and year
     fakeRate::checkFlavorString( leptonFlavor );
@@ -86,8 +87,8 @@ void determineMagicFactor( const std::string& leptonFlavor, const std::string& y
             // apply cone-correction to leptons failing the MVA cut 
             double ptVal = leptonPtr->pt();
 	    double mvaVal = (leptonMVA=="leptonMVAttH") ? leptonPtr->leptonMVAttH() : 
-			    (leptonMVA=="leptonMVAtZq") ? leptonPtr->leptonMVAtZq() :
-			    (leptonMVA=="leptonMVATOP") ? leptonPtr->leptonMVATOP() : 0.;
+			    (leptonMVA=="leptonMVAtZq") ? leptonPtr->leptonMVAtZq() : 0.;
+			    //(leptonMVA=="leptonMVATOP") ? leptonPtr->leptonMVATOP() : 0.;
             if( mvaVal <= mvaThreshold ){
                 ptVal /= leptonPtr->ptRatio();
             }

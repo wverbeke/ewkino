@@ -9,7 +9,7 @@ from jobSubmission import submitQsubJob, initializeJobScript
 
 # set global properties
 years = ['2016','2017','2018']
-samplelistdirectory = os.path.abspath('../AnalysisCode/samplelists')
+samplelistdirectory = os.path.abspath('sampleListsNew')
 # (see also below to set correct sample list name in the loop!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate' 
 

@@ -210,7 +210,7 @@ int main( int argc, char* argv[] ){
 
             // event is 'observed' if all leptons are tight 
             bool isObserved = true;
-	    double weight = event.scaledWeight();
+	    double weight = event.weight();
             for( const auto& leptonPtr : lightLeptons ){
                 if( !leptonPtr->isTight() ){
                     isObserved = false;
@@ -238,7 +238,7 @@ int main( int argc, char* argv[] ){
 		std::cout<<"is tight: "<<leptonPtr->isTight()<<std::endl;
 	    }
 	    std::cout<<"is observed: "<<isObserved<<std::endl;
-	    std::cout<<"scaled event weight: "<<event.scaledWeight()<<std::endl;
+	    std::cout<<"(scaled) event weight: "<<event.weight()<<std::endl;
 	    std::cout<<"final event weight: "<<weight<<std::endl;*/
         }
     }

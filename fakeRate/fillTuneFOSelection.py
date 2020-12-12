@@ -9,7 +9,7 @@ from jobSubmission import submitQsubJob, initializeJobScript
 
 flavours = ['muon']
 years = ['2016']
-samplelistdirectory = os.path.abspath('../AnalysisCode/samplelists')
+samplelistdirectory = os.path.abspath('sampleListsNew')
 # (see also below in loop to set the correct sample list name per flavour/year!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'
 

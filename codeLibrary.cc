@@ -21,6 +21,7 @@
 //include Event code 
 #include "Event/src/LeptonCollection.cc"
 #include "Event/src/JetCollection.cc"
+#include "Event/src/JetInfo.cc"
 #include "Event/src/TriggerInfo.cc"
 #include "Event/src/GeneratorInfo.cc"
 #include "Event/src/SusyMassInfo.cc"

@@ -10,7 +10,7 @@ from jobSubmission import submitQsubJob, initializeJobScript
 # set global properties
 isMCFR = True
 use_mt = False
-years = ['2016']
+years = ['2016','2017','2018']
 flavours = ['muon','electron','both'] 
 # (put any string different from 'muon' or 'electron' to include both)
 processes = ['TT','DY']

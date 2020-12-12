@@ -72,7 +72,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     }
 
     // make reweighter
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/",
                                                         year, treeReader.sampleVector() );
     
@@ -93,10 +93,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
         if( mT > maxBin ) continue;
 
         // determine event weight
-        // use scaledWeight to include xsection, lumi and sum of weights!
-        double weight = event.scaledWeight();
-        //std::cout<<"bare weight: "<<event.weight()<<std::endl;
-        //std::cout<<"scaled weight: "<<event.scaledWeight()<<std::endl;
+        double weight = event.weight();
         if( !isData ) weight *= reweighter.totalWeight( event );
         else weight = 1;
 

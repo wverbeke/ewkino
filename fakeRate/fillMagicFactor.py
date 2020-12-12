@@ -12,7 +12,7 @@ flavours = ['muon','electron']
 leptonMVA = 'leptonMVATOP'
 mvathresholds = [0.9,0.9] # must be of same length as flavours
 years = ['2016','2017','2018']
-samplelist = os.path.abspath('../AnalysisCode/samplelists/samples_magicfactor.txt')
+samplelist = os.path.abspath('sampleListsNew/samples_magicfactor.txt')
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate/'
 
 # check value of leptonMVA

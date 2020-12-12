@@ -130,12 +130,12 @@ void fillTuneFOSelection( const std::string& leptonFlavor, const std::string& ye
 		    // if the lepton is tight (hence also FO), fill it in num and denom
 		    if( lepton.isTight() ){
 			if( isHeavyFlavor ){
-			    heavyFlavorNumerator[ histIndex ]->Fill( pt , event.scaledWeight() );
-			    heavyFlavorDenominator[ histIndex ]->Fill( pt , event.scaledWeight() );
+			    heavyFlavorNumerator[ histIndex ]->Fill( pt , event.weight() );
+			    heavyFlavorDenominator[ histIndex ]->Fill( pt , event.weight() );
 			}
 			else{
-			    lightFlavorNumerator[ histIndex ]->Fill( pt , event.scaledWeight() );
-			    lightFlavorDenominator[ histIndex ]->Fill( pt , event.scaledWeight() );
+			    lightFlavorNumerator[ histIndex ]->Fill( pt , event.weight() );
+			    lightFlavorDenominator[ histIndex ]->Fill( pt , event.weight() );
 			}
 		    }
 		    // else (non-tight): apply additional cuts and fill it in denom
@@ -144,9 +144,9 @@ void fillTuneFOSelection( const std::string& leptonFlavor, const std::string& ye
 			if( lepton.closestJetDeepFlavor() >= 
 			deepFlavorCutCollection[ deepFlavorI ].cut( lepton.uncorrectedPt() ) ) continue;
 			if( isHeavyFlavor ){
-			    heavyFlavorDenominator[ histIndex ]->Fill( pt , event.scaledWeight() );
+			    heavyFlavorDenominator[ histIndex ]->Fill( pt , event.weight() );
 			} else {
-			    lightFlavorDenominator[ histIndex ]->Fill( pt , event.scaledWeight() );
+			    lightFlavorDenominator[ histIndex ]->Fill( pt , event.weight() );
 			}
 		    }
                 }
