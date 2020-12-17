@@ -6,13 +6,12 @@ import os
 import numpy as np
 from array import array
 import ROOT
+import listtools as lt
 
 ### histogram reading and loading ###
 
-def loadallhistograms(histfile,mustcontain=[],maynotcontain=[]):
+def loadallhistograms(histfile):
     ### read a root file containing histograms and load all histograms to a list
-    # if mustcontain is not empty, histogram names are required to contain all elements in it.
-    # if maynotcontain is not empty, histogram names are required to contain no element in it.
     f = ROOT.TFile.Open(histfile)
     histlist = []
     keylist = f.GetListOfKeys()
@@ -26,18 +25,19 @@ def loadallhistograms(histfile,mustcontain=[],maynotcontain=[]):
         except:
             print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
             continue
-        keep = True
-        if len(mustcontain)>0:
-            for tag in mustcontain:
-                if not tag in hist.GetName(): keep = False; break
-	if len(maynotcontain)>0:
-	    for tag in maynotcontain:
-		if tag in hist.GetName(): keep = False; break
-        if not keep: continue
-        # add hist to dict
-        histlist.append(hist)
+	histlist.append(hist)
     f.Close()
     return histlist
+
+### histogram subselection ###
+
+def selecthistograms(histlist,mustcontainone=[],mustcontainall=[],
+			maynotcontainone=[],maynotcontainall=[]):
+    idlist = [hist.GetName() for hist in histlist]
+    (indlist,selhistlist) = lt.subselect_objects(histlist,idlist,
+	mustcontainone=mustcontainone,mustcontainall=mustcontainall,
+	maynotcontainone=maynotcontainone,maynotcontainall=maynotcontainall)
+    return (indlist,selhistlist)
 
 ### histogram clipping ###
 
@@ -54,19 +54,14 @@ def cliphistograms(histlist):
     ### apply cliphistogram on all histograms in a list
     for hist in histlist: cliphistogram(hist)
 
-def clipallhistograms(histfile,mustcontain=[]):
+def clipallhistograms(histfile,mustcontainall=[]):
     ### apply cliphistogram on all histograms in a file
     histlist = loadallhistograms(histfile)
-    if len(mustcontain)==0:
+    if len(mustcontainall)==0:
 	cliphistograms(histlist)
     else:
-	for hist in histlist:
-	    clip = True
-	    for tag in mustcontain:
-		if not tag in hist.GetName():
-		    clip = False
-		    break
-	    if clip: cliphistogram(hist)
+	(indlist,_) = selecthistograms(histlist,mustcontainall=mustcontainall)
+	for index in indlist: cliphistogram(histlist[index])
     tempfilename = histfile[:-5]+'_temp.root'
     f = ROOT.TFile.Open(tempfilename,'recreate')
     for hist in histlist:
@@ -99,3 +94,41 @@ def tgraphtohist( graph ):
     hist.SetName(graph.GetName())
     hist.SetTitle(graph.GetTitle())
     return hist
+
+### histogram calculations ###
+
+def binperbinmaxvar( histlist, nominalhist ):
+    ### get the bin-per-bin maximum variation (in absolute value) of histograms in histlist 
+    ### wrt nominalhist.
+    maxhist = nominalhist.Clone()
+    maxhist.Reset()
+    nbins = maxhist.GetNbinsX()
+    for i in range(0,nbins+2):
+	nomval = nominalhist.GetBinContent(i)
+	varvals = np.zeros(len(histlist))
+	for j in range(len(histlist)):
+	    varvals[j] = abs(histlist[j].GetBinContent(i)-nomval)
+	maxhist.SetBinContent(i,np.amax(varvals))
+    return maxhist
+    
+def rootsumsquare( histlist ):
+    ### return a histogram that is the root-sum-square of all histograms in histlist.
+    # check the input list
+    if( len(histlist)<1 ):
+	print('### ERROR ###: at least one histogram required for rootsumsquare')
+	return None
+    res = histlist[0].Clone()
+    res.Reset()
+    nbins = res.GetNbinsX()
+    bincontents = np.zeros(nbins+2)
+    for hist in histlist:
+	if( hist.GetNbinsX()!=nbins ):
+	    print('### ERROR ###: histograms are not compatible for summing in quadrature')
+	    return None
+	thisbincontents = np.zeros(nbins+2)
+	for i in range(0,nbins+2): thisbincontents[i] = hist.GetBinContent(i)
+	bincontents += np.power(thisbincontents,2)
+    bincontents = np.sqrt(bincontents)
+    for i in range(0,nbins+2):
+	res.SetBinContent(i,bincontents[i])
+    return res	

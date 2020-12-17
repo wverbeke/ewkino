@@ -6,6 +6,8 @@ import os
 # in order to import local functions: append location to sys.path
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 
 years = ['2016','2017','2018']
 flavours = ['electron','muon']
@@ -19,6 +21,7 @@ if not os.path.exists('./fillMCFakeRateMeasurement'):
 
 cwd = os.getcwd()
 
+commands = []
 for year in years:
     for flavour in flavours:
 	# check number of samples
@@ -31,16 +34,19 @@ for year in years:
 	print('found '+str(nsamples)+' samples for '+year+' '+flavour+'s.')
         for i in range(nsamples):
 	    if(istestrun and i!=11): continue
-            script_name = 'fillMCFakeRateMeasurement.sh'
-            with open(script_name,'w') as script:
-                initializeJobScript(script)
-                script.write('cd {}\n'.format(cwd))
-                command = './fillMCFakeRateMeasurement {} {} {} {}'.format(
-			    flavour,year,i,istestrun)
-                script.write(command+'\n')
-	    if not istestrun:
-		submitQsubJob(script_name)
+	    command = './fillMCFakeRateMeasurement {} {} {} {}'.format(
+                            flavour,year,i,istestrun)
+	    # old qsub way
+            #script_name = 'fillMCFakeRateMeasurement.sh'
+            #with open(script_name,'w') as script:
+            #    initializeJobScript(script)
+            #    script.write('cd {}\n'.format(cwd))
+            #    script.write(command+'\n')
+	    #if not istestrun:
+	    #	submitQsubJob(script_name)
             # alternative: run locally
-	    else:
-		os.system('bash '+script_name)
-
+	    #else:
+	    #	 os.system('bash '+script_name)
+	    commands.append(command)
+# new condor way:
+ct.submitCommandsAsCondorCluster('fillMCFakeRateMeasurement_cjob', commands)    

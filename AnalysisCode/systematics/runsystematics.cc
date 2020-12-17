@@ -37,10 +37,17 @@ bool checkReadability(const std::string& pathToFile){
 }
 
 std::string systematicType(const std::string systematic){
-    // get type of sytematic
+    // get type of sytematic, useful for the way in which they are processed
+
+    // regular JEC, JER and Unclustered energy
     if(systematic=="JEC" or systematic=="JER" or systematic=="Uncl"){
 	return std::string("acceptance");
     }
+    // split JEC
+    if(systematic=="JECAll" or systematic=="JECGrouped"){
+	return std::string("jecsplit");
+    }
+    // reweighting uncertainties 
     if(
 	    //systematic=="muonID" // for ttH ID
 	    systematic=="muonIDSyst" // for TOP ID
@@ -54,6 +61,7 @@ std::string systematicType(const std::string systematic){
 	    or systematic=="prefire"){
 	return std::string("weight");
     }
+    // scale uncertainties
     if(	    systematic=="fScale" // replaced by qcdScalesShape
 	    or systematic=="rScale" // replaced by qcdScalesShape
 	    or systematic=="rfScales" // replaced by qcdScalesShape
@@ -98,7 +106,9 @@ std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap
                                 const std::vector<std::string>& systematics,
 				const std::string processName,
 				unsigned numberOfPdfVariations=100,
-				unsigned numberOfQcdScaleVariations=6 ){
+				unsigned numberOfQcdScaleVariations=6,
+				std::vector<std::string> allJECVariations={},
+				std::vector<std::string> groupedJECVariations={} ){
     // initialize the output histogram map
     std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > histMap;
     // loop over variables
@@ -156,6 +166,20 @@ std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap
                 temp = "qcdScalesShapeEnvDown";
                 histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
                 histMap[variable][temp]->SetTitle(processName.c_str());
+	    }
+	    // special case for split JEC variations: store all variations
+	    else if(systematic=="JECAll" || systematic=="JECGrouped"){
+		std::vector<std::string> varvector;
+		if(systematic=="JECAll") varvector = allJECVariations;
+		else if(systematic=="JECGrouped") varvector = groupedJECVariations;
+		for(std::string jecvar: varvector){
+		    std::string temp = systematic + "_" + jecvar + "Up";
+		    histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
+		    histMap[variable][temp]->SetTitle(processName.c_str());
+		    temp = systematic + "_" + jecvar + "Down";
+		    histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
+		    histMap[variable][temp]->SetTitle(processName.c_str());
+		}
 	    }
             // now general case: store up and down variation
             else{
@@ -255,7 +279,11 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 				std::vector<std::string> systematics){
 
     // initialize TreeReader from input file
-    std::cout<<"start function fillSystematicsHistograms"<<std::endl;
+    std::cout << "=== start function fillSystematicsHistograms ===\n\n\n";
+    std::cout << "- input file: " << pathToFile << "\n";
+    std::cout << "- process name: " << processName << "\n";
+    std::cout << "- event selection " << eventselection << "(" << selection_type << ")\n\n";
+    std::cout << "initializing TreeReader and Reweighter...\n\n";
     TreeReader treeReader;
     treeReader.initSampleFromFile( pathToFile );
     std::string year = "2016";
@@ -299,9 +327,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 					"../../weights/", year, thissample );
     
     // determine global sample properties related to pdf and scale variations
-    //unsigned firstScaleIndex = 0; // not used
     unsigned numberOfScaleVariations = 0;
-    //unsigned firstPdfIndex = 0; // not used
     unsigned numberOfPdfVariations = 0;
     std::shared_ptr< SampleCrossSections > xsecs;
     std::vector< double > qcdScalesXSecRatios;
@@ -319,10 +345,9 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
     if( treeReader.numberOfEntries()>0 
 	&& considerlhe 
 	&& !treeReader.isData() ){
+	std::cout << "finding available PDF and QCD scale variations...\n";
 	Event event = treeReader.buildEvent(0); 
-	//firstScaleIndex = event.generatorInfo().firstScaleIndex(); // not used
         numberOfScaleVariations = event.generatorInfo().numberOfScaleVariations();
-        //firstPdfIndex = event.generatorInfo().firstPdfIndex(); // not used
 	numberOfPdfVariations = event.generatorInfo().numberOfPdfVariations();	
 	// make vector of cross-section modifications due to pdf and qcd scale variations
 	// the vectors contain the ratio of the varied cross-section to the nominal one
@@ -348,16 +373,40 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	    pdfMinXSecRatio = *std::min_element( pdfXSecRatios.begin(), pdfXSecRatios.end() );
 	    pdfMaxXSecRatio = *std::max_element( pdfXSecRatios.begin(), pdfXSecRatios.end() );
 	}
+	std::cout << "- hasValidQcds: " << hasValidQcds << "\n";
+	std::cout << "- hasValidPdfs: " << hasValidPdfs << "\n\n";
+    }
+
+    // determine global sample properties related to split JEC variations
+    std::vector<std::string> allJECVariations;
+    std::vector<std::string> groupedJECVariations;
+    bool considerjecall = false; // check whether all jec variations are needed
+    bool considerjecgrouped = false; // check whether grouped jec variations are needed
+    for( std::string systematic: systematics ){
+	if( systematic=="JECAll") considerjecall = true;
+	else if( systematic=="JECGrouped" ) considerjecgrouped = true;
+    }
+    if( treeReader.numberOfEntries()>0
+	&& (considerjecall || considerjecgrouped) ){
+	std::cout << "finding available JEC uncertainty sources...\n";
+	Event event = treeReader.buildEvent(0,false,false,considerjecall,considerjecgrouped);
+	allJECVariations = event.jetInfo().allJECVariations();
+	groupedJECVariations = event.jetInfo().groupedJECVariations();
+	event.jetInfo().printAllJECVariations();
+	event.jetInfo().printGroupedJECVariations();
+	std::cout << "\n";
     }
 
     // make output collection of histograms
-    std::cout<<"making output collection of histograms"<<std::endl;
+    std::cout<<"making output collection of histograms...\n\n";
     std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > histMap =
-        initHistMap(vars,systematics,processName,numberOfPdfVariations=numberOfPdfVariations);
+        initHistMap(vars,systematics,processName,
+		    numberOfPdfVariations,6,
+		    allJECVariations,groupedJECVariations);
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 10; 
+    //long unsigned numberOfEntries = 100; 
     numberOfEntries = std::min(numberOfEntries,treeReader.numberOfEntries());
     std::cout<<"starting event loop for "<<numberOfEntries<<" events."<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
@@ -365,27 +414,34 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	
 	// initialize map of variables
 	std::map<std::string,double> varmap = eventFlattening::initVarMap();
+	// (store nominal event variables, call only once and use for all weight systematics)
+	std::map<std::string,double> accvarmap = eventFlattening::initVarMap();
+	// (store acceptance-modified event variables, can be overwritten per acceptance variation)
 
 	// fill nominal histograms
 	bool passnominal = true;
-        Event event = treeReader.buildEvent(entry);
-        if(!passES(event, eventselection, selection_type, std::string("nominal"))) passnominal = false;
+        Event event = treeReader.buildEvent(entry,false,false,
+			considerjecall,considerjecgrouped);
+        if(!passES(event, eventselection, selection_type, "nominal")) passnominal = false;
 	if(issignallike){
 	    int eventcategory = eventCategory(event, "nominal");
 	    if(eventcategory == -1 || eventcategory != signalcategory) passnominal = false;
 	}
 	if(passnominal){
 	    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
-			frmap_muon, frmap_electron, "nominal", doBDT, reader);
+					frmap_muon, frmap_electron, "nominal", doBDT, reader);
 	    for(std::string variable : variables){
-		fillVarValue(histMap[variable][std::string("nominal")],
+		fillVarValue(histMap[variable]["nominal"],
 			    getVarValue(variable,varmap),varmap["_normweight"]);
 		// for data carrying a different processName than "data" (e.g. fakes from data),
 	        // loop over all systematics and fill with nominal values
 		if(event.isData() and processName!="data"){
 		    for(auto mapelement : histMap[variable]){
-			if(stringTools::stringContains(mapelement.second->GetName(),"nominal")) continue;
-			fillVarValue(mapelement.second,getVarValue(variable,varmap),varmap["_normweight"]);
+			if(stringTools::stringContains(mapelement.second->GetName(),"nominal")){
+			    continue;
+			}
+			fillVarValue(mapelement.second,getVarValue(variable,varmap),
+					varmap["_normweight"]);
 		    }
 		}
 	    }
@@ -412,11 +468,12 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    if(eventcategory == -1 || eventcategory != signalcategory) passup = false;
 		}
 		if(passup){
-		    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
-				frmap_muon, frmap_electron, upvar, doBDT, reader);
+		    accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
+				    selection_type, frmap_muon, frmap_electron, upvar, doBDT, 
+				    reader);
 		    for(std::string variable : variables){
 			fillVarValue(histMap[variable][upvar],
-				    getVarValue(variable,varmap),varmap["_normweight"]);
+				    getVarValue(variable,accvarmap),accvarmap["_normweight"]);
 		    }
 		}
 		// and with down variation
@@ -427,18 +484,64 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    if(eventcategory == -1 || eventcategory != signalcategory) passdown = false;
 		}
 		if(passdown){
-		    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
-				frmap_muon, frmap_electron, downvar, doBDT, reader);
+		    accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
+				    selection_type, frmap_muon, frmap_electron, downvar, doBDT, 
+				    reader);
 		    for(std::string variable : variables){
 			fillVarValue(histMap[variable][downvar],
-				    getVarValue(variable,varmap),varmap["_normweight"]);
+				    getVarValue(variable,accvarmap),accvarmap["_normweight"]);
 		    }
 		}
+		// skip checking other systematics as they are mutually exclusive
+		continue;
+	    }
+	    // IF type is jecsplit, special event selections are needed as well
+	    else if(sysType=="jecsplit"){
+		std::vector<std::string> varvector;
+		if(systematic=="JECAll") varvector = allJECVariations;
+		else if(systematic=="JECGrouped") varvector = groupedJECVariations;
+		for(std::string jecvar: varvector){
+		    std::string thisupvar = jecvar+"Up";
+		    std::string thisdownvar = jecvar+"Down";
+		    // do event selection and flattening with up variation
+		    bool passup = true;
+		    if(!passES(event, eventselection, selection_type, thisupvar)) passup = false;
+		    if(issignallike){
+			int eventcategory = eventCategory(event, thisupvar);
+			if(eventcategory == -1 || eventcategory != signalcategory) passup = false;
+		    }
+		    if(passup){
+			accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
+				    selection_type, frmap_muon, frmap_electron, thisupvar, 
+				    doBDT, reader);
+			for(std::string variable : variables){
+			    fillVarValue(histMap[variable][systematic+"_"+thisupvar],
+                                    getVarValue(variable,accvarmap),accvarmap["_normweight"]);
+			}
+		    }
+		    // and with down variation
+		    bool passdown = true;
+		    if(!passES(event, eventselection, selection_type, thisdownvar)) passdown=false;
+		    if(issignallike){
+			int eventcategory = eventCategory(event, thisdownvar);
+			if(eventcategory == -1 || eventcategory != signalcategory) passdown=false;
+		    }
+		    if(passdown){
+			accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
+				selection_type, frmap_muon, frmap_electron, thisdownvar, 
+				doBDT, reader);
+			for(std::string variable : variables){
+			    fillVarValue(histMap[variable][systematic+"_"+thisdownvar],
+                                    getVarValue(variable,accvarmap),accvarmap["_normweight"]);
+			}
+		    }
+		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 	    // ELSE do nominal event selection
-	    if(!passnominal) continue;
-	    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
-			frmap_muon, frmap_electron, "nominal", doBDT, reader);
+	    else if(!passnominal) continue;
+	    // (nominal event already stored in varmap)
 	    
 	    // IF type is weight, apply reweighter with up and down weight
 	    if(sysType=="weight"){
@@ -451,10 +554,11 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
 		    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
 		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 	    // ELSE apply nominal weight (already in varmap["_normweight"])
-	    if(systematic=="fScale" && hasValidQcds){
-		// warning: use numberOfScaleVariations() instead of numberOfLheWeights() here!
+	    else if(systematic=="fScale" && hasValidQcds){
 		// warning: replaced by qcdScales envelope (see further on), remove from further analysis
 		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_1_MuF_2()
 							    / xsecs.get()->crossSectionRatio_MuR_1_MuF_2();
@@ -471,9 +575,10 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
 		    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
 		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 	    else if(systematic=="rScale" && hasValidQcds){
-		// warning: use numberOfScaleVariations() instead of numberOfLheWeights() here!
 		// warning: replaced by qcdScales envelope (see further on), remove from further analysis
 		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_2_MuF_1()
 							    / xsecs.get()->crossSectionRatio_MuR_2_MuF_1();
@@ -490,6 +595,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
 		    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
 		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 	    else if(systematic=="rfScales" && hasValidQcds){
 		// warning: use numberOfScaleVariations() instead of numberOfLheWeights() here!
@@ -502,6 +609,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
                     fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
                     fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
                 }
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 	    else if(systematic=="isrScale" && event.generatorInfo().numberOfPsWeights()==14){
 		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_ISR_2();
@@ -515,6 +624,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
 		    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
 		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 	    else if(systematic=="fsrScale" && event.generatorInfo().numberOfPsWeights()==14){
 		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_FSR_2();
@@ -523,6 +634,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
 		    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
 		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 
 	    // apply electron reco uncertainty
@@ -548,6 +661,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
                     fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
                     fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
 		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 
 	    // run over qcd scale variations to calculate envolope later
@@ -573,6 +688,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
                         fillVarValue(histMap[variable][temp],getVarValue(variable,varmap),qcdweight);
 		    }
                 }
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
             }
 	    else if(systematic=="qcdScalesNorm" && hasValidQcds){
 		for(std::string variable : variables){
@@ -581,6 +698,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
 		    fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
 		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 	    // run over pdf variations to calculate envelope later
 	    else if(systematic=="pdfShapeVar" && hasValidPdfs){
@@ -603,6 +722,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 			std::cout << "xsec ratio: " << xsecrat << std::endl;
                     }*/
 		}
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
 	    else if(systematic=="pdfNorm" && hasValidPdfs){
 		for(std::string variable : variables){
@@ -611,6 +732,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
                     fillVarValue(histMap[variable][upvar],getVarValue(variable,varmap),upweight);
                     fillVarValue(histMap[variable][downvar],getVarValue(variable,varmap),downweight);
                 }
+		// skip checking other systematcis as they are mutually exclusive
+                continue;
 	    }
         } // end loop over systematics
     } // end loop over events
@@ -799,7 +922,7 @@ int main( int argc, char* argv[] ){
     std::string& output_file_path = argvStr[3];
     std::string& process_name = argvStr[4];
     std::string& event_selection = argvStr[5];
-    int signal_category = std::stoi(argvStr[6]); // ignored if event_selection is not signal-like
+    int signal_category = std::stoi(argvStr[6]);
     std::string& selection_type = argvStr[7];
     std::string& bdtCombineMode = argvStr[8]; // ignored if _eventBDT is not in list of variables
     std::string& pathToXMLFile = argvStr[9]; // ignored if _eventBDT is not in list of variables
@@ -824,6 +947,7 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_dRlWrecoil",0.,10.,20));
     vars.push_back(std::make_tuple("_dRlWbtagged",0.,7.,20));
     vars.push_back(std::make_tuple("_M3l",0.,600.,20));
+    vars.push_back(std::make_tuple("_fineBinnedM3l",0.,200.,20));
     vars.push_back(std::make_tuple("_abs_eta_max",0.,5.,20));
     vars.push_back(std::make_tuple("_eventBDT",-1,1,15));
     vars.push_back(std::make_tuple("_fineBinnedeventBDT",-1,1,1000));

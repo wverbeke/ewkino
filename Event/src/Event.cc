@@ -24,8 +24,13 @@ Event::Event( const TreeReader& treeReader,
     _susyMassInfoPtr( treeReader.isSusy() ? new SusyMassInfo( treeReader ) : nullptr ),
     _numberOfVertices( treeReader._nVertex ),
 
-    //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes cross-section and lumiosity scaling
-    _weight( treeReader._scaledWeight ),
+    //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight 
+    // since the former already includes cross-section and lumiosity scaling
+    // WARNING: local modification: do not use it that way since it does not work with
+    // initSampleFromFile!
+    //_weight( treeReader._scaledWeight ),
+    _weight( treeReader._weight ),
+    _scaledWeight( treeReader._scaledWeight),
     _samplePtr( treeReader.currentSamplePtr() )
     {}
 

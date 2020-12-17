@@ -216,7 +216,7 @@ int main( int argc, char* argv[] ){
     if( flavor!="electron" && flavor!="muon" ){ flavor=""; }
     bool doBDT = false;
     std::string path_to_xml = "";
-    if( argvStr.size()==7 ){
+    if( argvStr.size()==8 ){
 	doBDT = true;
 	path_to_xml = argvStr[7];
     }
@@ -333,7 +333,7 @@ int main( int argc, char* argv[] ){
 	    // use 1 for norm as the weight used in eventToEntry is not used anyway
 	    // use dummy reweighter and "" for selection_type for the same reason
 	    varmap = eventFlattening::eventToEntry(event, 1. , reweighter, "",
-				    fakeRateMap_muon, fakeRateMap_electron, "nominal", doBDT, reader);
+			fakeRateMap_muon, fakeRateMap_electron, "nominal", doBDT, reader);
 	    std::vector< double > variables = {
 		lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
 		lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta(),
@@ -400,7 +400,7 @@ int main( int argc, char* argv[] ){
     }*/
 
     // make plot output directory
-    std::string outputDirectory_name = "closurePlots_MC_" + process + "_" + year; 
+    std::string outputDirectory_name = "closurePlots_MC_" + selection + "_" + process + "_" + year; 
     if( flavor != "" ){
         outputDirectory_name += ( "_" + flavor );
     }
@@ -432,22 +432,25 @@ int main( int argc, char* argv[] ){
         if( flavor == "" ){
 	    plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, 
 			stringTools::formatDirectoryName( outputDirectory_name ) 
-			+ histInfoVec[v].name() + "_" + process + "_" + year + ".pdf", 
-			    "", false, false, header, systUnc);
+			+ histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year 
+			+ ".pdf", 
+			"", false, false, header, systUnc);
 	    plotDataVSMC( observedHists[v].get(), predictedSplit, namesSplit, 
 			predictionCategories.size(),
                         stringTools::formatDirectoryName( outputDirectory_name )
-                        + histInfoVec[v].name() + "_" + process + "_" + year + "_split.pdf",
-                            "", false, false, header, systUnc);
+                        + histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year 
+			+ "_split.pdf",
+                        "", false, false, header, systUnc);
         } else {
 	    plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, 
 			stringTools::formatDirectoryName( outputDirectory_name ) 
-			+ histInfoVec[v].name() + "_" + process + "_" + year + "_" + flavor + ".pdf", 
+			+ histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year 
+			+ "_" + flavor + ".pdf", 
 			"", false, false, header, systUnc);
 	    plotDataVSMC( observedHists[v].get(), predictedSplit, namesSplit, 
                         predictionCategories.size(),
                         stringTools::formatDirectoryName( outputDirectory_name )
-                        + histInfoVec[v].name() + "_" + process + "_" + year 
+                        + histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year 
 			+ "_" + flavor + "_split.pdf",
                             "", false, false, header, systUnc);
         }
@@ -459,7 +462,7 @@ int main( int argc, char* argv[] ){
     TH1D* hists[1] = {failPtHist.get()};
     plotHistograms( hists, 1, names, 
 			stringTools::formatDirectoryName( outputDirectory_name )
-                        + failPtInfo.name() + "_" + process + "_" + year 
+                        + failPtInfo.name() + "_" + selection + "_" + process + "_" + year 
 			+ flavorInterpendix + ".pdf", false, false);
 
     std::cerr << "###done###" << std::endl;

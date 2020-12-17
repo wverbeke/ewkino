@@ -9,6 +9,8 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from fileListing import listSampleDirectories, listFiles, listParts
 from skimTuples import yearIdentifierFromPath
 from jobSubmission import initializeJobScript, submitQsubJob
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 sys.path.append(os.path.abspath('../samplelists'))
 from readsamplelist import readsamplelist
 
@@ -35,7 +37,7 @@ skim_condition = 'trilepton'
 if len(sys.argv) < 4:
     print('### WARNING ###: trilepskim.py found too few command line arguments.')
     print('Normal usage from the command line:')
-    print('python skimTuples.py < input_directory > < sample_list > < output_directory >')
+    print('python trileptonskim.py < input_directory > < sample_list > < output_directory >')
     print('       version=<ntuple version> filesperjob=< files_per_job > walltime=< wall_time >')
     print('(named arguments are optional)')
     print('Continue using only hard-coded arguments (e.g. for testing)? (y/n)')
@@ -117,27 +119,28 @@ if not version_name=='':
 else:
     for sample in samples_dict:
         if os.path.exists(input_directory+'/'+sample['sample_name']+'/'+sample['version_name']):
-	    # TEMPORARY SELECTION
-	    #if not ('tZq' in sample['sample_name'] or 'GluGlu' in sample['sample_name'] or 'VBF' in sample['sample_name'] or 'TTZ' in sample['sample_name']): continue
             sample_directories.append(input_directory+'/'+sample['sample_name'])
             sample_sub_directories.append(sample['version_name'])
         else:
-            print('### WARNING ###: sample '+sample['sample_name']+'/'+sample['version_name']+' not found')
+            print('### WARNING ###: sample '+sample['sample_name']+'/'+sample['version_name']
+		    +' not found')
             print('Continue without? (y/n)')
             go = raw_input()
             if not go=='y': sys.exit()
 
 print('found '+str(len(sample_directories))+' valid sample directories.')
-#print(sample_directories)
-#print(sample_sub_directories)
-#sys.exit()
+
+print(sample_directories) # for testing
+print(sample_sub_directories) # for testing
+#sys.exit() # for testing
 
 # make output directory for each sample
 sample_output_directories = []
 for directory, subdirectory in zip(sample_directories, sample_sub_directories):
     sample_name = directory.rstrip( os.path.sep ).split( os.path.sep )[-1] 
     sample_name += '_' + yearIdentifierFromPath( subdirectory )
-    output_directory = os.path.join( output_directory_base, 'ntuples_skimmed_{}_version_{}'.format( sample_name, subdirectory ) )
+    output_directory = os.path.join( output_directory_base, 'ntuples_skimmed_{}_version_{}'
+				    .format( sample_name, subdirectory ) )
     if not os.path.exists( output_directory ):
         os.makedirs( output_directory )
     sample_output_directories.append( output_directory )
@@ -154,19 +157,20 @@ for sample_directory, sub_directory, output_directory in zip( sample_directories
     chunks = list(listParts( root_files, files_per_job ))
     #chunks = chunks[:int(len(chunks)/2)] # TEMPORARY TO PROCESS ONLY PART OF HUGE SAMPLE
     for chunk in chunks:
-        #make a job script 
-        script_name = 'trileptonskim.sh'
-        with open( script_name, 'w') as script:
-            initializeJobScript( script )
-            script.write('cd {}\n'.format( skimmer_directory ) )
-            for f in chunk :
-		# skim command
-                skim_command = './skimmer {}'.format(f)
-                skim_command += ' {}'.format(output_directory)
-                skim_command += ' {}\n'.format(skim_condition)
-                script.write( skim_command )
-
+	commands = []
+	commands.append( 'cd {}'.format( skimmer_directory ) )
+	for f in chunk:
+	    command = './skimmer {} {} {}'.format(f,output_directory,skim_condition)
+	    commands.append(command)
+        # old qsub way
+        #script_name = 'trileptonskim.sh'
+        #with open( script_name, 'w') as script:
+        #    initializeJobScript( script )
+        #    for command in commands:
+        #        script.write( command+'\n' )
         # submit job and catch errors 
-        submitQsubJob( script_name, wall_time )
+        #submitQsubJob( script_name, wall_time )
         # alternative: run locally (for testing and debugging)
         #os.system('bash '+script_name)
+	# new condor way
+	ct.submitCommandsAsCondorJob( 'trileptonskim_cjob', commands )

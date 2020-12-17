@@ -2,7 +2,7 @@
 
 // define here what lepton ID to use throughout the whole framework!
 std::string LeptonSelector::leptonID(){
-    return "tzqtight"; // choose from "tzqtight", "tzqmedium0p4", "tth" or "oldtzq"
+    return "tzqmedium0p4"; // choose from "tzqtight", "tzqmedium0p4", "tth" or "oldtzq"
 }
 
 bool LeptonSelector::isLoose() const{

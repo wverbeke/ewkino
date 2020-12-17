@@ -6,6 +6,8 @@ import os
 # in order to import local functions: append location to sys.path
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 
 '''if not len(sys.argv)==3:
     print('### ERROR ###: found wrong number of command line arguments.')
@@ -17,12 +19,13 @@ use_mt = sys.argv[2]'''
 
 isMCFR = True
 use_mt = False
-selection = 'default' # use 'default', 'noossf' or 'noz'
 
 years = ['2016','2017','2018']
 flavours = ['muon','electron','both'] 
 # (put any string different from 'muon' or 'electron' to include both)
 processes = ['TT','DY']
+selections = ['default','noz','noossf'] 
+# (use 'default', 'noossf' and/or 'noz')
 path_to_xml_file = '/user/llambrec/ewkino/AnalysisCode/bdt/bdts_tzqtight/out_all_data/weights/'
 path_to_xml_file += 'tmvatrain_BDT.weights.xml'
 
@@ -34,16 +37,23 @@ if not os.path.exists('./closureTest_MC'):
 
 cwd = os.getcwd()
 
+commands = []
 for year in years:
     for flavour in flavours:
 	for process in processes:
-	    script_name = 'closureTest_MC.sh'
-	    with open(script_name,'w') as script:
-		initializeJobScript(script)
-		script.write('cd {}\n'.format(cwd))
-		command = './closureTest_MC {} {} {} {} {} {}'.format(
-			    isMCFR,use_mt,process,year,flavour,path_to_xml_file)
-		script.write(command+'\n')
-	    submitQsubJob(script_name)
-	    # alternative: run locally
-	    #os.system('bash '+script_name)
+	    for selection in selections:
+		command = './closureTest_MC {} {} {} {} {} {} {}'.format(
+                            isMCFR,use_mt,selection,process,year,flavour,path_to_xml_file)
+		# old qsub way:
+		#script_name = 'closureTest_MC.sh'
+		#with open(script_name,'w') as script:
+		#	initializeJobScript(script)
+		#	script.write('cd {}\n'.format(cwd))
+		#	script.write(command+'\n')
+		#submitQsubJob(script_name)
+		# alternative: run locally
+		#os.system('bash '+script_name)
+		commands.append(command)
+
+# new condor way:
+ct.submitCommandsAsCondorCluster('closureTest_MC_cjob', commands)

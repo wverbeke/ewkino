@@ -9,6 +9,8 @@ import os
 import json
 import plottools as tools
 import histplotter as hp
+sys.path.append(os.path.abspath('../tools'))
+import histtools as ht
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
 sys.path.append(os.path.abspath('../../jobSubmission'))
@@ -46,19 +48,6 @@ def selecthistograms(histdict,processes,variable,variation):
 	    if(key==process+'_'+variable+'_'+variation): keep=True; break
 	if keep: histlist.append(histdict[key].Clone())
     return histlist
-
-
-def addquadrature(histlist):
-    ### help function for histogram addition in quadrature
-
-    reshist = histlist[0].Clone()
-    reshist.Reset()
-    for i in range(1,reshist.GetNbinsX()+1):
-	val = 0.
-	for hist in histlist: val += np.power(hist.GetBinContent(i),2)
-	val = np.sqrt(val)
-	reshist.SetBinContent(i,val)
-    return reshist
 
 
 def getallsystematics(histdict,variable):
@@ -128,17 +117,12 @@ def getsystematichistogram(histdict,variedprocesses,nominalprocesses,variable,sy
     for systematic in systematicslist:
 	uphist = totalvar[systematic+'Up']
 	downhist = totalvar[systematic+'Down']
-	maxhist = nominalhist.Clone()
-	maxhist.Reset()
-	for i in range(1,nominalhist.GetNbinsX()+1):
-	    nomval = nominalhist.GetBinContent(i)
-	    val = max(abs(uphist.GetBinContent(i)-nomval),abs(downhist.GetBinContent(i)-nomval))
-	    maxhist.SetBinContent(i,val)
+	maxhist = ht.binperbinmaxvar( [uphist,downhist], nominalhist )
 	totalvar[systematic+'Max'] = maxhist
 	maxhistlist.append(maxhist)
     
     # add resulting systematic histograms in quadrature
-    syshist = addquadrature(maxhistlist)
+    syshist = ht.rootsumsquare(maxhistlist)
     return syshist
 
 

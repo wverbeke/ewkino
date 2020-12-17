@@ -10,11 +10,11 @@ bool passES(Event& event, const std::string& eventselection,
     if( std::find(selectiontypes.cbegin(), selectiontypes.cend(), selectiontype)==selectiontypes.cend() ){
 	throw std::invalid_argument("unknown selection type: "+selectiontype);
     }
-    std::vector< std::string > variations{ "JECUp","JECDown","JERUp","JERDown","UnclUp","UnclDown",
-					    "nominal","all"};
-    if( std::find(variations.cbegin(), variations.cend(), variation)==variations.cend() ){
-	throw std::invalid_argument("unknown variation: "+variation);
-    }
+    //std::vector< std::string > variations{ "JECUp","JECDown","JERUp","JERDown","UnclUp","UnclDown",
+    //					    "nominal","all"};
+    //if( std::find(variations.cbegin(), variations.cend(), variation)==variations.cend() ){
+    //	throw std::invalid_argument("unknown variation: "+variation);
+    //} // can no longer check for variation validity as many split JEC sources are allowed
     static std::map< std::string, std::function< bool(Event&, const std::string&, const std::string&) > > 
     ESFunctionMap = {
         { "signalregion", pass_signalregion },
@@ -67,6 +67,12 @@ JetCollection getjetcollection(const Event& event, const std::string& variation)
         return event.jetCollection().goodJetCollection();
     } else if( variation == "UnclUp" ){
         return event.jetCollection().goodJetCollection();
+    } else if( stringTools::stringEndsWith(variation,"Up") ){
+	std::string jecvar = variation.substr(0, variation.size()-2);
+	return event.jetCollection().JECUpCollection( jecvar ).goodJetCollection();
+    } else if( stringTools::stringEndsWith(variation,"Down") ){
+	std::string jecvar = variation.substr(0, variation.size()-4);
+        return event.jetCollection().JECDownCollection( jecvar ).goodJetCollection();
     } else {
         throw std::invalid_argument( "Jet variation " + variation + " is unknown." );
     }
@@ -87,6 +93,10 @@ Met getmet(const Event& event, const std::string& variation){
         return event.met().MetUnclusteredDown();
     } else if( variation == "UnclUp" ){
         return event.met().MetUnclusteredUp();
+    } else if( stringTools::stringEndsWith(variation,"Up") ){
+        return event.met();
+    } else if( stringTools::stringEndsWith(variation,"Down") ){
+        return event.met();
     } else {
         throw std::invalid_argument( "Met variation " + variation + " is unknown." );
     }
@@ -107,9 +117,13 @@ int eventCategory(Event& event, const std::string& variation){
     JetCollection jetc = getjetcollection(event,variation);
     int njets = jetc.size();
     int nbjets = jetc.numberOfMediumBTaggedJets();
+    // no bjets or (only 1 bjet and no additional jet): -1
     if(nbjets == 0 or (nbjets==1 and njets==1)) return -1;
+    // one bjet and 2-3 jets: 1
     if(nbjets == 1 and (njets==2 or njets==3)) return 1;
+    // one bjet and >=4 jets: 2
     if(nbjets == 1) return 2;
+    // >=2 bjets: 3
     return 3;
 }
 

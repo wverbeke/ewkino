@@ -10,35 +10,8 @@ import math
 import json
 import os
 import plottools as tools
-
-def loadhistograms(histfile,mustcontain=[],mustnotcontain=[]):
-    # load histograms from a root file.
-    # 'histfile' is a string containing the path to the input root file.
-    # the output is a list of histograms
-    # note: histogram name must contain ALL tags in mustcontain and NONE in mustnotcontain
-    print('loading histograms...')
-    f = ROOT.TFile.Open(histfile)
-    histlist = []
-    keylist = f.GetListOfKeys()
-    for key in keylist:
-        hist = f.Get(key.GetName())
-        hist.SetDirectory(0)
-        # check if histogram is readable
-        try:
-            nentries = hist.GetEntries() # maybe replace by more histogram-specific function
-        except:
-            print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
-        # check if histogram needs to be included
-        keep = True
-        for el in mustcontain:
-            if not el in hist.GetName(): keep = False; break;
-	if not keep: continue
-        for el in mustnotcontain:
-            if el in hist.GetName(): keep = False; break;
-        if not keep: continue
-        # add hist to list
-        histlist.append(hist)
-    return histlist
+sys.path.append('../tools')
+import histtools as ht
 
 def findbytitle(histlist,title):
     # find a histogram by its title, return the index or -1 if not found
@@ -76,6 +49,10 @@ def getcolorsyst(systematic):
     if(systematic=='JECUp' or systematic=='JECDown'): return ROOT.kRed
     if(systematic=='JERUp' or systematic=='JERDown'): return ROOT.kRed+2
     if(systematic=='UnclUp' or systematic=='UnclDown'): return ROOT.kOrange-3
+    if(systematic=='JECSqSumAllUp' or systematic=='JECSqSumAllDown'): return ROOT.kYellow
+    if(systematic=='JECSqSumGroupedUp' or systematic=='JECSqSumGroupedDown'): return ROOT.kYellow+1
+    if('JECAll' in systematic): return ROOT.kGray
+    if('JECGrouped' in systematic): return ROOT.kGray
 
     # lepton uncertainties in shades of blue
     if(systematic=='muonIDUp' or systematic=='muonIDDown'): return ROOT.kBlue
@@ -115,13 +92,6 @@ def getcolorsyst(systematic):
 
     print('### WARNING ###: tag not recognized (in getcolorsyst): '+str(systematic))
     return ROOT.kBlack
-
-def clip(hist):
-    # set minimum value for all bins to zero (no net negative weight)
-    for i in range(hist.GetNbinsX()+1):
-	if hist.GetBinContent(i)<0:
-	    hist.SetBinContent(i,0.)
-	    hist.SetBinError(i,0)
 
 def getminmax(histlist,witherrors=False):
     # get suitable minimum and maximum values for plotting a hist collection (not stacked)
@@ -190,10 +160,10 @@ def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,
 
     ### operations on mc histograms
     sethiststyle(nominalhist,variable)
-    clip(nominalhist)
+    ht.cliphistogram(nominalhist)
     for hist in mchistlist:
         sethiststyle(hist,variable)
-	clip(hist)
+	ht.cliphistogram(hist)
     if relative:
 	for hist in mchistlist+[nominalhist]:
 	    for i in range(0,hist.GetNbinsX()+2):
@@ -210,12 +180,25 @@ def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,
     legend.SetTextFont(legendfont)
     legend.SetTextSize(legendsize)
     nentries = 0
+    allJECHasLabel = False
+    groupedJECHasLabel = False
     for hist in mchistlist:
 	label = hist.GetName().split(variable)[-1].strip('_')
-	if label[-2:]=='Up': label = '~Up'
 	# avoid drawing a legend entry for all shape variations
 	if('ShapeVar0' in label): label = label[:label.find('Var0')]
 	elif('ShapeVar' in label): continue
+	# avoid drawing a legend entry for all JEC variations
+	if('JECAll' in label):
+	    if not allJECHasLabel: 
+		label = 'JECAll'
+		allJECHasLabel = True
+	    else: continue
+	if('JECGrouped' in label):
+	    if not groupedJECHasLabel:
+		label = 'JECGrouped'
+		groupedJECHasLabel = True
+	    else: continue
+	if label[-2:]=='Up': label = '~Up'
         legend.AddEntry(hist,label,"l")
 	nentries += 1
     legend.AddEntry(nominalhist,nominalhist.GetTitle(),"l")
@@ -299,24 +282,39 @@ if __name__=="__main__":
     # file(s) to read the histograms from
     # if the argument is a .root file, will use this file
     # else will assume it's a folder and run on all .root files within
-    histdir = os.path.abspath('../systematics/test')
+    histdir = os.path.abspath('../systematics/output_test')
     # variable to plot
     variables = []
-    variables = (['_abs_eta_recoil','_Mjj_max','_lW_asymmetry',
-                '_deepCSV_max','_lT','_MT','_dPhill_max',
-                '_pTjj_max','_dRlb_min','_HT','_dRlWrecoil','_dRlWbtagged',
-                '_M3l','_abs_eta_max','_nJets'])
+    #variables = (['_abs_eta_recoil','_Mjj_max','_lW_asymmetry',
+    #            '_deepCSV_max','_lT','_MT','_dPhill_max',
+    #            '_pTjj_max','_dRlb_min','_HT','_dRlWrecoil','_dRlWbtagged',
+    #            '_M3l','_abs_eta_max','_nJets'])
     variables += ['_eventBDT']
-    variables += ['_nMuons','_nElectrons']
+    variables += ['_nMuons','_nElectrons','_nJets']
     #variables += ['_rebinnedeventBDT']
 
     # systematics to draw
-    #systematictags = [] # empty list for all systematics in file
-    systematictags = []
-    systematictags += ['bTag']
+    systematictags = [] # empty list for all systematics in file
+    systematictags += ['JECGrouped_TotalUp','JECGrouped_TotalDown','JECUp','JECDown']
     # systematics to exclude
     excludetags = [] # empty list to exclude nothing
-    #excludetags = ['Var','rScale','fScale']
+    #excludetags = ['JECGrouped']
+
+    # save some examples of systematictags and excludetags for jec split studies
+    # tags for grouped total
+    #systematictags = ['JECGrouped_TotalUp','JECGrouped_TotalDown','JECUp','JECDown']
+    #excludetags = []
+    # tags for all total
+    #systematictags = ['JECAll_TotalUp','JECAll_TotalDown','JECUp','JECDown']
+    #excludetags = []
+    # tags for squared sum grouped
+    #systematictags = ['JEC']
+    #excludetags = (['JECAll','Total','PileUpEnvelope','PileUpMuZero','FlavorZJet',
+    #	'FlavorPhotonJet','FlavorPureGluon','FlavorPureQuark','FlavorPureCharm','FlavorPureBottom'])
+    # tags for squared sum all
+    systematictags = ['JEC']
+    excludetags = (['JECGrouped','Total','PileUpEnvelope','PileUpMuZero','FlavorZJet',
+        'FlavorPhotonJet','FlavorPureGluon','FlavorPureQuark','FlavorPureCharm','FlavorPureBottom'])
 
     ### Overwrite using cmd args
     if(len(sys.argv)==2):
@@ -340,17 +338,66 @@ if __name__=="__main__":
     for histfile in filelist:
 	for variable in variables:
 	    print('running on {}/{}'.format(histfile,variable))
-	    histlist = []
-	    if len(systematictags)==0:
-		histlist = loadhistograms(histfile,mustcontain=[variable],
-						mustnotcontain=excludetags)
-	    else:
-		for systematictag in systematictags+['nominal']:
-		    histlist += loadhistograms(histfile,mustcontain=[variable,systematictag],
-						    mustnotcontain=excludetags)
+	    histlist = ht.loadallhistograms(histfile)
+	    histlist = ht.selecthistograms(histlist,mustcontainall=[variable],
+					    mustcontainone=systematictags+['nominal'],
+					    maynotcontainone=excludetags)[1]
+	    for hist in histlist: print(hist.GetName())
 	    figname = os.path.join(figdir,histfile.split('/')[-1].rstrip('.root')+'_'+variable)
 
-	    ### Set plot properties
+	    ### re-order histograms to put individual pdf, qcd and jec variations in front
+	    ### (so they will be plotted in the background)
+	    firsthistlist = []
+	    secondhistlist = []
+	    for hist in histlist:
+		if('ShapeVar' in hist.GetName() 
+		    or 'JECAll' in hist.GetName() 
+		    or 'JECGrouped' in hist.GetName() ):
+		    firsthistlist.append(hist)
+		else: 
+		    secondhistlist.append(hist)
+	    histlist = firsthistlist + secondhistlist
+
+	    ### temporary: add root-sum-square of the individual JEC variations
+	    ### make sure to exclude the superfluous JEC variations in the selection above
+	    ### or the rss will be too large!
+	    jecsum = True
+	    if jecsum:
+		nominalhist = histlist[findbyname( histlist, 'nominal' )]
+		jecall = ht.selecthistograms(histlist,mustcontainall=['JECAll','Down'])[1]
+		jecgrouped = ht.selecthistograms(histlist,mustcontainall=['JECGrouped','Down'])[1]
+		for i,hist in enumerate(jecall):
+		    downhist = histlist[findbyname(histlist,hist.GetName().replace('Down','Up'))]
+		    jecall[i] = ht.binperbinmaxvar( [hist,downhist], nominalhist )
+		    jecall[i].SetName( hist.GetName().replace('Down','Max') )
+		for i,hist in enumerate(jecgrouped):
+		    downhist = histlist[findbyname(histlist,hist.GetName().replace('Down','Up'))]
+		    jecgrouped[i] = ht.binperbinmaxvar( [hist,downhist], nominalhist )
+		    jecgrouped[i].SetName( hist.GetName().replace('Down','Max') )
+		if( len(jecall)>0 ):
+		    jecallup = nominalhist.Clone()
+		    jecallup.Add( ht.rootsumsquare(jecall) )
+		    jecallup.SetName( jecall[0].GetName()[0:jecall[0].GetName().find('JECAll')]
+				    + 'JECSqSumAllUp' )
+		    jecalldown = nominalhist.Clone()
+		    jecalldown.Add( ht.rootsumsquare(jecall), -1 )
+		    jecalldown.SetName( jecall[0].GetName()[0:jecall[0].GetName().find('JECAll')]
+                                    + 'JECSqSumAllDown' )
+		    histlist.append(jecallup)
+		    histlist.append(jecalldown)
+		if( len(jecgrouped)>0 ):
+		    jecgroupedup = nominalhist.Clone()
+		    jecgroupedup.Add( ht.rootsumsquare(jecgrouped) )
+		    jecgroupedup.SetName( jecgrouped[0].GetName()[0:jecgrouped[0].GetName().find(
+			'JECGrouped')] + 'JECSqSumGroupedUp' )
+		    jecgroupeddown = nominalhist.Clone()
+		    jecgroupeddown.Add( ht.rootsumsquare(jecgrouped), -1 )
+		    jecgroupeddown.SetName( jecgrouped[0].GetName()[0:jecgrouped[0].GetName().find(
+			'JECGrouped')] + 'JECSqSumGroupedDown' )
+		    histlist.append(jecgroupedup)
+		    histlist.append(jecgroupeddown)
+	    
+	    ### set plot properties
 	    binwidth = histlist[0].GetBinWidth(1)
 	    yaxtitle = 'yield'
 	    relyaxtitle = 'normalized yield'

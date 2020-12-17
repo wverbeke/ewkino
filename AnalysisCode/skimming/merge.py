@@ -8,6 +8,8 @@ import os
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 from mergeTuples import listSkimmedSampleDirectories, sampleName
+sys.path.append('../../jobSubmission')
+import condorTools as ct
 # import functions from the merge and remove overlap script
 from mergeAndRemoveOverlap import mergefilesinfolders, samplenameisdata
 
@@ -83,27 +85,28 @@ for samplename in inputstruct:
 
 # run hadd command for each element in input structure
 counter = 0
+commands = []
 for samplename in inputstruct:
     samplelist = inputstruct[samplename]
     outfile = os.path.join(output_directory,sampleName_override(
 			    samplelist[0],mode)+'.root')
-    script_name = 'merge.sh'
-    with open(script_name,'w') as script:
-        initializeJobScript(script)
-        command = 'hadd {}'.format(outfile)
-        command2 = 'rm -r'
-        for sample in samplelist:
-            sample = os.path.join(input_directory,sample)
-            command += ' {}/*.root'.format(sample)
-            command2 += ' {}'.format(sample)
-	print(command)
-        script.write(command+'\n')
-	# warning: do not remove unmerged samples automatically anymore;
-	# it can interfere with additional mergeAndRemoveOverlap commands below.
-        #script.write(command2+'\n')
-    submitQsubJob(script_name)
-    counter += 1
-    print('submitted hadd command for '+str(counter)+' sample directories.')
+    command = 'hadd {}'.format(outfile)
+    for sample in samplelist: 
+	command += ' {}/*.root'.format(os.path.join(input_directory,sample))
+    commands.append(command)
+    # old qsub way:
+    #script_name = 'merge.sh'
+    #with open(script_name,'w') as script:
+    #    initializeJobScript(script)
+    #	print(command)
+    #    script.write(command+'\n')
+    #submitQsubJob(script_name)
+    #counter += 1
+    #print('submitted hadd command for '+str(counter)+' sample directories.')
+# new condor way
+ct.submitCommandsAsCondorCluster( 'merge_cjob', commands )
+
+sys.exit() # for testing on MC only, need to adapt functionality below to condor still...
 
 # run mergeAndRemoveOverlap command for each element in extension of input struct
 counter = 0
