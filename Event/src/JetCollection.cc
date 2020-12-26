@@ -5,9 +5,11 @@
 #include "../interface/LeptonCollection.h"
 
 
-JetCollection::JetCollection( const TreeReader& treeReader ){
+JetCollection::JetCollection( const TreeReader& treeReader,
+				const bool readAllJECVariations,
+				const bool readGroupedJECVariations ){
     for( unsigned j = 0; j < treeReader._nJets; ++j ){
-        this->push_back( Jet( treeReader, j ) ); 
+        this->push_back( Jet( treeReader, j, readAllJECVariations, readGroupedJECVariations ) ); 
     }
 }
 
@@ -97,6 +99,17 @@ JetCollection JetCollection::buildVariedCollection( Jet (Jet::*variedJet)() cons
     return JetCollection( jetVector );
 }
 
+JetCollection JetCollection::buildVariedCollection( Jet (Jet::*variedJet)(std::string) const, 
+    std::string variationArg ) const{
+    // similar to above but with argument passed to Jet::*variedJet
+    std::vector< std::shared_ptr< Jet > > jetVector;
+    for( const auto& jetPtr : *this ){
+
+        //jets are NOT shared between collections!
+        jetVector.push_back( std::make_shared< Jet >( (*jetPtr.*variedJet)( variationArg ) ) );
+    }
+    return JetCollection( jetVector );
+}
 
 JetCollection JetCollection::JECDownCollection() const{
     return buildVariedCollection( &Jet::JetJECDown );
@@ -117,6 +130,13 @@ JetCollection JetCollection::JERUpCollection() const{
     return buildVariedCollection( &Jet::JetJERUp );
 }
 
+JetCollection JetCollection::JECUpCollection( std::string source ) const{
+    return buildVariedCollection( &Jet::JetJECUp, source );
+}
+
+JetCollection JetCollection::JECDownCollection( std::string source ) const{
+    return buildVariedCollection( &Jet::JetJECDown, source );
+}
 
 JetCollection::size_type JetCollection::numberOfLooseBTaggedJets() const{
     return count( &Jet::isBTaggedLoose );

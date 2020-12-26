@@ -19,7 +19,9 @@ class LeptonCollection;
 class JetCollection : public PhysicsObjectCollection< Jet > {
 
     public:
-        JetCollection( const TreeReader& );
+        JetCollection( const TreeReader&, 
+			const bool readAllJECVariations = false,
+			const bool readGroupedJECVariations = false );
 
         //make jet collection with b-tagged jets 
         JetCollection looseBTagCollection() const;
@@ -31,6 +33,8 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
         JetCollection JECUpCollection() const;
         JetCollection JERDownCollection() const;
         JetCollection JERUpCollection() const;
+	JetCollection JECUpCollection( std::string source ) const;
+	JetCollection JECDownCollection( std::string source ) const;
 
         //select jets
         void selectGoodJets();
@@ -69,6 +73,8 @@ class JetCollection : public PhysicsObjectCollection< Jet > {
     
         //build JetCollection of varied Jets
         JetCollection buildVariedCollection( Jet (Jet::*variedJet)() const ) const;
+	JetCollection buildVariedCollection( Jet (Jet::*variedJet)(std::string) const, 
+	    std::string ) const;
 
         //number of b-taged jets with variation
         std::vector< size_type > countsAnyVariation( bool ( Jet::*passSelection )() const ) const;

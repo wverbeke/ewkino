@@ -26,9 +26,11 @@ class TreeReader {
         TreeReader( const std::string&, const std::string& ); 
 
         //Declare leaf types
+	// constants
         static const unsigned nL_max = 20;
         static const unsigned nJets_max = 20;
         static const unsigned gen_nL_max = 20;
+	// global event variables and weights
         ULong_t         _runNb;
         ULong_t         _lumiBlock;
         ULong_t         _eventNb;
@@ -43,6 +45,7 @@ class TreeReader {
         Double_t        _psWeight[14];
         Float_t         _nTrueInt;
         Double_t        _lheHTIncoming;
+	// generator variables
         Double_t        _gen_met;
         Double_t        _gen_metPhi;
         UInt_t          _gen_nL;
@@ -56,6 +59,7 @@ class TreeReader {
         Bool_t          _gen_lIsPrompt[gen_nL_max];   
         UInt_t          _ttgEventType;
         UInt_t          _zgEventType;
+	// triggers and filters
         Bool_t          _passTrigger_e;
         Bool_t          _passTrigger_ee;
         Bool_t          _passTrigger_eee;
@@ -70,6 +74,7 @@ class TreeReader {
         Bool_t          _passTrigger_FR;
         Bool_t          _passTrigger_FR_iso;
         Bool_t          _passMETFilters;
+	// variables related to leptons
         UInt_t          _nL;
         UInt_t          _nMu;
         UInt_t          _nEle;
@@ -119,24 +124,24 @@ class TreeReader {
         Bool_t          _tauEleVetoMedium[nL_max];
         Bool_t          _tauEleVetoTight[nL_max];
         Bool_t          _tauEleVetoVTight[nL_max];
-		Bool_t 			_tauPOGVLoose2015[nL_max];
-		Bool_t			_tauPOGLoose2015[nL_max];
-		Bool_t			_tauPOGMedium2015[nL_max];
-		Bool_t			_tauPOGTight2015[nL_max];
-		Bool_t			_tauPOGVTight2015[nL_max];
-		Bool_t			_tauVLooseMvaNew2015[nL_max];
-		Bool_t			_tauLooseMvaNew2015[nL_max];
-		Bool_t			_tauMediumMvaNew2015[nL_max];
-		Bool_t			_tauTightMvaNew2015[nL_max];
-		Bool_t			_tauVTightMvaNew2015[nL_max];
-		Bool_t			_tauPOGVVLoose2017v2[nL_max];
-		Bool_t			_tauPOGVTight2017v2[nL_max];
-		Bool_t			_tauPOGVVTight2017v2[nL_max];
-		Bool_t			_tauVLooseMvaNew2017v2[nL_max];
-		Bool_t			_tauLooseMvaNew2017v2[nL_max];
-		Bool_t			_tauMediumMvaNew2017v2[nL_max];
-		Bool_t			_tauTightMvaNew2017v2[nL_max];
-		Bool_t			_tauVTightMvaNew2017v2[nL_max];
+	Bool_t 		_tauPOGVLoose2015[nL_max];
+	Bool_t		_tauPOGLoose2015[nL_max];
+	Bool_t		_tauPOGMedium2015[nL_max];
+	Bool_t		_tauPOGTight2015[nL_max];
+	Bool_t		_tauPOGVTight2015[nL_max];
+	Bool_t		_tauVLooseMvaNew2015[nL_max];
+	Bool_t		_tauLooseMvaNew2015[nL_max];
+	Bool_t		_tauMediumMvaNew2015[nL_max];
+	Bool_t		_tauTightMvaNew2015[nL_max];
+	Bool_t		_tauVTightMvaNew2015[nL_max];
+	Bool_t		_tauPOGVVLoose2017v2[nL_max];
+	Bool_t		_tauPOGVTight2017v2[nL_max];
+	Bool_t		_tauPOGVVTight2017v2[nL_max];
+	Bool_t		_tauVLooseMvaNew2017v2[nL_max];
+	Bool_t		_tauLooseMvaNew2017v2[nL_max];
+	Bool_t		_tauMediumMvaNew2017v2[nL_max];
+	Bool_t		_tauTightMvaNew2017v2[nL_max];
+	Bool_t		_tauVTightMvaNew2017v2[nL_max];
 
         Double_t        _relIso[nL_max];   
         Double_t        _relIso0p4[nL_max];
@@ -162,6 +167,7 @@ class TreeReader {
         UInt_t          _lProvenance[nL_max];
         UInt_t          _lProvenanceCompressed[nL_max];
         UInt_t          _lProvenanceConversion[nL_max];
+	// variables related to jets
         UInt_t          _nJets;
         Double_t        _jetPt[nJets_max];   
         Double_t        _jetPt_JECUp[nJets_max];   
@@ -195,7 +201,16 @@ class TreeReader {
         Double_t        _jetChargedEmFraction[nJets_max];
         Double_t        _jetHFHadronFraction[nJets_max];
         Double_t        _jetHFEmFraction[nJets_max];
-        Double_t        _met;
+	std::map< std::string, Double_t[nJets_max] > _jetPt_groupedVariationsDown;
+        std::map< std::string, Double_t[nJets_max] > _jetPt_groupedVariationsUp;
+        std::map< std::string, Double_t[nJets_max] > _jetPt_allVariationsDown;
+        std::map< std::string, Double_t[nJets_max] > _jetPt_allVariationsUp;
+        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_groupedVariationsDown;
+        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_groupedVariationsUp;
+        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_allVariationsDown;
+        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_allVariationsUp;
+        // variables related to missing transverse energy
+	Double_t        _met;
         Double_t        _metJECDown;
         Double_t        _metJECUp;
         Double_t        _metUnclDown;
@@ -243,8 +258,16 @@ class TreeReader {
 
         //Build event (this will implicitly use GetEntry )
         //Use these functions in analysis code 
-        Event buildEvent( const Sample&, long unsigned , const bool readIndividualTriggers = false, const bool readIndividualMetFilters = false );
-        Event buildEvent( long unsigned, const bool readIndividualTriggers = false, const bool readIndividualMetFilters = false );
+        Event buildEvent( const Sample&, long unsigned, 
+			    const bool readIndividualTriggers = false, 
+			    const bool readIndividualMetFilters = false,
+			    const bool readAllJECVariations = false,
+			    const bool readGroupedJECVariations = false );
+        Event buildEvent( long unsigned, 
+			    const bool readIndividualTriggers = false, 
+			    const bool readIndividualMetFilters = false,
+			    const bool readAllJECVariations = false, 
+                            const bool readGroupedJECVariations = false );
 
         //check whether generator info is present in current tree
         bool containsGeneratorInfo() const;
@@ -279,7 +302,8 @@ class TreeReader {
         std::shared_ptr< TFile > currentFilePtr(){ return _currentFilePtr; }
 
         //get object from current file 
-        TObject* getFromCurrentFile( const std::string& name ) const;//{ return currentFilePtr->Get( name.c_str() ); }
+        TObject* getFromCurrentFile( const std::string& name ) const;
+	    //{ return currentFilePtr->Get( name.c_str() ); }
 
         //Get list of histograms stored in current file
         std::vector< std::shared_ptr< TH1 > > getHistogramsFromCurrentFile() const;
@@ -458,8 +482,8 @@ class TreeReader {
 
 
         //some safety-checks for errors 
-        void checkSampleEraConsistency() const;  //make sure a sample is not is2016() AND 2017() 
-        void checkEraOrthogonality() const;        //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
+        void checkSampleEraConsistency() const; //make sure a sample is not is2016() AND 2017() 
+        void checkEraOrthogonality() const; //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
 
         //debugging prints
         //void printLeptonContent( std::ostream& os = std::cout ) const;
@@ -471,6 +495,10 @@ class TreeReader {
         //initialize triggerMap
         void initializeTriggerMap( TTree* );
         void initializeMetFilterMap( TTree* );
+
+	// initialize split jec uncertainty source maps
+        void initializeJecSourcesMaps( TTree* );
+        void initializeJecSourcesGroupedMaps( TTree* );
 
         //list of branches
         TBranch        *b__runNb;   
@@ -552,7 +580,7 @@ class TreeReader {
         TBranch        *b__lPOGLoose;   
         TBranch        *b__lPOGMedium;   
         TBranch        *b__lPOGTight;   
-		TBranch		   *b__tauDecayMode;
+	TBranch		   *b__tauDecayMode;
         TBranch		   *b__decayModeFinding;
         TBranch		   *b__decayModeFindingNew;
         TBranch		   *b__tauMuonVetoLoose;
@@ -638,6 +666,14 @@ class TreeReader {
         TBranch        *b__jetChargedEmFraction;
         TBranch        *b__jetHFHadronFraction;
         TBranch        *b__jetHFEmFraction;
+	std::map< std::string, TBranch* > b__jetPt_groupedVariationsDown;
+        std::map< std::string, TBranch* > b__jetPt_groupedVariationsUp;
+        std::map< std::string, TBranch* > b__jetPt_allVariationsDown;
+        std::map< std::string, TBranch* > b__jetPt_allVariationsUp;
+        std::map< std::string, TBranch* > b__jetSmearedPt_groupedVariationsDown;
+        std::map< std::string, TBranch* > b__jetSmearedPt_groupedVariationsUp;
+        std::map< std::string, TBranch* > b__jetSmearedPt_allVariationsDown;
+        std::map< std::string, TBranch* > b__jetSmearedPt_allVariationsUp;
         TBranch        *b__met;   
         TBranch        *b__metJECDown;   
         TBranch        *b__metJECUp;   

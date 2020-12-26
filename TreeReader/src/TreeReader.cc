@@ -13,11 +13,14 @@
 #include "../../Event/interface/Event.h"
 #include "../../constants/luminosities.h"
 
+// constructor //
 
 TreeReader::TreeReader( const std::string& sampleListFile, const std::string& sampleDirectory ){
     readSamples( sampleListFile, sampleDirectory );
 }
 
+
+// functions for sample reading //
 
 void TreeReader::readSamples( const std::string& list, const std::string& directory, std::vector<Sample>& sampleVector ){
 
@@ -85,34 +88,42 @@ void TreeReader::readSamples2018( const std::string& list, const std::string& di
 }
 
 
-std::pair< std::map< std::string, bool >, std::map< std::string, TBranch* > > buildBranchMap( TTree* treePtr, const std::string& nameIdentifier, const std::string& antiIdentifier = "" ){   
+// functions for initializing maps of branches rather than hard-coded names //
+
+std::pair< std::map< std::string, bool >, std::map< std::string, TBranch* > > buildBranchMap( TTree* treePtr, const std::vector< std::string> nameIdentifiers, const std::string& antiIdentifier = "" ){
+    // build a map of branches from a given tree
+    // all branches whose name contains nameIdentifier and not antiIdentifier will be added
+    // note: decisionMap returns false everywhere and branchMap only nullptrs!
     std::map< std::string, bool > decisionMap;
     std::map< std::string, TBranch* > branchMap;
     TObjArray* branch_list = treePtr->GetListOfBranches();
     for( const auto& branchPtr : *branch_list ){
         std::string branchName = branchPtr->GetName();
-        if( stringTools::stringContains( branchName, nameIdentifier ) ){
-            if( antiIdentifier != "" && stringTools::stringContains( branchName, antiIdentifier ) ) continue;
-            decisionMap[ branchName ] = false;
-            branchMap[ branchName ] = nullptr;
-        }
+	bool select = true;
+	for( std::string nameIdentifier: nameIdentifiers ){
+	    if( !stringTools::stringContains( branchName, nameIdentifier ) ) select = false;
+	}
+	if( !select ) continue;
+        if( antiIdentifier != "" && stringTools::stringContains( branchName, antiIdentifier ) ) continue;
+	decisionMap[ branchName ] = false;
+        branchMap[ branchName ] = nullptr;
     }
     return { decisionMap, branchMap };
 }
 
 
 void TreeReader::initializeTriggerMap( TTree* treePtr ){
-    auto triggerMaps = buildBranchMap( treePtr, "HLT", "prescale" );
+    auto triggerMaps = buildBranchMap( treePtr, {"HLT"}, "prescale" );
     _triggerMap = triggerMaps.first;
     b__triggerMap = triggerMaps.second;
 }
 
 
 void TreeReader::initializeMetFilterMap( TTree* treePtr ){
-
-    //WARNING: Currently one MET filter contains 'updated' rather than 'Flag' in the name. If this changes, make sure to modify the code here!
-    auto filterMaps = buildBranchMap( treePtr, "Flag" );
-    auto filterMaps_part2 = buildBranchMap( treePtr , "updated" );
+    //WARNING: Currently one MET filter contains 'updated' rather than 'Flag' in the name. 
+    //If this changes, make sure to modify the code here!
+    auto filterMaps = buildBranchMap( treePtr, {"Flag"} );
+    auto filterMaps_part2 = buildBranchMap( treePtr , {"updated"} );
     filterMaps.first.insert( filterMaps_part2.first.cbegin(), filterMaps_part2.first.cend() );
     filterMaps.second.insert( filterMaps_part2.second.cbegin(), filterMaps_part2.second.cend() );
 
@@ -120,6 +131,44 @@ void TreeReader::initializeMetFilterMap( TTree* treePtr ){
     b__MetFilterMap = filterMaps.second;
 }
 
+
+void TreeReader::initializeJecSourcesMaps( TTree* treePtr ){
+    b__jetPt_allVariationsUp = buildBranchMap( treePtr, {"_jetPt_","_JECSourcesUp"}).second;
+    for( auto mapEl: b__jetPt_allVariationsUp ){ _jetPt_allVariationsUp[mapEl.first]; }
+    b__jetPt_allVariationsDown = buildBranchMap( treePtr, {"_jetPt","_JECSourcesDown"}).second;
+    for( auto mapEl: b__jetPt_allVariationsDown ){ _jetPt_allVariationsDown[mapEl.first]; }
+    b__jetSmearedPt_allVariationsUp = buildBranchMap( treePtr, 
+	{"_jetSmearedPt","JECSourcesUp"}).second;
+    for( auto mapEl: b__jetSmearedPt_allVariationsUp ){ 
+	_jetSmearedPt_allVariationsUp[mapEl.first]; 
+    }
+    b__jetSmearedPt_allVariationsDown = buildBranchMap( treePtr, 
+	{"_jetSmearedPt","JECSourcesDown"}).second;
+    for( auto mapEl: b__jetSmearedPt_allVariationsDown ){ 
+	_jetSmearedPt_allVariationsDown[mapEl.first]; 
+    }
+}
+
+
+void TreeReader::initializeJecSourcesGroupedMaps( TTree* treePtr ){
+    b__jetPt_groupedVariationsUp = buildBranchMap( treePtr, {"_jetPt_","_JECGroupedUp"}).second;
+    for( auto mapEl: b__jetPt_groupedVariationsUp ){ _jetPt_groupedVariationsUp[mapEl.first]; }
+    b__jetPt_groupedVariationsDown = buildBranchMap( treePtr, {"_jetPt","_JECGroupedDown"}).second;
+    for( auto mapEl: b__jetPt_groupedVariationsDown ){ _jetPt_groupedVariationsDown[mapEl.first]; }
+    b__jetSmearedPt_groupedVariationsUp = buildBranchMap( treePtr, 
+	{"_jetSmearedPt","JECGroupedUp"}).second;
+    for( auto mapEl: b__jetSmearedPt_groupedVariationsUp ){ 
+	_jetSmearedPt_groupedVariationsUp[mapEl.first]; 
+    }
+    b__jetSmearedPt_groupedVariationsDown = buildBranchMap( treePtr, 
+	{"_jetSmearedPt","JECGroupedDown"}).second;
+    for( auto mapEl: b__jetSmearedPt_groupedVariationsDown ){ 
+	_jetSmearedPt_groupedVariationsDown[mapEl.first]; 
+    }
+}
+
+
+// functions to find if a tree has branches with certain types of info //
 
 bool treeHasBranchWithName( TTree* treePtr, const std::string& nameToFind ){
 	TObjArray* branch_list = treePtr->GetListOfBranches();
@@ -322,15 +371,21 @@ void TreeReader::GetEntry( long unsigned entry ){
 }
 
 
-Event TreeReader::buildEvent( const Sample& samp, long unsigned entry, const bool readIndividualTriggers, const bool readIndividualMetFilters ){
+Event TreeReader::buildEvent( const Sample& samp, long unsigned entry, 
+	const bool readIndividualTriggers, const bool readIndividualMetFilters,
+	const bool readAllJECVariations, const bool readGroupedJECVariations ){
     GetEntry( samp, entry );
-    return Event( *this, readIndividualTriggers, readIndividualMetFilters );
+    return Event( *this, readIndividualTriggers, readIndividualMetFilters,
+			readAllJECVariations, readGroupedJECVariations );
 }
 
 
-Event TreeReader::buildEvent( long unsigned entry, const bool readIndividualTriggers, const bool readIndividualMetFilters ){
+Event TreeReader::buildEvent( long unsigned entry, 
+	const bool readIndividualTriggers, const bool readIndividualMetFilters,
+	const bool readAllJECVariations, const bool readGroupedJECVariations ){
     GetEntry( entry );
-    return Event( *this, readIndividualTriggers, readIndividualMetFilters );
+    return Event( *this, readIndividualTriggers, readIndividualMetFilters,
+			readAllJECVariations, readGroupedJECVariations );
 }
 
 
@@ -341,10 +396,13 @@ template< typename T > void setMapBranchAddresses( TTree* treePtr, std::map< std
 }
 
 
-//WARNING: this piece of code has not been generalized to other types than 'bool' because the correct ROOT identifier string needs to be used
-void setMapOutputBranches( TTree* treePtr, std::map< std::string, bool >& variableMap ){
+template< typename T> void setMapOutputBranches( TTree* treePtr, 
+			    std::map< std::string, T >& variableMap,
+			    std::string branchDataType ){
+    // note: branchDataType should be e.g. "/O" for boolean, "[nJets]/D" for an array of doubles.
+    // mind the slash!
     for( const auto& variable : variableMap ){
-        treePtr->Branch( variable.first.c_str(), &variableMap[ variable.first ], ( variable.first + "/O" ).c_str() );
+        treePtr->Branch( variable.first.c_str(), &variableMap[ variable.first ], ( variable.first + branchDataType ).c_str() );
     }    
 }
 
@@ -558,6 +616,18 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
         initializeMetFilterMap( _currentTreePtr );
     }
     setMapBranchAddresses( _currentTreePtr, _MetFilterMap, b__MetFilterMap );
+
+    // add split JEC uncertainties
+    initializeJecSourcesMaps( _currentTreePtr );
+    setMapBranchAddresses( _currentTreePtr, _jetPt_allVariationsUp, b__jetPt_allVariationsUp );
+    setMapBranchAddresses( _currentTreePtr, _jetPt_allVariationsDown, b__jetPt_allVariationsDown );
+    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_allVariationsUp, b__jetSmearedPt_allVariationsUp );
+    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_allVariationsDown, b__jetSmearedPt_allVariationsDown );
+    initializeJecSourcesGroupedMaps( _currentTreePtr );
+    setMapBranchAddresses( _currentTreePtr, _jetPt_groupedVariationsUp, b__jetPt_groupedVariationsUp );
+    setMapBranchAddresses( _currentTreePtr, _jetPt_groupedVariationsDown, b__jetPt_groupedVariationsDown );
+    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_groupedVariationsUp, b__jetSmearedPt_groupedVariationsUp );
+    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_groupedVariationsDown, b__jetSmearedPt_groupedVariationsDown );
 }
 
 
@@ -753,10 +823,20 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     }
 
     //write individual trigger decisions to output tree 
-    setMapOutputBranches( outputTree, _triggerMap );
+    setMapOutputBranches( outputTree, _triggerMap, "/O" );
 
     //write individual MET filters to output tree
-    setMapOutputBranches( outputTree, _MetFilterMap );
+    setMapOutputBranches( outputTree, _MetFilterMap, "/O" );
+
+    // write split JEC uncertainties to output tree
+    setMapOutputBranches( outputTree, _jetPt_allVariationsUp, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetPt_allVariationsDown, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetSmearedPt_allVariationsUp, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetSmearedPt_allVariationsDown, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetPt_groupedVariationsUp, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetPt_groupedVariationsDown, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetSmearedPt_groupedVariationsUp, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetSmearedPt_groupedVariationsDown, "[_nJets]/D" );
 }
 
 

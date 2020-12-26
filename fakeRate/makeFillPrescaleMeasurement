@@ -1,12 +1,12 @@
 CC=g++ -Wall -Wextra -O3
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= determineMagicFactor.cc ../codeLibrary.o src/fakeRateTools.cc src/Prescale.cc
+SOURCES= fillPrescaleMeasurement.cc src/*.cc ../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=determineMagicFactor
+EXECUTABLE=fillPrescaleMeasurement
 
-all: 
+all:
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
-	
+
 clean:
 	rm -rf *o $(EXECUTABLE)

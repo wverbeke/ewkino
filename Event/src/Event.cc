@@ -6,17 +6,25 @@
 #include "../../constants/particleMasses.h"
 
 
-Event::Event( const TreeReader& treeReader, const bool readIndividualTriggers , const bool readIndividualMetFilters ) : 
+Event::Event( const TreeReader& treeReader, 
+		const bool readIndividualTriggers , const bool readIndividualMetFilters,
+		const bool readAllJECVariations, const bool readGroupedJECVariations ) :
+    // make collections of physics objects
     _leptonCollectionPtr( new LeptonCollection( treeReader ) ),
-    _jetCollectionPtr( new JetCollection( treeReader ) ),
+    _jetCollectionPtr( new JetCollection( treeReader,
+			readAllJECVariations, readGroupedJECVariations ) ),
     _metPtr( new Met( treeReader ) ),
-    _triggerInfoPtr( new TriggerInfo( treeReader, readIndividualTriggers, readIndividualMetFilters ) ),
+    // make additional information structures
+    _triggerInfoPtr( new TriggerInfo( treeReader, 
+			readIndividualTriggers, readIndividualMetFilters ) ),
+    _jetInfoPtr( new JetInfo( treeReader, 
+			readAllJECVariations, readGroupedJECVariations ) ),
     _eventTagsPtr( new EventTags( treeReader ) ),
     _generatorInfoPtr( treeReader.isMC() ? new GeneratorInfo( treeReader ) : nullptr ),
     _susyMassInfoPtr( treeReader.isSusy() ? new SusyMassInfo( treeReader ) : nullptr ),
     _numberOfVertices( treeReader._nVertex ),
 
-    //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes
+    //WARNING : use treeReader::_scaledWeight instead of treeReader::_weight since the former already includes cross-section and lumiosity scaling
     _weight( treeReader._scaledWeight ),
     _samplePtr( treeReader.currentSamplePtr() )
     {}
@@ -27,6 +35,7 @@ Event::~Event(){
     delete _jetCollectionPtr;
     delete _metPtr;
     delete _triggerInfoPtr;
+    delete _jetInfoPtr;
     delete _eventTagsPtr;
     if( hasGeneratorInfo() ){
         delete _generatorInfoPtr;
@@ -42,6 +51,7 @@ Event::Event( const Event& rhs ) :
     _jetCollectionPtr( new JetCollection( *rhs._jetCollectionPtr ) ),
     _metPtr( new Met( *rhs._metPtr ) ),
     _triggerInfoPtr( new TriggerInfo( *rhs._triggerInfoPtr ) ),
+    _jetInfoPtr( new JetInfo( *rhs._jetInfoPtr ) ),
     _eventTagsPtr( new EventTags( *rhs._eventTagsPtr ) ),
     _generatorInfoPtr( rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr ),
     _susyMassInfoPtr( rhs.hasSusyMassInfo() ? new SusyMassInfo( *rhs._susyMassInfoPtr ) : nullptr ),
@@ -56,6 +66,7 @@ Event::Event( Event&& rhs ) noexcept :
     _jetCollectionPtr( rhs._jetCollectionPtr ),
     _metPtr( rhs._metPtr ),
     _triggerInfoPtr( rhs._triggerInfoPtr ),
+    _jetInfoPtr( rhs._jetInfoPtr ),
     _eventTagsPtr( rhs._eventTagsPtr ),
     _generatorInfoPtr( rhs._generatorInfoPtr ),
     _susyMassInfoPtr( rhs._susyMassInfoPtr ),
@@ -67,6 +78,7 @@ Event::Event( Event&& rhs ) noexcept :
     rhs._jetCollectionPtr = nullptr;
     rhs._metPtr = nullptr;
     rhs._triggerInfoPtr = nullptr;
+    rhs._jetInfoPtr = nullptr;
     rhs._eventTagsPtr = nullptr;
     rhs._generatorInfoPtr = nullptr;
     rhs._susyMassInfoPtr = nullptr;
@@ -80,6 +92,7 @@ Event& Event::operator=( const Event& rhs ){
         delete _jetCollectionPtr;
         delete _metPtr;
         delete _triggerInfoPtr;
+	delete _jetInfoPtr;
         delete _eventTagsPtr;
         if( hasGeneratorInfo() ){
             delete _generatorInfoPtr;
@@ -92,6 +105,7 @@ Event& Event::operator=( const Event& rhs ){
         _jetCollectionPtr = new JetCollection( *rhs._jetCollectionPtr );
         _metPtr = new Met( *rhs._metPtr );
         _triggerInfoPtr = new TriggerInfo( *rhs._triggerInfoPtr );
+	_jetInfoPtr = new JetInfo( *rhs._jetInfoPtr );
         _eventTagsPtr = new EventTags( *rhs._eventTagsPtr );
         _generatorInfoPtr = rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr;
         _susyMassInfoPtr = rhs.hasSusyMassInfo() ? new SusyMassInfo( *rhs._susyMassInfoPtr ) : nullptr;
@@ -110,6 +124,7 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         delete _jetCollectionPtr;
         delete _metPtr;
         delete _triggerInfoPtr;
+	delete _jetInfoPtr;
         delete _eventTagsPtr;
         if( hasGeneratorInfo() ){
             delete _generatorInfoPtr;
@@ -126,6 +141,8 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         rhs._metPtr = nullptr;
         _triggerInfoPtr = rhs._triggerInfoPtr;
         rhs._triggerInfoPtr = nullptr;
+	_jetInfoPtr = rhs._jetInfoPtr;
+	rhs._jetInfoPtr = nullptr;
         _eventTagsPtr = rhs._eventTagsPtr;
         rhs._eventTagsPtr = nullptr;
         _generatorInfoPtr = rhs._generatorInfoPtr;

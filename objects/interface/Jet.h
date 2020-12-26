@@ -4,6 +4,7 @@
 //include other parts of code 
 #include "PhysicsObject.h"
 #include "../../TreeReader/interface/TreeReader.h"
+#include "../../Tools/interface/stringTools.h"
 //#include "JetSelector.h"
 
 
@@ -15,7 +16,8 @@ class Jet : public PhysicsObject{
     friend class PhysicsObjectCollection< Jet >;
 
     public:
-        Jet( const TreeReader&, const unsigned);
+        Jet( const TreeReader&, const unsigned,
+		const bool readAllJECVariations, const bool readGroupedJECVariations);
 
         Jet( const Jet& );
         Jet( Jet&& ) noexcept;
@@ -48,6 +50,10 @@ class Jet : public PhysicsObject{
         Jet JetJERDown() const;
         Jet JetJERUp() const;
 
+	// create new Jet with JEC varied within uncertainties, split per source
+	Jet JetJECDown( const std::string source ) const;
+	Jet JetJECUp( const std::string source ) const;
+
         //check if any of the jet variations passes the selection
         bool isGoodAnyVariation() const;
 
@@ -67,6 +73,11 @@ class Jet : public PhysicsObject{
         double _pt_JECUp = 0;
         double _pt_JERDown = 0;
         double _pt_JERUp = 0;
+
+	std::map< std::string, double > _pt_JECSourcesUp;
+	std::map< std::string, double > _pt_JECSourcesDown;
+	std::map< std::string, double > _pt_JECSourcesGroupedUp;
+	std::map< std::string, double > _pt_JECSourcesGroupedDown;
 
         //jet selector 
         JetSelector* selector;

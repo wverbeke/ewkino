@@ -9,7 +9,8 @@
 #include "../interface/JetSelector.h"
 
 
-Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
+Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
+	    const bool readAllJECVariations, const bool readGroupedJECVariations ):
     PhysicsObject( 
         treeReader._jetSmearedPt[jetIndex], 
         treeReader._jetEta[jetIndex], 
@@ -31,6 +32,35 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex ):
     _pt_JERUp( treeReader._jetSmearedPt_JERUp[jetIndex] ),
     selector( new JetSelector( this ) )
 {
+    if( readAllJECVariations ){
+	for( const auto mapEl: treeReader._jetSmearedPt_allVariationsUp ){
+	    std::string key = mapEl.first;
+	    key = stringTools::removeOccurencesOf(key,"_jetSmearedPt_");
+	    key = stringTools::removeOccurencesOf(key,"_JECSourcesUp");
+	    _pt_JECSourcesUp.insert( {key,mapEl.second[jetIndex]} );
+	}
+	for( const auto mapEl: treeReader._jetSmearedPt_allVariationsDown ){
+	    std::string key = mapEl.first;
+	    key = stringTools::removeOccurencesOf(key,"_jetSmearedPt_");
+	    key = stringTools::removeOccurencesOf(key,"_JECSourcesDown");
+	    _pt_JECSourcesDown.insert( {key,mapEl.second[jetIndex]} );
+	}
+    }
+    if( readGroupedJECVariations ){
+	for( const auto mapEl: treeReader._jetSmearedPt_groupedVariationsUp ){
+	    std::string key = mapEl.first;
+	    key = stringTools::removeOccurencesOf(key,"_jetSmearedPt_");
+	    key = stringTools::removeOccurencesOf(key,"_JECGroupedUp");
+	    _pt_JECSourcesGroupedUp.insert( {key,mapEl.second[jetIndex]} );
+	}
+	for( const auto mapEl: treeReader._jetSmearedPt_groupedVariationsDown ){
+	    std::string key = mapEl.first;
+	    key = stringTools::removeOccurencesOf(key,"_jetSmearedPt_");
+	    key = stringTools::removeOccurencesOf(key,"_JECGroupedDown");
+	    _pt_JECSourcesGroupedDown.insert( {key,mapEl.second[jetIndex]} );
+	}
+    }
+
     //catch potential invalid values of deepCSV and deepFlavor
     if( std::isnan( _deepCSV ) ){
         _deepCSV = 0.;
@@ -64,6 +94,10 @@ Jet::Jet( const Jet& rhs ) :
     _pt_JECUp( rhs._pt_JECUp ),
     _pt_JERDown( rhs._pt_JERDown ),
     _pt_JERUp( rhs._pt_JERUp ),
+    _pt_JECSourcesUp( rhs._pt_JECSourcesUp ),
+    _pt_JECSourcesDown( rhs._pt_JECSourcesDown ),
+    _pt_JECSourcesGroupedUp( rhs._pt_JECSourcesGroupedUp ),
+    _pt_JECSourcesGroupedDown( rhs._pt_JECSourcesGroupedDown ),
     selector( new JetSelector( this ) )
     {}
 
@@ -79,8 +113,12 @@ Jet::Jet( Jet&& rhs ) noexcept :
     _pt_JECUp( rhs._pt_JECUp ),
     _pt_JERDown( rhs._pt_JERDown ),
     _pt_JERUp( rhs._pt_JERUp ),
-	selector( new JetSelector( this ) )
-{}
+    _pt_JECSourcesUp( rhs._pt_JECSourcesUp ),
+    _pt_JECSourcesDown( rhs._pt_JECSourcesDown ),
+    _pt_JECSourcesGroupedUp( rhs._pt_JECSourcesGroupedUp ),
+    _pt_JECSourcesGroupedDown( rhs._pt_JECSourcesGroupedDown ),
+    selector( new JetSelector( this ) )
+    {}
 
 
 Jet::~Jet(){
@@ -98,6 +136,10 @@ void Jet::copyNonPointerAttributes( const Jet& rhs ){
     _pt_JECUp = rhs._pt_JECUp;
     _pt_JERDown = rhs._pt_JERDown;
     _pt_JERUp = rhs._pt_JERUp;
+    _pt_JECSourcesUp = rhs._pt_JECSourcesUp;
+    _pt_JECSourcesDown = rhs._pt_JECSourcesDown;
+    _pt_JECSourcesGroupedUp = rhs._pt_JECSourcesGroupedUp;
+    _pt_JECSourcesGroupedDown = rhs._pt_JECSourcesGroupedDown;
 }
 
 
@@ -150,6 +192,34 @@ Jet Jet::JetJERDown() const{
 
 Jet Jet::JetJERUp() const{
     return variedJet( _pt_JERUp );
+}
+
+
+Jet Jet::JetJECDown( std::string source ) const{
+    // note: this function checks both all and grouped variations,
+    // need to check if there is no overlap in names between them!
+    double newpt = 0.;
+    for( auto mapEl: this->_pt_JECSourcesDown ){
+	if(source==mapEl.first){ newpt = mapEl.second; }
+    }
+    for( auto mapEl: this->_pt_JECSourcesGroupedDown ){
+        if(source==mapEl.first) newpt = mapEl.second;
+    }
+    return variedJet( newpt );
+}
+
+
+Jet Jet::JetJECUp( std::string source ) const{
+    // note: this function checks both all and grouped variations,
+    // need to check if there is no overlap in names between them!
+    double newpt = 0.;
+    for( auto mapEl: this->_pt_JECSourcesUp ){
+        if(source==mapEl.first) newpt = mapEl.second;
+    }
+    for( auto mapEl: this->_pt_JECSourcesGroupedUp ){
+        if(source==mapEl.first) newpt = mapEl.second;
+    }
+    return variedJet( newpt );
 }
 
 
