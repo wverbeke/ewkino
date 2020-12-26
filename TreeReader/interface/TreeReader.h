@@ -273,6 +273,7 @@ class TreeReader {
         std::vector< Sample >::size_type numberOfSamples() const{ return samples.size(); }
         std::vector< Sample > sampleVector() const{ return samples; }
         void removeBSMSignalSamples();
+        void keepOnlySignalsWithName( const std::string& );
 
         //access current file and tree 
         std::shared_ptr< TFile > currentFilePtr(){ return _currentFilePtr; }
