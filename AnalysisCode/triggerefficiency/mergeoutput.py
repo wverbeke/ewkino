@@ -89,7 +89,7 @@ for directory in directories:
                 figname = os.path.join(directory,filename.rstrip('.root')+'_'
                                                     +variable['name']+'.png')
                 plotefficiencies(datagraphlist,mcgraph,datahistlist=datahistlist,mchist=mchist,
-				mcsysthist=None,mode=mode,yaxtitle=yaxtitle,xaxtitle=xaxtitle,lumi=lumi,
-                                outfile=figname)
+				mcsysthist=None,mode=mode,yaxtitle=yaxtitle,xaxtitle=xaxtitle,
+				lumi=lumi,outfile=figname)
             except:
                 print('### WARNING ###: something went wrong for '+path_to_file+','+variable['name'])

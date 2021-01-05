@@ -47,7 +47,9 @@ def subselect_inputfiles(inputfiles,selection_type):
     isdata = inputfiles[0]['process_name']=='data'
     if selection_type=='3tight':
 	# remove ZG as it is fully included in DY
-        return [f for f in inputfiles if not 'ZGToLLG' in f['file']]
+        #return [f for f in inputfiles if not 'ZGToLLG' in f['file']]
+	# alternative: use all files (make sure explicit overlap removal is in event selection!)
+	return inputfiles
     if selection_type=='3prompt':
 	# only prompt simulation needed here
 	if isdata:

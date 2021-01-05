@@ -5,6 +5,8 @@ import os
 import sys
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 
 years = ['2016','2017','2018']
 flavours = ['muon','electron']
@@ -28,6 +30,7 @@ for year in years:
 	os.system(cmd)
 
 cwd = os.getcwd()
+commands = []
 for year in years:
     for flavour in flavours:
 	# check file
@@ -64,13 +67,17 @@ for year in years:
 	    var = 'mT' if use_mT else 'met'
 	    command = 'python fitTemplates.py {} {} {} {} {}'.format(var,flavour,year,
 								fitplotdir,frmapdir)
-	    script_name = 'fitFakeRateMeasurement.sh'
-            with open(script_name,'w') as script:
-                initializeJobScript(script)
-                script.write(command+'\n')
-            submitQsubJob(script_name) 
+	    commands.append(command)
+	    # old qsub way:
+	    #script_name = 'fitFakeRateMeasurement.sh'
+            #with open(script_name,'w') as script:
+            #    initializeJobScript(script)
+            #    script.write(command+'\n')
+            #submitQsubJob(script_name) 
 	    # for testing: run locally
 	    #os.system('bash '+script_name)
 	else:
 	    print('### ERROR ###: method '+method+' not recognized')
 	    continue
+# new condor way:
+ct.submitCommandsAsCondorCluster('fitFakeRateMeasurement_cjob',commands)

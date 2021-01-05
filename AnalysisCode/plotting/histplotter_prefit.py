@@ -216,6 +216,7 @@ if __name__=="__main__":
         {'name':'_dRlWrecoil','title':r'#Delta R(lep_{W},jet_{recoil})','unit':''},
         {'name':'_dRlWbtagged','title':r'#Delta R(lep_{W},jet_{b-tagged})','unit':''},
         {'name':'_M3l','title':r'M_{3l}','unit':'GeV'},
+	{'name':'_fineBinnedM3l','title':r'M_{3l}','unit':'GeV'},
         {'name':'_abs_eta_max','title':r'#||{#eta}_{max}','unit':''},
         {'name':'_eventBDT','title':r'event BDT output score','unit':''},
         {'name':'_nMuons','title':r'number of muons in event','unit':''},

@@ -26,7 +26,7 @@ for year in years:
 		inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'+year+eventtype
 		samplelist = '../samplelists/'
 		samplelist += 'samplelist_tzq_'+year+'_'+eventtype+'.txt'
-		outputfolder = '~/Files/tzqidmedium0p4_jetcut/'+year+eventtype+'/'+region+'_'+stype
+		outputfolder = '~/Files/tzqidmedium0p4_jetcut_withzg/'+year+eventtype+'/'+region+'_'+stype
 		cmd = 'python eventselector.py '+inputfolder+' '+samplelist+' '+outputfolder
 		cmd += ' '+region+' '+stype
 		print('executing '+cmd)

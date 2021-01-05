@@ -122,7 +122,7 @@ if __name__=="__main__":
     cnames.append({'region':'zzcontrolregion','var':'_MT'})
     cnames.append({'region':'zgcontrolregion','var':'_nJets'})
     cnames.append({'region':'signalsideband_noossf_1','var':'_yield'})
-    cnames.append({'region':'signalsideband_noz_1','var':'_yield'})
+    #cnames.append({'region':'signalsideband_noz_1','var':'_yield'})
     years = ['2016','2017','2018']
     # make dict to read channels
     channels = []

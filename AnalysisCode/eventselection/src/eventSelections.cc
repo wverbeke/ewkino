@@ -127,6 +127,52 @@ int eventCategory(Event& event, const std::string& variation){
     return 3;
 }
 
+// help functions for overlap removal between inclusive and dedicated photon samples //
+
+bool leptonFromMEExternalConversion( const Lepton& lepton ){
+    if( !( lepton.matchPdgId() == 22 ) ) return false;
+    if( !( lepton.isPrompt() && lepton.provenanceConversion() == 0 ) ) return false;
+    return true;
+}
+
+
+bool passPhotonOverlapRemoval( const Event& event ){
+    bool isPhotonSample = false;
+    bool isInclusiveSample = false;
+    std::string sampleName = event.sample().fileName();
+    if( stringTools::stringContains( sampleName, "DYJetsToLL" ) 
+	|| stringTools::stringContains( sampleName, "TTTo" ) 
+	|| stringTools::stringContains( sampleName, "TTJets" ) ){
+        isInclusiveSample = true;
+    } else if( stringTools::stringContains( sampleName, "TTGamma" ) 
+	|| stringTools::stringContains( sampleName, "ZGToLLG" ) 
+	|| stringTools::stringContains( sampleName, "WGToLNuG" ) ){
+        isPhotonSample = true;
+    }
+
+    if( !( isPhotonSample || isInclusiveSample ) ){
+        return true;
+    }
+
+    bool usePhotonSample = false;
+    // method 1: check for prompt leptons matched to photons without provenanceConversion
+    /*for( const auto& leptonPtr : event.leptonCollection() ){
+        if( leptonPtr->isFO() && leptonFromMEExternalConversion( *leptonPtr ) ){
+            usePhotonSample = true;
+            break;
+        }
+    }*/
+    // method 2: simply check if all leptons are prompt (note: need to select FO leptons first!)
+    if( allLeptonsArePrompt(event) ) usePhotonSample = true;
+
+    if( isInclusiveSample ){
+        return !usePhotonSample;
+    } else if( isPhotonSample ){
+        return usePhotonSample;
+    }
+    return true;
+}
+
 // help functions for trigger and pt-threshold selections //
 
 bool passAnyTrigger(Event& event){
@@ -188,6 +234,7 @@ bool pass_signalregion(Event& event, const std::string& selectiontype,
     // select FO leptons
     if(!hasnFOLeptons(event, 3, true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){ 
 	if(!hasnTightLeptons(event, 3, true)) return false; 
@@ -217,6 +264,7 @@ bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event, 3, true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -245,6 +293,7 @@ bool pass_signalsideband_noz(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -275,6 +324,7 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -310,6 +360,7 @@ bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,4,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 4, true)) return false;
@@ -353,6 +404,7 @@ bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;

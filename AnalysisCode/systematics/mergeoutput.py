@@ -135,12 +135,14 @@ if __name__=='__main__':
     regionlist.append('wzcontrolregion')
     regionlist.append('zzcontrolregion')
     regionlist.append('zgcontrolregion')
-    for r in ['signalsideband_noossf_1']: regionlist.append(r)
-    for r in ['signalsideband_noz_1']: regionlist.append(r)
+    regionlist.append('signalsideband_noossf_1')
+    regionlist.append('signalsideband_noz_1')
+    regionlist.append('signalsideband_noossf_12')
+    regionlist.append('signalsideband_noz_12')
 
     # global setting of nonprompt mode to run with
     npmodelist = []
-    #npmodelist.append('npfromsim')
+    npmodelist.append('npfromsim')
     npmodelist.append('npfromdata')
 
     # global setting of which systematics to take into account which to throw out

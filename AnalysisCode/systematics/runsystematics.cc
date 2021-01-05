@@ -270,7 +270,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 				const std::string& outputFilePath, 
 				const std::string& processName,
 				const std::string& eventselection,
-				const int signalcategory,
+				const std::vector<int> signalcategories,
 				const std::string& selection_type,
 				const std::shared_ptr<TH2D>& frmap_muon,
 				const std::shared_ptr<TH2D>& frmap_electron,
@@ -290,8 +290,9 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
     if(treeReader.is2017()) year = "2017";
     if(treeReader.is2018()) year = "2018";
 
-    // determine whether event selection is signal-like (important for categorization)
-    bool issignallike = stringTools::stringContains(eventselection,"signal");
+    // determine whether to consider event categorization
+    bool doCat = true;
+    if(signalcategories.size()==1 && signalcategories[0]==0) doCat = false;
 
     // when considering the data sample, disregard all systematics
     if(processName=="data") systematics.clear();
@@ -423,9 +424,11 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
         Event event = treeReader.buildEvent(entry,false,false,
 			considerjecall,considerjecgrouped);
         if(!passES(event, eventselection, selection_type, "nominal")) passnominal = false;
-	if(issignallike){
+	if(doCat){
 	    int eventcategory = eventCategory(event, "nominal");
-	    if(eventcategory == -1 || eventcategory != signalcategory) passnominal = false;
+	    if(std::find(signalcategories.begin(),signalcategories.end(),eventcategory) == signalcategories.end()){
+		passnominal = false;
+	    }
 	}
 	if(passnominal){
 	    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
@@ -463,9 +466,11 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		// do event selection and flattening with up variation
 		bool passup = true;
 		if(!passES(event, eventselection, selection_type, upvar)) passup = false;
-		if(issignallike){
+		if(doCat){
 		    int eventcategory = eventCategory(event, upvar);
-		    if(eventcategory == -1 || eventcategory != signalcategory) passup = false;
+		    if(std::find(signalcategories.begin(),signalcategories.end(),eventcategory)==signalcategories.end()){
+			passup = false;
+		    }
 		}
 		if(passup){
 		    accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
@@ -479,9 +484,11 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		// and with down variation
 		bool passdown = true;
 		if(!passES(event, eventselection, selection_type, downvar)) passdown = false;
-                if(issignallike){
+                if(doCat){
 		    int eventcategory = eventCategory(event, downvar);
-		    if(eventcategory == -1 || eventcategory != signalcategory) passdown = false;
+		    if(std::find(signalcategories.begin(),signalcategories.end(),eventcategory)==signalcategories.end()){
+			passdown = false;
+		    }
 		}
 		if(passdown){
 		    accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
@@ -506,9 +513,11 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    // do event selection and flattening with up variation
 		    bool passup = true;
 		    if(!passES(event, eventselection, selection_type, thisupvar)) passup = false;
-		    if(issignallike){
+		    if(doCat){
 			int eventcategory = eventCategory(event, thisupvar);
-			if(eventcategory == -1 || eventcategory != signalcategory) passup = false;
+			if(std::find(signalcategories.begin(),signalcategories.end(),eventcategory)==signalcategories.end()){
+			    passup = false;
+			}
 		    }
 		    if(passup){
 			accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
@@ -522,9 +531,11 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    // and with down variation
 		    bool passdown = true;
 		    if(!passES(event, eventselection, selection_type, thisdownvar)) passdown=false;
-		    if(issignallike){
+		    if(doCat){
 			int eventcategory = eventCategory(event, thisdownvar);
-			if(eventcategory == -1 || eventcategory != signalcategory) passdown=false;
+			if(std::find(signalcategories.begin(),signalcategories.end(),eventcategory) == signalcategories.end()){
+			    passdown=false;
+			}
 		    }
 		    if(passdown){
 			accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
@@ -922,7 +933,10 @@ int main( int argc, char* argv[] ){
     std::string& output_file_path = argvStr[3];
     std::string& process_name = argvStr[4];
     std::string& event_selection = argvStr[5];
-    int signal_category = std::stoi(argvStr[6]);
+    std::string& signal_string = argvStr[6];
+    // convert string to vector of ints
+    std::vector< int > signal_categories;
+    for(char c: signal_string){ signal_categories.push_back( (int)c-(int)'0' ); }
     std::string& selection_type = argvStr[7];
     std::string& bdtCombineMode = argvStr[8]; // ignored if _eventBDT is not in list of variables
     std::string& pathToXMLFile = argvStr[9]; // ignored if _eventBDT is not in list of variables
@@ -1015,7 +1029,7 @@ int main( int argc, char* argv[] ){
 
     // fill the histograms
     fillSystematicsHistograms(input_file_path, norm, output_file_path, process_name,
-				    event_selection, signal_category, selection_type,
+				    event_selection, signal_categories, selection_type,
 				    frmap_muon, frmap_electron, 
 				    vars, reader, systematics);
 

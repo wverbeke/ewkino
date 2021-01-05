@@ -23,13 +23,13 @@ selection_types.append('fakerate')
 
 bdt_combine_mode = 'all' # choose from 'all', 'years', 'regions' or 'none'
 
-outputfolder = 'output_tzqidmedium0p4_jetcut2p6' # only top-level directory needed here
+outputfolder = 'output_tzqidmedium0p4_jetcut2p6_withzg' # only top-level directory needed here
 
 for year in years:
     for eventtype in events:
 	for region in regions:
 	    for stype in selection_types:
-		inputfolder = '~/Files/tzqidmedium0p4_jetcut/'+year+eventtype+'/'+region+'_'+stype
+		inputfolder = '~/Files/tzqidmedium0p4_jetcut_withzg/'+year+eventtype+'/'+region+'_'+stype
 		#inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'+year+eventtype
 		samplelist = '../samplelists/'
 		samplelist += 'samplelist_tzq_'+year+'_'+eventtype+'.txt'
@@ -38,7 +38,7 @@ for year in years:
 		# for signal region and sidebands: run for categories
 		# remark: can put e.g. 123 which implies events from 1, 2 and 3 taken together!
 		if('signalregion' in region): 
-		    signal_categories = [1,2,3,123] 
+		    signal_categories = [1,2,3] 
 		elif('signalsideband' in region): 
 		    signal_categories = [1,12]
 

@@ -8,6 +8,8 @@ import glob
 # in order to import local functions: append location to sys.path
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 
 ### command-line arguments:
 # - input_directory: dir containing input root files for trigger efficiency measurement
@@ -67,22 +69,24 @@ if not os.path.exists('./triggerefficiency'):
     print('Run make -f makeTriggerEfficiency before running this script.')
     sys.exit()
 
-def submitjob(cwd,inputfile,output_directory,event_selection):
-    script_name = 'triggerefficiency.sh'
-    with open(script_name,'w') as script:
-        initializeJobScript(script)
-        script.write('cd {}\n'.format(cwd))
-	output_file_name = inputfile.split('/')[-1].rstrip('.root')+'_triggerHistograms.root'
-	output_file_path = os.path.join(output_directory,output_file_name)
-        command = './triggerefficiency {} {} {}'.format(inputfile, output_file_path, event_selection)
-        script.write(command+'\n')
-	print(command)
-    submitQsubJob(script_name)
-    # alternative: run locally
-    #os.system('bash '+script_name)
-
 # loop over input files and submit jobs
 inputfiles = sorted(inputfiles)
 #inputfiles = [inputfiles[-1]]
-for f in inputfiles:
-    submitjob(cwd,f,output_directory,event_selection)
+commands = []
+for inputfile in inputfiles:
+    output_file_name = inputfile.split('/')[-1].rstrip('.root')+'_triggerHistograms.root'
+    output_file_path = os.path.join(output_directory,output_file_name)
+    command = './triggerefficiency {} {} {}'.format(inputfile, output_file_path, event_selection)
+    # old qsub way
+    #script_name = 'triggerefficiency.sh'
+    #with open(script_name,'w') as script:
+    #    initializeJobScript(script)
+    #    script.write('cd {}\n'.format(cwd))
+    #    script.write(command+'\n')
+    #    print(command)
+    #submitQsubJob(script_name)
+    # alternative: run locally
+    #os.system('bash '+script_name)
+    commands.append(command)
+# new condor way:
+ct.submitCommandsAsCondorCluster('triggerefficiency_cjob',commands)

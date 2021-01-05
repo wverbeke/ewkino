@@ -9,7 +9,7 @@ from copy import copy
 sys.path.append('../../skimmer')
 from jobSubmission import initializeJobScript
 sys.path.append('../tools')
-from histtools import loadallhistograms,tgraphtohist
+import histtools as ht 
 
 def readptetabins(inputfile,basename):
     # read pt and eta bins from a root file containing histograms with names
@@ -18,7 +18,7 @@ def readptetabins(inputfile,basename):
 
     ptbins = []
     etabins = []
-    histlist = loadallhistograms(inputfile)
+    histlist = ht.loadallhistograms(inputfile)
     for hist in histlist:
 	if not basename in hist.GetName(): continue
 	ptetaname = hist.GetName().split(basename)[-1].strip('_')
@@ -274,7 +274,8 @@ if __name__=='__main__':
 		### make prefit plot ###
 		# load and select histograms
 		thisbin = tag+'_'+var+'_'+year+'_'+flavour+'_pT_'+ptbinstr+'_eta_'+etabinstr
-		histlist = loadallhistograms(inputfile,mustcontain=[thisbin])
+		histlist = ht.loadallhistograms(inputfile)
+		histlist = ht.selecthistograms(histlist,mustcontainall=[thisbin])[1]
 		histlist = subselect_prefitplot(histlist,thisbin)
 		print('seaching for histograms with tag '+thisbin+'...')
 		print('found:')
@@ -346,7 +347,7 @@ if __name__=='__main__':
 		# also need to re-get the data since x-axis changed in fit
 		# but resulting object is a graph, not a histogram
 		postfitdatagraph = f.Get('shapes_fit_s/'+channelname+'/data')
-		postfitdatahist = tgraphtohist( postfitdatagraph )
+		postfitdatahist = ht.tgraphtohist( postfitdatagraph )
 		postfitdatahist.SetDirectory(0)
 		f.Close()
 		# write to temporary file and use that for plotting

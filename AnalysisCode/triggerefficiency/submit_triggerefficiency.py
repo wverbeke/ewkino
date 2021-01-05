@@ -5,23 +5,24 @@
 import sys
 import os
 
+topdir = 'output_tzqmedium0p4id'
 years = []
 years.append('2016')
 years.append('2017')
 years.append('2018')
 #years.append('allyears')
 event_selections = []
-event_selections.append('3tight') # still to find more decent way than appending _ !
+event_selections.append('3tight')
 event_selections.append('3tight_ptcuts')
-event_selections.append('3fo') # still to find more decent way than appending _ !
+event_selections.append('3fo')
 event_selections.append('3fo_recoptcuts')
 event_selections.append('3fo_coneptcuts')
 event_selections.append('3fo_3tightveto_recoptcuts')
 event_selections.append('3fo_3tightveto_coneptcuts')
 for year in years:
     for event_selection in event_selections:
-	inputfolder = '~/Files/trileptonskim/'+year+'trigger'
-	outputfolder = 'output/'+event_selection+'_'+year
+	inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'+year+'trigger'
+	outputfolder = os.path.join(topdir,event_selection+'_'+year)
 	if os.path.exists(outputfolder):
 	    os.system('rm -r '+outputfolder)
 	command = 'python triggerefficiency.py '+inputfolder+' '+outputfolder+' '+event_selection
