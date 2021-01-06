@@ -10,7 +10,7 @@ import os
 import plottools as tools
 from array import array
 
-def loadhistograms(histfile,mustcontain=[],mustnotcontain=[]):
+'''def loadhistograms(histfile,mustcontain=[],mustnotcontain=[]):
     # load histograms from a root file.
     # 'histfile' is a string containing the path to the input root file.
     # the output is a list of histograms
@@ -38,7 +38,8 @@ def loadhistograms(histfile,mustcontain=[],mustnotcontain=[]):
         histlist.append(hist)
 	# make sure the name corresponds to the one displayed in rootbrowser
 	hist.SetName(key.GetName())
-    return histlist
+    return histlist '''
+# deprecated; should replace this everywhere by equivalent method in tools/histtools.py!
 
 def swapaxes( hist ):
     # switch x and y axes

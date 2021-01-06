@@ -366,5 +366,15 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     // make prefire Reweighter
     combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
 
+    // TEST: make pileup jet id Reweighter (compilation only, will give errors at runtime)
+    std::string pileupJetIdEffFile = stringTools::formatDirectoryName( weightDirectory )
+        + "weightFiles/pileupJetIdEff/effcyPUID_81Xtraining.root";
+    std::string pileupJetIdSFFile = stringTools::formatDirectoryName( weightDirectory )
+        + "weightFiles/pileupJetIdSF/scalefactorsPUID_81Xtraining.root";
+    std::string puJetIdWP = "loose";
+    std::string yearCopy = year; // ad-hoc, needed to avoid const / non-const compilation errors
+    //combinedReweighter.addReweighter("PUJetId", std::make_shared<ReweighterPileupJetId>(
+    //	pileupJetIdEffFile, pileupJetIdSFFile, puJetIdWP, yearCopy ) );
+
     return combinedReweighter;
 }

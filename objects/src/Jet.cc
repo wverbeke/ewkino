@@ -23,8 +23,10 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
     _deepFlavor( treeReader._jetDeepFlavor_b[jetIndex] + treeReader._jetDeepFlavor_bb[jetIndex] + treeReader._jetDeepFlavor_lepb[jetIndex] ),
     _isTight( treeReader._jetIsTight[jetIndex] ),
     _isTightLeptonVeto( treeReader._jetIsTightLepVeto[jetIndex] ),
-
+    //_pileupIdFullId( treeReader._jetPileupIdFullId[jetIndex] ), // not yet in current samples
+    _pileupIdFullId( 0 ), // default value for now, equivalent to failing all working points
     //WARNING : is hadron flavor defined for jets in data?
+    // (attribute is taken directly from CMSSW pat::Jet::hadronFlavour, appears to be 0 for data)
     _hadronFlavor( treeReader._jetHadronFlavor[jetIndex] ),
     _pt_JECDown( treeReader._jetSmearedPt_JECDown[jetIndex] ),
     _pt_JECUp( treeReader._jetSmearedPt_JECUp[jetIndex] ),
@@ -80,6 +82,11 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
     if( ! ( ( _hadronFlavor == 0 ) || ( _hadronFlavor == 4 ) || ( _hadronFlavor == 5 ) ) ){
         throw std::invalid_argument( "jet hadronFlavor is '" + std::to_string( _hadronFlavor ) + "' while it should be 0, 4 or 5." );
     }
+    // check that _pileupIdFullId has a known value
+    if( ! (_pileupIdFullId==0 || _pileupIdFullId==4 || _pileupIdFullId==6 || _pileupIdFullId==7) ){
+	throw std::invalid_argument( "jet pileup id is '" + std::to_string(_pileupIdFullId)
+		+ "' while it should be 0, 4, 6 or 7 (?)" );
+    }
 }
 
 
@@ -89,6 +96,7 @@ Jet::Jet( const Jet& rhs ) :
     _deepFlavor( rhs._deepFlavor ),
     _isTight( rhs._isTight ),
     _isTightLeptonVeto( rhs._isTightLeptonVeto ),
+    _pileupIdFullId( rhs._pileupIdFullId ),
     _hadronFlavor( rhs._hadronFlavor ),
     _pt_JECDown( rhs._pt_JECDown ),
     _pt_JECUp( rhs._pt_JECUp ),
@@ -108,6 +116,7 @@ Jet::Jet( Jet&& rhs ) noexcept :
     _deepFlavor( rhs._deepFlavor ),
     _isTight( rhs._isTight ),
     _isTightLeptonVeto( rhs._isTightLeptonVeto ),
+    _pileupIdFullId( rhs._pileupIdFullId ),
     _hadronFlavor( rhs._hadronFlavor ),
     _pt_JECDown( rhs._pt_JECDown ),
     _pt_JECUp( rhs._pt_JECUp ),
@@ -131,6 +140,7 @@ void Jet::copyNonPointerAttributes( const Jet& rhs ){
     _deepFlavor = rhs._deepFlavor;
     _isTight = rhs._isTight;
     _isTightLeptonVeto = rhs._isTightLeptonVeto;
+    _pileupIdFullId = rhs._pileupIdFullId;
     _hadronFlavor = rhs._hadronFlavor;
     _pt_JECDown = rhs._pt_JECDown;
     _pt_JECUp = rhs._pt_JECUp;

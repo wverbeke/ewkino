@@ -203,6 +203,9 @@ class TreeReader {
         Double_t        _jetChargedEmFraction[nJets_max];
         Double_t        _jetHFHadronFraction[nJets_max];
         Double_t        _jetHFEmFraction[nJets_max];
+	// (new: pileup jet id)
+	Double_t	_jetPileupIdFullDisc[nJets_max];
+	UInt_t		_jetPileupIdFullId[nJets_max];
 	std::map< std::string, Double_t[nJets_max] > _jetPt_groupedVariationsDown;
         std::map< std::string, Double_t[nJets_max] > _jetPt_groupedVariationsUp;
         std::map< std::string, Double_t[nJets_max] > _jetPt_allVariationsDown;
@@ -669,6 +672,8 @@ class TreeReader {
         TBranch        *b__jetChargedEmFraction;
         TBranch        *b__jetHFHadronFraction;
         TBranch        *b__jetHFEmFraction;
+	TBranch		*b__jetPileupIdFullDisc;
+	TBranch		*b__jetPileupIdFullId;
 	std::map< std::string, TBranch* > b__jetPt_groupedVariationsDown;
         std::map< std::string, TBranch* > b__jetPt_groupedVariationsUp;
         std::map< std::string, TBranch* > b__jetPt_allVariationsDown;

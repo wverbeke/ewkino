@@ -550,6 +550,8 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_jetChargedEmFraction", _jetChargedEmFraction, &b__jetChargedEmFraction);
     _currentTreePtr->SetBranchAddress("_jetHFHadronFraction", _jetHFHadronFraction, &b__jetHFHadronFraction);
     _currentTreePtr->SetBranchAddress("_jetHFEmFraction", _jetHFEmFraction, &b__jetHFEmFraction);
+    _currentTreePtr->SetBranchAddress("_jetPileupIdFullDisc", _jetPileupIdFullDisc, &b__jetPileupIdFullDisc);
+    _currentTreePtr->SetBranchAddress("_jetPileupIdFullId", _jetPileupIdFullId, &b__jetPileupIdFullId);
     _currentTreePtr->SetBranchAddress("_met", &_met, &b__met);
     _currentTreePtr->SetBranchAddress("_metJECDown", &_metJECDown, &b__metJECDown);
     _currentTreePtr->SetBranchAddress("_metJECUp", &_metJECUp, &b__metJECUp);
@@ -781,7 +783,8 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_jetChargedEmFraction",      &_jetChargedEmFraction,     "_jetChargedEmFraction[_nJets]/D");
     outputTree->Branch("_jetHFHadronFraction",       &_jetHFHadronFraction,      "_jetHFHadronFraction[_nJets]/D");
     outputTree->Branch("_jetHFEmFraction",           &_jetHFEmFraction,          "_jetHFEmFraction[_nJets]/D");
-
+    outputTree->Branch("_jetPileupIdFullDisc",	    &_jetPileupIdFullDisc,	"_jetPileupIdFullDisc[_nJets]/D");
+    outputTree->Branch("_jetPileupIdFullId",	    &_jetPileupIdFullId,	"_jetPileupIdFullId[_nJets]/i");
 
     if( containsGeneratorInfo() ){
         outputTree->Branch("_nLheWeights",               &_nLheWeights,               "_nLheWeights/i");

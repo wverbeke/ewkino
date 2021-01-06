@@ -60,6 +60,7 @@
 #include "weights/src/ReweighterPileup.cc"
 #include "weights/src/ReweighterPrefire.cc"
 #include "weights/src/ReweighterEmpty.cc"
+#include "weights/src/ReweighterPileupJetId.cc"
 #include "weights/src/CombinedReweighter.cc"
 #include "weights/src/ConcreteReweighterFactory.cc"
 

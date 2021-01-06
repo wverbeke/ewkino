@@ -36,7 +36,8 @@ if __name__=='__main__':
 			histtitle = histtitle+' (syst. uncertainty)'
 		    else: continue
 		    hist = p2d.swapaxes(hist)
-		    p2d.plot2dhistogram(hist,os.path.join(outputdir,hist.GetName()),histtitle=histtitle,
+		    p2d.plot2dhistogram(hist,os.path.join(outputdir,hist.GetName()),
+				histtitle=histtitle,
 				logx=True,drawoptions='col z cjust text')
 
 	    elif flavour=='muon':
@@ -54,6 +55,7 @@ if __name__=='__main__':
 			hist = p2d.geterrorhist( hist )
 		    else: continue
 		    hist = p2d.swapaxes(hist)
-		    p2d.plot2dhistogram(hist,os.path.join(outputdir,hist.GetName()),histtitle=histtitle,
+		    p2d.plot2dhistogram(hist,os.path.join(outputdir,hist.GetName()),
+				histtitle=histtitle,
 				logx=True,drawoptions='col z cjust text')
 
