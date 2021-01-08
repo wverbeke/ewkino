@@ -130,15 +130,18 @@ if __name__=='__main__':
     yearlist.append('2017')
     yearlist.append('2018')
     regionlist = []
-    regionlist.append('signalregion_1')
-    for r in ['signalregion_2','signalregion_3']: regionlist.append(r)
-    regionlist.append('wzcontrolregion')
-    regionlist.append('zzcontrolregion')
-    regionlist.append('zgcontrolregion')
+    #regionlist.append('signalregion_1')
+    #for r in ['signalregion_2','signalregion_3']: regionlist.append(r)
+    #regionlist.append('wzcontrolregion')
+    #regionlist.append('zzcontrolregion')
+    #regionlist.append('zgcontrolregion')
+    #regionlist.append('ttzcontrolregion')
     regionlist.append('signalsideband_noossf_1')
     regionlist.append('signalsideband_noz_1')
-    regionlist.append('signalsideband_noossf_12')
-    regionlist.append('signalsideband_noz_12')
+    #regionlist.append('signalsideband_noossf_12')
+    #regionlist.append('signalsideband_noz_12')
+    regionlist.append('signalsideband_noossf')
+    regionlist.append('signalsideband_noz')
 
     # global setting of nonprompt mode to run with
     npmodelist = []

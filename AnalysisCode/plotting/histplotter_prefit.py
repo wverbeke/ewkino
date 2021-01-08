@@ -213,6 +213,7 @@ if __name__=="__main__":
         {'name':'_dPhill_max','title':r'#Delta #Phi (lep,lep)_{max}','unit':''},
         {'name':'_HT','title':r'H_{T}','unit':'GeV'},
         {'name':'_nJets','title':r'number of jets','unit':''},
+	{'name':'_nBJets','title':r'nubmer of b-jets','unit':''},
         {'name':'_dRlWrecoil','title':r'#Delta R(lep_{W},jet_{recoil})','unit':''},
         {'name':'_dRlWbtagged','title':r'#Delta R(lep_{W},jet_{b-tagged})','unit':''},
         {'name':'_M3l','title':r'M_{3l}','unit':'GeV'},

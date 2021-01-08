@@ -6,12 +6,13 @@ import os
 import sys
 
 regions = []
-regions.append('signalregion')
-regions.append('wzcontrolregion')
-regions.append('zzcontrolregion')
-regions.append('zgcontrolregion')
-regions.append('signalsideband_noossf')
-regions.append('signalsideband_noz')
+#regions.append('signalregion')
+#regions.append('wzcontrolregion')
+#regions.append('zzcontrolregion')
+#regions.append('zgcontrolregion')
+regions.append('ttzcontrolregion')
+#regions.append('signalsideband_noossf')
+#regions.append('signalsideband_noz')
 
 years = ['2016','2017','2018']
 events = ['MC','data']
@@ -23,14 +24,14 @@ selection_types.append('fakerate')
 
 bdt_combine_mode = 'all' # choose from 'all', 'years', 'regions' or 'none'
 
-outputfolder = 'output_tzqidmedium0p4_jetcut2p6_withzg' # only top-level directory needed here
+outputfolder = 'output_tzqidmedium0p4_jetcut2p6_withzg_newPCR3' # only top-level directory needed here
 
 for year in years:
     for eventtype in events:
 	for region in regions:
 	    for stype in selection_types:
-		inputfolder = '~/Files/tzqidmedium0p4_jetcut_withzg/'+year+eventtype+'/'+region+'_'+stype
-		#inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'+year+eventtype
+		#inputfolder = '~/Files/tzqidmedium0p4_jetcut_withzg/'+year+eventtype+'/'+region+'_'+stype
+		inputfolder = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'+year+eventtype
 		samplelist = '../samplelists/'
 		samplelist += 'samplelist_tzq_'+year+'_'+eventtype+'.txt'
 		# for control regions: run once
@@ -40,7 +41,7 @@ for year in years:
 		if('signalregion' in region): 
 		    signal_categories = [1,2,3] 
 		elif('signalsideband' in region): 
-		    signal_categories = [1,12]
+		    signal_categories = [0,1]
 
 		# make and run command(s)
 		for i in signal_categories:

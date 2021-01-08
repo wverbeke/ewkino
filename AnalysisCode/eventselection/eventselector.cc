@@ -44,10 +44,7 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
     std::string outputdir = "blackJackAndHookers";
     std::string outputtree = "blackJackAndHookersTree";
     std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory );
-    //outputFilePath += stringTools::removeOccurencesOf( pathToFile, "/" );
     outputFilePath += outputFileName;
-    //outputFilePath = stringTools::removeOccurencesOf(outputFilePath, ".root");
-    //outputFilePath += selection_type+".root";
     TFile* outputFilePtr = TFile::Open( outputFilePath.c_str() , "RECREATE" );
     outputFilePtr->mkdir( outputdir.c_str() );
     outputFilePtr->cd( outputdir.c_str() );
@@ -59,17 +56,20 @@ void eventloopES(const std::string& pathToFile, const std::string& outputDirecto
     }
     
     // make output tree
-    std::shared_ptr<TTree> outputTreePtr(std::make_shared<TTree>(outputtree.c_str(),outputtree.c_str()));
+    std::shared_ptr<TTree> outputTreePtr( std::make_shared<TTree>(
+			    outputtree.c_str(),outputtree.c_str()));
     treeReader.setOutputTree( outputTreePtr.get() );
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 1153;
+    //long unsigned numberOfEntries = 1e5; // for testing
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
-	    if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
-	    Event event = treeReader.buildEvent(entry);
-	    if(!passES(event, eventselection, selection_type, variation)) continue;
-	    outputTreePtr->Fill();
+	if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
+	Event event = treeReader.buildEvent(entry);
+	// warning: without additional arguments, buildEvent does not read individual 
+	// triggers, met filters or split jec variations! 
+	if(!passES(event, eventselection, selection_type, variation)) continue;
+	outputTreePtr->Fill();
     }
     outputTreePtr->Write("", BIT(2) );
     outputFilePtr->Close();

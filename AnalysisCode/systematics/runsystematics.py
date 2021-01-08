@@ -45,7 +45,7 @@ selection_type = sys.argv[5]
 signal_category = int(sys.argv[6]) # put 0 for control regions
 bdt_combine_mode = sys.argv[7]
 
-systematics = (['JEC','JER','Uncl', # acceptance
+'''systematics = (['JEC','JER','Uncl', # acceptance
 		#'JECAll','JECGrouped', # split JEC uncertainties
 		#'muonID','electronID', # (for ttH ID)
                 'muonIDSyst','muonIDStat', # weight (for TOP ID)
@@ -55,13 +55,14 @@ systematics = (['JEC','JER','Uncl', # acceptance
 		'electronReco', # electronreco
                 'pdfShapeVar','pdfNorm', # lhe
 		'qcdScalesShapeVar','qcdScalesNorm' # lhe
-		])
-#systematics = ['JEC','pileup','fScale'] # smaller test set of systematics
+		]) '''
+systematics = ['JEC','pileup','fScale'] # smaller test set of systematics
 cwd = os.getcwd()
 
 # check  arguments
 if event_selection not in (['signalregion','signalsideband_noossf','signalsideband_noz',
-                            'wzcontrolregion','zzcontrolregion','zgcontrolregion']):
+                            'wzcontrolregion','zzcontrolregion','zgcontrolregion',
+			    'ttzcontrolregion']):
     print('### ERROR ###: event_selection not in list of recognized event selections')
     sys.exit()
 if os.path.exists(output_directory):
@@ -132,6 +133,9 @@ def parseprocessname(orig):
 # make output directory
 os.makedirs(output_directory)
 
+# for testing: only specific files
+#inputfiles = [f for f in inputfiles if 'tZq' in f['file']]
+
 # group files for more efficient job submission
 inputfiles = jobsplitting.splitbynentries(inputfiles)
 # (now inputfiles is a list of lists of sample info dicts!)
@@ -158,16 +162,17 @@ for jobgroup in inputfiles:
                     inputfile, norm, output_file_path, process_name,
                     event_selection, signal_category, selection_type,
                     bdt_combine_mode, path_to_xml_file)
+	print(command)
         for systematic in systematics:
             command += ' {}'.format(systematic)
 	commands.append(command)
     commandgroups.append(commands)
     # old qsub way:
-    #script_name = 'runsystematics.sh'
-    #with open(script_name,'w') as script:
-    #    initializeJobScript(script)
-    #    script.write('cd {}\n'.format(cwd))
-    #    for c in commands: script.write(c+'\n')
+    '''script_name = 'runsystematics.sh'
+    with open(script_name,'w') as script:
+        initializeJobScript(script)
+        script.write('cd {}\n'.format(cwd))
+        for c in commands: script.write(c+'\n')'''
     #submitQsubJob(script_name)
     # alternative: run locally
     #os.system('bash '+script_name)

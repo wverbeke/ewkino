@@ -110,7 +110,9 @@ bool JetSelector::inBTagAcceptance() const{
     // the following criterion is in principle already satisfied if isGood()
     if( jetPtr->pt() < 25 ) return false;
     // note that the b-tagging acceptance is much smaller than general jet selection
-    if( fabs( jetPtr->eta() ) >= 2.4 ) return false;
+    // eta range taken from subpages of https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
+    double etathreshold = (jetPtr->is2016())?2.4:2.5;
+    if( fabs( jetPtr->eta() ) >= etathreshold ) return false;
     return true;
 }
 

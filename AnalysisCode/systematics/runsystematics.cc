@@ -407,7 +407,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 100; 
+    //long unsigned numberOfEntries = 1e5; 
     numberOfEntries = std::min(numberOfEntries,treeReader.numberOfEntries());
     std::cout<<"starting event loop for "<<numberOfEntries<<" events."<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
@@ -958,6 +958,7 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_dPhill_max",0.,3.15,20));
     vars.push_back(std::make_tuple("_HT",0.,800.,20));
     vars.push_back(std::make_tuple("_nJets",-0.5,10.5,11));
+    vars.push_back(std::make_tuple("_nBJets",-0.5,5.5,6));
     vars.push_back(std::make_tuple("_dRlWrecoil",0.,10.,20));
     vars.push_back(std::make_tuple("_dRlWbtagged",0.,7.,20));
     vars.push_back(std::make_tuple("_M3l",0.,600.,20));
