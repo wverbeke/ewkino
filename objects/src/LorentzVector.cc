@@ -69,6 +69,11 @@ double LorentzVector::mass() const{
 }
 
 
+double LorentzVector::computeTransverseMomentum() const{
+    return std::sqrt( xMomentum*xMomentum + yMomentum*yMomentum );
+}
+
+
 double LorentzVector::computePseudoRapidity() const{
 	double momentumMagnitude = std::sqrt( transverseMomentum*transverseMomentum + zMomentum*zMomentum );
 	double longitudinalMomentumFraction = zMomentum/ momentumMagnitude;
@@ -120,7 +125,7 @@ LorentzVector& LorentzVector::operator+=( const LorentzVector& rhs ){
     energyValue += rhs.energyValue;
 
     //compute the transverse momentum and total momentum
-    transverseMomentum = std::sqrt( xMomentum*xMomentum + yMomentum*yMomentum );
+    transverseMomentum = computeTransverseMomentum();
 
 	//Warning: xMomentum, yMomentum, zMomentum and transverseMomentum must be computed before computing pseudoRapidity and azimuthalAngle
     //compute pseudorapidity
@@ -195,3 +200,17 @@ double deltaR( const LorentzVector& lhs, const LorentzVector& rhs ){
 double mt( const LorentzVector& lhs, const LorentzVector& rhs ){
     return sqrt(2*lhs.pt()*rhs.pt()*( 1 - std::cos( lhs.phi()-rhs.phi() ) ) );
 }
+
+
+LorentzVector lorentzVectorPxPyPzEnergy( const double px, const double py, const double pz, const double energy ){
+    LorentzVector ret;
+    ret.xMomentum = px;
+    ret.yMomentum = py;
+    ret.zMomentum = pz;
+    ret.energyValue = energy;
+    ret.transverseMomentum = ret.computeTransverseMomentum();
+    ret.pseudoRapidity = ret.computePseudoRapidity();
+    ret.azimuthalAngle = ret.computeAzimuthalAngle();
+    return ret;
+}
+

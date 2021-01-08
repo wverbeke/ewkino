@@ -21,30 +21,30 @@ std::string cleanJECVariationName( std::string branchName ){
 JetInfo::JetInfo( const TreeReader& treeReader, 
 		  const bool readAllJECVariations,
 		  const bool readGroupedJECVariations ){
-    _allJECVariations = std::vector< std::string >();
-    _groupedJECVariations = std::vector< std::string >();
+    _JECSources = std::vector< std::string >();
+    _JECGrouped = std::vector< std::string >();
     if( readAllJECVariations ){
-	for( auto mapEl: treeReader._jetSmearedPt_allVariationsUp ){
+	for( auto mapEl: treeReader._jetSmearedPt_JECSourcesUp ){
 	    // note: in principle only checking one branch should be enough
 	    // as up/down and pt/smearedPt are supposed to contain the same variations
-	    _allJECVariations.push_back( cleanJECVariationName(mapEl.first) );
+	    _JECSources.push_back( cleanJECVariationName(mapEl.first) );
 	}
     }
     if( readGroupedJECVariations ){
-	for( auto mapEl: treeReader._jetSmearedPt_groupedVariationsUp ){
+	for( auto mapEl: treeReader._jetSmearedPt_JECGroupedUp ){
 	    // note: in principle only checking one branch should be enough
             // as up/down and pt/smearedPt are supposed to contain the same variations
-            _groupedJECVariations.push_back( cleanJECVariationName(mapEl.first) );
+            _JECGrouped.push_back( cleanJECVariationName(mapEl.first) );
 	}
     }
 }
 
 bool JetInfo::hasJECVariation( const std::string& jecName ) const{
-    bool isInAllVariations = ( std::find(_allJECVariations.begin(),_allJECVariations.end(),
-				jecName) != _allJECVariations.end() );
-    bool isInGroupedVariations = ( std::find(_groupedJECVariations.begin(),
-				    _groupedJECVariations.end(),
-				    jecName) != _groupedJECVariations.end() );
+    bool isInAllVariations = ( std::find(_JECSources.begin(),_JECSources.end(),
+				jecName) != _JECSources.end() );
+    bool isInGroupedVariations = ( std::find(_JECGrouped.begin(),
+				    _JECGrouped.end(),
+				    jecName) != _JECGrouped.end() );
     return (isInAllVariations || isInGroupedVariations);
 }
 
@@ -57,10 +57,10 @@ void printAvailableInfo( const std::vector<std::string>& info, const std::string
 
 void JetInfo::printAllJECVariations() const{
     std::string message = "Available JEC variations (complete set):";
-    printAvailableInfo( _allJECVariations, message );
+    printAvailableInfo( _JECSources, message );
 }
 
 void JetInfo::printGroupedJECVariations() const{
     std::string message = "Available JEC variations (reduced set):";
-    printAvailableInfo( _groupedJECVariations, message );
+    printAvailableInfo( _JECGrouped, message );
 }

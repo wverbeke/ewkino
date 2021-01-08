@@ -17,6 +17,8 @@ class LorentzVector{
     //unlike the mass, mt can not be defined for a single lorentzVector. The reason is that it is defined as the mass of the transverse projection of two objects in the ultrarelativistic limit. The summed object still has a mass, but the mass of the constituents must be removed.
     friend double mt( const LorentzVector&, const LorentzVector& );
 
+    friend LorentzVector lorentzVectorPxPyPzEnergy( const double, const double, const double, const double );
+
     public:
         LorentzVector() = default;
         LorentzVector( const double pt, const double eta, const double phi, const double energy );
@@ -54,6 +56,9 @@ class LorentzVector{
         //make sure phi is in the interval ]-pi, pi]
         void normalizePhi();
 
+        //compute pt given px and py
+        double computeTransverseMomentum() const;
+
         //compute pseudorapidity given px, py and pz
         double computePseudoRapidity() const;
 
@@ -69,5 +74,7 @@ double deltaEta( const LorentzVector&, const LorentzVector& );
 double deltaPhi( const LorentzVector&, const LorentzVector& );
 double deltaR( const LorentzVector&, const LorentzVector& );
 double mt( const LorentzVector&, const LorentzVector& );
+
+LorentzVector lorentzVectorPxPyPzEnergy( const double, const double, const double, const double );
 
 #endif

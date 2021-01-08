@@ -28,7 +28,7 @@ class TreeReader {
         //Declare leaf types
 	// constants
         static const unsigned nL_max = 20;
-        static const unsigned nJets_max = 20;
+        static const unsigned nJets_max = 100;
         static const unsigned gen_nL_max = 20;
 	// global event variables and weights
         ULong_t         _runNb;
@@ -206,14 +206,14 @@ class TreeReader {
 	// (new: pileup jet id)
 	Double_t	_jetPileupIdFullDisc[nJets_max];
 	UInt_t		_jetPileupIdFullId[nJets_max];
-	std::map< std::string, Double_t[nJets_max] > _jetPt_groupedVariationsDown;
-        std::map< std::string, Double_t[nJets_max] > _jetPt_groupedVariationsUp;
-        std::map< std::string, Double_t[nJets_max] > _jetPt_allVariationsDown;
-        std::map< std::string, Double_t[nJets_max] > _jetPt_allVariationsUp;
-        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_groupedVariationsDown;
-        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_groupedVariationsUp;
-        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_allVariationsDown;
-        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_allVariationsUp;
+	std::map< std::string, Double_t[nJets_max] > _jetPt_JECGroupedDown;
+        std::map< std::string, Double_t[nJets_max] > _jetPt_JECGroupedUp;
+        std::map< std::string, Double_t[nJets_max] > _jetPt_JECSourcesDown;
+        std::map< std::string, Double_t[nJets_max] > _jetPt_JECSourcesUp;
+        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_JECGroupedDown;
+        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_JECGroupedUp;
+        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_JECSourcesDown;
+        std::map< std::string, Double_t[nJets_max] > _jetSmearedPt_JECSourcesUp;
         // variables related to missing transverse energy
 	Double_t        _met;
         Double_t        _metJECDown;
@@ -226,6 +226,14 @@ class TreeReader {
         Double_t        _metPhiUnclDown;
         Double_t        _metPhiUnclUp;       
         Double_t        _metSignificance;
+	std::map< std::string, Double_t > _corrMETx_JECGroupedDown;
+        std::map< std::string, Double_t > _corrMETx_JECGroupedUp;
+        std::map< std::string, Double_t > _corrMETx_JECSourcesDown;
+        std::map< std::string, Double_t > _corrMETx_JECSourcesUp;
+	std::map< std::string, Double_t > _corrMETy_JECGroupedDown;
+        std::map< std::string, Double_t > _corrMETy_JECGroupedUp;
+        std::map< std::string, Double_t > _corrMETy_JECSourcesDown;
+        std::map< std::string, Double_t > _corrMETy_JECSourcesUp;
         Double_t        _mChi1;
         Double_t        _mChi2;
 
@@ -301,6 +309,7 @@ class TreeReader {
         std::vector< Sample >::size_type numberOfSamples() const{ return samples.size(); }
         std::vector< Sample > sampleVector() const{ return samples; }
         void removeBSMSignalSamples();
+        void keepOnlySignalsWithName( const std::string& );
 
         //access current file and tree 
         std::shared_ptr< TFile > currentFilePtr(){ return _currentFilePtr; }
@@ -674,14 +683,14 @@ class TreeReader {
         TBranch        *b__jetHFEmFraction;
 	TBranch		*b__jetPileupIdFullDisc;
 	TBranch		*b__jetPileupIdFullId;
-	std::map< std::string, TBranch* > b__jetPt_groupedVariationsDown;
-        std::map< std::string, TBranch* > b__jetPt_groupedVariationsUp;
-        std::map< std::string, TBranch* > b__jetPt_allVariationsDown;
-        std::map< std::string, TBranch* > b__jetPt_allVariationsUp;
-        std::map< std::string, TBranch* > b__jetSmearedPt_groupedVariationsDown;
-        std::map< std::string, TBranch* > b__jetSmearedPt_groupedVariationsUp;
-        std::map< std::string, TBranch* > b__jetSmearedPt_allVariationsDown;
-        std::map< std::string, TBranch* > b__jetSmearedPt_allVariationsUp;
+	std::map< std::string, TBranch* > b__jetPt_JECGroupedDown;
+        std::map< std::string, TBranch* > b__jetPt_JECGroupedUp;
+        std::map< std::string, TBranch* > b__jetPt_JECSourcesDown;
+        std::map< std::string, TBranch* > b__jetPt_JECSourcesUp;
+        std::map< std::string, TBranch* > b__jetSmearedPt_JECGroupedDown;
+        std::map< std::string, TBranch* > b__jetSmearedPt_JECGroupedUp;
+        std::map< std::string, TBranch* > b__jetSmearedPt_JECSourcesDown;
+        std::map< std::string, TBranch* > b__jetSmearedPt_JECSourcesUp;
         TBranch        *b__met;   
         TBranch        *b__metJECDown;   
         TBranch        *b__metJECUp;   
@@ -693,6 +702,14 @@ class TreeReader {
         TBranch        *b__metPhiUnclDown;   
         TBranch        *b__metPhiUnclUp;   
         TBranch        *b__metSignificance;
+	std::map< std::string, TBranch* > b__corrMETx_JECGroupedDown;
+        std::map< std::string, TBranch* > b__corrMETx_JECGroupedUp;
+        std::map< std::string, TBranch* > b__corrMETx_JECSourcesDown;
+        std::map< std::string, TBranch* > b__corrMETx_JECSourcesUp;
+	std::map< std::string, TBranch* > b__corrMETy_JECGroupedDown;
+        std::map< std::string, TBranch* > b__corrMETy_JECGroupedUp;
+        std::map< std::string, TBranch* > b__corrMETy_JECSourcesDown;
+        std::map< std::string, TBranch* > b__corrMETy_JECSourcesUp;
         TBranch        *b__mChi1;
         TBranch        *b__mChi2;
 

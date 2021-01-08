@@ -86,8 +86,8 @@ class Jet : public PhysicsObject{
 
 	std::map< std::string, double > _pt_JECSourcesUp;
 	std::map< std::string, double > _pt_JECSourcesDown;
-	std::map< std::string, double > _pt_JECSourcesGroupedUp;
-	std::map< std::string, double > _pt_JECSourcesGroupedDown;
+	std::map< std::string, double > _pt_JECGroupedUp;
+	std::map< std::string, double > _pt_JECGroupedDown;
 
         //jet selector 
         JetSelector* selector;
