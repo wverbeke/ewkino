@@ -133,38 +133,62 @@ void TreeReader::initializeMetFilterMap( TTree* treePtr ){
 
 
 void TreeReader::initializeJecSourcesMaps( TTree* treePtr ){
-    b__jetPt_allVariationsUp = buildBranchMap( treePtr, {"_jetPt_","_JECSourcesUp"}).second;
-    for( auto mapEl: b__jetPt_allVariationsUp ){ _jetPt_allVariationsUp[mapEl.first]; }
-    b__jetPt_allVariationsDown = buildBranchMap( treePtr, {"_jetPt","_JECSourcesDown"}).second;
-    for( auto mapEl: b__jetPt_allVariationsDown ){ _jetPt_allVariationsDown[mapEl.first]; }
-    b__jetSmearedPt_allVariationsUp = buildBranchMap( treePtr, 
+    // initialize jetPt branches
+    b__jetPt_JECSourcesUp = buildBranchMap( treePtr, {"_jetPt_","_JECSourcesUp"}).second;
+    for( auto mapEl: b__jetPt_JECSourcesUp ){ _jetPt_JECSourcesUp[mapEl.first]; }
+    b__jetPt_JECSourcesDown = buildBranchMap( treePtr, {"_jetPt","_JECSourcesDown"}).second;
+    for( auto mapEl: b__jetPt_JECSourcesDown ){ _jetPt_JECSourcesDown[mapEl.first]; }
+    // initialize jetSmearedPt branches
+    b__jetSmearedPt_JECSourcesUp = buildBranchMap( treePtr, 
 	{"_jetSmearedPt","JECSourcesUp"}).second;
-    for( auto mapEl: b__jetSmearedPt_allVariationsUp ){ 
-	_jetSmearedPt_allVariationsUp[mapEl.first]; 
+    for( auto mapEl: b__jetSmearedPt_JECSourcesUp ){ 
+	_jetSmearedPt_JECSourcesUp[mapEl.first]; 
     }
-    b__jetSmearedPt_allVariationsDown = buildBranchMap( treePtr, 
+    b__jetSmearedPt_JECSourcesDown = buildBranchMap( treePtr, 
 	{"_jetSmearedPt","JECSourcesDown"}).second;
-    for( auto mapEl: b__jetSmearedPt_allVariationsDown ){ 
-	_jetSmearedPt_allVariationsDown[mapEl.first]; 
+    for( auto mapEl: b__jetSmearedPt_JECSourcesDown ){ 
+	_jetSmearedPt_JECSourcesDown[mapEl.first]; 
     }
+    // initialize met x branches
+    b__corrMETx_JECSourcesUp = buildBranchMap( treePtr, {"_corrMETx","_JECSourcesUp"}).second;
+    for( auto mapEl: b__corrMETx_JECSourcesUp ){ _corrMETx_JECSourcesUp[mapEl.first]; }
+    b__corrMETx_JECSourcesDown = buildBranchMap( treePtr, {"_corrMETx","_JECSourcesDown"}).second;
+    for( auto mapEl: b__corrMETx_JECSourcesDown ){ _corrMETx_JECSourcesDown[mapEl.first]; }
+    // initialize met y branches
+    b__corrMETy_JECSourcesUp = buildBranchMap( treePtr, {"_corrMETy","_JECSourcesUp"}).second;
+    for( auto mapEl: b__corrMETy_JECSourcesUp ){ _corrMETy_JECSourcesUp[mapEl.first]; }
+    b__corrMETy_JECSourcesDown = buildBranchMap( treePtr, {"_corrMETy","_JECSourcesDown"}).second;
+    for( auto mapEl: b__corrMETy_JECSourcesDown ){ _corrMETy_JECSourcesDown[mapEl.first]; }
 }
 
 
 void TreeReader::initializeJecSourcesGroupedMaps( TTree* treePtr ){
-    b__jetPt_groupedVariationsUp = buildBranchMap( treePtr, {"_jetPt_","_JECGroupedUp"}).second;
-    for( auto mapEl: b__jetPt_groupedVariationsUp ){ _jetPt_groupedVariationsUp[mapEl.first]; }
-    b__jetPt_groupedVariationsDown = buildBranchMap( treePtr, {"_jetPt","_JECGroupedDown"}).second;
-    for( auto mapEl: b__jetPt_groupedVariationsDown ){ _jetPt_groupedVariationsDown[mapEl.first]; }
-    b__jetSmearedPt_groupedVariationsUp = buildBranchMap( treePtr, 
+    // initialize jetPt branches
+    b__jetPt_JECGroupedUp = buildBranchMap( treePtr, {"_jetPt_","_JECGroupedUp"}).second;
+    for( auto mapEl: b__jetPt_JECGroupedUp ){ _jetPt_JECGroupedUp[mapEl.first]; }
+    b__jetPt_JECGroupedDown = buildBranchMap( treePtr, {"_jetPt","_JECGroupedDown"}).second;
+    for( auto mapEl: b__jetPt_JECGroupedDown ){ _jetPt_JECGroupedDown[mapEl.first]; }
+    // initialize jetSmearedPt branches
+    b__jetSmearedPt_JECGroupedUp = buildBranchMap( treePtr, 
 	{"_jetSmearedPt","JECGroupedUp"}).second;
-    for( auto mapEl: b__jetSmearedPt_groupedVariationsUp ){ 
-	_jetSmearedPt_groupedVariationsUp[mapEl.first]; 
+    for( auto mapEl: b__jetSmearedPt_JECGroupedUp ){ 
+	_jetSmearedPt_JECGroupedUp[mapEl.first]; 
     }
-    b__jetSmearedPt_groupedVariationsDown = buildBranchMap( treePtr, 
+    b__jetSmearedPt_JECGroupedDown = buildBranchMap( treePtr, 
 	{"_jetSmearedPt","JECGroupedDown"}).second;
-    for( auto mapEl: b__jetSmearedPt_groupedVariationsDown ){ 
-	_jetSmearedPt_groupedVariationsDown[mapEl.first]; 
+    for( auto mapEl: b__jetSmearedPt_JECGroupedDown ){ 
+	_jetSmearedPt_JECGroupedDown[mapEl.first]; 
     }
+    // initialize met x branches
+    b__corrMETx_JECGroupedUp = buildBranchMap( treePtr, {"_corrMETx","_JECGroupedUp"}).second;
+    for( auto mapEl: b__corrMETx_JECGroupedUp ){ _corrMETx_JECGroupedUp[mapEl.first]; }
+    b__corrMETx_JECGroupedDown = buildBranchMap( treePtr, {"_corrMETx","_JECGroupedDown"}).second;
+    for( auto mapEl: b__corrMETx_JECGroupedDown ){ _corrMETx_JECGroupedDown[mapEl.first]; }
+    // initialize met y branches
+    b__corrMETy_JECGroupedUp = buildBranchMap( treePtr, {"_corrMETy","_JECGroupedUp"}).second;
+    for( auto mapEl: b__corrMETy_JECGroupedUp ){ _corrMETy_JECGroupedUp[mapEl.first]; }
+    b__corrMETy_JECGroupedDown = buildBranchMap( treePtr, {"_corrMETy","_JECGroupedDown"}).second;
+    for( auto mapEl: b__corrMETy_JECGroupedDown ){ _corrMETy_JECGroupedDown[mapEl.first]; }
 }
 
 
@@ -619,15 +643,23 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
 
     // add split JEC uncertainties
     initializeJecSourcesMaps( _currentTreePtr );
-    setMapBranchAddresses( _currentTreePtr, _jetPt_allVariationsUp, b__jetPt_allVariationsUp );
-    setMapBranchAddresses( _currentTreePtr, _jetPt_allVariationsDown, b__jetPt_allVariationsDown );
-    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_allVariationsUp, b__jetSmearedPt_allVariationsUp );
-    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_allVariationsDown, b__jetSmearedPt_allVariationsDown );
+    setMapBranchAddresses( _currentTreePtr, _jetPt_JECSourcesUp, b__jetPt_JECSourcesUp );
+    setMapBranchAddresses( _currentTreePtr, _jetPt_JECSourcesDown, b__jetPt_JECSourcesDown );
+    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_JECSourcesUp, b__jetSmearedPt_JECSourcesUp );
+    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_JECSourcesDown, b__jetSmearedPt_JECSourcesDown );
+    setMapBranchAddresses( _currentTreePtr, _corrMETx_JECSourcesUp, b__corrMETx_JECSourcesUp );
+    setMapBranchAddresses( _currentTreePtr, _corrMETx_JECSourcesDown, b__corrMETx_JECSourcesDown );
+    setMapBranchAddresses( _currentTreePtr, _corrMETy_JECSourcesUp, b__corrMETy_JECSourcesUp );
+    setMapBranchAddresses( _currentTreePtr, _corrMETy_JECSourcesDown, b__corrMETy_JECSourcesDown );
     initializeJecSourcesGroupedMaps( _currentTreePtr );
-    setMapBranchAddresses( _currentTreePtr, _jetPt_groupedVariationsUp, b__jetPt_groupedVariationsUp );
-    setMapBranchAddresses( _currentTreePtr, _jetPt_groupedVariationsDown, b__jetPt_groupedVariationsDown );
-    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_groupedVariationsUp, b__jetSmearedPt_groupedVariationsUp );
-    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_groupedVariationsDown, b__jetSmearedPt_groupedVariationsDown );
+    setMapBranchAddresses( _currentTreePtr, _jetPt_JECGroupedUp, b__jetPt_JECGroupedUp );
+    setMapBranchAddresses( _currentTreePtr, _jetPt_JECGroupedDown, b__jetPt_JECGroupedDown );
+    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_JECGroupedUp, b__jetSmearedPt_JECGroupedUp );
+    setMapBranchAddresses( _currentTreePtr, _jetSmearedPt_JECGroupedDown, b__jetSmearedPt_JECGroupedDown );
+    setMapBranchAddresses( _currentTreePtr, _corrMETx_JECGroupedUp, b__corrMETx_JECGroupedUp );
+    setMapBranchAddresses( _currentTreePtr, _corrMETx_JECGroupedDown, b__corrMETx_JECGroupedDown );
+    setMapBranchAddresses( _currentTreePtr, _corrMETy_JECGroupedUp, b__corrMETy_JECGroupedUp );
+    setMapBranchAddresses( _currentTreePtr, _corrMETy_JECGroupedDown, b__corrMETy_JECGroupedDown );
 }
 
 
@@ -829,14 +861,22 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     setMapOutputBranches( outputTree, _MetFilterMap, "/O" );
 
     // write split JEC uncertainties to output tree
-    setMapOutputBranches( outputTree, _jetPt_allVariationsUp, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetPt_allVariationsDown, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetSmearedPt_allVariationsUp, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetSmearedPt_allVariationsDown, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetPt_groupedVariationsUp, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetPt_groupedVariationsDown, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetSmearedPt_groupedVariationsUp, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetSmearedPt_groupedVariationsDown, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetPt_JECSourcesUp, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetPt_JECSourcesDown, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetSmearedPt_JECSourcesUp, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetSmearedPt_JECSourcesDown, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetPt_JECGroupedUp, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetPt_JECGroupedDown, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetSmearedPt_JECGroupedUp, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _jetSmearedPt_JECGroupedDown, "[_nJets]/D" );
+    setMapOutputBranches( outputTree, _corrMETx_JECSourcesUp, "/D");
+    setMapOutputBranches( outputTree, _corrMETx_JECSourcesDown, "/D");
+    setMapOutputBranches( outputTree, _corrMETy_JECSourcesUp, "/D");
+    setMapOutputBranches( outputTree, _corrMETy_JECSourcesDown, "/D");
+    setMapOutputBranches( outputTree, _corrMETx_JECGroupedUp, "/D");
+    setMapOutputBranches( outputTree, _corrMETx_JECGroupedDown, "/D");
+    setMapOutputBranches( outputTree, _corrMETy_JECGroupedUp, "/D");
+    setMapOutputBranches( outputTree, _corrMETy_JECGroupedDown, "/D");
 }
 
 

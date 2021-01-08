@@ -14,8 +14,8 @@ class JetInfo{
 	JetInfo( const TreeReader&, 
 		 const bool readAllJECVariations = false, 
 		 const bool readGroupedJECVariations = false );
-	std::vector< std::string > allJECVariations(){ return _allJECVariations; }
-	std::vector< std::string > groupedJECVariations(){ return _groupedJECVariations; }
+	std::vector< std::string > allJECVariations(){ return _JECSources; }
+	std::vector< std::string > groupedJECVariations(){ return _JECGrouped; }
 
 	bool hasJECVariation( const std::string& ) const;
 	void printAllJECVariations() const;
@@ -23,8 +23,8 @@ class JetInfo{
 
     private:
 
-	std::vector< std::string > _allJECVariations;
-	std::vector< std::string > _groupedJECVariations;
+	std::vector< std::string > _JECSources;
+	std::vector< std::string > _JECGrouped;
 };
 
 #endif

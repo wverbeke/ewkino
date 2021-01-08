@@ -33,13 +33,13 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
     selector( new JetSelector( this ) )
 {
     if( readAllJECVariations ){
-	for( const auto mapEl: treeReader._jetSmearedPt_allVariationsUp ){
+	for( const auto mapEl: treeReader._jetSmearedPt_JECSourcesUp ){
 	    std::string key = mapEl.first;
 	    key = stringTools::removeOccurencesOf(key,"_jetSmearedPt_");
 	    key = stringTools::removeOccurencesOf(key,"_JECSourcesUp");
 	    _pt_JECSourcesUp.insert( {key,mapEl.second[jetIndex]} );
 	}
-	for( const auto mapEl: treeReader._jetSmearedPt_allVariationsDown ){
+	for( const auto mapEl: treeReader._jetSmearedPt_JECSourcesDown ){
 	    std::string key = mapEl.first;
 	    key = stringTools::removeOccurencesOf(key,"_jetSmearedPt_");
 	    key = stringTools::removeOccurencesOf(key,"_JECSourcesDown");
@@ -47,17 +47,17 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
 	}
     }
     if( readGroupedJECVariations ){
-	for( const auto mapEl: treeReader._jetSmearedPt_groupedVariationsUp ){
+	for( const auto mapEl: treeReader._jetSmearedPt_JECGroupedUp ){
 	    std::string key = mapEl.first;
 	    key = stringTools::removeOccurencesOf(key,"_jetSmearedPt_");
 	    key = stringTools::removeOccurencesOf(key,"_JECGroupedUp");
-	    _pt_JECSourcesGroupedUp.insert( {key,mapEl.second[jetIndex]} );
+	    _pt_JECGroupedUp.insert( {key,mapEl.second[jetIndex]} );
 	}
-	for( const auto mapEl: treeReader._jetSmearedPt_groupedVariationsDown ){
+	for( const auto mapEl: treeReader._jetSmearedPt_JECGroupedDown ){
 	    std::string key = mapEl.first;
 	    key = stringTools::removeOccurencesOf(key,"_jetSmearedPt_");
 	    key = stringTools::removeOccurencesOf(key,"_JECGroupedDown");
-	    _pt_JECSourcesGroupedDown.insert( {key,mapEl.second[jetIndex]} );
+	    _pt_JECGroupedDown.insert( {key,mapEl.second[jetIndex]} );
 	}
     }
 
@@ -96,8 +96,8 @@ Jet::Jet( const Jet& rhs ) :
     _pt_JERUp( rhs._pt_JERUp ),
     _pt_JECSourcesUp( rhs._pt_JECSourcesUp ),
     _pt_JECSourcesDown( rhs._pt_JECSourcesDown ),
-    _pt_JECSourcesGroupedUp( rhs._pt_JECSourcesGroupedUp ),
-    _pt_JECSourcesGroupedDown( rhs._pt_JECSourcesGroupedDown ),
+    _pt_JECGroupedUp( rhs._pt_JECGroupedUp ),
+    _pt_JECGroupedDown( rhs._pt_JECGroupedDown ),
     selector( new JetSelector( this ) )
     {}
 
@@ -115,8 +115,8 @@ Jet::Jet( Jet&& rhs ) noexcept :
     _pt_JERUp( rhs._pt_JERUp ),
     _pt_JECSourcesUp( rhs._pt_JECSourcesUp ),
     _pt_JECSourcesDown( rhs._pt_JECSourcesDown ),
-    _pt_JECSourcesGroupedUp( rhs._pt_JECSourcesGroupedUp ),
-    _pt_JECSourcesGroupedDown( rhs._pt_JECSourcesGroupedDown ),
+    _pt_JECGroupedUp( rhs._pt_JECGroupedUp ),
+    _pt_JECGroupedDown( rhs._pt_JECGroupedDown ),
     selector( new JetSelector( this ) )
     {}
 
@@ -138,8 +138,8 @@ void Jet::copyNonPointerAttributes( const Jet& rhs ){
     _pt_JERUp = rhs._pt_JERUp;
     _pt_JECSourcesUp = rhs._pt_JECSourcesUp;
     _pt_JECSourcesDown = rhs._pt_JECSourcesDown;
-    _pt_JECSourcesGroupedUp = rhs._pt_JECSourcesGroupedUp;
-    _pt_JECSourcesGroupedDown = rhs._pt_JECSourcesGroupedDown;
+    _pt_JECGroupedUp = rhs._pt_JECGroupedUp;
+    _pt_JECGroupedDown = rhs._pt_JECGroupedDown;
 }
 
 
@@ -195,28 +195,28 @@ Jet Jet::JetJERUp() const{
 }
 
 
-Jet Jet::JetJECDown( std::string source ) const{
+Jet Jet::JetJECDown( const std::string source ) const{
     // note: this function checks both all and grouped variations,
     // need to check if there is no overlap in names between them!
     double newpt = 0.;
     for( auto mapEl: this->_pt_JECSourcesDown ){
 	if(source==mapEl.first){ newpt = mapEl.second; }
     }
-    for( auto mapEl: this->_pt_JECSourcesGroupedDown ){
+    for( auto mapEl: this->_pt_JECGroupedDown ){
         if(source==mapEl.first) newpt = mapEl.second;
     }
     return variedJet( newpt );
 }
 
 
-Jet Jet::JetJECUp( std::string source ) const{
+Jet Jet::JetJECUp( const std::string source ) const{
     // note: this function checks both all and grouped variations,
     // need to check if there is no overlap in names between them!
     double newpt = 0.;
     for( auto mapEl: this->_pt_JECSourcesUp ){
         if(source==mapEl.first) newpt = mapEl.second;
     }
-    for( auto mapEl: this->_pt_JECSourcesGroupedUp ){
+    for( auto mapEl: this->_pt_JECGroupedUp ){
         if(source==mapEl.first) newpt = mapEl.second;
     }
     return variedJet( newpt );
