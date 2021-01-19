@@ -619,6 +619,7 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
         _currentTreePtr->SetBranchAddress("_lProvenanceConversion", _lProvenanceConversion, &b__lProvenanceConversion);
         _currentTreePtr->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
         _currentTreePtr->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
+	_currentTreePtr->SetBranchAddress("_jetHasGen", _jetHasGen, &b__jetHasGen);
     } 
 
     if( !is2018() && isMC() ){
@@ -849,6 +850,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
         outputTree->Branch("_gen_lIsPrompt",             &_gen_lIsPrompt,             "_gen_lIsPrompt[_gen_nL]/O");
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/i");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/i");
+	outputTree->Branch("_jetHasGen",                &_jetHasGen,                "_jetHasGen[_nJets]/O");
     } 
 
     if( !is2018() && isMC() ){

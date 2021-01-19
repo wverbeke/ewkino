@@ -39,9 +39,11 @@ class Jet : public PhysicsObject{
 	// 0 for nothing, 4 for only loose, 6 for medium (and loose), 7 for tight (and med and loose)
 	// (still to check!)
 	// see https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
+	bool pileupId() const{ return _pileupIdFullId; }
 	bool passPileupIdLoose() const{ return (_pileupIdFullId>=4 || pt()>50. )?true:false; }
 	bool passPileupIdMedium() const{ return (_pileupIdFullId>=6 || pt()>50.)?true:false; }
 	bool passPileupIdTight() const{ return (_pileupIdFullId>=7 || pt()>50. )?true:false; }
+	bool hasGenJet() const{ return _hasGenJet; }
 
         //analysis-specific jet selection
         virtual bool isGood() const override;
@@ -76,6 +78,7 @@ class Jet : public PhysicsObject{
         bool _isTight = false;
         bool _isTightLeptonVeto = false;
 	unsigned _pileupIdFullId = 0;
+	bool _hasGenJet = false;
         unsigned _hadronFlavor = 0;
         
         //JEC uncertainties 

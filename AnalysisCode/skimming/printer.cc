@@ -41,8 +41,8 @@ void readFile( const std::string& pathToFile, unsigned long nentries){
 	// event id
 	std::cout<<"run nb, lumiblock, event nb: "<<event.runNumber()<<", "<<event.luminosityBlock()<<", "<<event.eventNumber()<<std::endl;
 
-	// top mva of muons in event
-	for(LeptonCollection::const_iterator lIt = event.leptonCollection().cbegin();
+	// top mva of leptons in event
+	/*for(LeptonCollection::const_iterator lIt = event.leptonCollection().cbegin();
             lIt != event.leptonCollection().cend(); lIt++){
 	    std::shared_ptr<Lepton> lep = *lIt;
 	    if(lep->isElectron()){
@@ -81,6 +81,15 @@ void readFile( const std::string& pathToFile, unsigned long nentries){
                 std::cout<<"    relIso: "<<mu->relIso0p3()<<std::endl;
 		std::cout<<"    segmentCompatibility: "<<mu->segmentCompatibility()<<std::endl;
 	    }
+	}*/
+	// jet properties
+	for(JetCollection::const_iterator jIt = event.jetCollection().cbegin();
+            jIt != event.jetCollection().cend(); jIt++){
+	    std::shared_ptr<Jet> jet = *jIt;
+	    std::cout << "PU ID loose " << jet->passPileupIdLoose() << std::endl;
+	    std::cout << "PU ID medium " << jet->passPileupIdMedium() << std::endl;
+	    std::cout << "PU ID tight " << jet->passPileupIdTight() << std::endl;
+	    std::cout << "has gen jet " << jet->hasGenJet() << std::endl;
 	}
     }
 }

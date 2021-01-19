@@ -206,6 +206,8 @@ class TreeReader {
 	// (new: pileup jet id)
 	Double_t	_jetPileupIdFullDisc[nJets_max];
 	UInt_t		_jetPileupIdFullId[nJets_max];
+	Bool_t		_jetHasGen[nJets_max];
+	// split JEC uncertainty sources
 	std::map< std::string, Double_t[nJets_max] > _jetPt_JECGroupedDown;
         std::map< std::string, Double_t[nJets_max] > _jetPt_JECGroupedUp;
         std::map< std::string, Double_t[nJets_max] > _jetPt_JECSourcesDown;
@@ -683,6 +685,7 @@ class TreeReader {
         TBranch        *b__jetHFEmFraction;
 	TBranch		*b__jetPileupIdFullDisc;
 	TBranch		*b__jetPileupIdFullId;
+	TBranch		*b__jetHasGen;
 	std::map< std::string, TBranch* > b__jetPt_JECGroupedDown;
         std::map< std::string, TBranch* > b__jetPt_JECGroupedUp;
         std::map< std::string, TBranch* > b__jetPt_JECSourcesDown;

@@ -23,8 +23,9 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
     _deepFlavor( treeReader._jetDeepFlavor_b[jetIndex] + treeReader._jetDeepFlavor_bb[jetIndex] + treeReader._jetDeepFlavor_lepb[jetIndex] ),
     _isTight( treeReader._jetIsTight[jetIndex] ),
     _isTightLeptonVeto( treeReader._jetIsTightLepVeto[jetIndex] ),
-    //_pileupIdFullId( treeReader._jetPileupIdFullId[jetIndex] ), // not yet in current samples
-    _pileupIdFullId( 0 ), // default value for now, equivalent to failing all working points
+    _pileupIdFullId( treeReader._jetPileupIdFullId[jetIndex] ), // not yet in current samples
+    //_pileupIdFullId( 0 ), // default value for now, equivalent to failing all working points
+    _hasGenJet( false ), // default value here, modify below (only for MC)
     //WARNING : is hadron flavor defined for jets in data?
     // (attribute is taken directly from CMSSW pat::Jet::hadronFlavour, appears to be 0 for data)
     _hadronFlavor( treeReader._jetHadronFlavor[jetIndex] ),
@@ -34,6 +35,11 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
     _pt_JERUp( treeReader._jetSmearedPt_JERUp[jetIndex] ),
     selector( new JetSelector( this ) )
 {
+    // set attributes that are only defined for simulated jets
+    if( treeReader.isMC() ){
+	_hasGenJet = treeReader._jetHasGen[jetIndex];
+    }
+    // set split JEC variations
     if( readAllJECVariations ){
 	for( const auto mapEl: treeReader._jetSmearedPt_JECSourcesUp ){
 	    std::string key = mapEl.first;
@@ -66,12 +72,9 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
     //catch potential invalid values of deepCSV and deepFlavor
     if( std::isnan( _deepCSV ) ){
         _deepCSV = 0.;
-
-    //set minimum value to 0 to avoid default values
     } else if( _deepCSV < 0 ){
         _deepCSV = 0.;
     }
-
     if( std::isnan( _deepFlavor ) ){
         _deepFlavor = 0.;
     } else if( _deepFlavor < 0 ){
@@ -97,6 +100,7 @@ Jet::Jet( const Jet& rhs ) :
     _isTight( rhs._isTight ),
     _isTightLeptonVeto( rhs._isTightLeptonVeto ),
     _pileupIdFullId( rhs._pileupIdFullId ),
+    _hasGenJet( rhs._hasGenJet ),
     _hadronFlavor( rhs._hadronFlavor ),
     _pt_JECDown( rhs._pt_JECDown ),
     _pt_JECUp( rhs._pt_JECUp ),
@@ -117,6 +121,7 @@ Jet::Jet( Jet&& rhs ) noexcept :
     _isTight( rhs._isTight ),
     _isTightLeptonVeto( rhs._isTightLeptonVeto ),
     _pileupIdFullId( rhs._pileupIdFullId ),
+    _hasGenJet( rhs._hasGenJet ),
     _hadronFlavor( rhs._hadronFlavor ),
     _pt_JECDown( rhs._pt_JECDown ),
     _pt_JECUp( rhs._pt_JECUp ),
@@ -142,6 +147,7 @@ void Jet::copyNonPointerAttributes( const Jet& rhs ){
     _isTightLeptonVeto = rhs._isTightLeptonVeto;
     _pileupIdFullId = rhs._pileupIdFullId;
     _hadronFlavor = rhs._hadronFlavor;
+    _hasGenJet = rhs._hasGenJet;
     _pt_JECDown = rhs._pt_JECDown;
     _pt_JECUp = rhs._pt_JECUp;
     _pt_JERDown = rhs._pt_JERDown;
