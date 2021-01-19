@@ -68,6 +68,14 @@ bool TauSelector::isFO2016tZqMedium0p4() const{return false;}
 bool TauSelector::isFO2017tZqMedium0p4() const{return false;}
 bool TauSelector::isFO2018tZqMedium0p4() const{return false;}
 
+bool TauSelector::isFOBasetZqLoose() const{
+    // to avoid compilation errors this function must be defined here as well
+    return false; // since taus are not considered in the analysis
+}
+bool TauSelector::isFO2016tZqLoose() const{return false;}
+bool TauSelector::isFO2017tZqLoose() const{return false;}
+bool TauSelector::isFO2018tZqLoose() const{return false;}
+
 bool TauSelector::isFOBaseOldtZq() const{
     // to avoid compilation errors this function must be defined here as well
     return false; // since taus are not considered in the analysis
@@ -116,6 +124,14 @@ bool TauSelector::isTightBasetZqMedium0p4() const{
 bool TauSelector::isTight2016tZqMedium0p4() const{return false;}
 bool TauSelector::isTight2017tZqMedium0p4() const{return false;}
 bool TauSelector::isTight2018tZqMedium0p4() const{return false;}
+
+bool TauSelector::isTightBasetZqLoose() const{
+    // to avoid compilation errors this function must be defined here as well
+    return false; // since taus are not considered in the analysis
+}
+bool TauSelector::isTight2016tZqLoose() const{return false;}
+bool TauSelector::isTight2017tZqLoose() const{return false;}
+bool TauSelector::isTight2018tZqLoose() const{return false;}
 
 bool TauSelector::isTightBaseOldtZq() const{
     // to avoid compilation errors this function must be defined here as well

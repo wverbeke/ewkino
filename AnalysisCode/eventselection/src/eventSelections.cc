@@ -41,7 +41,7 @@ bool passES(Event& event, const std::string& eventselection,
 
 // help functions for event cleaning //
 
-constexpr double halfwindow = 7.5;
+constexpr double halfwindow = 15;
 
 void cleanLeptonsAndJets(Event& event){
     // select leptons
@@ -101,9 +101,11 @@ Met getmet(const Event& event, const std::string& variation){
     } else if( variation == "UnclUp" ){
         return event.met().MetUnclusteredUp();
     } else if( stringTools::stringEndsWith(variation,"Up") ){
-        return event.met(); // not yet propagated to MET
+	std::string jecvar = variation.substr(0, variation.size()-2);
+        return event.met().MetJECUp( jecvar );
     } else if( stringTools::stringEndsWith(variation,"Down") ){
-        return event.met(); // not yet propagated to MET
+	std::string jecvar = variation.substr(0, variation.size()-4);
+        return event.met().MetJECDown( jecvar );
     } else {
         throw std::invalid_argument( "Met variation " + variation + " is unknown." );
     }
@@ -112,6 +114,9 @@ Met getmet(const Event& event, const std::string& variation){
 int eventCategory(Event& event, const std::string& variation){
     // determine the event category based on the number of jets and b-jets
     // note that it is assumed the event has been passed through a signal region selection!
+    // return values:
+    // - if varation is "all", then 0 if at least one b-jet and at least 2 jets, -1 otherwise
+    // - if variation is specific, then 1/2/3 for specifiec categories, -1 otherwise
 
     // if variation = "all", only apply most general selection: 
     // at least one b-jet and at least two jets in any variation
@@ -228,6 +233,8 @@ bool allLeptonsArePrompt( const Event& event ){
 }
 
 // help function for lepton pair mass constraint //
+// here for reference, but not yet sure if need to use,
+// also not sure on what lepton collection (loose? fo? tight?)
 
 bool passMllMassVeto( const Event& event ){
     for( LeptonCollection::const_iterator l1It = event.leptonCollection().cbegin(); l1It != event.leptonCollection().cend(); l1It++ ){
@@ -301,7 +308,7 @@ bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype,
     // inverted cut on OSSF:
     if(event.hasOSSFLightLeptonPair()) return false;
     // number of jets and b-jets 
-    // -> do not impose this condition here, call manually in runsystematics
+    // -> do not impose this condition here, call further downstream
     //if(eventCategory(event, variation)<0) return false;
     if(variation=="dummy") return true; // dummy to avoid unused parameter warning
     return true;
@@ -367,20 +374,24 @@ bool pass_signalsideband_noz(Event& event, const std::string& selectiontype,
     // require presence of OSSF pair
     if(!event.hasOSSFLightLeptonPair()) return false;
     // impose mass constraints on lepton pairs
+    // update: only condition is mll>35 GeV for the OSSF pair!
     for( LeptonCollection::const_iterator l1It = event.leptonCollection().cbegin(); l1It != event.leptonCollection().cend(); l1It++ ){
 	for( LeptonCollection::const_iterator l2It = l1It+1; l2It != event.leptonCollection().cend(); l2It++ ){
 	    Lepton& lep1 = **l1It;
 	    Lepton& lep2 = **l2It;
 	    //std::cout << l1It - event.leptonCollection().cbegin() << " ";
 	    //std::cout << l2It - event.leptonCollection().cbegin() << std::endl;
-	    if((lep1+lep2).mass() < 12.) return false;
 	    if(oppositeSignSameFlavor(lep1,lep2) && (lep1+lep2).mass() < 35.) return false;
-	    if(oppositeSignSameFlavor(lep1,lep2) && (lep1+lep2).mass() > particle::mZ-15.) return false;
 	}
     }
-    if(fabs(event.leptonSystem().mass()-particle::mZ) < 15.) return false;
+    // impose mass constraint on 3-lepton system in case of eee/mme channel
+    if(event.WLepton().isElectron()){
+	if(fabs(event.leptonSystem().mass()-particle::mZ)<halfwindow) return false;
+    }
+    // impose mass constraint on OSSF pair
+    if(event.hasZTollCandidate( halfwindow )) return false;
     // number of jets and b-jets
-    // -> do not impose this condition here, call manually in runsystematics
+    // -> do not impose this condition here, call further downstream
     //if(eventCategory(event, variation)<0) return false;
     if(variation=="dummy") return true; // dummy to avoid unused parameter warning
     return true;
@@ -409,8 +420,10 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
         if(!hasnTightLeptons(event, 2, false)) return false;
         if(hasnTightLeptons(event, 3, false)) return false;
     } else return false;
+    // require OSSF pair making a Z mass
     if(!event.hasOSSFLightLeptonPair()) return false;
     if(!event.hasZTollCandidate(halfwindow)) return false;
+    // b-jet veto and minimum MET threshold
     if( variation=="all" ){
 	if(event.jetCollection().minNumberOfMediumBTaggedJetsAnyVariation()>0) return false;
 	if(event.met().maxPtAnyVariation()<50) return false;
@@ -463,7 +476,7 @@ bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
     double llmass = lvec.mass();
     if(fabs(llmass-particle::mZ)>halfwindow) return false;
     // dummy condition on variation to avoid warnings
-    if(variation=="all") return true;
+    if(variation=="dummy") return true;
     return true;
 }
 
@@ -495,21 +508,22 @@ bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
     for(LeptonCollection::const_iterator lIt1 = event.leptonCollection().cbegin();
         lIt1 != event.leptonCollection().cend(); lIt1++){
         Lepton& lep1 = **lIt1;
-	for(LeptonCollection::const_iterator lIt2 = lIt1+1; lIt2!=event.leptonCollection().cend(); lIt2++){
+	for(LeptonCollection::const_iterator lIt2 = lIt1+1; 
+	    lIt2!=event.leptonCollection().cend(); lIt2++){
 	    Lepton& lep2 = **lIt2;
 	    if(fabs((lep1+lep2).mass()-particle::mZ)<halfwindow) pairZmass = true;
 	}
     }
     if(pairZmass) return false;
     // dummy condition on variation to avoid warnings
-    if(variation=="all") return true;
+    if(variation=="dummy") return true;
     return true;
 }
 
 bool pass_ttzcontrolregion(Event& event, const std::string& selectiontype, 
 			    const std::string& variation){
-    // no dedicated ttz control region yet (see analysis note)
-    // now testing ttz 4l control region
+    // ttz 4l control region, in addition to ttz 3l control region implicit in signal regions
+    // (testing phase)
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
     if(not event.passMetFilters()) return false;
@@ -518,7 +532,7 @@ bool pass_ttzcontrolregion(Event& event, const std::string& selectiontype,
     if(not passLeptonPtThresholds(event)) return false;
     if(not passPhotonOverlapRemoval(event)) return false;
     // apply lepton pair mass constraint
-    if(not passMllMassVeto(event)) return false;
+    //if(not passMllMassVeto(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 4, true)) return false;
@@ -537,14 +551,14 @@ bool pass_ttzcontrolregion(Event& event, const std::string& selectiontype,
     // case 1: only one OSSF pair present
     if( event.numberOfUniqueOSSFLeptonPairs()==1 ){
 	// require that this one OSSF pair is close to Z
-	if(!event.hasZTollCandidate( 15. )) return false;
+	if(!event.hasZTollCandidate( halfwindow )) return false;
     }
     // case 2: two OSSF pairs present
     else{
 	// first OSSF pair close to Z
 	std::pair< std::pair< int, int >, double > temp;
 	temp = event.bestZBosonCandidateIndicesAndMass();
-	if(fabs(temp.second-particle::mZ) > 15.) return false;
+	if(fabs(temp.second-particle::mZ) > halfwindow) return false;
 	// second OSSF pair not close to Z
 	PhysicsObject lvec;
 	for(LeptonCollection::const_iterator lIt = event.leptonCollection().cbegin();
@@ -555,22 +569,18 @@ bool pass_ttzcontrolregion(Event& event, const std::string& selectiontype,
 	    lvec += lep;
 	}
 	double llmass = lvec.mass();
-	if(fabs(llmass-particle::mZ) < 15.) return false;
+	if(fabs(llmass-particle::mZ) < halfwindow) return false;
     }
-    // number of jets at least 2 and nubmer of b-jets at least 1
+    // number of jets at least 2
     if( variation=="all" ){
         if( event.jetCollection().numberOfGoodAnyVariationJets()<2 ) return false;
-        //if( event.jetCollection().maxNumberOfMediumBTaggedJetsAnyVariation()<1 ) return false;
     } else{
-	// default:
-	//if(getjetcollection(event,variation).numberOfGoodJets()<2) return false;
-	// require jets to be central:
+	// require at least 2 central jets
 	unsigned int ncentraljets = 0;
 	for( auto jetPtr : getjetcollection(event,variation) ){
 	    if(fabs(jetPtr->eta())<2.4) ncentraljets++;
 	}
 	if(ncentraljets<2) return false;
-        //if(getjetcollection(event,variation).numberOfMediumBTaggedJets()<1) return false;
     }
     return true;
 }

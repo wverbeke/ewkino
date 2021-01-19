@@ -62,6 +62,7 @@ def datafileyield(rootfile,treename,evttags=[]):
     # allow fast bypass:
     if evttags == -1:
 	res['nEntries'] = tree.GetEntries()
+	res['evtTags'] = []
 	return res
     # else loop over entries
     for entry in range(tree.GetEntries()):
@@ -167,7 +168,8 @@ def histogramyield(hist):
 def histogramfileyield(histfile,mustcontain=[],doprint=True):
     ### determine the yield of all histograms in histfile
     # if mustcontain is not empty, histogram names are required to contain all elements in it
-    histlist = histtools.loadallhistograms(histfile,mustcontain)
+    histlist = histtools.loadallhistograms(histfile)
+    histlist = histtools.selecthistograms(histlist,mustcontainall=mustcontain)[1]
     yieldlist = []
     for hist in histlist:
         yieldlist.append(histogramyield(hist))
@@ -253,18 +255,48 @@ if __name__=="__main__":
     mode = sys.argv[1].split('=')[1]
 
     if mode=='tree':
+	# check a single tree 
+	# (using no external info, only info that is implicit in the tree)
 	print('mode = tree, required args: <filename> <treename> <dtype>')
 	rootfile = sys.argv[2]
 	treename = sys.argv[3]
 	dtype = sys.argv[4]
 	yielddict = {}
 	if dtype=='MC': yielddict = mcfileyield(rootfile,treename)
-	elif dtype=='data': yielddict = datafileyield(rootfile,treename,[])
+	elif dtype=='data': yielddict = datafileyield(rootfile,treename,evttags=-1)
 	totdict = {}
 	totdict['sample_name'] = rootfile.split('/')[-1].replace('.root','')
 	totdict['cross_section'] = -1
 	totdict['yield'] = yielddict
 	formatsamplelistyield([totdict],dtype)
+
+    elif mode=='folder':
+	# simple extension of mode='tree' but for all files in a given folder
+	print('mode = tree, required args: <dirname> <treename> <dtype>')
+        dirname = sys.argv[2]
+        treename = sys.argv[3]
+        dtype = sys.argv[4]
+	rootfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f[-5:]=='.root']
+	# temp: additional selection
+	rootfiles = [f for f in rootfiles if 'data_combined' in f]
+	# print files:
+	print('found following files:')
+	for rf in rootfiles: print('-  '+rf)
+	filelist = []
+	evttags = []
+	for rootfile in rootfiles:
+	    yielddict = {}
+	    if dtype=='MC': yielddict = mcfileyield(rootfile,treename)
+	    elif dtype=='data': 
+		yielddict = datafileyield(rootfile,treename,evttags=evttags)
+		# (use evttags=-1 above to skip overlap removal in data (also much faster))
+		evttags = yielddict['evtTags']
+	    totdict = {}
+	    totdict['sample_name'] = rootfile.split('/')[-1].replace('.root','')
+	    totdict['cross_section'] = -1
+	    totdict['yield'] = yielddict
+	    filelist.append(totdict)
+        formatsamplelistyield(filelist,dtype)
 
     elif mode=='samplelist':
 	print('mode = samplelist, required args: <samplelist> <directory> <treename>')	
@@ -293,10 +325,14 @@ if __name__=="__main__":
 	includeCR = False
 	for arg in sys.argv[4:]:
 	    if arg=='includeCR': includeCR = True
+	yeardirs = []
+	yeardirs.append('2016')
+	yeardirs.append('2017')
+	yeardirs.append('2018')
 	# fill table
 	mustcontain = ['nominal','yield']
-	for yeardir in [year+'combined' for year in ['years']]:
-	    regions = ['signalregion_'+str(i) for i in [1,2,3]]
+	for yeardir in [y+'combined' for y in yeardirs]:
+	    regions = ['signalregion_cat'+str(i) for i in [1,2,3]]
 	    if includeCR:
 		regions += ['wzcontrolregion','zgcontrolregion','zzcontrolregion']
 	    srsum = {}

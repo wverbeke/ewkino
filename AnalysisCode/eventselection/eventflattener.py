@@ -8,6 +8,8 @@ import glob
 # in order to import local functions: append location to sys.path
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 sys.path.append(os.path.abspath('../samplelists'))
 from readsamplelist import readsamplelist
 from extendsamplelist import extendsamplelist
@@ -72,8 +74,13 @@ if len(dtype)==0 : sys.exit()
 # make a list of input files in samplelist and compare to content of input directory 
 # note: the names of the files in input directory can be more extended with respect to the names
 # in the sample list, for example they can have year extensions etc.
-# in case of data, simply use all files in the directory
 inputfiles = extendsamplelist(samplelist,input_directory)
+# the above does not work well for data, as it does not include the data_combined files
+if dtype=='data':
+    inputfiles = []
+    files = [f for f in os.listdir(input_directory) if f[-5:]=='.root']
+    for f in files:
+        inputfiles.append({'file':os.path.join(input_directory,f),'process_name':'data'})
 
 # check if executable is present
 if not os.path.exists('./eventflattener'):
@@ -89,26 +96,30 @@ def submitjob(cwd,inputfile,norm,output_directory,
 		event_selection,selection_type,variation,
 		muonfrmap, electronfrmap,
 		do_mva, path_to_xml_file):
-    script_name = 'eventflattener.sh'
-    with open(script_name,'w') as script:
-        initializeJobScript(script)
-        script.write('cd {}\n'.format(cwd))
-        command = './eventflattener {} {} {} {} {} {} {} {} {} {} {}'.format(
-		    inputfile,norm,output_directory,inputfile.split('/')[-1],
-		    event_selection,selection_type,variation,
-		    muonfrmap,electronfrmap,
-		    do_mva, path_to_xml_file)
-        script.write(command+'\n')
-	print(command)
-    submitQsubJob(script_name)
+    command = './eventflattener {} {} {} {} {} {} {} {} {} {} {}'.format(
+                    inputfile,norm,output_directory,inputfile.split('/')[-1],
+                    event_selection,selection_type,variation,
+                    muonfrmap,electronfrmap,
+                    do_mva, path_to_xml_file)
+    #script_name = 'eventflattener.sh'
+    #with open(script_name,'w') as script:
+    #    initializeJobScript(script)
+    #    script.write('cd {}\n'.format(cwd))
+    #    script.write(command+'\n')
+    #	print(command)
+    #submitQsubJob(script_name)
     # alternative: run locally
     #os.system('bash '+script_name)
+    return command
 
 # make output directory
 os.makedirs(output_directory)
 
-# loop over input files and submit jobs
+# subselect input files (for testing only)
 #inputfiles = [f for f in inputfiles if 'tZq' in f['file']] # temp for testing
+
+# loop over input files and submit jobs
+commands = []
 for f in inputfiles:
     inputfile = f['file']
     # create normalization variable:
@@ -124,7 +135,8 @@ for f in inputfiles:
     if '2018' in inputfile: year = '2018'
     frmap_muon = os.path.join(frdir,'fakeRateMap_data_muon_'+year+'_mT.root')
     frmap_electron = os.path.join(frdir,'fakeRateMap_data_electron_'+year+'_mT.root')
-    submitjob(cwd,inputfile,norm,output_directory,
-		event_selection,selection_type,variation,
-		frmap_muon,frmap_electron,
-		    do_mva,path_to_xml_file)
+    commands.append(submitjob(cwd,inputfile,norm,output_directory,
+		    event_selection,selection_type,variation,
+		    frmap_muon,frmap_electron,
+		    do_mva,path_to_xml_file))
+ct.submitCommandsAsCondorCluster('cjob_eventflattener',commands)

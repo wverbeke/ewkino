@@ -133,7 +133,7 @@ def getweightedvalue(valuegraph,spectrumhist):
     avgval /= sumweighting
     avgup = np.sqrt(avgup/sumweighting)
     avgdown = np.sqrt(avgdown/sumweighting)
-    print((avgval,avgup,avgdown))
+    #print((avgval,avgup,avgdown))
     return (avgval,avgup,avgdown)
 
 def drawExtraInfo(infos):

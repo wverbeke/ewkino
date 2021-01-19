@@ -45,6 +45,7 @@ cwd = os.getcwd()
 # check command line arguments
 if event_selection not in (['signalregion','signalsideband_noossf','signalsideband_noz',
 			    'wzcontrolregion','zzcontrolregion','zgcontrolregion',
+			    'ttzcontrolregion',
 			    'npcontrolregion']):
     print('### ERROR ###: event_selection not in list of recognized event selections')
     sys.exit()

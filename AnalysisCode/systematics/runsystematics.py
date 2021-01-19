@@ -21,12 +21,12 @@ import jobsplitting
 # but instead of a skimmer, a systematics executable is called.
 # command line arguments: see below
 
-if len(sys.argv) != 8:
+if len(sys.argv) != 9:
     print('### ERROR ###: runsystematics.py requires a different number of command-line arguments.')
     print('Normal usage from the command line:')
     print('python runsystematics.py input_directory samplelist output_directory,')
     print('                         event_selection, selection_type, event_category,')
-    print('			    bdt_combine_mode')
+    print('			    event_channel, bdt_combine_mode')
     # maybe add more command line arguments later, keep hard coded for now
     sys.exit()
 
@@ -42,21 +42,25 @@ if not os.path.exists(samplelist):
 output_directory = sys.argv[3]
 event_selection = sys.argv[4]
 selection_type = sys.argv[5]
-signal_category = int(sys.argv[6]) # put 0 for control regions
-bdt_combine_mode = sys.argv[7]
+signal_category = sys.argv[6] # put cat number (1-3), 0 for no nJets/nBJets cut
+signal_channel = sys.argv[7] # put number of muons, 4 for all channels
+bdt_combine_mode = sys.argv[8]
 
-'''systematics = (['JEC','JER','Uncl', # acceptance
+systematics = (['JEC','JER','Uncl', # acceptance
 		#'JECAll','JECGrouped', # split JEC uncertainties
 		#'muonID','electronID', # (for ttH ID)
                 'muonIDSyst','muonIDStat', # weight (for TOP ID)
 		'electronIDSyst','electronIDStat', # weight (for TOP ID)
-		'pileup','bTag_heavy','bTag_light','prefire', # weight
+		'pileup','prefire', # weight
+		#'bTag_heavy','bTag_light', # weight (replaced by bTag_shape!)
+		'bTag_shape', # weight-like
                 'fScale','rScale','rfScales','isrScale','fsrScale', # scale
-		'electronReco', # electronreco
+		'electronReco', # weight-like
                 'pdfShapeVar','pdfNorm', # lhe
 		'qcdScalesShapeVar','qcdScalesNorm' # lhe
-		]) '''
-systematics = ['JEC','pileup','fScale'] # smaller test set of systematics
+		])
+#systematics = ['JEC','pileup','fScale'] # smaller test set of systematics
+#systematics = ['bTag_heavy','bTag_light'] # test set of b-tagging systematics
 cwd = os.getcwd()
 
 # check  arguments
@@ -158,9 +162,10 @@ for jobgroup in inputfiles:
 	    norm = xsec*lumi/float(hcounter)
 	# get command for this file
 	output_file_path = os.path.join(output_directory,inputfile.split('/')[-1])
-        command = './runsystematics {} {} {} {} {} {} {} {} {}'.format(
+        command = './runsystematics {} {} {} {} {} {} {} {} {} {}'.format(
                     inputfile, norm, output_file_path, process_name,
-                    event_selection, signal_category, selection_type,
+                    event_selection, signal_category, signal_channel,
+		    selection_type,
                     bdt_combine_mode, path_to_xml_file)
 	print(command)
         for systematic in systematics:
@@ -168,12 +173,12 @@ for jobgroup in inputfiles:
 	commands.append(command)
     commandgroups.append(commands)
     # old qsub way:
-    '''script_name = 'runsystematics.sh'
+    script_name = 'runsystematics.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
-        for c in commands: script.write(c+'\n')'''
+        for c in commands: script.write(c+'\n')
     #submitQsubJob(script_name)
     # alternative: run locally
     #os.system('bash '+script_name)
-ct.submitCommandsAsCondorJobs('runsystematics_cjob',commandgroups)
+ct.submitCommandsAsCondorJobs('cjob_runsystematics',commandgroups)

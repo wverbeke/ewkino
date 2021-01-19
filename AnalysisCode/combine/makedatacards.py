@@ -115,14 +115,15 @@ if __name__=="__main__":
     datacarddir = sys.argv[2]
     npfromdata = True
     cnames = []
-    cnames.append({'region':'signalregion_1','var':'_eventBDT'})
-    cnames.append({'region':'signalregion_2','var':'_eventBDT'})
-    cnames.append({'region':'signalregion_3','var':'_eventBDT'})
+    cnames.append({'region':'signalregion_cat1','var':'_eventBDT'})
+    cnames.append({'region':'signalregion_cat2','var':'_eventBDT'})
+    cnames.append({'region':'signalregion_cat3','var':'_eventBDT'})
     cnames.append({'region':'wzcontrolregion','var':'_MT'})
     cnames.append({'region':'zzcontrolregion','var':'_MT'})
     cnames.append({'region':'zgcontrolregion','var':'_nJets'})
-    cnames.append({'region':'signalsideband_noossf_1','var':'_yield'})
-    #cnames.append({'region':'signalsideband_noz_1','var':'_yield'})
+    cnames.append({'region':'ttzcontrolregion','var':'_nBJets'})
+    cnames.append({'region':'signalsideband_noossf_cat1','var':'_yield'})
+    cnames.append({'region':'signalsideband_noz_cat1','var':'_yield'})
     years = ['2016','2017','2018']
     # make dict to read channels
     channels = []

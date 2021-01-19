@@ -22,6 +22,8 @@ class LeptonSelector {
         bool isTighttZq() const;
 	bool isFOtZqMedium0p4() const;
 	bool isTighttZqMedium0p4() const;
+	bool isFOtZqLoose() const;
+	bool isTighttZqLoose() const;
 	bool isFOttH() const;
 	bool isTightttH() const;
 	bool isFOOldtZq() const;
@@ -40,6 +42,10 @@ class LeptonSelector {
         virtual bool isFO2016tZqMedium0p4() const = 0;
         virtual bool isFO2017tZqMedium0p4() const = 0;
         virtual bool isFO2018tZqMedium0p4() const = 0;
+	virtual bool isFOBasetZqLoose() const = 0;
+        virtual bool isFO2016tZqLoose() const = 0;
+        virtual bool isFO2017tZqLoose() const = 0;
+        virtual bool isFO2018tZqLoose() const = 0;
         virtual bool isFOBasettH() const = 0;
         virtual bool isFO2016ttH() const = 0;
         virtual bool isFO2017ttH() const = 0;
@@ -57,6 +63,10 @@ class LeptonSelector {
         virtual bool isTight2016tZqMedium0p4() const = 0;
         virtual bool isTight2017tZqMedium0p4() const = 0;
         virtual bool isTight2018tZqMedium0p4() const = 0;
+	virtual bool isTightBasetZqLoose() const = 0;
+        virtual bool isTight2016tZqLoose() const = 0;
+        virtual bool isTight2017tZqLoose() const = 0;
+        virtual bool isTight2018tZqLoose() const = 0;
         virtual bool isTightBasettH() const = 0;
         virtual bool isTight2016ttH() const = 0;
         virtual bool isTight2017ttH() const = 0;

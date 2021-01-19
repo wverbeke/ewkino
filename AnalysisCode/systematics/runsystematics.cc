@@ -21,6 +21,7 @@
 #include "../../Tools/interface/SampleCrossSections.h"
 #include "../../Event/interface/Event.h"
 #include "../../weights/interface/ConcreteReweighterFactory.h"
+#include "../../weights/interface/ReweighterBTagShape.h"
 #include "../eventselection/interface/eventSelections.h"
 #include "../eventselection/interface/eventFlattening.h"
 
@@ -56,11 +57,12 @@ std::string systematicType(const std::string systematic){
 	    or systematic=="electronIDSyst" // for TOP ID
 	    or systematic=="electronIDStat" // for TOP ID
 	    or systematic=="pileup" 
-	    or systematic=="bTag_heavy" 
-	    or systematic=="bTag_light"
+	    //or systematic=="bTag_heavy" // old method, replaced by bTag_shape
+	    //or systematic=="bTag_light" // old method, replaced by bTag_shape
 	    or systematic=="prefire"){
 	return std::string("weight");
     }
+    if(systematic=="bTag_shape") return std::string("bTag_shape");
     // scale uncertainties
     if(	    systematic=="fScale" // replaced by qcdScalesShape
 	    or systematic=="rScale" // replaced by qcdScalesShape
@@ -69,9 +71,7 @@ std::string systematicType(const std::string systematic){
 	    or systematic=="fsrScale"){
 	return std::string("scale");
     }
-    if(systematic=="electronReco"){
-	return std::string("electronReco");
-    }
+    if(systematic=="electronReco") return std::string("electronReco");
     if(systematic=="pdfShapeVar" or systematic=="pdfNorm" 
 	or systematic=="qcdScalesShapeVar" or systematic=="qcdScalesNorm"){
 	return std::string("lhe");
@@ -108,7 +108,8 @@ std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap
 				unsigned numberOfPdfVariations=100,
 				unsigned numberOfQcdScaleVariations=6,
 				std::vector<std::string> allJECVariations={},
-				std::vector<std::string> groupedJECVariations={} ){
+				std::vector<std::string> groupedJECVariations={},
+				std::vector<std::string> bTagShapeSystematics={} ){
     // initialize the output histogram map
     std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > histMap;
     // loop over variables
@@ -179,6 +180,17 @@ std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap
 		    temp = systematic + "_" + jecvar + "Down";
 		    histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
 		    histMap[variable][temp]->SetTitle(processName.c_str());
+		}
+	    }
+	    // special case for bTag shape variations: store multiple systematics
+	    else if(systematic=="bTag_shape"){
+		for(std::string btagsys: bTagShapeSystematics){
+		    std::string temp = systematic + "_" + btagsys + "Up";
+                    histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
+                    histMap[variable][temp]->SetTitle(processName.c_str());
+                    temp = systematic + "_" + btagsys + "Down";
+                    histMap[variable][temp] = histInfo.makeHist( name+"_"+temp );
+                    histMap[variable][temp]->SetTitle(processName.c_str());
 		}
 	    }
             // now general case: store up and down variation
@@ -271,19 +283,19 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 				const std::string& processName,
 				const std::string& eventselection,
 				const std::vector<int> signalcategories,
+				const std::vector<int> signalchannels,
 				const std::string& selection_type,
 				const std::shared_ptr<TH2D>& frmap_muon,
 				const std::shared_ptr<TH2D>& frmap_electron,
 				const std::vector<std::tuple<std::string,double,double,int>> vars,
 				TMVA::Reader* reader,
 				std::vector<std::string> systematics){
-
     // initialize TreeReader from input file
     std::cout << "=== start function fillSystematicsHistograms ===\n\n\n";
     std::cout << "- input file: " << pathToFile << "\n";
     std::cout << "- process name: " << processName << "\n";
     std::cout << "- event selection " << eventselection << "(" << selection_type << ")\n\n";
-    std::cout << "initializing TreeReader and Reweighter...\n\n";
+    std::cout << "initializing TreeReader...\n\n";
     TreeReader treeReader;
     treeReader.initSampleFromFile( pathToFile );
     std::string year = "2016";
@@ -293,6 +305,10 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
     // determine whether to consider event categorization
     bool doCat = true;
     if(signalcategories.size()==1 && signalcategories[0]==0) doCat = false;
+
+    // determine whether to consider event channels separately
+    bool doChannels = true;
+    if(signalchannels.size()==1 && signalchannels[0]==4) doChannels = false;
 
     // when considering the data sample, disregard all systematics
     if(processName=="data") systematics.clear();
@@ -309,7 +325,9 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
     }
 
     // make reweighter
+    std::cout << "initializing Reweighter...\n\n";
     std::shared_ptr< ReweighterFactory> reweighterFactory;
+    // NORMAL //
     if( LeptonSelector::leptonID()=="tzqtight" || LeptonSelector::leptonID()=="tzqmedium0p4" ){ 
 	reweighterFactory = std::shared_ptr<ReweighterFactory>(new tZqReweighterFactory()); 
 	// (tZqReweighterFactory internally checks for medium or tight ID !)
@@ -321,6 +339,8 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
     }
     // FOR TESTING //
     //reweighterFactory = std::shared_ptr<ReweighterFactory>( new EmptyReweighterFactory() );
+    // FOR TESTING (2) //
+    //reweighterFactory = std::shared_ptr<ReweighterFactory>( new BTagShapeReweighterFactory() );
 
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
@@ -398,16 +418,26 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	std::cout << "\n";
     }
 
+    // determine global sample properties related to bTag shape systematics
+    std::vector<std::string> bTagShapeSystematics;
+    bool considerbtagshape = (std::find(systematics.begin(),systematics.end(),"bTag_shape")
+				!=systematics.end());
+    if( considerbtagshape ){
+	bTagShapeSystematics = dynamic_cast<const ReweighterBTagShape*>(
+            reweighter["bTag_shape"])->availableSystematics();
+    }
+
     // make output collection of histograms
     std::cout<<"making output collection of histograms...\n\n";
     std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > histMap =
         initHistMap(vars,systematics,processName,
 		    numberOfPdfVariations,6,
-		    allJECVariations,groupedJECVariations);
+		    allJECVariations,groupedJECVariations,
+		    bTagShapeSystematics);
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    //long unsigned numberOfEntries = 1e5; 
+    //long unsigned numberOfEntries = 1e4; 
     numberOfEntries = std::min(numberOfEntries,treeReader.numberOfEntries());
     std::cout<<"starting event loop for "<<numberOfEntries<<" events."<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
@@ -424,9 +454,20 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
         Event event = treeReader.buildEvent(entry,false,false,
 			considerjecall,considerjecgrouped);
         if(!passES(event, eventselection, selection_type, "nominal")) passnominal = false;
+	if(doChannels){
+	    int eventchannel = event.leptonCollection().numberOfMuons();
+	    if(std::find(signalchannels.begin(),signalchannels.end(),eventchannel)
+                == signalchannels.end()){
+                continue;
+		// note: here we can simply continue instead of put passnominal to false,
+		// since alternative selections (due to e.g. JEC variations) cannot change 
+		// the number of muons!
+            } 
+	}
 	if(doCat){
 	    int eventcategory = eventCategory(event, "nominal");
-	    if(std::find(signalcategories.begin(),signalcategories.end(),eventcategory) == signalcategories.end()){
+	    if(std::find(signalcategories.begin(),signalcategories.end(),eventcategory) 
+		== signalcategories.end()){
 		passnominal = false;
 	    }
 	}
@@ -569,6 +610,23 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
                 continue;
 	    }
 	    // ELSE apply nominal weight (already in varmap["_normweight"])
+	    else if(systematic=="bTag_shape"){
+		double nombweight = reweighter["bTag_shape"]->weight( event );
+		for(std::string btagsys: bTagShapeSystematics){
+		    double upweight = varmap["_normweight"] / nombweight
+					* dynamic_cast<const ReweighterBTagShape*>(
+					    reweighter["bTag_shape"])->weightUp( event, btagsys );
+		    double downweight = varmap["_normweight"] / nombweight
+                                        * dynamic_cast<const ReweighterBTagShape*>(
+                                            reweighter["bTag_shape"])->weightDown( event, btagsys );
+		    for(std::string variable : variables){
+			fillVarValue(histMap[variable][systematic+"_"+btagsys+"Up"],
+			    getVarValue(variable,varmap),upweight);
+			fillVarValue(histMap[variable][systematic+"_"+btagsys+"Down"],
+			    getVarValue(variable,varmap),downweight);
+		    }
+		}
+	    }
 	    else if(systematic=="fScale" && hasValidQcds){
 		// warning: replaced by qcdScales envelope (see further on), remove from further analysis
 		double upweight = varmap["_normweight"] * event.generatorInfo().relativeWeight_MuR_1_MuF_2()
@@ -917,11 +975,11 @@ int main( int argc, char* argv[] ){
 
     std::cerr << "###starting###" << std::endl;
 
-    if( argc < 11 ){
-        std::cerr << "### ERROR ###: runsystematics.cc requires at least 10 arguments to run: ";
+    if( argc < 12 ){
+        std::cerr << "### ERROR ###: runsystematics.cc requires at least 11 arguments to run: ";
         std::cerr << "input_file_path, norm, output_file_path, process_name, ";
-	std::cerr << "event_selection, signal_category, selection_type, bdtCombineMode, ";
-	std::cerr << "pathToXMLFile, ";
+	std::cerr << "event_selection, signal_categories, signal_channels, selection_type, ";
+	std::cerr << "bdtCombineMode, pathToXMLFile, ";
 	std::cerr << "at least one systematic" << std::endl;
         return -1;
     }
@@ -933,15 +991,19 @@ int main( int argc, char* argv[] ){
     std::string& output_file_path = argvStr[3];
     std::string& process_name = argvStr[4];
     std::string& event_selection = argvStr[5];
-    std::string& signal_string = argvStr[6];
+    std::string& signal_catstring = argvStr[6];
     // convert string to vector of ints
     std::vector< int > signal_categories;
-    for(char c: signal_string){ signal_categories.push_back( (int)c-(int)'0' ); }
-    std::string& selection_type = argvStr[7];
-    std::string& bdtCombineMode = argvStr[8]; // ignored if _eventBDT is not in list of variables
-    std::string& pathToXMLFile = argvStr[9]; // ignored if _eventBDT is not in list of variables
+    for(char c: signal_catstring){ signal_categories.push_back( (int)c-(int)'0' ); }
+    std::string& signal_chstring = argvStr[7];
+    // convert string to vector of ints
+    std::vector< int > signal_channels;
+    for(char c: signal_chstring){ signal_channels.push_back( (int)c-(int)'0' ); }
+    std::string& selection_type = argvStr[8];
+    std::string& bdtCombineMode = argvStr[9]; // ignored if _eventBDT is not in list of variables
+    std::string& pathToXMLFile = argvStr[10]; // ignored if _eventBDT is not in list of variables
     std::vector<std::string> systematics;
-    for(int i=10; i<argc; i++){
+    for(int i=11; i<argc; i++){
 	systematics.push_back(argvStr[i]);
     }
 
@@ -951,6 +1013,7 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_Mjj_max",0.,1200.,20));
     vars.push_back(std::make_tuple("_lW_asymmetry",-2.5,2.5,20));
     vars.push_back(std::make_tuple("_deepCSV_max",0.,1.,20));
+    vars.push_back(std::make_tuple("_deepFlavor_max",0.,1.,20));
     vars.push_back(std::make_tuple("_lT",0.,800.,20));
     vars.push_back(std::make_tuple("_MT",0.,300.,20));
     vars.push_back(std::make_tuple("_pTjj_max",0.,300.,20));
@@ -976,6 +1039,7 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_leptonEtaSubLeading",-2.5,2.5,20));
     vars.push_back(std::make_tuple("_leptonEtaTrailing",-2.5,2.5,20));
     vars.push_back(std::make_tuple("_numberOfVertices",-0.5,70.5,71));
+    vars.push_back(std::make_tuple("_bestZMass",0.,150.,15));
 
     // load fake rate maps if needed
     std::shared_ptr<TH2D> frmap_muon;
@@ -1030,7 +1094,8 @@ int main( int argc, char* argv[] ){
 
     // fill the histograms
     fillSystematicsHistograms(input_file_path, norm, output_file_path, process_name,
-				    event_selection, signal_categories, selection_type,
+				    event_selection, signal_categories, signal_channels,
+				    selection_type,
 				    frmap_muon, frmap_electron, 
 				    vars, reader, systematics);
 

@@ -37,11 +37,11 @@ def getcardcombinations(datacarddir,doprint=True):
     combineddict['dc_combined_signalregion_1617'] = (subselect(cards_sr,mustcontain=['2016']) 
 						    + subselect(cards_sr,mustcontain=['2017']))
     # combinations of years per signal region (+ control regions!)
-    combineddict['dc_combined_signalregion_1'] = (subselect(cards_sr,mustcontain=['_1_'])
+    combineddict['dc_combined_signalregion_cat1'] = (subselect(cards_sr,mustcontain=['_cat1_'])
 						    + cards_cr)
-    combineddict['dc_combined_signalregion_2'] = (subselect(cards_sr,mustcontain=['_2_'])
+    combineddict['dc_combined_signalregion_cat2'] = (subselect(cards_sr,mustcontain=['_cat2_'])
                                                     + cards_cr)
-    combineddict['dc_combined_signalregion_3'] = (subselect(cards_sr,mustcontain=['_3_'])
+    combineddict['dc_combined_signalregion_cat3'] = (subselect(cards_sr,mustcontain=['_cat3_'])
                                                     + cards_cr)
     # combinations of signal regions per year (+ control regions!)
     combineddict['dc_combined_2016'] = subselect(cards_all,mustcontain=['2016'])
@@ -141,7 +141,7 @@ if __name__=="__main__":
 	if(only2016 and not '2016' in card): continue
         print('running combine for '+card)
 	#make a job script 
-        script_name = 'runcombine{}.sh'.format(counter)
+        script_name = 'cjob_runcombine{}.sh'.format(counter)
         with open( script_name, 'w') as script:
             initializeJobScript( script )
             script.write('cd {}\n'.format( datacarddir ) )
@@ -149,8 +149,8 @@ if __name__=="__main__":
         # submit job and catch errors 
         #if( not runlocal ): submitQsubJob( script_name )
 	if( not runlocal ):
-	    ct.makeJobDescription( script_name.replace('.sh','_cjob.txt'), script_name )
-	    ct.submitCondorJob( script_name.replace('.sh','_cjob.txt') )
+	    ct.makeJobDescription( script_name.replace('.sh','.txt'), script_name )
+	    ct.submitCondorJob( script_name.replace('.sh','.txt') )
         # alternative: run locally (for testing and debugging)
         else: os.system('bash '+script_name)
 	counter += 1
@@ -165,7 +165,7 @@ if __name__=="__main__":
 	print('running combine for '+comb)
 	card = comb+'.txt'
 	#make a job script 
-        script_name = 'runcombine{}.sh'.format(counter)
+        script_name = 'cjob_runcombine{}.sh'.format(counter)
         with open( script_name, 'w') as script:
             initializeJobScript( script )
             script.write('cd {}\n'.format( datacarddir ) )
@@ -173,8 +173,8 @@ if __name__=="__main__":
         # submit job and catch errors 
         #if( not runlocal ): submitQsubJob( script_name )
 	if( not runlocal ):
-            ct.makeJobDescription( script_name.replace('.sh','_cjob.txt'), script_name )
-            ct.submitCondorJob( script_name.replace('.sh','_cjob.txt') )
+            ct.makeJobDescription( script_name.replace('.sh','.txt'), script_name )
+            ct.submitCondorJob( script_name.replace('.sh','.txt') )
         # alternative: run locally (for testing and debugging)
         else: os.system('bash '+script_name)
 	counter += 1

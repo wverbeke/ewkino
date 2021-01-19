@@ -232,6 +232,7 @@ if __name__=="__main__":
 	{'name':'_leptonEtaLeading','title':r'leading lepton #eta','unit':''},
         {'name':'_leptonEtaSubLeading','title':r'subleading lepton #eta','unit':''},
         {'name':'_leptonEtaTrailing','title':r'trailing lepton #eta','unit':''},
+	{'name':'_bestZMass','title':r'mass of OSSF pair','unit':'GeV'},
     ]
     # some more arguments, hard coded for now
     mcprocesses = (['tZq','WZ','multiboson','tbarttX','tbartZ','ZZH'])
@@ -280,7 +281,7 @@ if __name__=="__main__":
 	    # alternative: run locally
 	    #os.system('bash '+script_name)
 	    commands.append(command)
-	ct.submitCommandsAsCondorCluster('histplotter_prefit_cjob',commands)
+	ct.submitCommandsAsCondorCluster('cjob_histplotter_prefit',commands)
 
     else:
 	print('### ERROR ###: unrecognized command line arguments.')

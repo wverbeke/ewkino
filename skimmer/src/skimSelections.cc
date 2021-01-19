@@ -70,6 +70,13 @@ bool passDilightleptonSkim( Event& event){
     return ( event.numberOfLeptons() >= 2);
 }
 
+bool passTrilightleptonSkim( Event& event ){
+    // special skim analogous to trilepton but removing taus to save memory
+    if( !passLeptonicSkim( event,3) ) return false;
+    event.removeTaus();
+    return ( event.numberOfLeptons()>=3 );
+}
+
 bool passSkim( Event& event, const std::string& skimCondition ){
     static std::map< std::string, std::function< bool(Event&) > > skimFunctionMap = {
         { "noskim", [](Event&){ return true; } },
@@ -80,7 +87,8 @@ bool passSkim( Event& event, const std::string& skimCondition ){
         { "fakerate", passFakeRateSkim },
 	// added the following selection:
 	{ "trifolepton", passTriFOLeptonSkim },
-	{ "dilightlepton", passDilightleptonSkim}
+	{ "dilightlepton", passDilightleptonSkim },
+	{ "trilightlepton", passTrilightleptonSkim }
     };
     auto it = skimFunctionMap.find( skimCondition );
     if( it == skimFunctionMap.cend() ){

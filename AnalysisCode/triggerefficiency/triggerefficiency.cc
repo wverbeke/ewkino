@@ -36,6 +36,20 @@ bool checkReadability(const std::string& pathToFile){
     return true;
 }
 
+std::vector<double> ptThresholds(){
+    //return {25., 15., 10.}; // for tZq
+    return {40., 20., 10.}; // for ttZ (Marek)
+}
+
+bool passPtThresholds( const std::vector<double>& pts, const std::vector<double>& thresholds ){
+    // determine whether a given vector of pts passes a given vector of thresholds.
+    // note that both are implicitly assumed to be sorted (in the same way)!
+    if( pts[0]<thresholds[0] ) return false;
+    if( pts[1]<thresholds[1] ) return false;
+    if( pts[2]<thresholds[2] ) return false;
+    return true;
+}
+
 std::map< std::string, std::shared_ptr<TH1D> > initializeHistograms(std::string prefix,
 				    std::vector<std::tuple<std::string,double,double,int>> variables){
     // make output collection of histograms
@@ -130,7 +144,7 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
 	// build event
-        Event event = treeReader.buildEvent(entry,false,false);
+        Event event = treeReader.buildEvent(entry,false,false,false,false);
 	event.applyLeptonConeCorrection();
 
 	// split the event selection string into a list
@@ -181,21 +195,19 @@ void fillTriggerEfficiencyHistograms(const std::string& pathToFile,
 	    recopt.push_back(event.leptonCollection()[0].uncorrectedPt());
 	    recopt.push_back(event.leptonCollection()[1].uncorrectedPt());
 	    recopt.push_back(event.leptonCollection()[2].uncorrectedPt());
-	    std::sort(recopt.begin(),recopt.end());
-	    if(recopt[2] < 25. || recopt[1] < 15. || recopt[0] < 10.) continue;
+	    std::sort(recopt.begin(),recopt.end(),std::greater<double>());
+	    if( !passPtThresholds( recopt, ptThresholds() )) continue;
 	}
 
 	// additional selection: cone pt cuts
 	if(std::find(selectionTags.begin(),selectionTags.end(),"ptcuts")!=selectionTags.end() || 
 	    std::find(selectionTags.begin(),selectionTags.end(),"coneptcuts")!=selectionTags.end()){
-	    //std::cout << "checking pt cuts" << std::endl;
-	    //std::cout << event.leptonCollection()[0].pt() << event.leptonCollection()[1].pt();
-	    //std::cout << event.leptonCollection()[2].pt() << std::endl;
 	    event.sortLeptonsByPt();
-	    if(event.leptonCollection()[0].pt() < 25. 
-		|| event.leptonCollection()[1].pt() < 15. 
-		|| event.leptonCollection()[2].pt() < 10.) continue;
-	    //std::cout << "passed" << std::endl;
+	    std::vector<double> conept;
+	    conept.push_back(event.leptonCollection()[0].pt());
+	    conept.push_back(event.leptonCollection()[1].pt());
+	    conept.push_back(event.leptonCollection()[2].pt());
+	    if( !passPtThresholds( conept, ptThresholds() )) continue;
 	}
 
 	double weight = event.weight();

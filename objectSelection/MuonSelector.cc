@@ -3,12 +3,18 @@
 //b-tagging working points
 #include "bTagWP.h"
 
+///// general comments /////
+// - tzq loose was simply copied from Marek's code, 
+//   in order to perform a trigger efficiency measurement;
+//   it was not yet tested or used in any other way.
+
 // define here what mva threshold to use in tZq ID's listed below
 double muonMVACut(){
     if(LeptonSelector::leptonID()=="tth") return 0.85;
     else if(LeptonSelector::leptonID()=="oldtzq") return 0.8;
     else if(LeptonSelector::leptonID()=="tzqtight") return 0.9;
     else if(LeptonSelector::leptonID()=="tzqmedium0p4") return 0.4; 
+    else if(LeptonSelector::leptonID()=="tzqloose") return 0.05;
     else return 1.;
 }
 
@@ -18,6 +24,7 @@ double muonMVAValue(const Muon* muonPtr){
     else if(LeptonSelector::leptonID()=="oldtzq") return muonPtr->leptonMVAtZq();
     else if(LeptonSelector::leptonID()=="tzqtight") return muonPtr->leptonMVATOP();
     else if(LeptonSelector::leptonID()=="tzqmedium0p4") return muonPtr->leptonMVATOP();
+    else if(LeptonSelector::leptonID()=="tzqloose") return muonPtr->leptonMVATOP();
     else return 0;
 }
 
@@ -40,6 +47,7 @@ double muonConeCorrectionFactor(){
     else if(LeptonSelector::leptonID()=="oldtzq") return 0.95;
     else if(LeptonSelector::leptonID()=="tzqtight") return 0.8;
     else if(LeptonSelector::leptonID()=="tzqmedium0p4") return 0.67;
+    else if(LeptonSelector::leptonID()=="tzqloose") return 0.6368;
     else return 0;
 }
 
@@ -177,6 +185,56 @@ bool MuonSelector::isFO2018tZqMedium0p4() const{
         if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 20., 0.025, 40., 0.015, 
                 muonPtr->uncorrectedPt()) ) return false;
         if( muonPtr->ptRatio() <= 0.45 ) return false;
+    }
+    return true;
+}
+
+
+/*
+--------------------------------------------------------------------------------
+FO muon selection for tZq loose ID
+--------------------------------------------------------------------------------
+*/
+
+bool MuonSelector::isFOBasetZqLoose() const{
+    if( !isLoose() ) return false;
+    if( muonPtr->uncorrectedPt() <= 10 ) return false;
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
+        if( muonPtr->ptRatio() <= 0.37 ) return false; // changed from 0.4
+    }
+    return true;
+}
+
+bool MuonSelector::isFO2016tZqLoose() const{
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
+        //double deepFlavorCut = slidingDeepFlavorThreshold( 0.0314, 0.0514, 
+	//			muonPtr->uncorrectedPt() );
+        double deepFlavorCut = muonSlidingDeepFlavorThreshold( 20, 0.0514, 45, 0.0314, 
+				muonPtr->uncorrectedPt() );
+	if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+    }
+    return true;
+}
+
+bool MuonSelector::isFO2017tZqLoose() const{
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
+        //double deepFlavorCut = slidingDeepFlavorThreshold( 0.0521, 0.0421, 
+	//			muonPtr->uncorrectedPt() );
+	double deepFlavorCut = muonSlidingDeepFlavorThreshold( 20, 0.0421, 45, 0.0521, 
+                                muonPtr->uncorrectedPt() );
+        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+    }
+    return true;
+}
+
+
+bool MuonSelector::isFO2018tZqLoose() const{
+    if( muonMVAValue(muonPtr) <= muonMVACut() ){
+        //double deepFlavorCut = slidingDeepFlavorThreshold( 0.0494, 0.0394, 
+	//			muonPtr->uncorrectedPt() );
+	double deepFlavorCut = muonSlidingDeepFlavorThreshold( 20, 0.0394, 45, 0.0494,
+                                muonPtr->uncorrectedPt() );
+        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
     }
     return true;
 }
@@ -333,6 +391,32 @@ bool MuonSelector::isTight2017tZqMedium0p4() const{
 bool MuonSelector::isTight2018tZqMedium0p4() const{
     return true;
 }
+
+/*
+----------------------------------------------------------------------------
+tight muon selection for loose tZq ID
+----------------------------------------------------------------------------
+*/
+
+bool MuonSelector::isTightBasetZqLoose() const{
+    if( !isFOtZqLoose() ) return false;
+    if( !muonPtr->isMediumPOGMuon() ) return false;
+    if( muonMVAValue(muonPtr) <= muonMVACut() ) return false;
+    return true;
+}
+
+bool MuonSelector::isTight2016tZqLoose() const{
+    return true;
+}
+
+bool MuonSelector::isTight2017tZqLoose() const{
+    return true;
+}
+
+bool MuonSelector::isTight2018tZqLoose() const{
+    return true;
+}
+
 
 /*
 ----------------------------------------------------------------------------

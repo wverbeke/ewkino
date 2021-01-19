@@ -6,12 +6,18 @@
 //include other parts of framework
 #include "bTagWP.h"
 
+///// general comments /////
+// - tzq loose was simply copied from Marek's code, 
+//   in order to perform a trigger efficiency measurement;
+//   it was not yet tested or used in any other way.
+
 // define here what mva threshold to use in tZq ID's listed below
 double electronMVACut(){
     if(LeptonSelector::leptonID()=="tth") return 0.8;
     else if(LeptonSelector::leptonID()=="oldtzq") return 0.8;
     else if(LeptonSelector::leptonID()=="tzqtight") return 0.9;
     else if(LeptonSelector::leptonID()=="tzqmedium0p4") return 0.4;
+    else if(LeptonSelector::leptonID()=="tzqloose") return 0.0;
     else return 1;
 }
 
@@ -21,6 +27,7 @@ double electronMVAValue(const Electron* electronPtr){
     else if(LeptonSelector::leptonID()=="oldtzq") return electronPtr->leptonMVAtZq();
     else if(LeptonSelector::leptonID()=="tzqtight") return electronPtr->leptonMVATOP();
     else if(LeptonSelector::leptonID()=="tzqmedium0p4") return electronPtr->leptonMVATOP();
+    else if(LeptonSelector::leptonID()=="tzqloose") return electronPtr->leptonMVATOP();
     else return 0;
 }
 
@@ -44,24 +51,24 @@ double electronConeCorrectionFactor(){
     else if(LeptonSelector::leptonID()=="oldtzq") return 0.95;
     else if(LeptonSelector::leptonID()=="tzqtight") return 0.8;
     else if(LeptonSelector::leptonID()=="tzqmedium0p4") return 0.67;
+    else if(LeptonSelector::leptonID()=="tzqloose") return 0.6495;
     else return 0;
 }
 
 /*
 ----------------------------------------------------------------
-loose electron selection (common for ttH and tZq ID)
+loose electron selection (common for ttH and tZq IDs)
 ----------------------------------------------------------------
 */
 bool ElectronSelector::isLooseBase() const{
     //if( electronPtr->uncorrectedPt() < 7 ) return false;
-    if( electronPtr->uncorrectedPt() < 5 ) return false; // temp for syncing with TT
+    if( electronPtr->uncorrectedPt() < 5 ) return false; // for syncing with TT
     if( electronPtr->absEta() >= 2.5 ) return false;
     if( fabs( electronPtr->dxy() ) >= 0.05 ) return false;
     if( fabs( electronPtr->dz() ) >= 0.1 ) return false;
     if( electronPtr->sip3d() >= 8 ) return false;
     if( electronPtr->numberOfMissingHits() >= 2 ) return false;
     if( electronPtr->miniIso() >= 0.4 ) return false;
-    //if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     return true;
 }
 
@@ -118,7 +125,7 @@ bool ElectronSelector::isFOBasetZq() const{
     if( !electronPtr->passConversionVeto() ) return false;
     // put tunable FO cuts below
     //if( electronMVAValue(electronPtr) < electronMVACut() ){
-    //}
+    //} // see different years!
     return true;
 }
 
@@ -187,9 +194,7 @@ bool ElectronSelector::isFOBasetZqMedium0p4() const{
         if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
     }
     if( !electronPtr->passConversionVeto() ) return false;
-
     if( !electronPtr->passChargeConsistency() ) return false; // for testing if this fixes closure
-
     // put tunable FO cuts below
     //if( electronMVAValue(electronPtr) < electronMVACut() ){
     //}
@@ -249,6 +254,61 @@ bool ElectronSelector::isFO2018tZqMedium0p4() const{
 }
 
 
+/*
+-------------------------------------------------------------------
+FO electron selection for loose tZq ID
+-------------------------------------------------------------------
+*/
+
+bool ElectronSelector::isFOBasetZqLoose() const{
+    if( !isLoose() ) return false;
+    if( electronPtr->uncorrectedPt() < 10 ) return false;
+    if( electronPtr->numberOfMissingHits() > 0 ) return false; // added
+    if( electronPtr->hOverE() >= 0.1 ) return false;
+    if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
+    if( electronPtr->etaSuperCluster() <= 1.479 ){
+        if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
+    } else {
+        if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
+    }
+    if( electronMVAValue(electronPtr) <= electronMVACut() ){
+        if( electronPtr->ptRatio() <= 0.34 ) return false;   // changed from 0.4
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false; // added, other options WP80, WP90
+    }
+    if( !electronPtr->passConversionVeto() ) return false; // applied only to 2L selection in ttZ
+    return true;
+}
+
+bool ElectronSelector::isFO2016tZqLoose() const{
+    if( electronMVAValue(electronPtr) <= electronMVACut() ){
+        //if( electronPtr->closestJetDeepFlavor() >= slidingDeepFlavorThreshold( 0.3493, 0.4693, 
+	//	electronPtr->uncorrectedPt() ) ) return false;
+	if( electronPtr->closestJetDeepFlavor() >= electronSlidingDeepFlavorThreshold(
+	    20, 0.4693, 45, 0.3493, electronPtr->uncorrectedPt() ) ) return false;
+    }
+    return true;
+}
+
+bool ElectronSelector::isFO2017tZqLoose() const{
+    if( electronMVAValue(electronPtr) <= electronMVACut() ){
+        //if( electronPtr->closestJetDeepFlavor() >= slidingDeepFlavorThreshold( 0.3833, 0.4433, 
+	//	electronPtr->uncorrectedPt() ) ) return false;
+	if( electronPtr->closestJetDeepFlavor() >= electronSlidingDeepFlavorThreshold(
+            20, 0.4433, 45, 0.3833, electronPtr->uncorrectedPt() ) ) return false;
+    }
+    return true;
+}
+
+bool ElectronSelector::isFO2018tZqLoose() const{
+    if( electronMVAValue(electronPtr) <= electronMVACut() ){
+        //if( electronPtr->closestJetDeepFlavor() >= slidingDeepFlavorThreshold( 0.4170, 0.3170, 
+	//	electronPtr->uncorrectedPt() ) ) return false;
+	if( electronPtr->closestJetDeepFlavor() >= electronSlidingDeepFlavorThreshold(
+            20, 0.3170, 45, 0.4170, electronPtr->uncorrectedPt() ) ) return false;
+    }
+    return true;
+}
+    
 /*
 -------------------------------------------------------------------
 FO electron selection for ttH ID
@@ -390,6 +450,34 @@ bool ElectronSelector::isTight2017tZqMedium0p4() const{
 
 
 bool ElectronSelector::isTight2018tZqMedium0p4() const{
+    return true;
+}
+
+
+/* 
+------------------------------------------------------------------------
+tight electron selection for loose tZq ID
+------------------------------------------------------------------------
+*/
+
+bool ElectronSelector::isTightBasetZqLoose() const{
+    if( !isFOtZqLoose() ) return false;
+    if( electronMVAValue(electronPtr) <= electronMVACut() ) return false;
+    return true;
+}
+
+
+bool ElectronSelector::isTight2016tZqLoose() const{
+    return true;
+}
+
+
+bool ElectronSelector::isTight2017tZqLoose() const{
+    return true;
+}
+
+
+bool ElectronSelector::isTight2018tZqLoose() const{
     return true;
 }
 

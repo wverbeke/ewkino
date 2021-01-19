@@ -87,7 +87,7 @@ bool JetSelector::isGoodBasetZq() const{
 
     // additional pt threshold for specific eta range
     // (test if this reduces bump and data/MC discrepancy)
-    if( fabs( jetPtr->eta() )>2.6 
+    if( fabs( jetPtr->eta() )>2.7 
 	and fabs( jetPtr->eta() )<3.0
 	and jetPtr->pt() < 60 ) return false;
     return true;

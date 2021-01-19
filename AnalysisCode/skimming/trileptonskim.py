@@ -31,7 +31,7 @@ version_name = 'Run2017E_test'
 sample_list = '../samplelists/samplelist_all.txt'
 output_directory_base = '/storage_mnt/storage/user/llambrec/ewkino/test/testData/skimmed'
 # fixed argument for now, but should be easy to adapt to allow different skimming conditions
-skim_condition = 'trilepton'
+skim_condition = 'trilightlepton'
 
 # if too few command line args, check with the user if default arguments can be used
 if len(sys.argv) < 4:
@@ -173,4 +173,4 @@ for sample_directory, sub_directory, output_directory in zip( sample_directories
         # alternative: run locally (for testing and debugging)
         #os.system('bash '+script_name)
 	# new condor way
-	ct.submitCommandsAsCondorJob( 'trileptonskim_cjob', commands )
+	ct.submitCommandsAsCondorJob( 'cjob_trileptonskim', commands )

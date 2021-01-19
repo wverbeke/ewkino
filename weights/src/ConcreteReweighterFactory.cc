@@ -166,17 +166,14 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     // reweighter to return
     CombinedReweighter combinedReweighter;
 
-    // determine what working point is being used 
+    // determine what working point is being used in order to read correct lepton SF files
     // function definition in ewkino/objectSelection/LeptonSelector!
     std::string leptonID = LeptonSelector::leptonID();
     std::string interpendix = "";
     if(leptonID=="tzqtight") interpendix = "Tight";
     else if(leptonID=="tzqmedium0p4") interpendix = "Medium040";
-    else{ 
-	std::cerr << "### ERROR ###: lepton ID '" << leptonID;
-	std::cerr << "' not recognized (in tZqReweighterFactory);";
-	std::cerr << " loading of scale factors will crash..." << std::endl;
-    }
+    else throw std::invalid_argument( std::string("ERROR in tZqReweighterFactory: ") 
+		+ "lepton ID '" + leptonID + "' not recognized.");
 
     // make muon ID Reweighter
     std::string muonSFFileName = stringTools::formatDirectoryName( weightDirectory )
@@ -257,7 +254,6 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     for(int i = 0; i <= electronSFHist_nom->GetNbinsX()+1; ++i){
         for(int j = 0; j <= electronSFHist_nom->GetNbinsY()+1; ++j){
             electronSFHist_nom->SetBinError(i,j,0.);
-            //double sf = electronSFHist_nom->GetBinContent(i,j);
             electronSFHist_syst->SetBinError(i,j,electronSFHist_syst->GetBinContent(i,j));
             electronSFHist_syst->SetBinContent(i,j,1.);
             electronSFHist_stat->SetBinError(i,j,electronSFHist_stat->GetBinContent(i,j));
@@ -324,16 +320,18 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
 	std::make_shared<ReweighterPileup>( samples, weightDirectory ) );
 
     // make b-tagging Reweighter 
-    const std::string& bTagWP = "medium";
-    const std::string& bTagReweighterWP = "medium"; // temp since "reshaping" is not in the csv files
-    // (need different 'WP' for reweighter than for selection as we need to use scale factors
-    // that correct the whole shape of the b-tagger output, as it is used in the BDT!)
+
+    // OLD WAY: reweight using a specific working point
+    // not recommended by the b-tagging POG when using the b-tagging score in your BDT
+    /*const std::string& bTagWP = "medium";
 
     // read MC b-tagging efficiency histograms
     const std::string& leptonCleaning = "looseLeptonCleaned";
     const std::string& btagger = "deepFlavor"; // choose from "deepFlavor" or "deepCSV"
+    // note: changing this is not enough, see also type of reweighter objects below!
     TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
-	+ "weightFiles/bTagEff/bTagEff_" + btagger + "_" + leptonCleaning + "_" + year + ".root" ).c_str() );
+	+ "weightFiles/bTagEff/bTagEff_" + btagger + "_" + leptonCleaning + "_" + year 
+	+ ".root" ).c_str() );
     std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >( 
 	bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_udsg" ).c_str() ) ) );
     bTagEffMCHist_udsg->SetDirectory( gROOT );
@@ -349,19 +347,47 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     std::string bTagSFFileName;
     if( year == "2016" ){
         bTagSFFileName= "DeepJet_2016LegacySF_WP_V1.csv";
+	//bTagSFFileName = "DeepJet_2016LegacySF_V1.csv";
     } else if( year == "2017" ){
         bTagSFFileName = "DeepFlavour_94XSF_WP_V3_B_F.csv";
+	//bTagSFFileName = "DeepFlavour_94XSF_V4_B_F.csv";
     } else {
         bTagSFFileName = "DeepJet_102XSF_WP_V1.csv";
+	//bTagSFFileName = "DeepJet_102XSF_V2.csv";
     }
     std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
 
     combinedReweighter.addReweighter( "bTag_heavy", 
 	std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath, 
-	    bTagReweighterWP, bTagEffMCHist_c, bTagEffMCHist_b ) );
+	    bTagWP, bTagEffMCHist_c, bTagEffMCHist_b ) );
     combinedReweighter.addReweighter( "bTag_light", 
 	std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath, 
-	    bTagReweighterWP, bTagEffMCHist_udsg ) );   
+	    bTagWP, bTagEffMCHist_udsg ) ); */
+
+    // NEW way: reweight the whole distribution
+    // read b-tagging scale factor histograms
+    std::string bTagSFFileName;
+    if( year == "2016" ){
+        bTagSFFileName = "DeepJet_2016LegacySF_V1.csv";
+    } else if( year == "2017" ){
+        bTagSFFileName = "DeepFlavour_94XSF_V4_B_F.csv";
+    } else {
+        bTagSFFileName = "DeepJet_102XSF_V2.csv";
+    }
+    std::string bTagSFPath = stringTools::formatDirectoryName(weightDirectory);
+    bTagSFPath += "weightFiles/bTagSF/"+bTagSFFileName;
+    // set other parameters
+    std::string flavor = "all";
+    std::string bTagAlgo = "deepJet";
+    std::vector<std::string> systematics = {"jes","hf","lf","hfstats1","hfstats2",
+                                            "lfstats1","lfstats2","cferr1","cferr2"};
+    std::string weightDir = stringTools::formatDirectoryName(weightDirectory);
+    weightDir += "weightFiles/bTagNorm";
+    std::shared_ptr<ReweighterBTagShape> bTagShape = std::make_shared<ReweighterBTagShape>(
+                                                    bTagSFPath, flavor, bTagAlgo,
+                                                    systematics, weightDir );
+    bTagShape->initialize(samples);
+    combinedReweighter.addReweighter( "bTag_shape", bTagShape );
 
     // make prefire Reweighter
     combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
@@ -375,6 +401,34 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     std::string yearCopy = year; // ad-hoc, needed to avoid const / non-const compilation errors
     //combinedReweighter.addReweighter("PUJetId", std::make_shared<ReweighterPileupJetId>(
     //	pileupJetIdEffFile, pileupJetIdSFFile, puJetIdWP, yearCopy ) );
+
+    return combinedReweighter;
+}
+
+// ------------------------------------------------------------------------------- //
+// bTagShape reweighter for testing purposes
+
+CombinedReweighter BTagShapeReweighterFactory::buildReweighter( const std::string& weightDirectory,
+                    const std::string& year, const std::vector< Sample >& samples ) const{
+
+    // reweighter to return
+    CombinedReweighter combinedReweighter;
+    // dummy condition on args to avoid compilation warnings
+    if(weightDirectory=="" && year=="" && samples.size()==0) return combinedReweighter;
+
+    std::string sfFilePath = stringTools::formatDirectoryName(weightDirectory);
+    sfFilePath += "weightFiles/bTagSF/DeepJet_2016LegacySF_V1.csv";
+    std::string flavor = "all";
+    std::string bTagAlgo = "deepJet";
+    std::vector<std::string> systematics = {"jes","hf","lf","hfstats1","hfstats2",
+					    "lfstats1","lfstats2","cferr1","cferr2"};
+    std::string weightDir = stringTools::formatDirectoryName(weightDirectory);
+    weightDir += "weightFiles/bTagNorm";
+    std::shared_ptr<ReweighterBTagShape> bTagShape = std::make_shared<ReweighterBTagShape>( 
+						    sfFilePath, flavor, bTagAlgo, 
+						    systematics, weightDir );
+    bTagShape->initialize(samples);
+    combinedReweighter.addReweighter( "bTag_shape", bTagShape );
 
     return combinedReweighter;
 }

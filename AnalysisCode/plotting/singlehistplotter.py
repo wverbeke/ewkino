@@ -9,8 +9,8 @@ import glob
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 sys.path.append(os.path.join(os.path.dirname(__file__),'../tools'))
-import histtools
-import plottools as tools
+import histtools as ht
+import plottools as pt
 
 def submitjob(cwd, command):
     script_name = 'singlehistplotter.sh'
@@ -19,21 +19,6 @@ def submitjob(cwd, command):
         script.write('cd {}\n'.format(cwd))
         script.write(command+'\n')
     submitQsubJob(script_name)
-
-def getminmax(histlist):
-    # get suitable minimum and maximum values for plotting a hist collection (not stacked)
-    totmax = 0.
-    totmin = 99.
-    for hist in histlist:
-        for i in range(1,hist.GetNbinsX()+1):
-            val = hist.GetBinContent(i)
-            if val > totmax: totmax = val
-            if val < totmin: totmin = val
-    topmargin = (totmax-totmin)/2.
-    bottommargin = (totmax-totmin)/5.
-    #return (totmin-bottommargin,totmax+topmargin)
-    return (0,totmax+topmargin)
-    #return(totmin/10.,totmax*10.)
 
 def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,
 		    errorbars=False,normalize=False,
@@ -105,7 +90,7 @@ def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,
     ### make upper part of the plot
     pad1.cd()
     #pad1.SetLogy()
-    (rangemin,rangemax) = getminmax(mchistlist)
+    (rangemin,rangemax) = ht.getminmaxmargin(mchistlist)
     mchistlist[0].SetMinimum(rangemin)
     mchistlist[0].SetMaximum(rangemax)
 
@@ -143,7 +128,7 @@ def plothistograms(mchistlist,yaxtitle,xaxtitle,outfile,
     tools.drawLumi(pad1,lumitext="simulation")
 
     ### save the plot
-    c1.SaveAs(outfile.rstrip('.png')+'.png')
+    c1.SaveAs(outfile.replace('.png','')+'.png')
 
 #--------------------------------------------------------#
 

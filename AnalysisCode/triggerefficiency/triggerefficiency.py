@@ -63,6 +63,16 @@ for f in os.listdir(input_directory):
     if not keep: continue
     inputfiles.append(os.path.join(input_directory,f))
 
+# temp for Marek: take ttZ directly from MC folder instead of trigger folder
+for f in os.listdir(input_directory.replace('trigger','MC')):
+    if f[-5:]!='.root': continue
+    keep = False
+    if 'TTZ' in f: keep = True
+    if not keep: continue
+    inputfiles.append(os.path.join(input_directory.replace('trigger','MC'),f))
+#print(inputfiles)
+#sys.exit()
+
 # check if executable is present
 if not os.path.exists('./triggerefficiency'):
     print('### ERROR ###: triggerefficiency executable was not found.')

@@ -29,7 +29,10 @@ class Sample{
         Sample( const std::string& pathToFile, const bool is2017, const bool is2018, const bool isData, const std::string& processName = "", const double xSec = 1., const bool isSMSignal = false, const bool isNewPhysicsSignal = false );
 
         std::string fileName() const { return _fileName; }
-        std::string processName() const { return _processName; } 
+        std::string processName() const { return _processName; }
+	std::string filePath() const { 
+	    return _directory+"/"+_fileName; // still to check! 
+	} 
     
         //to prevent overlapping file names when re-using a sample in both the 2016 and 2017 data lists 
         std::string uniqueName() const { return _uniqueName; }

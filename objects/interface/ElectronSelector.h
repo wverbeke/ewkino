@@ -31,6 +31,10 @@ class ElectronSelector : public LeptonSelector {
 	virtual bool isFO2016tZqMedium0p4() const override;
 	virtual bool isFO2017tZqMedium0p4() const override;
 	virtual bool isFO2018tZqMedium0p4() const override;
+	virtual bool isFOBasetZqLoose() const override;
+        virtual bool isFO2016tZqLoose() const override;
+        virtual bool isFO2017tZqLoose() const override;
+        virtual bool isFO2018tZqLoose() const override;
         virtual bool isFOBasettH() const override;
         virtual bool isFO2016ttH() const override;
         virtual bool isFO2017ttH() const override;
@@ -48,6 +52,10 @@ class ElectronSelector : public LeptonSelector {
 	virtual bool isTight2016tZqMedium0p4() const override;
 	virtual bool isTight2017tZqMedium0p4() const override;
 	virtual bool isTight2018tZqMedium0p4() const override;
+	virtual bool isTightBasetZqLoose() const override;
+        virtual bool isTight2016tZqLoose() const override;
+        virtual bool isTight2017tZqLoose() const override;
+        virtual bool isTight2018tZqLoose() const override;
         virtual bool isTightBasettH() const override;
         virtual bool isTight2016ttH() const override;
         virtual bool isTight2017ttH() const override;

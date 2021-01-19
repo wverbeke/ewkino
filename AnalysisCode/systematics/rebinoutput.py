@@ -16,7 +16,7 @@ import histtools as histtools
 
 ##### main function #####
 
-def rebinoutput(topdir,year,region,npmode,mode,firstbincount,binfactor):
+def rebinoutput(topdir,year,region,npmode,samplelistdir,mode,firstbincount,binfactor):
 
     # step 1: merge all relevant files using hadd
     # (the hadding here is only temporary, needed for rebinning)
@@ -24,7 +24,7 @@ def rebinoutput(topdir,year,region,npmode,mode,firstbincount,binfactor):
     if os.path.exists(combpath):
         os.system('rm -r '+combpath)
     os.makedirs(combpath)
-    filestomerge = getfilestomerge(topdir,year,region,npmode) # implicit printing
+    filestomerge = getfilestomerge(topdir,year,region,npmode,samplelistdir) # implicit printing
     if len(filestomerge)==0: return -1
     outputfile = os.path.join(combpath,'combined.root')
     print('running hadd command...')
@@ -120,6 +120,9 @@ if __name__=='__main__':
 	print('                         <first_bin_count> <bin_factor>')
         sys.exit()
 
+    # global setting of sample list directory (to switch between old and new sample lists)
+    samplelistdir = os.path.abspath('../samplelists/samplelists_tzq_v_iTuple')
+
     # global setting of years to run on
     yearlist = []
     yearlist.append('2016')
@@ -128,8 +131,8 @@ if __name__=='__main__':
     
     # global setting of regions to run on
     regionlist = []
-    regionlist.append('signalregion_1')
-    for r in ['signalregion_2','signalregion_3']: regionlist.append(r)
+    regionlist.append('signalregion_cat1')
+    for r in ['signalregion_cat2','signalregion_cat3']: regionlist.append(r)
     # recommended to not rebin the control regions, it is useless anyway 
     # and can give problems if using signal-based rebinning.
     #regionlist.append('wzcontrolregion')
@@ -177,6 +180,6 @@ if __name__=='__main__':
 	#ct.submitCommandsAsCondorCluster('rebinoutput_cjob',commands)
 
     else:
-	rebinoutput(topdir,year,region,npmode,mode,firstbincount,binfactor)
+	rebinoutput(topdir,year,region,npmode,samplelistdir,mode,firstbincount,binfactor)
 
     sys.stderr.write('###done###\n')

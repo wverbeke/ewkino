@@ -21,14 +21,14 @@ def printfilestomerge(mcfiles,datafiles):
     for f in datafiles:
         print('    '+f)
 
-def getfilestomerge(topdir,year,region,npmode):
+def getfilestomerge(topdir,year,region,npmode,samplelistdir):
     ### get a list of files to merge for this specific year, region and nonprompt mode
     # depends strongly on naming and folder structuring convention!!!
 
     mcpath = os.path.join(topdir,year+'MC',region)
-    mcsamplelist = os.path.abspath('../samplelists/samplelist_tzq_'+year+'_MC.txt')
+    mcsamplelist = os.path.abspath(os.path.join(samplelistdir,'samplelist_tzq_'+year+'_MC.txt'))
     datapath = os.path.join(topdir,year+'data',region)
-    datasamplelist = os.path.abspath('../samplelists/samplelist_tzq_'+year+'_data.txt')
+    datasamplelist = os.path.abspath(os.path.join(samplelistdir,'samplelist_tzq_'+year+'_data.txt'))
     # check if the necessary paths exist
     if npmode=='npfromsim':
         if( not (os.path.exists(mcpath+'_3tight')

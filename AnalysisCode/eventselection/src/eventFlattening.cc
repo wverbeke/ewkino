@@ -51,6 +51,7 @@ Float_t _leptonEtaSubLeading = 0.;
 Float_t _leptonEtaTrailing = 0.;
 Float_t _numberOfVertices = 0.;
 Int_t _fakeRateFlavour = -1;
+Float_t _bestZMass = 0.;
 
 
 void eventFlattening::setVariables(std::map<std::string,double> varmap){
@@ -101,6 +102,7 @@ void eventFlattening::setVariables(std::map<std::string,double> varmap){
     _leptonEtaTrailing = varmap["_leptonEtaTrailing"];
     _numberOfVertices = varmap["_numberOfVertices"];
     _fakeRateFlavour = varmap["_fakeRateFlavour"];
+    _bestZMass = varmap["_bestZMass"];
 }
 
 std::map< std::string, double > eventFlattening::initVarMap(){
@@ -131,7 +133,9 @@ std::map< std::string, double > eventFlattening::initVarMap(){
 
 	{"_numberOfVertices",0},
 	
-	{"_fakeRateFlavour",-1}
+	{"_fakeRateFlavour",-1},
+    
+	{"_bestZMass",0.}
     };
     return varmap;    
 }
@@ -187,7 +191,8 @@ void eventFlattening::initOutputTree(TTree* outputTree){
     outputTree->Branch("_leptonEtaSubLeading", &_leptonEtaSubLeading, "_leptonEtaSubLeading/F");
     outputTree->Branch("_leptonEtaTrailing", &_leptonEtaTrailing, "_leptonEtaTrailing/F");
     outputTree->Branch("_numberOfVertices", &_numberOfVertices, "_numberOfVertices/F");
-    outputTree->Branch("_fakeRateFlavour",&_fakeRateFlavour, "_fakeRateFlavour/I");
+    outputTree->Branch("_fakeRateFlavour", &_fakeRateFlavour, "_fakeRateFlavour/I");
+    outputTree->Branch("_bestZMass", &_bestZMass, "_bestZMass/F");
 }
 
 TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, 
@@ -334,9 +339,9 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     }
     if(event.isMC()){ 
 	varmap["_normweight"] *= reweighter.totalWeight(event);
-	varmap["_leptonreweight"] = reweighter["muonID"]->weight(event) 
-				    * reweighter["electronID"]->weight(event);
-	varmap["_nonleptonreweight"] = reweighter.totalWeight(event)/varmap["_leptonreweight"];
+	//varmap["_leptonreweight"] = reweighter["muonID"]->weight(event) 
+	//			    * reweighter["electronID"]->weight(event);
+	//varmap["_nonleptonreweight"] = reweighter.totalWeight(event)/varmap["_leptonreweight"];
     }
 
     // in case of running in mode "fakerate", take into account fake rate weight
@@ -406,30 +411,23 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     //std::cout<<"checkpoint 1"<<std::endl;
 
     // find lepton from W and set its properties
-    // (will this work on e.g. the ZZ control region where in principle no lepton from W is present?)
-    if(event.hasOSSFLightLeptonPair()){ lWindex = event.WLeptonIndex(); }
+    // (note: code runs but is rather meaningless if no or multiple OSSF pairs are present, 
+    // e.g. in some control regions)
+    if(event.hasOSSFLightLeptonPair()){ 
+	lWindex = event.WLeptonIndex();
+    } 
     LeptonCollection::const_iterator lIt = lepcollection.cbegin();
     for(int i=0; i<lWindex; i++){++lIt;}
     Lepton& lW = **lIt;
     varmap["_lW_asymmetry"] = fabs(lW.eta())*lW.charge();
     //std::cout<<"checkpoint 2"<<std::endl;
 
-    // find leptons from Z
-    // NOT YET SAFE WHEN NO OSSF PAIR IS PRESENT
-    //std::pair< int, int > zbosonresults = event.bestZBosonCandidateIndices();
-    //int lZ1index = zbosonresults.first; int lZ2index = zbosonresults.second;
-    //lIt = event.leptonCollection().cbegin();
-    //for(int i=0; i<lZ1index; i++){++lIt;}
-    //Lepton& lZ1 = **lIt;
-    //lIt = event.leptonCollection().cbegin();
-    //for(int i=0; i<lZ2index; i++){++lIt;}
-    //Lepton& lZ2 = **lIt;
-    //std::cout<<"___________"<<std::endl;
-    //std::cout<<lW<<std::endl;
-    //std::cout<<lZ1<<std::endl;
-    //std::cout<<lZ2<<std::endl;
-    //std::cout<<""<<std::endl;
-    //std::cout<<"checkpoint 4"<<std::endl;
+    // find reconstructed Z mass
+    if(event.hasOSSFLightLeptonPair()){
+	std::pair< std::pair<int,int>, double> zbosonresults 
+	    = event.leptonCollection().bestZBosonCandidateIndicesAndMass();
+	varmap["_bestZMass"] = zbosonresults.second;
+    }
     
     // top reconstruction
     std::pair< double, double > pmz = pmzcandidates(lW, met);

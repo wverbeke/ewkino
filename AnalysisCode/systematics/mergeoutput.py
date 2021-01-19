@@ -66,7 +66,7 @@ def subselect_by_tag(filedirectory,samplelist,tagstodiscard=[],tagstokeep=[]):
 
 ##### main function #####
 
-def mergeoutput(topdir,year,region,npmode):
+def mergeoutput(topdir,year,region,npmode,samplelistdir):
 
     print('#####')
     print('merging all files for year: {}, region: {}, npmode: {}'
@@ -81,7 +81,7 @@ def mergeoutput(topdir,year,region,npmode):
     outputfile = os.path.join(combpath,'combined.root')
     tempfilename = outputfile[:-5]+'_temp.root'
     print('found following files:')
-    filestomerge = getfilestomerge(topdir,year,region,npmode) # implicit printing
+    filestomerge = getfilestomerge(topdir,year,region,npmode,samplelistdir) # implicit printing
     if len(filestomerge)==0: return
     print('running hadd command...')
     command = 'hadd '+outputfile
@@ -124,24 +124,31 @@ if __name__=='__main__':
 	print('               need at least <topdir>')
 	sys.exit()
 
+    # global setting of sample list directory (to switch between old and new sample lists)
+    samplelistdir = os.path.abspath('../samplelists/samplelists_tzq_v_iTuple')
+
     # global setting of years and regions to run on (ignored if year and region are in arguments)
     yearlist = []
     yearlist.append('2016')
     yearlist.append('2017')
     yearlist.append('2018')
     regionlist = []
-    #regionlist.append('signalregion_1')
-    #for r in ['signalregion_2','signalregion_3']: regionlist.append(r)
-    #regionlist.append('wzcontrolregion')
-    #regionlist.append('zzcontrolregion')
-    #regionlist.append('zgcontrolregion')
-    #regionlist.append('ttzcontrolregion')
-    regionlist.append('signalsideband_noossf_1')
-    regionlist.append('signalsideband_noz_1')
-    #regionlist.append('signalsideband_noossf_12')
-    #regionlist.append('signalsideband_noz_12')
-    regionlist.append('signalsideband_noossf')
-    regionlist.append('signalsideband_noz')
+    regionlist.append('signalregion_cat1')
+    for r in ['signalregion_cat2','signalregion_cat3']: regionlist.append(r)
+    regionlist.append('signalregion_cat123')
+    regionlist.append('wzcontrolregion')
+    regionlist.append('zzcontrolregion')
+    regionlist.append('zgcontrolregion')
+    regionlist.append('ttzcontrolregion')
+    regionlist.append('signalsideband_noossf_cat1')
+    regionlist.append('signalsideband_noz_cat1')
+    #regionlist.append('signalsideband_noossf_cat12')
+    #regionlist.append('signalsideband_noz_cat12')
+    #regionlist.append('signalsideband_noz_cat123')
+    #regionlist.append('signalsideband_noossf')
+    #regionlist.append('signalsideband_noz')
+    #regionlist.append('signalsideband_noz_cat1_ch02')
+    #regionlist.append('signalsideband_noz_cat1_ch13')
 
     # global setting of nonprompt mode to run with
     npmodelist = []
@@ -191,10 +198,10 @@ if __name__=='__main__':
 		#os.system('bash '+script_name)
 		commands.append(command)
 	# new condor way:
-	ct.submitCommandsAsCondorCluster('mergeoutput_cjob',commands)
+	ct.submitCommandsAsCondorCluster('cjob_mergeoutput',commands)
     
     else:
 	for npmode in npmodelist:
-	    mergeoutput(topdir,year,region,npmode)
+	    mergeoutput(topdir,year,region,npmode,samplelistdir)
 
     sys.stderr.write('###done###\n')

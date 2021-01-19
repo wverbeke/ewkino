@@ -69,6 +69,7 @@ for sample in inputlist:
     else:
         inputstruct[samplename] = [sample]
 print('found '+str(len(inputstruct))+' unique samples')
+print('samples will be merged as follows:')
 for s in inputstruct:
     print(s+': '+str(inputstruct[s]))
 
@@ -94,6 +95,7 @@ for samplename in inputstruct:
     for sample in samplelist: 
 	command += ' {}/*.root'.format(os.path.join(input_directory,sample))
     commands.append(command)
+    print(command)
     # old qsub way:
     #script_name = 'merge.sh'
     #with open(script_name,'w') as script:
@@ -103,8 +105,8 @@ for samplename in inputstruct:
     #submitQsubJob(script_name)
     #counter += 1
     #print('submitted hadd command for '+str(counter)+' sample directories.')
-# new condor way
-ct.submitCommandsAsCondorCluster( 'merge_cjob', commands )
+    # new condor way
+    ct.submitCommandAsCondorJob( 'cjob_merge', command )
 
 sys.exit() # for testing on MC only, need to adapt functionality below to condor still...
 

@@ -69,6 +69,28 @@ def clipallhistograms(histfile,mustcontainall=[]):
     f.Close()
     os.system('mv '+tempfilename+' '+histfile)
 
+### finding minimum and maximum ###
+
+def getminmax(histlist):
+    # get suitable minimum and maximum values for plotting a hist collection (not stacked)
+    totmax = 0.
+    totmin = 99.
+    for hist in histlist:
+        for i in range(1,hist.GetNbinsX()+1):
+            val = hist.GetBinContent(i)
+            if val > totmax: totmax = val
+            if val < totmin: totmin = val
+    return (totmin,totmax)
+
+def getminmaxmargin(histlist,clip=False):
+    (totmin,totmax) = getminmax(histlist)
+    topmargin = (totmax-totmin)/2.
+    bottommargin = (totmax-totmin)/5.
+    minv = totmin-bottommargin
+    maxv = totmax+topmargin
+    if( clip and minv<0 ): minv = 0
+    return (minv,maxv)
+
 ### histogram conversion ###
 
 def tgraphtohist( graph ):

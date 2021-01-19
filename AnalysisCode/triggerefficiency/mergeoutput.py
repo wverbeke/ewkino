@@ -43,8 +43,9 @@ for directory in directories:
 	    os.system('rm '+path_to_file)
 	# list files in directory and choose what MC to use (tZq or TT)
 	datafiles = [f for f in os.listdir(directory) if (f[-5:]=='.root' and 'data' in f)]
-	tag = 'TTTo2L2Nu' if '3tightveto' in directory else 'tZq'
+	tag = 'TTTo2L2Nu' if '3tightveto' in directory else 'TTZ'
 	mcfile = [f for f in os.listdir(directory) if (f[-5:]=='.root' and tag in f)]
+	print(mcfile)
 	if len(mcfile)!=1:
 	    print('### WARNING ###: found unexpected number of MC files in directory '+directory)
 	    continue
