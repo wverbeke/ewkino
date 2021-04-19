@@ -81,12 +81,18 @@ Met Met::MetUnclusteredUp() const{
 Met Met::MetJECDown( const std::string source ) const{
     // note: this function checks both all and grouped variations,
     // need to check if there is no overlap in names between them!
+    // there is overlap but in that case they are supposed to be the same
     std::pair< double, double > newpxy = std::make_pair( 0,0 );
+    bool valid = false;
     for( std::string test: this->_JECSources ){
-        if(source==test) newpxy = this->_pxy_JECSourcesDown.at(source);
+        if(source==test){ newpxy = this->_pxy_JECSourcesDown.at(source); valid = true; }
     }
     for( std::string test: this->_JECGrouped ){
-        if(source==test) newpxy = this->_pxy_JECGroupedDown.at(source);
+        if(source==test){ newpxy = this->_pxy_JECGroupedDown.at(source); valid = true; }
+    }
+    if( !valid ){
+	std::invalid_argument( std::string("### ERROR ### in Met::MetJECDown: ")
+                + "variation '" + source + "' not valid");
     }
     return variedMetPxPy( newpxy.first, newpxy.second );
 }
@@ -94,16 +100,48 @@ Met Met::MetJECDown( const std::string source ) const{
 Met Met::MetJECUp( const std::string source ) const{
     // note: this function checks both all and grouped variations,
     // need to check if there is no overlap in names between them!
+    // there is overlap but in that cas they are supposed to be the same
     std::pair< double, double > newpxy = std::make_pair( 0,0 );
+    bool valid = false;
     for( std::string test: this->_JECSources ){
-        if(source==test) newpxy = this->_pxy_JECSourcesUp.at(source);
+        if(source==test){ newpxy = this->_pxy_JECSourcesUp.at(source); valid = true; }
     }
     for( std::string test: this->_JECGrouped ){
-        if(source==test) newpxy = this->_pxy_JECGroupedUp.at(source);
+        if(source==test){ newpxy = this->_pxy_JECGroupedUp.at(source); valid = true; }
+    }
+    if( !valid ){
+        std::invalid_argument( std::string("### ERROR ### in Met::MetJECUp: ")
+                + "variation '" + source + "' not valid");
     }
     return variedMetPxPy( newpxy.first, newpxy.second );
 }
 
+Met Met::getVariedMet( const std::string& variation ) const{
+    if( variation == "nominal" ){
+        return *this;
+    } else if( variation == "JECDown" ){
+        return this->MetJECDown();
+    } else if( variation == "JECUp" ){
+        return this->MetJECUp();
+    } else if( variation == "JERDown" ){
+        return *this;
+    } else if( variation == "JERUp" ){
+        return *this;
+    } else if( variation == "UnclDown" ){
+        return this->MetUnclusteredDown();
+    } else if( variation == "UnclUp" ){
+        return this->MetUnclusteredUp();
+    } else if( stringTools::stringEndsWith(variation,"Up") ){
+        std::string jecvar = variation.substr(0, variation.size()-2);
+        return this->MetJECUp( jecvar );
+    } else if( stringTools::stringEndsWith(variation,"Down") ){
+        std::string jecvar = variation.substr(0, variation.size()-4);
+        return this->MetJECDown( jecvar );
+    } else {
+        throw std::invalid_argument( std::string("### ERROR ### in Met::getVariedMet: ")
+		+ "met variation " + variation + " is unknown." );
+    }
+}
 
 std::vector< double > Met::metPtVariations() const{
     return {

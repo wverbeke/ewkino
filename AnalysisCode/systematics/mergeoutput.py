@@ -25,7 +25,7 @@ import histtools as histtools
 import smalltools as tls
 # import local functions
 from correlations import implementcorrelations
-from systematicstools import getfilestomerge
+import systematicstools as systools
 
 ##### help functions #####
 
@@ -73,7 +73,7 @@ def mergeoutput(topdir,year,region,npmode,samplelistdir):
 	    .format(year,region,npmode))
     print('#####')
 
-    # step 1: merge all relevant files using hadd
+    # merge all relevant files using hadd
     combpath = os.path.join(topdir,year+'combined',region,npmode)
     if os.path.exists(combpath):
         os.system('rm -r '+combpath)
@@ -81,8 +81,11 @@ def mergeoutput(topdir,year,region,npmode,samplelistdir):
     outputfile = os.path.join(combpath,'combined.root')
     tempfilename = outputfile[:-5]+'_temp.root'
     print('found following files:')
-    filestomerge = getfilestomerge(topdir,year,region,npmode,samplelistdir) # implicit printing
-    if len(filestomerge)==0: return
+    filestomerge = systools.getfilestomerge(topdir,year,region,npmode,samplelistdir)
+    if len(filestomerge)==0:
+	raise Exception('ERROR in mergeoutput: found 0 files for'
+			+' {} {} {}'.format(year,region,npmode))
+
     print('running hadd command...')
     command = 'hadd '+outputfile
     for f in filestomerge: command += ' '+f
@@ -106,18 +109,31 @@ if __name__=='__main__':
     # command line arguments: 
     # - in case of 1 argument, it is assumed to be a directory,
     #   and job will be submitted for each year and region specified in the global arguments.
-    # - in case of 3 arguments, they are assumed to be a directory, year and region respectively
-    #   and the program will run on this combination only.
+    # - in case of 4 arguments, they are assumed to be a directory, year, region 
+    #   and npmode respectively, and the program will run on this combination only.
+
+    # check for non-positional arguments
+    args = sys.argv[1:]
+    argscopy = args[:]
+    runlocal = False
+    for arg in argscopy:
+	if(arg=='runlocal' or arg=='runlocal=True' or arg=='runlocal=true'):
+	    runlocal = True
+	    args.remove(arg)
+
+    # positional arguments
     runmultiple = True
     topdir = ''
     year = ''
     region = ''
-    if len(sys.argv)==2:
-	topdir = sys.argv[1]
-    elif len(sys.argv)==4:
-	topdir = sys.argv[1]
-	year = sys.argv[2]
-	region = sys.argv[3]
+    npmode = ''
+    if len(args)==1:
+	topdir = args[0]
+    elif len(args)==4:
+	topdir = args[0]
+	year = args[1]
+	region = args[2]
+	npmode = args[3]
 	runmultiple = False
     else:
 	print('### ERROR ###: wrong number of command line arguments.')
@@ -125,7 +141,8 @@ if __name__=='__main__':
 	sys.exit()
 
     # global setting of sample list directory (to switch between old and new sample lists)
-    samplelistdir = os.path.abspath('../samplelists/samplelists_tzq_v_iTuple')
+    #samplelistdir = os.path.abspath('../samplelists/samplelists_tzq_v_iTuple')
+    samplelistdir = os.path.abspath('../samplelists')
 
     # global setting of years and regions to run on (ignored if year and region are in arguments)
     yearlist = []
@@ -133,49 +150,25 @@ if __name__=='__main__':
     yearlist.append('2017')
     yearlist.append('2018')
     regionlist = []
-    regionlist.append('signalregion_cat1')
-    for r in ['signalregion_cat2','signalregion_cat3']: regionlist.append(r)
-    regionlist.append('signalregion_cat123')
-    regionlist.append('wzcontrolregion')
-    regionlist.append('zzcontrolregion')
-    regionlist.append('zgcontrolregion')
-    regionlist.append('ttzcontrolregion')
-    regionlist.append('signalsideband_noossf_cat1')
-    regionlist.append('signalsideband_noz_cat1')
-    #regionlist.append('signalsideband_noossf_cat12')
-    #regionlist.append('signalsideband_noz_cat12')
-    #regionlist.append('signalsideband_noz_cat123')
-    #regionlist.append('signalsideband_noossf')
-    #regionlist.append('signalsideband_noz')
-    #regionlist.append('signalsideband_noz_cat1_ch02')
-    #regionlist.append('signalsideband_noz_cat1_ch13')
+    regionlist.append('all') # automatically scan for all available regions
+    #regionlist.append('signalregion_cat1_top')
+    #regionlist.append('signalregion_cat1_antitop')
+    #regionlist.append('signalregion_cat2_top')
+    #regionlist.append('signalregion_cat2_antitop')
+    #regionlist.append('signalregion_cat3_top')
+    #regionlist.append('signalregion_cat3_anittop')
+    #regionlist.append('signalregion_cat123_top')
+    #regionlist.append('signalregion_cat123_antitop')
 
     # global setting of nonprompt mode to run with
     npmodelist = []
-    npmodelist.append('npfromsim')
+    #npmodelist.append('npfromsim')
     npmodelist.append('npfromdata')
 
     # global setting of which systematics to take into account which to throw out
+    # update: moved to later stage! 
+    # at this stage: only remove individual variations of which only the envelope is important
     removesystematics = []
-    # choose between separate renormalization and factorization scale variations,
-    # correlated variations, or their envelope
-    removesystematics.append(['_rScale'])
-    removesystematics.append(['_fScale'])
-    removesystematics.append(['_rfScales'])
-    #removesystematics.append(['_qcdScalesShapeEnv'])
-    removesystematics.append(['_qcdScalesNorm','tZq'])
-    removesystematics.append(['_qcdScalesNorm','WZ'])
-    removesystematics.append(['_qcdScalesNorm','ZZH'])
-    removesystematics.append(['_qcdScalesNorm','Xgamma'])
-    removesystematics.append(['_qcdScalesNorm','tbartZ'])
-    # choose between pdf envelope or rms
-    removesystematics.append(['_pdfShapeEnv'])
-    #removesystematics.append(['_pdfShapeRMS'])
-    removesystematics.append(['_pdfNorm','tZq'])
-    removesystematics.append(['_pdfNorm','WZ'])
-    removesystematics.append(['_pdfNorm','ZZH'])
-    removesystematics.append(['_pdfNorm','Xgamma'])
-    removesystematics.append(['_pdfNorm','tbartZ'])
     # remove individual variations (if not done so before)
     removesystematics.append(['qcdScalesShapeVar'])
     removesystematics.append(['pdfShapeVar'])
@@ -184,24 +177,29 @@ if __name__=='__main__':
     if runmultiple:
 	commands = []
 	for year in yearlist:
-	    for region in regionlist:
-		command = 'python mergeoutput.py {} {} {}'.format(
-                        topdir, year, region )
-		# old qsub way:
-		script_name = 'mergeoutput.sh'
-		with open(script_name,'w') as script:
-		    initializeJobScript(script)
-		    script.write('cd {}\n'.format(cwd))
-		    script.write(command+'\n')
-		#submitQsubJob(script_name)
-		# alternative: run locally
-		#os.system('bash '+script_name)
-		commands.append(command)
+	    for npmode in npmodelist:
+		if( len(regionlist)==1 and regionlist[0]=='all' ):
+		    thisregionlist = systools.getavailableregions(topdir,year,npmode)
+		for region in thisregionlist:
+		    print('running on {} / {} / {}'.format(year,region,npmode))
+		    command = 'python mergeoutput.py {} {} {} {}'.format(
+				topdir, year, region, npmode )
+		    # old qsub way:
+		    script_name = 'mergeoutput.sh'
+		    with open(script_name,'w') as script:
+			initializeJobScript(script)
+			script.write('cd {}\n'.format(cwd))
+			script.write(command+'\n')
+		    if not runlocal:
+		    	submitQsubJob(script_name)
+		    #else:
+		    #	if runlocal: os.system('bash '+script_name)
+		    commands.append(command)
 	# new condor way:
-	ct.submitCommandsAsCondorCluster('cjob_mergeoutput',commands)
+	#if not runlocal:
+	#    ct.submitCommandsAsCondorCluster('cjob_mergeoutput',commands)
     
     else:
-	for npmode in npmodelist:
-	    mergeoutput(topdir,year,region,npmode,samplelistdir)
+	mergeoutput(topdir,year,region,npmode,samplelistdir)
 
     sys.stderr.write('###done###\n')

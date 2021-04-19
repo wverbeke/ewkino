@@ -22,6 +22,11 @@ class CombinedReweighter{
         const Reweighter* operator[]( const std::string& ) const;
         double totalWeight( const Event& ) const;
 
+	// added:
+	bool hasReweighter( const std::string& ) const;
+	Reweighter* getReweighterNonConst( const std::string& );
+	std::vector<std::string> getReweighterNames() const;
+
     private:
         std::map< std::string, std::shared_ptr< Reweighter > > reweighterMap;
         std::vector< std::shared_ptr< Reweighter > > reweighterVector;

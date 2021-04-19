@@ -130,6 +130,7 @@ Color_t bkgColorFakeRate(const std::string bkgName){
 Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
     static const Color_t colors[9] = { kMagenta -7 , kBlue + 1, kRed - 7, kGreen - 7, kMagenta + 3, kAzure + 1, kOrange + 6, kCyan + 1,kBlue -3 };
+    //static const Color_t colors[9] = { kBlue-9 , kBlue + 1, kRed - 7, kGreen - 7, kMagenta + 3, kAzure + 1, kOrange + 6, kCyan + 1,kBlue -3 }; // temp for closure test in different color
     if(!reset){
         Color_t output = colors[counter];
         ++counter;
@@ -224,7 +225,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
             const bool* isSMSignal, TH1D** signal, const std::string* sigNames, 
             const unsigned nSig, const bool sigNorm){
 
-   	static std::mutex plotLock;
+    static std::mutex plotLock;
     plotLock.lock(); 
 
     initializeTDRStyle();
@@ -330,14 +331,14 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     bkgTotE->SetMarkerStyle(0); //1
 
     //make legend and add all histograms
-    TLegend legend = TLegend(0.25, 0.73, 0.87, 0.92, NULL, "brNDC");
+    TLegend legend = TLegend(0.25, 0.7, 0.87, 0.85, NULL, "brNDC");
     legend.SetNColumns(2);
     legend.SetFillStyle(0); //avoid legend box
     legend.AddEntry(dataGraph, (const TString&) names[0], "pe1"); //add data to legend
     for(unsigned h = 0; h < nBkg; ++h){
         legend.AddEntry(bkgClones[h], (const TString&) names[h + 1], "f"); //add backgrounds to the legend
     }
-    legend.AddEntry(bkgTotE, "Total bkg. unc.", "f"); //add total background uncertainty to legend
+    legend.AddEntry(bkgTotE, "Uncertainty", "f"); //add total background uncertainty to legend
 
     //add signal to legend if plotting signal
     if(signal != nullptr){
@@ -370,6 +371,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
     p1 = new TPad((const TString&) file,"",0,xPad,1,1);
     p1->Draw();
     p1->cd();
+    p1->SetTopMargin(0.07);
     p1->SetBottomMargin(0.03);
 
     //make pad logarithmic if needed
@@ -430,6 +432,7 @@ void plotDataVSMC(TH1D* data, TH1D** bkg, const std::string* names, const unsign
            if(data->GetBinContent(b) == 0)  dataGraph->GetY()[b - 1] += plotMax*10000;
         }
     }
+    bkgTotE->GetYaxis()->SetMaxDigits(3);
 
     //draw histograms and legends
     //first draw total background to fix plot range

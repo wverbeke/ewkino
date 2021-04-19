@@ -80,6 +80,9 @@ double ReweighterBTag::weight( const Jet& jet, const std::string& uncertainty ) 
         return 1.;
     }
 
+    // note: https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration#Using_b_tag_scale_factors_in_you
+    // this page recommends to use absolute value of eta, but BTagCalibrationStandalone.cc
+    // seems to handle negative values of eta more correctly (only taking abs when needed)
     double scaleFactor = bTagSFReader->eval_auto_bounds( uncertainty, jetFlavorEntry( jet ), jet.eta(), jet.pt(), CSVValue( jet ) );
     
     //check if jet passes chosen b-tag working point

@@ -131,26 +131,54 @@ bool passClosureTestEventSelection( Event& event, const std::string& selection,
 				    const bool requireMuon = false, 
 				    const bool requireElectron = false ){
     
+    // do basic selection (also includes cleaning)
+    if( !passBasicEventSelection( event ) ){ return false; }
+    if( !hasAtLeastOneNonPrompt( event, requireMuon, requireElectron ) ){ return false; }
+    // now continue depending on the exact selection. default: no extra selections  
     if( selection=="default" ){
-	if( !passBasicEventSelection( event ) ){ return false; } 
-	if( !hasAtLeastOneNonPrompt( event, requireMuon, requireElectron ) ){ return false; }
 	return true;
     }
-    // alternative: same as in data!
-    else if( selection=="noossf"){
-	if( !passBasicEventSelection( event ) ){ return false; } 
-        if( !hasAtLeastOneNonPrompt( event, requireMuon, requireElectron ) ){ return false; }
+    // alternative: same as in data control regions (but without jet requirements)!
+    if( selection=="noossf"){
 	if( event.hasOSSFLightLeptonPair() ){ return false; }
 	return true;
     }
-    else if( selection=="noz"){
-	if( !passBasicEventSelection( event ) ){ return false; }
-        if( !hasAtLeastOneNonPrompt( event, requireMuon, requireElectron ) ){ return false; }
+    if( selection=="noz"){
         if( !event.hasOSSFLightLeptonPair() ){ return false; }
 	if( event.hasZTollCandidate(7.5) ){ return false; }
         return true;
     }
-    else return false;
+    // alternative: same as default but with additional jet requirements
+    JetCollection jetc = event.jetCollection().goodJetCollection();
+    int njets = jetc.size();
+    int nbjets = jetc.numberOfMediumBTaggedJets();
+    if( selection=="signaljets" ){
+	if( !passClosureTestEventSelection( event, "default", requireMuon, requireElectron) ){
+            return false; }
+	if( njets<2 || nbjets<1 ){ return false; }
+	return true;
+    }
+    if( selection=="twojets"){
+	if( !passClosureTestEventSelection( event, "default", requireMuon, requireElectron) ){ 
+	    return false; }
+	if( njets<2 ){ return false; }
+	return true;
+    }
+    if( selection=="onebjet" ){
+	if( !passClosureTestEventSelection( event, "default", requireMuon, requireElectron) ){ 
+            return false; }
+        if( nbjets<1 ){ return false; }
+        return true;
+    }
+    if( selection=="signalregion" ){
+	if( !passClosureTestEventSelection( event, "default", requireMuon, requireElectron) ){
+	    return false; }
+	if( njets<2 || nbjets<1 ){ return false; }
+	if( !event.hasOSSFLightLeptonPair() ){ return false; }
+        if( !event.hasZTollCandidate(15) ){ return false; }
+	return true;
+    }
+    return false;
 }
 
 double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_muon,  
@@ -221,24 +249,28 @@ int main( int argc, char* argv[] ){
 	path_to_xml = argvStr[7];
     }
 
+    // check year string
+    if( !( year == "2016" || year == "2017" || year == "2018" || year == "all") ){
+        throw std::invalid_argument( "Year string "+year+" not valid");
+    }
+    std::vector<std::string> years = {year};
+    if( year=="all" ){ years = {"2016","2017","2018"}; }
+
+    // check process string
+    if( ! (process == "TT" || process == "DY" || process=="all") ){
+        std::string errorm = "Given closure test process argument is '" + process;
+        errorm.append("' while it should be DY, TT or all.");
+        throw std::invalid_argument( errorm );
+    }
+    std::vector<std::string> processes = {process};
+    if( process=="all" ){ processes = {"TT","DY" }; }
+
     // make TMVA reader
     TMVA::Reader* reader = new TMVA::Reader();
     if(doBDT) reader = eventFlattening::initializeReader(reader, path_to_xml, "all");
 
-    
-    const std::string sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/trileptonskim/fakerate/"; 
-    std::string sampleListFile = "../../fakeRate/sampleLists/samples_closureTest_"+process+"_"+year+".txt";
-
     setTDRStyle();
 
-    // check year string
-    analysisTools::checkYearString( year );
-    // check process string
-    if( ! (process == "TT" || process == "DY" ) ){
-	std::string errorm = "Given closure test process argument is '" + process;
-	errorm.append("' while it should be DY or TT.");
-        throw std::invalid_argument( errorm );
-    }
     // check if only muons, only electrons, or both
     bool onlyMuonFakes = ( flavor == "muon" );
     bool onlyElectronFakes = ( flavor == "electron" );
@@ -249,147 +281,166 @@ int main( int argc, char* argv[] ){
     //std::vector< HistInfo > histInfoVec = makeDistributionInfo();
 
     // make collection of histograms (NEW)
-    // vector of observed histograms (one element per variable)
-    std::vector< std::shared_ptr< TH1D > > observedHists; 
-    // vector of total predicted histograms (one element per variable)
-    std::vector< std::shared_ptr< TH1D > > predictedHists;
+    // vector of observed histograms (one element per process and per variable)
+    std::map<std::string, std::map< std::string, std::shared_ptr< TH1D > > > observedHists; 
+    // vector of total predicted histograms (one element per process and per variable)
+    std::map<std::string, std::map< std::string, std::shared_ptr< TH1D > > > predictedHists;
     // structure of split predicted histograms 
-    // (one map per variable, mapping split sources of prediction)
+    // (one map per process and variable, mapping split sources of prediction)
     std::vector< std::string > predictionCategories = {"light","heavy","other"};
-    std::vector< std::map< std::string, std::shared_ptr<TH1D> > > predictedHistsSplit;
+    std::map<std::string, std::map< std::string, std::map< std::string, std::shared_ptr<TH1D> > > > predictedHistsSplit;
     std::vector< HistInfo > histInfoVec = makeDistributionInfoNew();
     std::map<std::string,double> varmap = eventFlattening::initVarMap();
 
-    for( const auto& histInfo : histInfoVec ){
-        observedHists.push_back( histInfo.makeHist( histInfo.name()+ "_observed_"+process+"_"+year) );
-        predictedHists.push_back( histInfo.makeHist( histInfo.name()+"_predicted_"+process+"_"+year) );
-	std::map< std::string, std::shared_ptr<TH1D>> thisVarMap;
-	for( std::string cat: predictionCategories ){
-	    thisVarMap[cat] = histInfo.makeHist(histInfo.name()+"_predicted_"+process+"_"+cat+"_"+year);
+    for( auto process: processes ){
+	for( const auto& histInfo : histInfoVec ){
+	    observedHists[process][histInfo.name()] = histInfo.makeHist( 
+		histInfo.name()+ "_observed_"+process+"_"+year);
+	    predictedHists[process][histInfo.name()] = histInfo.makeHist( 
+		histInfo.name()+"_predicted_"+process+"_"+year);
+	    for( std::string cat: predictionCategories ){
+		predictedHistsSplit[process][histInfo.name()][cat] = histInfo.makeHist(
+		    histInfo.name()+"_predicted_"+process+"_"+cat+"_"+year);
+	    }
 	}
-	predictedHistsSplit.push_back( thisVarMap );
     }
 
     // make additional collection of histograms containing some diagnostics
     HistInfo failPtInfo = HistInfo( "leptonPtFailing", "P_{T}^{failing leptons} (GeV)", 10, 10, 100 );
     std::shared_ptr<TH1D> failPtHist = failPtInfo.makeHist( failPtInfo.name()+"_"+process+"_"+year );
-    
-    // read fake-rate map corresponding to this year and flavor 
-    std::shared_ptr< TH2D > fakeRateMap_muon = readFRMap( "muon", year, isMCFR, use_mT );
-    std::shared_ptr< TH2D > fakeRateMap_electron = readFRMap( "electron", year, isMCFR, use_mT );
+   
+    for( auto thisyear: years ){
+	for( auto thisprocess: processes ){
 
-    // loop over samples to fill histograms
-    TreeReader treeReader( sampleListFile, sampleDirectory );
+	    // set samples
+	    const std::string sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/trileptonskim/fakerate/";
+	    std::string sampleListBase = "../../fakeRate/sampleLists/samples_closureTest";
+            std::string sampleListFile = sampleListBase+"_"+thisprocess+"_"+thisyear+".txt";
+ 
+	    // read fake-rate map corresponding to this year and flavor 
+	    std::shared_ptr< TH2D > fakeRateMap_muon = readFRMap( "muon", thisyear, isMCFR, use_mT );
+	    std::shared_ptr< TH2D > fakeRateMap_electron = readFRMap( "electron", thisyear, isMCFR, use_mT );
 
-    unsigned numberOfSamples = treeReader.numberOfSamples();
-    for( unsigned i = 0; i < numberOfSamples; ++i ){
-	std::cout<<"start processing sample n. "<<i+1<<" of "<<numberOfSamples<<std::endl;
-        treeReader.initSample();
+	    // loop over samples to fill histograms
+	    TreeReader treeReader( sampleListFile, sampleDirectory );
 
-	// make dummy reweighter (needed in syntax but result is not used)
-        std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
-	std::vector<Sample> thissample;
-	thissample.push_back(treeReader.currentSample());
-	CombinedReweighter reweighter = reweighterFactory->buildReweighter(
-                                        "../../weights/", year, thissample );
+	    unsigned numberOfSamples = treeReader.numberOfSamples();
+	    for( unsigned i = 0; i < numberOfSamples; ++i ){
+		std::cout<<"start processing sample n. "<<i+1<<" of "<<numberOfSamples<<std::endl;
+		treeReader.initSample();
 
-	long unsigned numberOfEntries = treeReader.numberOfEntries();
-	//long unsigned numberOfEntries = 1000; // temp for testing
-        std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
-	for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
-            Event event = treeReader.buildEvent( entry );
+		// make dummy reweighter (needed in syntax but result is not used)
+		std::shared_ptr< ReweighterFactory >reweighterFactory( new tZqReweighterFactory() );
+		std::vector<Sample> thissample;
+		thissample.push_back(treeReader.currentSample());
+		CombinedReweighter reweighter = reweighterFactory->buildReweighter(
+			                        "../../weights/", thisyear, thissample );
 
-            // apply event selection
-            if( !passClosureTestEventSelection( event, selection, 
-		    onlyMuonFakes, onlyElectronFakes ) ) continue;
-	    LightLeptonCollection lightLeptons = event.lightLeptonCollection();
+		long unsigned numberOfEntries = treeReader.numberOfEntries();
+		//long unsigned numberOfEntries = 1000; // temp for testing
+		std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
+		for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
+		    Event event = treeReader.buildEvent( entry );
 
-	    // fill variables (OLD)
-            /*double mll = 0, mtW = 0;
-            if( event.hasOSSFLightLeptonPair() ){
-                mll = event.bestZBosonCandidateMass();
-                mtW = event.mtW();
-            } else{
-                mll = ( lightLeptons[0] + lightLeptons[1] ).mass();
-                mtW = mt( lightLeptons[2], event.met() );
-            }
-            //compute plotting variables 
-            std::vector< double > variables = { 
-		lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
-                lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta(),
-                event.metPt(),
-                mtW,
-                mll,
-                lightLeptons.scalarPtSum() + event.metPt(),
-                event.HT(),
-                lightLeptons.mass(),
-                mt( lightLeptons.objectSum(), event.met() ),
-                static_cast< double >( event.numberOfJets() ),
-                static_cast< double >( event.numberOfMediumBTaggedJets() ),
-                static_cast< double >( event.numberOfVertices() )
-            };*/
+		    // apply event selection
+		    if( !passClosureTestEventSelection( event, selection, 
+			    onlyMuonFakes, onlyElectronFakes ) ) continue;
+		    LightLeptonCollection lightLeptons = event.lightLeptonCollection();
 
-	    // fill variables (NEW)
-	    // use 1 for norm as the weight used in eventToEntry is not used anyway
-	    // use dummy reweighter and "" for selection_type for the same reason
-	    varmap = eventFlattening::eventToEntry(event, 1. , reweighter, "",
-			fakeRateMap_muon, fakeRateMap_electron, "nominal", doBDT, reader);
-	    std::vector< double > variables = {
-		lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
-		lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta(),
-		lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta()
-	    };
-	    for( unsigned j=9; j<histInfoVec.size(); ++j){
-		variables.push_back( varmap[histInfoVec[j].name()] );
-	    }
+		    // prints for testing
+		    /*JetCollection jetc = event.jetCollection().goodJetCollection();
+		    int njets = jetc.size();
+		    int nbjets = jetc.numberOfMediumBTaggedJets();
+		    std::cout << "after selection: " << njets << ", " << nbjets << std::endl;*/
 
-            // event is 'observed' if all leptons are tight 
-            bool isObserved = true;
-	    double weight = event.scaledWeight();
-            for( const auto& leptonPtr : lightLeptons ){
-                if( !leptonPtr->isTight() ){
-                    isObserved = false;
-                }
-            }
+		    // fill variables (OLD)
+		    /*double mll = 0, mtW = 0;
+		    if( event.hasOSSFLightLeptonPair() ){
+			mll = event.bestZBosonCandidateMass();
+			mtW = event.mtW();
+		    } else{
+			mll = ( lightLeptons[0] + lightLeptons[1] ).mass();
+			mtW = mt( lightLeptons[2], event.met() );
+		    }
+		    //compute plotting variables 
+		    std::vector< double > variables = { 
+			lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
+			lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta(),
+			event.metPt(),
+			mtW,
+			mll,
+			lightLeptons.scalarPtSum() + event.metPt(),
+			event.HT(),
+			lightLeptons.mass(),
+			mt( lightLeptons.objectSum(), event.met() ),
+			static_cast< double >( event.numberOfJets() ),
+			static_cast< double >( event.numberOfMediumBTaggedJets() ),
+			static_cast< double >( event.numberOfVertices() )
+		    };*/
 
-            if( isObserved ){
-                for( std::vector< double >::size_type v = 0; v < variables.size(); ++v ){
-                    observedHists[v]->Fill( std::min( variables[v],  histInfoVec[v].maxBinCenter() ), 
-					    weight );
-                }
-            } else {
-		//compute event weight with fake-rate
-		weight = weight*fakeRateWeight( event, fakeRateMap_muon, fakeRateMap_electron );
-		// find origin of nonprompt leptons
-		std::string raworigin = eventOriginFlavour( event );
-		std::string origin = (raworigin=="1light0heavy") ? "light" :
-				     (raworigin=="0light1heavy") ? "heavy" :
-				     "other";
-		// fill histograms
-		for( std::vector< double >::size_type v = 0; v < variables.size(); ++v ){
-                    predictedHists[v]->Fill( std::min( variables[v],  histInfoVec[v].maxBinCenter() ), 
-						weight );
+		    // fill variables (NEW)
+		    // use 1 for norm as the weight used in eventToEntry is not used anyway
+		    // use dummy reweighter and "" for selection_type for the same reason
+		    varmap = eventFlattening::eventToEntry(event, 1. , reweighter, "",
+					fakeRateMap_muon, fakeRateMap_electron, "nominal", doBDT, reader);
+		    std::vector< double > variables = {
+			lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
+			lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta(),
+			lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta()
+		    };
+		    for( unsigned j=9; j<histInfoVec.size(); ++j){
+			variables.push_back( varmap[histInfoVec[j].name()] );
+		    }
 
-		    predictedHistsSplit[v][origin]->Fill( std::min( variables[v],  
-						histInfoVec[v].maxBinCenter() ), weight);
-                }
+		    // event is 'observed' if all leptons are tight 
+		    bool isObserved = true;
+		    double weight = event.scaledWeight();
+		    for( const auto& leptonPtr : lightLeptons ){
+			if( !leptonPtr->isTight() ){
+			    isObserved = false;
+			}
+		   }
 
-		// fill histogram with pt of failing leptons
-		for( const auto& leptonPtr : event.lightLeptonCollection() ){
-		    if( leptonPtr->isFO() && !leptonPtr->isTight() ){
-			failPtHist->Fill( leptonPtr->pt(), event.scaledWeight() );
+		    if( isObserved ){
+			for( std::vector< double >::size_type v = 0; v < variables.size(); ++v ){
+			    observedHists[thisprocess][histInfoVec[v].name()]->Fill( 
+				std::min( variables[v],  histInfoVec[v].maxBinCenter() ), weight );
+			}
+		    } else {
+			//compute event weight with fake-rate
+			weight = weight*fakeRateWeight( event, fakeRateMap_muon, fakeRateMap_electron );
+			// find origin of nonprompt leptons
+			std::string raworigin = eventOriginFlavour( event );
+			std::string origin = (raworigin=="1light0heavy") ? "light" :
+						(raworigin=="0light1heavy") ? "heavy" :
+						"other";
+			// fill histograms
+			for( std::vector< double >::size_type v = 0; v < variables.size(); ++v ){
+			    predictedHists[thisprocess][histInfoVec[v].name()]->Fill( 
+				std::min( variables[v],  histInfoVec[v].maxBinCenter() ), weight );
+
+			    predictedHistsSplit[thisprocess][histInfoVec[v].name()][origin]->Fill( 
+				std::min( variables[v], histInfoVec[v].maxBinCenter() ), weight);
+			}
+
+			// fill histogram with pt of failing leptons
+			for( const auto& leptonPtr : event.lightLeptonCollection() ){
+			    if( leptonPtr->isFO() && !leptonPtr->isTight() ){
+				failPtHist->Fill( leptonPtr->pt(), event.scaledWeight() );
+			    }
+			}
 		    }
 		}
-            }
-	    /*std::cout<<"----- event ------"<<std::endl;
-	    for(const auto& leptonPtr : lightLeptons ){
-		std::cout<<*leptonPtr<<std::endl;
-		std::cout<<"is prompt"<<leptonPtr->isPrompt()<<std::endl;
-		std::cout<<"is tight: "<<leptonPtr->isTight()<<std::endl;
+		/*std::cout<<"----- event ------"<<std::endl;
+		for(const auto& leptonPtr : lightLeptons ){
+		    std::cout<<*leptonPtr<<std::endl;
+		    std::cout<<"is prompt"<<leptonPtr->isPrompt()<<std::endl;
+		    std::cout<<"is tight: "<<leptonPtr->isTight()<<std::endl;
+		}
+		std::cout<<"is observed: "<<isObserved<<std::endl;
+		std::cout<<"scaled event weight: "<<event.scaledWeight()<<std::endl;
+		std::cout<<"final event weight: "<<weight<<std::endl;*/
 	    }
-	    std::cout<<"is observed: "<<isObserved<<std::endl;
-	    std::cout<<"scaled event weight: "<<event.scaledWeight()<<std::endl;
-	    std::cout<<"final event weight: "<<weight<<std::endl;*/
         }
     }
     /*std::cout<<"--- histogram ---"<<std::endl;
@@ -399,6 +450,30 @@ int main( int argc, char* argv[] ){
 	std::cout<<"predicted: "<<predictedHists[0]->GetBinContent(i)<<std::endl;
     }*/
 
+    delete reader;
+
+    // write file
+    std::string flavorInterpendix = (flavor=="")? "": "_"+flavor;
+    std::string file_name = "closurePlots_MC_" + selection + "_" + process + "_" + year;
+    file_name += flavorInterpendix+".root";
+    TFile* histogram_file = TFile::Open( file_name.c_str(), "RECREATE" );
+
+    for( auto process: processes ){
+        for( const auto& histInfo : histInfoVec ){
+            observedHists[process][histInfo.name()]->Write();
+            predictedHists[process][histInfo.name()]->Write();
+            for( std::string cat: predictionCategories ){
+                predictedHistsSplit[process][histInfo.name()][cat]->Write();
+            }
+        }
+    }
+
+    histogram_file->Close();
+    std::cerr << "###done###" << std::endl;
+    return 0;
+    
+    // older part of the code (filling and plotting not separated)
+    /*
     // make plot output directory
     std::string outputDirectory_name = "closurePlots_MC_" + selection + "_" + process + "_" + year; 
     if( flavor != "" ){
@@ -419,41 +494,39 @@ int main( int argc, char* argv[] ){
 	}
         std::string header;
         if( year == "2016" ){
-            header = "35.9 fb^{-1}";
+            header = "35.9 fb^{-1} (13 TeV)";
         } else if( year == "2017" ){
-            header = "41.5 fb^{-1}";
-        } else{
-            header = "59.7 fb^{-1}";
+            header = "41.5 fb^{-1} (13 TeV)";
+        } else if( year== "2018" ){
+            header = "59.7 fb^{-1} (13 TeV)";
+	} else if( year == "all" ){
+	    header = "137 fb^{-1} (13 TeV)";
+	} else{
+	    header = "";
         }
         TH1D* systUnc = dynamic_cast< TH1D* >( predictedHists[v]->Clone() );
         for( int b = 1; b < systUnc->GetNbinsX() + 1; ++b ){
             systUnc->SetBinContent( b , systUnc->GetBinContent(b)*0.3 );
         }
-        if( flavor == "" ){
-	    plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, 
+	// make standard plot
+	plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, 
 			stringTools::formatDirectoryName( outputDirectory_name ) 
 			+ histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year 
-			+ ".pdf", 
+			+ flavorInterpendix + ".pdf", 
 			"", false, false, header, systUnc);
-	    plotDataVSMC( observedHists[v].get(), predictedSplit, namesSplit, 
+	// make plot with split heavy and light
+	plotDataVSMC( observedHists[v].get(), predictedSplit, namesSplit, 
 			predictionCategories.size(),
                         stringTools::formatDirectoryName( outputDirectory_name )
                         + histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year 
-			+ "_split.pdf",
+			+ flavorSuffix + "_split.pdf",
                         "", false, false, header, systUnc);
-        } else {
-	    plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1, 
-			stringTools::formatDirectoryName( outputDirectory_name ) 
-			+ histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year 
-			+ "_" + flavor + ".pdf", 
-			"", false, false, header, systUnc);
-	    plotDataVSMC( observedHists[v].get(), predictedSplit, namesSplit, 
-                        predictionCategories.size(),
+	// make log-scale plot
+	plotDataVSMC( observedHists[v].get(), &predicted[0], names, 1,  
                         stringTools::formatDirectoryName( outputDirectory_name )
-                        + histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year 
-			+ "_" + flavor + "_split.pdf",
-                            "", false, false, header, systUnc);
-        }
+                        + histInfoVec[v].name() + "_" + selection + "_" + process + "_" + year
+                        + flavorInterpendix + "_log.pdf",
+                        "", true, false, header, systUnc);
     }
 
     // make addtional plots
@@ -466,5 +539,5 @@ int main( int argc, char* argv[] ){
 			+ flavorInterpendix + ".pdf", false, false);
 
     std::cerr << "###done###" << std::endl;
-    return 0;
+    return 0; */
 }

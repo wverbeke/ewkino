@@ -44,7 +44,7 @@ class Event{
 
         ~Event();
         
-
+	// return (collections of) physics objects
         LeptonCollection& leptonCollection() const{ return *_leptonCollectionPtr; }
         JetCollection& jetCollection() const{ return *_jetCollectionPtr; }
         Met& met() const{ return *_metPtr; }
@@ -53,6 +53,12 @@ class Event{
         EventTags& eventTags() const{ return *_eventTagsPtr; }
         GeneratorInfo& generatorInfo() const;
         SusyMassInfo& susyMassInfo() const;
+
+	// return jet collection and met with varied JEC/JER/Uncl uncertainties
+	JetCollection getJetCollection( const std::string& variation ) const{ 
+	    return (*_jetCollectionPtr).getVariedJetCollection( variation); }
+	Met getMet( const std::string& variation ) const{
+	    return (*_metPtr).getVariedMet( variation); }
 
         Lepton& lepton( const LeptonCollection::size_type leptonIndex ) const{ 
 	    return (*_leptonCollectionPtr)[ leptonIndex ]; }

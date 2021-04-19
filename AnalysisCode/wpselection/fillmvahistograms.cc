@@ -44,7 +44,7 @@ void MVAScoreHistograms( const std::string& pathToInputFile,
     std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
     for(long unsigned entry = 0; entry < numberOfEntries; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<numberOfEntries<<std::endl;
-        Event event = treeReader.buildEvent(entry,true,true);
+        Event event = treeReader.buildEvent(entry,false,false,false,false);
 	//double eventWeight = event.weight(); // simply use generator weight
 					     // sufficient if not combining multiple samples
 	double eventWeight = 1; // to avoid influence of negative weights in tails

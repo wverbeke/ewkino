@@ -3,6 +3,7 @@
 ########################################################################
 
 import os
+import math
 import numpy as np
 from array import array
 import ROOT
@@ -19,15 +20,44 @@ def loadallhistograms(histfile):
         hist = f.Get(key.GetName())
         # check if histogram is readable
         try:
-            nentries = hist.GetEntries() # maybe replace by more histogram-specific function
+            nentries = hist.GetEntries()
             nbins = hist.GetNbinsX()
-            hist.SetDirectory(0)
+            hist.SetDirectory(ROOT.gROOT)
         except:
             print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
             continue
+	hist.SetName(key.GetName())
 	histlist.append(hist)
     f.Close()
     return histlist
+
+def loadhistograms(histfile,mustcontainall=[],mustcontainone=[],
+			    maynotcontainall=[],maynotcontainone=[]):
+    ### read a root file containing histograms and load all histograms to a list
+    # with selection already included at this stage
+    # (instead of loading all and then selecting with methods below)
+    # (useful in case of many histograms of which only a few are needed)
+    f = ROOT.TFile.Open(histfile)
+    histlist = []
+    keylist = f.GetListOfKeys()
+    for key in keylist:
+	if not lt.subselect_string(key.GetName(),
+		mustcontainone=mustcontainone,mustcontainall=mustcontainall,
+		maynotcontainone=maynotcontainone,maynotcontainall=maynotcontainall): continue
+        hist = f.Get(key.GetName())
+        # check if histogram is readable
+        try:
+            nentries = hist.GetEntries()
+            nbins = hist.GetNbinsX()
+            hist.SetDirectory(0)
+        except:
+            print('WARNING in loadhistograms: key "'+str(key.GetName())
+		    +'" does not correspond to valid hist.')
+            continue
+        histlist.append(hist)
+    f.Close()
+    return histlist
+
 
 ### histogram subselection ###
 
@@ -41,27 +71,29 @@ def selecthistograms(histlist,mustcontainone=[],mustcontainall=[],
 
 ### histogram clipping ###
 
-def cliphistogram(hist):
+def cliphistogram(hist,clipboundary=0):
     ### clip a histogram to minimum zero
+    # also allow a clipboundary different from zero, useful for plotting 
+    # (e.g. to ignore artificial small values such as the one at the end of this function)
     for i in range(0,hist.GetNbinsX()+2):
-        if hist.GetBinContent(i)<0:
+        if hist.GetBinContent(i)<clipboundary:
             hist.SetBinContent(i,0)
             hist.SetBinError(i,0)
     # check if histogram is empty after clipping and if so, fill it with dummy value
     if hist.GetSumOfWeights()<1e-12: hist.SetBinContent(1,1e-6)
 
-def cliphistograms(histlist):
+def cliphistograms(histlist,clipboundary=0):
     ### apply cliphistogram on all histograms in a list
-    for hist in histlist: cliphistogram(hist)
+    for hist in histlist: cliphistogram(hist,clipboundary=clipboundary)
 
-def clipallhistograms(histfile,mustcontainall=[]):
+def clipallhistograms(histfile,mustcontainall=[],clipboundary=0):
     ### apply cliphistogram on all histograms in a file
     histlist = loadallhistograms(histfile)
     if len(mustcontainall)==0:
-	cliphistograms(histlist)
+	cliphistograms(histlist,clipboundary=clipboundary)
     else:
 	(indlist,_) = selecthistograms(histlist,mustcontainall=mustcontainall)
-	for index in indlist: cliphistogram(histlist[index])
+	for index in indlist: cliphistogram(histlist[index],clipboundary=clipboundary)
     tempfilename = histfile[:-5]+'_temp.root'
     f = ROOT.TFile.Open(tempfilename,'recreate')
     for hist in histlist:
@@ -153,4 +185,31 @@ def rootsumsquare( histlist ):
     bincontents = np.sqrt(bincontents)
     for i in range(0,nbins+2):
 	res.SetBinContent(i,bincontents[i])
-    return res	
+    return res
+
+### printing ###
+
+def printhistogram(hist,naninfo=False):
+
+    print('### {} ###'.format(hist.GetName()))
+    for i in range(0,hist.GetNbinsX()+2):
+        bininfo = '  -----------\n'
+        bininfo += '  bin: {} -> {}\n'.format(hist.GetBinLowEdge(i),
+                                            hist.GetBinLowEdge(i)+hist.GetBinWidth(i))
+        bininfo += '  content: {}\n'.format(hist.GetBinContent(i))
+	if naninfo:
+	    bininfo += '    (isnan: {})\n'.format(math.isnan(hist.GetBinContent(i)))
+	    bininfo += '    (isinf: {})\n'.format(math.isinf(hist.GetBinContent(i)))
+        bininfo += '  error: {}\n'.format(hist.GetBinError(i))
+        print(bininfo)
+	
+def printhistograms( histfile, mustcontainall=[], mustcontainone=[],
+				maynotcontainall=[], maynotcontainone=[],
+				naninfo=False ):
+    allhists = loadallhistograms(histfile)
+    selhists = selecthistograms(allhists,mustcontainone=mustcontainone,
+					mustcontainall=mustcontainall,
+					maynotcontainone=maynotcontainone,
+					maynotcontainall=maynotcontainall)[1]
+    for hist in selhists:
+	printhistogram(hist,naninfo=naninfo)

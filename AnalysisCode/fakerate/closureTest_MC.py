@@ -20,12 +20,13 @@ use_mt = sys.argv[2]'''
 isMCFR = True
 use_mt = False
 
-years = ['2016','2017','2018']
-flavours = ['muon','electron','both'] 
+years = ['2016','2017','2018','all']
+flavours = ['both'] 
 # (put any string different from 'muon' or 'electron' to include both)
-processes = ['TT','DY']
-selections = ['default','noz','noossf'] 
-# (use 'default', 'noossf' and/or 'noz')
+processes = ['TT','DY','all']
+# (use 'TT', 'DY', 'all')
+selections = ['default','onebjet','twojets','signalregion'] 
+# (use 'default', 'noossf', 'noz', 'signaljets', 'signalregion')
 path_to_xml_file = '/user/llambrec/ewkino/AnalysisCode/bdt/bdts_tzqtight/out_all_data/weights/'
 path_to_xml_file += 'tmvatrain_BDT.weights.xml'
 

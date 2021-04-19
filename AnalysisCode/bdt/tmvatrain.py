@@ -128,8 +128,10 @@ def getmvatrees(rootfilename,treenames,sigtag,sidebandrootfilename=''):
     return (sigchains,bckchains,bckchains_onlytrain,bckchains_onlytest,nsig,nbck)
 
 def tloader_fromchains(sigchains, bckchains, bckchains_onlytrain, bckchains_onlytest,
-			variables,tloader_options, outfilename):
+			variables,tloader_options, outputdir, outfilename):
     # intialize a TMVA.Dataloader using the output from getmvatreesfrom dirs directly
+    cwd = os.getcwd()
+    os.chdir(outputdir)
     tloader = ROOT.TMVA.DataLoader(outfilename.replace('.root','_data'))
     for sigchain in sigchains: tloader.AddSignalTree(sigchain['chain'],sigchain['weight'])
     for bckchain in bckchains: tloader.AddBackgroundTree(bckchain['chain'],bckchain['weight'])
@@ -148,12 +150,13 @@ def tloader_fromchains(sigchains, bckchains, bckchains_onlytrain, bckchains_only
     #cuts = ROOT.TCut("")
     #cutb = ROOT.TCut("")
     tloader.PrepareTrainingAndTestTree(cuts,cutb,tloader_options)
+    os.chdir(cwd)
     return tloader
 
-def tloader_fromfile(inputfile,sigtreename,bcktreename,variables,tloader_options,outfilename):
+def tloader_fromfile(inputfile,sigtreename,bcktreename,variables,tloader_options,outfilepath):
     # initialize a TMVA.DataLoader using the output from makeinputfile.py,
     # to compare more directly with the BDT results from Willem's deepLearning repository
-    tloader = ROOT.TMVA.DataLoader(outfilename.replace('.root','_data'))
+    tloader = ROOT.TMVA.DataLoader(outfilepath.replace('.root','_data'))
     infile = ROOT.TFile.Open(inputfile)
     sigtree = infile.Get(sigtreename)
     sigtree.SetDirectory(0)
@@ -178,9 +181,11 @@ def tloader_fromfile(inputfile,sigtreename,bcktreename,variables,tloader_options
     tloader.PrepareTrainingAndTestTree(cuts,cutb,tloader_options)
     return tloader
 
-def tmvatrain(tloader,tfactory_options,outfilename):
+def tmvatrain(tloader,tfactory_options,outputdir,outfilename):
     # initialize a TMVA.Factory and train the BDT
     
+    cwd = os.getcwd()
+    os.chdir(outputdir)
     outfile = ROOT.TFile(outfilename,"recreate")
     tfactory = ROOT.TMVA.Factory('tmvatrain',outfile,"")
     # book BDT method
@@ -192,6 +197,7 @@ def tmvatrain(tloader,tfactory_options,outfilename):
     roc = outfile.Get(outfilename.replace('.root','_data')+"/Method_BDT/BDT/MVA_BDT_rejBvsS")
     aucroc = roc.Integral(1,roc.GetNbinsX(),"width")
     outfile.Close()
+    os.chdir(cwd)
     return aucroc
 
 def argsfromcmd(args):
@@ -248,26 +254,26 @@ if __name__=="__main__":
     else:
 	### Set global switches
 	combine = 'all' # choose from 'none', 'years', 'regions', 'all'
-	outputdir = 'test'
+	outputdir = '.' # use '.' for current directory
 	### Set list of input files
 	years = []
 	years.append('2016')
-	years.append('2017')
-	years.append('2018')
+	#years.append('2017')
+	#years.append('2018')
 	indirs = []
 	for year in years: 
-	    indirs.append('/user/llambrec/Files/tzqid_new/'+year+'MC/signalregion_3tight_flat')
+	    indirs.append('/user/llambrec/Files/tzqidmedium0p4_forbdt/'+year+'MC/signalregion_3tight_flat')
 	sidebanddirs = []
-	#sidebanddirs = [f.replace('_flat','_2tight_flat') for f in indirs]
+	#sidebanddirs = [f.replace('_3tight_flat','_2tight_flat') for f in indirs]
 	treenames = ["blackJackAndHookers/treeCat1"]
-	treenames.append("blackJackAndHookers/treeCat2")
-	treenames.append("blackJackAndHookers/treeCat3")
+	#treenames.append("blackJackAndHookers/treeCat2")
+	#treenames.append("blackJackAndHookers/treeCat3")
 	sigtag = 'tZq'
 	### Data loading options
 	lopts = "SplitMode=Random:NormMode=None"
 	### BDT options
 	fopts = "!H:!V" # help and verbosity level
-	fopts += ":NTrees=1500:BoostType=Grad" # options for ensemble
+	fopts += ":NTrees=15:BoostType=Grad" # options for ensemble
 	fopts += ":MinNodeSize=1%:MaxDepth=6:nCuts=200" # options for single tree
 	fopts += ":UseBaggedGrad=True:BaggedSampleFraction=1."
 	fopts += ":Shrinkage=0.03"
@@ -277,25 +283,25 @@ if __name__=="__main__":
 		'_deepCSV_max','_lT','_MT','_dPhill_max',
 		'_pTjj_max','_dRlb_min','_HT','_dRlWrecoil','_dRlWbtagged',
 		'_M3l','_abs_eta_max'])
-	varlist += (['_nJets','_nBJets']) # parametrized learning
+	#varlist += (['_nJets','_nBJets']) # parametrized learning
 
     ### Make output directory if needed
     if not os.path.exists(outputdir): os.makedirs(outputdir)
 
     ### Function call
     if(combine=='all'):
-	outfilename = os.path.join(outputdir,'out_all.root')
+	outfilename = 'out_all.root'
 	# train a BDT on all years and regions together
 	# option 1: use output from getmvatreesfromdirs directly to add to the TMVA.DataLoader
 	(sigchains,bckchains,bckchains_onlytrain,bckchains_onlytest,_,_) = getmvatreesfromdirs(
 	   indirs,treenames,sigtag,sidebanddirs=sidebanddirs)
 	tloader = tloader_fromchains(sigchains,bckchains,bckchains_onlytrain,bckchains_onlytest,
-					varlist,lopts,outfilename)
+					varlist,lopts,outputdir,outfilename)
 	# option 2: use input file created indirectly using makeinputfile.py
 	#tloader = tloader_fromfile('tZqTrainInput.root','sigtree','bcktree',varlist,lopts)
 	# now train the BDT
-	aucroc = tmvatrain(tloader,fopts,outfilename)
-	print('results for '+outfilename)
+	aucroc = tmvatrain(tloader,fopts,outputdir,outfilename)
+	print('results for '+str(os.path.join(outputdir,outfilename)))
 	print('---AUC (ROC)---')
 	print(str(aucroc))
     elif(combine=='none'):

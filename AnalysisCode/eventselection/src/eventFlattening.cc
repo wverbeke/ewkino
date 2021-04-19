@@ -49,9 +49,14 @@ Float_t _leptonPtTrailing = 0.;
 Float_t _leptonEtaLeading = 0.;
 Float_t _leptonEtaSubLeading = 0.;
 Float_t _leptonEtaTrailing = 0.;
+Float_t _jetPtLeading = 0;
+Float_t _jetPtSubLeading = 0;
 Float_t _numberOfVertices = 0.;
 Int_t _fakeRateFlavour = -1;
 Float_t _bestZMass = 0.;
+Int_t _lW_charge = 0;
+Float_t _lW_pt = 0;
+Float_t _Z_pt = 0;
 
 
 void eventFlattening::setVariables(std::map<std::string,double> varmap){
@@ -100,9 +105,14 @@ void eventFlattening::setVariables(std::map<std::string,double> varmap){
     _leptonEtaLeading = varmap["_leptonEtaLeading"];
     _leptonEtaSubLeading = varmap["_leptonEtaSubLeading"];
     _leptonEtaTrailing = varmap["_leptonEtaTrailing"];
+    _jetPtLeading = varmap["_jetPtLeading"];
+    _jetPtSubLeading = varmap["_jetPtSubLeading"];
     _numberOfVertices = varmap["_numberOfVertices"];
     _fakeRateFlavour = varmap["_fakeRateFlavour"];
     _bestZMass = varmap["_bestZMass"];
+    _lW_charge = varmap["_lW_charge"];
+    _lW_pt = varmap["_lW_pt"];
+    _Z_pt = varmap["_Z_pt"];
 }
 
 std::map< std::string, double > eventFlattening::initVarMap(){
@@ -130,12 +140,15 @@ std::map< std::string, double > eventFlattening::initVarMap(){
 	
 	{"_leptonPtLeading",0.}, {"_leptonPtSubLeading",0.}, {"_leptonPtTrailing",0.},
 	{"_leptonEtaLeading",0.}, {"_leptonEtaSubLeading",0.}, {"_leptonEtaTrailing",0.},
+	{"_jetPtLeading",0.}, {"_jetPtSubLeading",0.},
 
 	{"_numberOfVertices",0},
 	
 	{"_fakeRateFlavour",-1},
     
-	{"_bestZMass",0.}
+	{"_bestZMass",0.},
+	
+	{"_lW_charge",0}, {"_lW_pt",0.}, {"_Z_pt",0.}
     };
     return varmap;    
 }
@@ -190,9 +203,14 @@ void eventFlattening::initOutputTree(TTree* outputTree){
     outputTree->Branch("_leptonEtaLeading", &_leptonEtaLeading, "_leptonEtaLeading/F");
     outputTree->Branch("_leptonEtaSubLeading", &_leptonEtaSubLeading, "_leptonEtaSubLeading/F");
     outputTree->Branch("_leptonEtaTrailing", &_leptonEtaTrailing, "_leptonEtaTrailing/F");
+    outputTree->Branch("_jetPtLeading", &_jetPtLeading, "_jetPtLeading/F");
+    outputTree->Branch("_jetPtSubLeading", &_jetPtSubLeading, "_jetPtSubLeading/F");
     outputTree->Branch("_numberOfVertices", &_numberOfVertices, "_numberOfVertices/F");
     outputTree->Branch("_fakeRateFlavour", &_fakeRateFlavour, "_fakeRateFlavour/I");
     outputTree->Branch("_bestZMass", &_bestZMass, "_bestZMass/F");
+    outputTree->Branch("_lW_charge", &_lW_charge, "_lW_charge/I");
+    outputTree->Branch("_lW_pt", &_lW_pt, "_lW_pt/F");
+    outputTree->Branch("_Z_pt", &_Z_pt, "_Z_pt/F");
 }
 
 TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, 
@@ -354,9 +372,9 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     }
 
     // get correct jet collection and met (defined in eventSelections.cc!)
-    JetCollection jetcollection = getjetcollection(event, variation);
+    JetCollection jetcollection = event.getJetCollection(variation);
     JetCollection bjetcollection = jetcollection.mediumBTagCollection();
-    Met met = getmet(event, variation);
+    Met met = event.getMet(variation);
     // get lepton collection as well (warning: a lot of event methods work on this collection implicitly,
     // so changing the definition here is not enough to consistently use another collection of leptons!)
     LeptonCollection lepcollection = event.leptonCollection();
@@ -374,6 +392,10 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
         varmap["_leptonEtaSubLeading"] = lepcollection[1].eta();
         varmap["_leptonEtaTrailing"] = lepcollection[2].eta();
     }
+    // jet pt
+    jetcollection.sortByPt();
+    if(jetcollection.size()>=1) varmap["_jetPtLeading"] = jetcollection[0].pt();
+    if(jetcollection.size()>=2) varmap["_jetPtSubLeading"] = jetcollection[1].pt();
 
     // other more or less precomputed event variables
     varmap["_lT"] = lepcollection.scalarPtSum() + met.pt();
@@ -420,13 +442,17 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     for(int i=0; i<lWindex; i++){++lIt;}
     Lepton& lW = **lIt;
     varmap["_lW_asymmetry"] = fabs(lW.eta())*lW.charge();
+    varmap["_lW_charge"] = lW.charge();
+    varmap["_lW_pt"] = lW.pt();
     //std::cout<<"checkpoint 2"<<std::endl;
 
-    // find reconstructed Z mass
+    // find reconstructed Z mass and pt
     if(event.hasOSSFLightLeptonPair()){
 	std::pair< std::pair<int,int>, double> zbosonresults 
 	    = event.leptonCollection().bestZBosonCandidateIndicesAndMass();
 	varmap["_bestZMass"] = zbosonresults.second;
+	varmap["_Z_pt"] = (event.leptonCollection()[zbosonresults.first.first]
+			    + event.leptonCollection()[zbosonresults.first.second]).pt();
     }
     
     // top reconstruction

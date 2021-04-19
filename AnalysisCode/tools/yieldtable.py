@@ -168,8 +168,7 @@ def histogramyield(hist):
 def histogramfileyield(histfile,mustcontain=[],doprint=True):
     ### determine the yield of all histograms in histfile
     # if mustcontain is not empty, histogram names are required to contain all elements in it
-    histlist = histtools.loadallhistograms(histfile)
-    histlist = histtools.selecthistograms(histlist,mustcontainall=mustcontain)[1]
+    histlist = histtools.loadhistograms(histfile,mustcontainall=mustcontain)
     yieldlist = []
     for hist in histlist:
         yieldlist.append(histogramyield(hist))
@@ -272,13 +271,13 @@ if __name__=="__main__":
 
     elif mode=='folder':
 	# simple extension of mode='tree' but for all files in a given folder
-	print('mode = tree, required args: <dirname> <treename> <dtype>')
+	print('mode = folder, required args: <dirname> <treename> <dtype>')
         dirname = sys.argv[2]
         treename = sys.argv[3]
         dtype = sys.argv[4]
 	rootfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f[-5:]=='.root']
 	# temp: additional selection
-	rootfiles = [f for f in rootfiles if 'data_combined' in f]
+	#rootfiles = [f for f in rootfiles if 'data_combined' in f]
 	# print files:
 	print('found following files:')
 	for rf in rootfiles: print('-  '+rf)
@@ -329,12 +328,14 @@ if __name__=="__main__":
 	yeardirs.append('2016')
 	yeardirs.append('2017')
 	yeardirs.append('2018')
+	yeardirs.append('years')
 	# fill table
 	mustcontain = ['nominal','yield']
 	for yeardir in [y+'combined' for y in yeardirs]:
 	    regions = ['signalregion_cat'+str(i) for i in [1,2,3]]
 	    if includeCR:
-		regions += ['wzcontrolregion','zgcontrolregion','zzcontrolregion']
+		regions += (['wzcontrolregion','zgcontrolregion',
+			    'zzcontrolregion','ttzcontrolregion'])
 	    srsum = {}
 	    srsumsqerr = {}
 	    table = {}

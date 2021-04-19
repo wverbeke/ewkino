@@ -9,9 +9,11 @@ import os
 import sys
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 
 def samplenameisdata(sample):
-    # local variant of isData function, purely based on occurence of certain tags in the name
+    ### local variant of isData function, purely based on occurence of certain tags in the name
     if('SingleElectron' in sample or 'SingleMuon' in sample
         or 'DoubleEG' in sample or 'DoubleMuon' in sample
         or 'MuonEG' in sample or 'EGamma' in sample
@@ -19,6 +21,7 @@ def samplenameisdata(sample):
     else: return False
 
 def mergefiles(output_file_name,input_files):
+    ### call the mergeAndRemoveOverlap executable on a list of input files
     # determine current working directory
     cwd = os.getcwd()
     # check if executable is present here
@@ -26,25 +29,28 @@ def mergefiles(output_file_name,input_files):
 	print('### ERROR ###: merging executable does not seem to exist.')
 	print('Run make -f makeMergeAndRemoveOverlap.')
 	return
+    # check if sufficient files were given as input
     if len(input_files)<2:
         print('### ERROR ###: number of input files is smaller than 2, skipping...')
         return
-    script_name = 'mergeAndRemoveOverlap.sh'
-    with open(script_name,'w') as script:
-        initializeJobScript(script)
-        script.write('cd {}\n'.format(cwd))
-        command = './mergeAndRemoveOverlap {}'.format(output_file_name)
-        for f in input_files: command += ' {}'.format(f)
-        script.write(command+'\n')
-    submitQsubJob(script_name)
+    command = './mergeAndRemoveOverlap {}'.format(output_file_name)
+    for f in input_files: command += ' {}'.format(f)
+    #script_name = 'mergeAndRemoveOverlap.sh'
+    #with open(script_name,'w') as script:
+    #    initializeJobScript(script)
+    #    script.write('cd {}\n'.format(cwd))
+    #    script.write(command+'\n')
+    #submitQsubJob(script_name)
     # alternative: run locally
     #os.system('bash '+script_name)
+    ct.submitCommandAsCondorJob( 'cjob_mergeAndRemoveOverlap', command )
 
 def mergefilesinfolder(output_file_path,input_folder):
+    ### call mergefiles on all files in a folder
     mergefilesinfolders(output_file_path,[input_folder])
 
 def mergefilesinfolders(output_file_path,input_folders):
-    
+    ### call mergefiles on all files in multiple folders
     if os.path.exists(output_file_path):
         os.system('rm '+output_file_path)
     input_files = []
@@ -72,7 +78,7 @@ if __name__=='__main__':
 	    if('2016data' in fulldirname): appendix = '_Summer16'
 	    elif('2017data' in fulldirname): appendix = '_Fall17'
 	    elif('2018data' in fulldirname): appendix = '_Autumn18'
-	    if('_flat' in fulldirname): appendix = ''
+	    #if('_flat' in fulldirname): appendix = ''
 	    if appendix!='':
 		# check that folder contains at least one .root file
 		if len([f for f in os.listdir(fulldirname) if f[-5:]=='.root'])==0: continue

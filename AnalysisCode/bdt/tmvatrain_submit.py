@@ -6,17 +6,19 @@ import os
 import json
 sys.path.append(os.path.abspath('../../skimmer/'))
 from jobSubmission import initializeJobScript, submitQsubJob
+sys.path.append(os.path.abspath('../../jobSubmission'))
+import condorTools as ct
 
 ### Define configurations
 combine = 'all'
 varlist = (['\"_abs_eta_recoil\"','\"_Mjj_max\"','\"_lW_asymmetry\"',
-                '\"_deepCSV_max\"','\"_lT\"','\"_MT\"','\"_dPhill_max\"',
+                '\"_deepFlavor_max\"','\"_lT\"','\"_MT\"','\"_dPhill_max\"',
                 '\"_pTjj_max\"','\"_dRlb_min\"','\"_HT\"','\"_dRlWrecoil\"',
 		'\"_dRlWbtagged\"','\"_M3l\"','\"_abs_eta_max\"'])
 varlist += (['\"_nJets\"','\"_nBJets\"']) # parametrized learning
-indirs = ['\"/user/llambrec/Files/tzqidmedium0p4/2016MC/signalregion_3tight_flat\"']
-indirs.append('\"/user/llambrec/Files/tzqidmedium0p4/2017MC/signalregion_3tight_flat\"')
-indirs.append('\"/user/llambrec/Files/tzqidmedium0p4/2018MC/signalregion_3tight_flat\"')
+indirs = ['\"/user/llambrec/Files/tzqidmedium0p4_forbdt/2016MC/signalregion_3tight_flat\"']
+indirs.append('\"/user/llambrec/Files/tzqidmedium0p4_forbdt/2017MC/signalregion_3tight_flat\"')
+indirs.append('\"/user/llambrec/Files/tzqidmedium0p4_forbdt/2018MC/signalregion_3tight_flat\"')
 sidebanddirs = [d.replace('3tight','2tight') for d in indirs]
 #sidebanddirs = []
 treenames = ['\"blackJackAndHookers/treeCat1\"']
@@ -39,16 +41,20 @@ config = ({'combine':combine,
 	    })
 
 # make tmvatrain command and submit script
-script_name = 'tmvatrain.sh'
-with open(script_name,'w') as script:
-    initializeJobScript( script )
-    command = 'python tmvatrain.py'
-    for key in config.keys():
-	command += ' '+key+'='+config[key]
-    script.write(command+'\n')
-    script.write('echo ---command---\n')
-    script.write('echo {}'.format(command))
+commands = []
+tmvacommand = 'python tmvatrain.py'
+for key in config.keys(): tmvacommand += ' '+key+'='+config[key]
+commands.append(tmvacommand)
+commands.append('echo ---command---')
+commands.append('echo {}'.format(tmvacommand))
+# old qsub way
+#script_name = 'tmvatrain.sh'
+#with open(script_name,'w') as script:
+#    initializeJobScript( script )
+#    for c in commands: script.write(c+'\n')
 # for testing: run sequentially on m-machine
 #os.system('bash '+script_name)
 # actual submission
-submitQsubJob(script_name)
+#submitQsubJob(script_name)
+# new condor way
+ct.submitCommandsAsCondorJob( 'cjob_tmvatrain', commands )

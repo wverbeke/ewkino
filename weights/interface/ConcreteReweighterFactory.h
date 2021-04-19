@@ -34,4 +34,11 @@ class BTagShapeReweighterFactory : public ReweighterFactory {
 	virtual CombinedReweighter buildReweighter( const std::string&, const std::string&, const std::vector< Sample >& ) const override;
 };
 
+class BTagWPReweighterFactory : public ReweighterFactory {
+    // btag working point - based reweighter for testing
+
+    public:
+        virtual CombinedReweighter buildReweighter( const std::string&, const std::string&, const std::vector< Sample >& ) const override;
+};
+
 #endif

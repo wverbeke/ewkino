@@ -18,23 +18,41 @@ std::string cleanJECVariationName( std::string branchName ){
     return jecName;
 }
 
+bool isValidSource( std::string sourceName ){
+    // info based on the twiki page on split JEC uncertainties:
+    // https://twiki.cern.ch/twiki/bin/view/CMS/JECUncertaintySources
+    if( stringTools::stringContains(sourceName,"Total") ) return false;
+    if( stringTools::stringContains(sourceName,"AbsoluteFlavMap") ) return false;
+    if( stringTools::stringContains(sourceName,"Flavor")
+         && !stringTools::stringContains(sourceName,"QCD") ) return false;
+    if( stringTools::stringContains(sourceName,"PileUpMuZero") ) return false;
+    if( stringTools::stringContains(sourceName,"PileUpEnvelope") ) return false;
+    return true;
+}
+
 JetInfo::JetInfo( const TreeReader& treeReader, 
 		  const bool readAllJECVariations,
 		  const bool readGroupedJECVariations ){
     _JECSources = std::vector< std::string >();
+    _JECSourcesValid = std::vector< std::string >(); // subcollection removing superfluous ones
     _JECGrouped = std::vector< std::string >();
+    _JECGroupedValid = std::vector< std::string >(); // subcollection removing superfluous ones
     if( readAllJECVariations ){
 	for( auto mapEl: treeReader._jetSmearedPt_JECSourcesUp ){
 	    // note: in principle only checking one branch should be enough
 	    // as up/down and pt/smearedPt are supposed to contain the same variations
-	    _JECSources.push_back( cleanJECVariationName(mapEl.first) );
+	    std::string jecName = cleanJECVariationName(mapEl.first);
+	    _JECSources.push_back( jecName );
+	    if( isValidSource(jecName) ) _JECSourcesValid.push_back( jecName );
 	}
     }
     if( readGroupedJECVariations ){
 	for( auto mapEl: treeReader._jetSmearedPt_JECGroupedUp ){
 	    // note: in principle only checking one branch should be enough
             // as up/down and pt/smearedPt are supposed to contain the same variations
-            _JECGrouped.push_back( cleanJECVariationName(mapEl.first) );
+            std::string jecName = cleanJECVariationName(mapEl.first);
+	    _JECGrouped.push_back( jecName );
+	    if( isValidSource(jecName) ) _JECGroupedValid.push_back( jecName );
 	}
     }
 }
@@ -60,7 +78,17 @@ void JetInfo::printAllJECVariations() const{
     printAvailableInfo( _JECSources, message );
 }
 
+void JetInfo::printAllValidJECVariations() const{
+    std::string message = "Available valid JEC variations (complete set):";
+    printAvailableInfo( _JECSources, message );
+}
+
 void JetInfo::printGroupedJECVariations() const{
     std::string message = "Available JEC variations (reduced set):";
+    printAvailableInfo( _JECGrouped, message );
+}
+
+void JetInfo::printGroupedValidJECVariations() const{
+    std::string message = "Available valid JEC variations (reduced set):";
     printAvailableInfo( _JECGrouped, message );
 }

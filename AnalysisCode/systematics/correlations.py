@@ -20,8 +20,14 @@ import histtools
 def getcorrelations():
     # define correlations to be implemented
     uncorrelated_years = (['_JER','_Uncl','_bTag_heavy','_bTag_light',
-			    '_muonIDStat','_electronIDStat'])
-    uncorrelated_processes = ['_qcdScalesShapeEnv','_rScale','_fScale','_rfScales']
+			    '_muonIDStat','_electronIDStat',
+			    '_bTag_shape_lfstats1','_bTag_shape_lfstats2',
+			    '_bTag_shape_hfstats1','_bTag_shape_hfstats2'
+			    ])
+    uncorrelated_processes = (['_qcdScalesNorm','_qcdScalesShapeEnv',
+				'_rScale','_fScale','_rfScales',
+				'isrScale','_isrShape','_isrNorm'
+				])
     #partially_correlated_years = {'prefire':0.5,'pileup':0.3} # just to test, not realistic
     partially_correlated_years = {}
     # partial correlations not yet implemented in combine code!

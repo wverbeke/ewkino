@@ -176,7 +176,8 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
 		+ "lepton ID '" + leptonID + "' not recognized.");
 
     // make muon ID Reweighter
-    std::string muonSFFileName = stringTools::formatDirectoryName( weightDirectory )
+    // OLD preliminary version of scale factors, before 26/02/2021
+    /*std::string muonSFFileName = stringTools::formatDirectoryName( weightDirectory )
         + "weightFiles/leptonSF/SFTOPLeptonID"+interpendix+"_" + year + "_muon.root";
     TFile* muonSFFile = TFile::Open( (muonSFFileName).c_str() );
     // load the scalefactor histogram and set the errors to zero,
@@ -196,17 +197,6 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     muonSFFile->Close();
     for(int i = 0; i <= muonSFHist_nom->GetNbinsX()+1; ++i){
 	for(int j = 0; j <= muonSFHist_nom->GetNbinsY()+1; ++j){
-
-	    // prints for testing
-	    /*std::cout << muonSFFileName << std::endl;
-	    std::cout << "--- bin " << i << "," << j << "(raw values) ---" << std::endl;
-            std::cout << muonSFHist_nom->GetBinContent(i,j) << std::endl;
-            std::cout << muonSFHist_nom->GetBinError(i,j) << std::endl;
-            std::cout << muonSFHist_syst->GetBinContent(i,j) << std::endl;
-            std::cout << muonSFHist_syst->GetBinError(i,j) << std::endl;
-            std::cout << muonSFHist_stat->GetBinContent(i,j) << std::endl;
-	    std::cout << muonSFHist_stat->GetBinError(i,j) << std::endl;*/
-
 	    // process values
 	    muonSFHist_nom->SetBinError(i,j,0.);
 	    double sf = muonSFHist_nom->GetBinContent(i,j);
@@ -214,16 +204,44 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
 	    muonSFHist_syst->SetBinContent(i,j,1.);
 	    muonSFHist_stat->SetBinError(i,j,muonSFHist_stat->GetBinError(i,j)/sf);
             muonSFHist_stat->SetBinContent(i,j,1.);
-	
-	    // print for testing
-	    /*std::cout << "--- bin (processed values) ---" << std::endl;
-	    std::cout << muonSFHist_nom->GetBinContent(i,j) << std::endl;
-	    std::cout << muonSFHist_nom->GetBinError(i,j) << std::endl;
-	    std::cout << muonSFHist_syst->GetBinContent(i,j) << std::endl;
-            std::cout << muonSFHist_syst->GetBinError(i,j) << std::endl;
-	    std::cout << muonSFHist_stat->GetBinContent(i,j) << std::endl;
-            std::cout << muonSFHist_stat->GetBinError(i,j) << std::endl;*/
 	}
+    }
+
+    MuonReweighter muonReweighter_nom( muonSFHist_nom, new TightSelector );
+    combinedReweighter.addReweighter("muonID",std::make_shared<ReweighterMuons>(muonReweighter_nom));
+    MuonReweighter muonReweighter_syst( muonSFHist_syst, new TightSelector );
+    combinedReweighter.addReweighter("muonIDSyst",std::make_shared<ReweighterMuons>(muonReweighter_syst));
+    MuonReweighter muonReweighter_stat( muonSFHist_stat, new TightSelector );
+    combinedReweighter.addReweighter("muonIDStat",std::make_shared<ReweighterMuons>(muonReweighter_stat)); */
+
+    // NEW official version of scale factors, after 26/02/2021
+    std::string muonSFFileName = stringTools::formatDirectoryName( weightDirectory )
+        + "weightFiles/leptonSF/SFTOPLeptonID"+interpendix+"_" + year + "_muon_new.root";
+    TFile* muonSFFile = TFile::Open( (muonSFFileName).c_str() );
+    // load the scalefactor histogram and set the errors to zero,
+    // load the systematic errors and set the bin contents to one and errors relative,
+    // (note: the histogram SFTotSys contains the relative uncertainties as bin contents!)
+    // load the statistical errors and set the bin contents to one and the errors relative
+    // (note: the histogram SFTotStat contains the relative uncertainties as bin contents!)
+    std::shared_ptr< TH2 > muonSFHist_nom( dynamic_cast< TH2* >( 
+	muonSFFile->Get( "SF" ) ) );
+    muonSFHist_nom->SetDirectory( gROOT );
+    std::shared_ptr< TH2 > muonSFHist_syst( dynamic_cast< TH2* >( 
+        muonSFFile->Get( "SFTotSys" ) ) );
+    muonSFHist_syst->SetDirectory( gROOT );
+    std::shared_ptr< TH2 > muonSFHist_stat( dynamic_cast< TH2* >( 
+        muonSFFile->Get( "SFTotStat" ) ) );
+    muonSFHist_stat->SetDirectory( gROOT );
+    muonSFFile->Close();
+    for(int i = 0; i <= muonSFHist_nom->GetNbinsX()+1; ++i){
+        for(int j = 0; j <= muonSFHist_nom->GetNbinsY()+1; ++j){
+            // process values
+            muonSFHist_nom->SetBinError(i,j,0.);
+            muonSFHist_syst->SetBinError(i,j,muonSFHist_syst->GetBinContent(i,j));
+            muonSFHist_syst->SetBinContent(i,j,1.);
+            muonSFHist_stat->SetBinError(i,j,muonSFHist_stat->GetBinContent(i,j));
+            muonSFHist_stat->SetBinContent(i,j,1.);
+        }
     }
 
     MuonReweighter muonReweighter_nom( muonSFHist_nom, new TightSelector );
@@ -234,8 +252,12 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     combinedReweighter.addReweighter("muonIDStat",std::make_shared<ReweighterMuons>(muonReweighter_stat));
 
     // make electron ID Reweighter
+    // OLD preliminary version of scale factors, before 26/02/2021
+    //TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
+    //	+ "weightFiles/leptonSF/SFTOPLeptonID"+interpendix+"_" + year + "_electron.root" ).c_str() );
+    // NEW preliminary version of scale factors, before 26/02/2021
     TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
-	+ "weightFiles/leptonSF/SFTOPLeptonID"+interpendix+"_" + year + "_electron.root" ).c_str() );
+      + "weightFiles/leptonSF/SFTOPLeptonID"+interpendix+"_" + year + "_electron_new.root" ).c_str() );
     // load the scalefactor histogram and set the errors to zero,
     // load the systematic errors and set the bin contents to one,
     // (note: the histogram syst contains the relative uncertainties as bin contents (?))
@@ -321,9 +343,9 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
 
     // make b-tagging Reweighter 
 
-    // OLD WAY: reweight using a specific working point
+    /* // OLD WAY: reweight using a specific working point
     // not recommended by the b-tagging POG when using the b-tagging score in your BDT
-    /*const std::string& bTagWP = "medium";
+    const std::string& bTagWP = "medium";
 
     // read MC b-tagging efficiency histograms
     const std::string& leptonCleaning = "looseLeptonCleaned";
@@ -378,15 +400,25 @@ CombinedReweighter tZqReweighterFactory::buildReweighter( const std::string& wei
     bTagSFPath += "weightFiles/bTagSF/"+bTagSFFileName;
     // set other parameters
     std::string flavor = "all";
-    std::string bTagAlgo = "deepJet";
+    std::string bTagAlgo = "deepFlavor";
     std::vector<std::string> systematics = {"jes","hf","lf","hfstats1","hfstats2",
-                                            "lfstats1","lfstats2","cferr1","cferr2"};
+                                        "lfstats1","lfstats2","cferr1","cferr2",
+                                        "jesAbsoluteMPFBias", "jesAbsoluteScale", "jesAbsoluteStat",
+                                        "jesRelativeBal", "jesRelativeFSR", "jesRelativeJEREC1",
+                                        "jesRelativeJEREC2", "jesRelativeJERHF",
+                                        "jesRelativePtBB", "jesRelativePtEC1", "jesRelativePtEC2",
+                                        "jesRelativePtHF",
+                                        "jesRelativeStatEC","jesRelativeStatFSR","jesRelativeStatHF",
+                                        "jesPileUpDataMC", "jesPileUpPtBB", "jesPileUpPtEC1",
+                                        "jesPileUpPtEC2", "jesPileUpPtHF", "jesPileUpPtRef",
+                                        "jesFlavorQCD", "jesFragmentation", "jesSinglePionECAL",
+                                        "jesSinglePionHCAL", "jesTimePtEta" };
     std::string weightDir = stringTools::formatDirectoryName(weightDirectory);
     weightDir += "weightFiles/bTagNorm";
     std::shared_ptr<ReweighterBTagShape> bTagShape = std::make_shared<ReweighterBTagShape>(
                                                     bTagSFPath, flavor, bTagAlgo,
+						    samples,
                                                     systematics, weightDir );
-    bTagShape->initialize(samples);
     combinedReweighter.addReweighter( "bTag_shape", bTagShape );
 
     // make prefire Reweighter
@@ -413,22 +445,88 @@ CombinedReweighter BTagShapeReweighterFactory::buildReweighter( const std::strin
 
     // reweighter to return
     CombinedReweighter combinedReweighter;
-    // dummy condition on args to avoid compilation warnings
-    if(weightDirectory=="" && year=="" && samples.size()==0) return combinedReweighter;
 
+    std::string bTagSFFileName;
+    if( year == "2016" ){
+        bTagSFFileName = "DeepJet_2016LegacySF_V1.csv";
+    } else if( year == "2017" ){
+        bTagSFFileName = "DeepFlavour_94XSF_V4_B_F.csv";
+    } else {
+        bTagSFFileName = "DeepJet_102XSF_V2.csv";
+    }
     std::string sfFilePath = stringTools::formatDirectoryName(weightDirectory);
-    sfFilePath += "weightFiles/bTagSF/DeepJet_2016LegacySF_V1.csv";
+    sfFilePath += "weightFiles/bTagSF/"+bTagSFFileName;
     std::string flavor = "all";
-    std::string bTagAlgo = "deepJet";
+    std::string bTagAlgo = "deepFlavor";
     std::vector<std::string> systematics = {"jes","hf","lf","hfstats1","hfstats2",
-					    "lfstats1","lfstats2","cferr1","cferr2"};
+                                        "lfstats1","lfstats2","cferr1","cferr2",
+                                        "jesAbsoluteMPFBias", "jesAbsoluteScale", "jesAbsoluteStat",
+                                        "jesRelativeBal", "jesRelativeFSR", "jesRelativeJEREC1",
+                                        "jesRelativeJEREC2", "jesRelativeJERHF",
+                                        "jesRelativePtBB", "jesRelativePtEC1", "jesRelativePtEC2",
+                                        "jesRelativePtHF",
+                                        "jesRelativeStatEC","jesRelativeStatFSR","jesRelativeStatHF",
+                                        "jesPileUpDataMC", "jesPileUpPtBB", "jesPileUpPtEC1",
+                                        "jesPileUpPtEC2", "jesPileUpPtHF", "jesPileUpPtRef",
+                                        "jesFlavorQCD", "jesFragmentation", "jesSinglePionECAL",
+                                        "jesSinglePionHCAL", "jesTimePtEta" };
     std::string weightDir = stringTools::formatDirectoryName(weightDirectory);
     weightDir += "weightFiles/bTagNorm";
     std::shared_ptr<ReweighterBTagShape> bTagShape = std::make_shared<ReweighterBTagShape>( 
 						    sfFilePath, flavor, bTagAlgo, 
+						    samples,
 						    systematics, weightDir );
-    bTagShape->initialize(samples);
     combinedReweighter.addReweighter( "bTag_shape", bTagShape );
 
     return combinedReweighter;
 }
+
+//--------------------------------------------------------------------------------- //
+// bTagWP reweighter for testing purposes
+
+CombinedReweighter BTagWPReweighterFactory::buildReweighter( const std::string& weightDirectory,
+		    const std::string& year, const std::vector< Sample >& samples ) const{
+
+    // reweighter to return
+    CombinedReweighter combinedReweighter;
+    // dummy condtion on args to avoid compilation warnings
+    if( samples.size()==0 ) return combinedReweighter;
+    
+    const std::string& bTagWP = "medium";
+    // read MC b-tagging efficiency histograms
+    const std::string& leptonCleaning = "looseLeptonCleaned";
+    const std::string& btagger = "deepFlavor"; // choose from "deepFlavor" or "deepCSV"
+    // note: changing this is not enough, see also type of reweighter objects below!
+    TFile* bTagEffMCFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory )
+        + "weightFiles/bTagEff/bTagEff_" + btagger + "_" + leptonCleaning + "_" + year
+        + ".root" ).c_str() );
+    std::shared_ptr< TH2 > bTagEffMCHist_udsg( dynamic_cast< TH2* >(
+        bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_udsg" ).c_str() ) ) );
+    bTagEffMCHist_udsg->SetDirectory( gROOT );
+    std::shared_ptr< TH2 > bTagEffMCHist_c( dynamic_cast< TH2* >(
+        bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_charm" ).c_str() ) ) );
+    bTagEffMCHist_c->SetDirectory( gROOT );
+    std::shared_ptr< TH2 > bTagEffMCHist_b( dynamic_cast< TH2* >(
+        bTagEffMCFile->Get( ( "bTagEff_" + bTagWP + "_beauty" ).c_str() ) ) );
+    bTagEffMCHist_b->SetDirectory( gROOT );
+    bTagEffMCFile->Close();
+
+    // read b-tagging scale factor histograms
+    std::string bTagSFFileName;
+    if( year == "2016" ){
+        bTagSFFileName= "DeepJet_2016LegacySF_WP_V1.csv";
+    } else if( year == "2017" ){
+        bTagSFFileName = "DeepFlavour_94XSF_WP_V3_B_F.csv";
+    } else {
+        bTagSFFileName = "DeepJet_102XSF_WP_V1.csv";
+    }
+    std::string bTagSFPath = "weightFiles/bTagSF/" + bTagSFFileName;
+
+    combinedReweighter.addReweighter( "bTag_heavy",
+        std::make_shared< ReweighterBTagHeavyFlavorDeepFlavor >( weightDirectory, bTagSFPath,
+            bTagWP, bTagEffMCHist_c, bTagEffMCHist_b ) );
+    combinedReweighter.addReweighter( "bTag_light",
+        std::make_shared< ReweighterBTagLightFlavorDeepFlavor >( weightDirectory, bTagSFPath,
+            bTagWP, bTagEffMCHist_udsg ) );
+    return combinedReweighter;
+} 

@@ -8,8 +8,8 @@ import glob
 # in order to import local functions: append location to sys.path
 sys.path.append(os.path.abspath('../../skimmer')) # old qsub way
 from jobSubmission import submitQsubJob, initializeJobScript # old qsub way
-sys.path.append(os.path.abspath('../../jobSubmission'))
-import condorTools as ct
+sys.path.append(os.path.abspath('../../jobSubmission')) # new condor alternative
+import condorTools as ct # new condor alternative
 sys.path.append(os.path.abspath('../samplelists'))
 from readsamplelist import readsamplelist
 from extendsamplelist import extendsamplelist
@@ -21,12 +21,13 @@ import jobsplitting
 # but instead of a skimmer, a systematics executable is called.
 # command line arguments: see below
 
-if len(sys.argv) != 9:
+if len(sys.argv) != 12:
     print('### ERROR ###: runsystematics.py requires a different number of command-line arguments.')
     print('Normal usage from the command line:')
     print('python runsystematics.py input_directory samplelist output_directory,')
     print('                         event_selection, selection_type, event_category,')
-    print('			    event_channel, bdt_combine_mode')
+    print('			    split_samples, event_channel, topcharge, bdt_combine_mode,')
+    print('                         bdt_cut')
     # maybe add more command line arguments later, keep hard coded for now
     sys.exit()
 
@@ -43,28 +44,35 @@ output_directory = sys.argv[3]
 event_selection = sys.argv[4]
 selection_type = sys.argv[5]
 signal_category = sys.argv[6] # put cat number (1-3), 0 for no nJets/nBJets cut
-signal_channel = sys.argv[7] # put number of muons, 4 for all channels
-bdt_combine_mode = sys.argv[8]
+split_samples = sys.argv[7] # whether or not to use sample splitting (see splitSampleTools!)
+signal_channel = sys.argv[8] # put number of muons, 4 for all channels
+topcharge = sys.argv[9] # put 'all', 'top' or 'antitop'
+bdt_combine_mode = sys.argv[10]
+bdt_cut = sys.argv[11]
+nentries = 0 # put 0 for all available entries (maybe later make command line arg out of it)
 
 systematics = (['JEC','JER','Uncl', # acceptance
-		#'JECAll','JECGrouped', # split JEC uncertainties
+		'JECAll', # fully split JEC uncertainties
+		#'JECGrouped', # partially split JEC uncertainties
 		#'muonID','electronID', # (for ttH ID)
                 'muonIDSyst','muonIDStat', # weight (for TOP ID)
 		'electronIDSyst','electronIDStat', # weight (for TOP ID)
 		'pileup','prefire', # weight
 		#'bTag_heavy','bTag_light', # weight (replaced by bTag_shape!)
 		'bTag_shape', # weight-like
-                'fScale','rScale','rfScales','isrScale','fsrScale', # scale
+                'fScale','rScale','rfScales', # scale
+		'fScaleNorm','rScaleNorm','rfScalesNorm', # scale
 		'electronReco', # weight-like
+		'isrShape','isrNorm','fsrShape','fsrNorm', # ps
                 'pdfShapeVar','pdfNorm', # lhe
 		'qcdScalesShapeVar','qcdScalesNorm' # lhe
 		])
-#systematics = ['JEC','pileup','fScale'] # smaller test set of systematics
-#systematics = ['bTag_heavy','bTag_light'] # test set of b-tagging systematics
+#systematics = ['pileup'] # smaller test set of systematics
 cwd = os.getcwd()
 
 # check  arguments
-if event_selection not in (['signalregion','signalsideband_noossf','signalsideband_noz',
+if event_selection not in (['signalregion',
+			    'signalsideband','signalsideband_noossf','signalsideband_noz',
                             'wzcontrolregion','zzcontrolregion','zgcontrolregion',
 			    'ttzcontrolregion']):
     print('### ERROR ###: event_selection not in list of recognized event selections')
@@ -80,10 +88,12 @@ if bdt_combine_mode not in (['all','years','regions','years']):
     sys.exit()
 
 # determine data taking year and luminosity from sample list name
+# (simply checks for 2016/2017/2018 in samplelist name but can be modified/extended)
 (year,lumi) = tls.year_and_lumi_from_samplelist(samplelist)
 if lumi<0. : sys.exit()
 
 # determine data type from sample name
+# (simply checks for MC/data in samplelist name but can be modified/extended)
 dtype = tls.data_type_from_samplelist(samplelist)
 if len(dtype)==0 : sys.exit()
 
@@ -131,18 +141,24 @@ if not os.path.exists('./runsystematics'):
 def parseprocessname(orig):
     res = orig
     res = res.replace(' ','')
-    # move other parsing to .cc file in order to use full name as hist title!
+    res = res.replace('/','')
+    res = res.replace('#','')
+    res = res.replace('{','')
+    res = res.replace('}','')
+    res = res.replace('+','')
     return res
 
 # make output directory
 os.makedirs(output_directory)
 
 # for testing: only specific files
-#inputfiles = [f for f in inputfiles if 'tZq' in f['file']]
+#inputfiles = [[f] for f in inputfiles if 'tZq' in f['file']]
 
 # group files for more efficient job submission
-inputfiles = jobsplitting.splitbynentries(inputfiles)
+#inputfiles = jobsplitting.splitbynentries(inputfiles)
 # (now inputfiles is a list of lists of sample info dicts!)
+# alternative: still do one file per job as before
+inputfiles = [[f] for f in inputfiles]
 
 # loop over input files and submit jobs
 commandgroups = []
@@ -162,12 +178,11 @@ for jobgroup in inputfiles:
 	    norm = xsec*lumi/float(hcounter)
 	# get command for this file
 	output_file_path = os.path.join(output_directory,inputfile.split('/')[-1])
-        command = './runsystematics {} {} {} {} {} {} {} {} {} {}'.format(
-                    inputfile, norm, output_file_path, process_name,
-                    event_selection, signal_category, signal_channel,
-		    selection_type,
-                    bdt_combine_mode, path_to_xml_file)
-	print(command)
+        command = './runsystematics {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
+                    inputfile, norm, output_file_path, nentries, process_name,
+                    event_selection, selection_type, signal_category, 
+		    split_samples, signal_channel, topcharge,
+                    bdt_combine_mode, path_to_xml_file, bdt_cut)
         for systematic in systematics:
             command += ' {}'.format(systematic)
 	commands.append(command)
@@ -178,7 +193,7 @@ for jobgroup in inputfiles:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
         for c in commands: script.write(c+'\n')
-    #submitQsubJob(script_name)
+    submitQsubJob(script_name, wall_time='48:00:00')
     # alternative: run locally
     #os.system('bash '+script_name)
-ct.submitCommandsAsCondorJobs('cjob_runsystematics',commandgroups)
+#ct.submitCommandsAsCondorJobs('cjob_runsystematics',commandgroups)

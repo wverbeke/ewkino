@@ -12,20 +12,20 @@ regions.append('signalregion')
 #regions = ['wzcontrolregion']
 
 years = ['2016','2017','2018']
-events = ['data']
+events = ['MC']
 
 selection_types = []
 selection_types.append('3tight')
 #selection_types.append('3prompt')
-selection_types.append('fakerate')
-#selection_types.append('2tight')
+#selection_types.append('fakerate')
+selection_types.append('2tight')
 
 variation = 'nominal'
 do_mva = 'False' # choose from 'True' or 'False'
 path_to_xml_file = '../bdt/outdata/weights/tmvatrain_BDT.weights.xml' # put dummy value if do_mva = False
 frdir = '../fakerate/fakeRateMaps' # put dummy path here if not using nonprompt from data
 
-topdir = '~/Files/testdatayields'
+topdir = '~/Files/tzqidmedium0p4_forbdt'
 
 for year in years:
     for eventtype in events:

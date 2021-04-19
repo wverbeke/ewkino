@@ -107,17 +107,25 @@ def makealigned(stringlist):
 
 if __name__=="__main__":
 
-    if len(sys.argv)!=3:
+    if len(sys.argv)<3:
 	print('### ERROR ###: need different number of command line args:')
 	print('               <input directory> and <datacard directory>')
 	sys.exit()
     topdir = sys.argv[1]
     datacarddir = sys.argv[2]
+    channelsuffix = ''
+    topchargesuffix = ''
+
+    for arg in sys.argv[3:]:
+	[key,val] = arg.split('=',1)
+	if key=='channel': channelsuffix = val
+	if key=='topcharge': topchargesuffix = val
+
     npfromdata = True
     cnames = []
-    cnames.append({'region':'signalregion_cat1','var':'_eventBDT'})
-    cnames.append({'region':'signalregion_cat2','var':'_eventBDT'})
-    cnames.append({'region':'signalregion_cat3','var':'_eventBDT'})
+    cnames.append({'region':'signalregion_cat1'+channelsuffix+topchargesuffix,'var':'_eventBDT'})
+    cnames.append({'region':'signalregion_cat2'+channelsuffix+topchargesuffix,'var':'_eventBDT'})
+    cnames.append({'region':'signalregion_cat3'+channelsuffix+topchargesuffix,'var':'_eventBDT'})
     cnames.append({'region':'wzcontrolregion','var':'_MT'})
     cnames.append({'region':'zzcontrolregion','var':'_MT'})
     cnames.append({'region':'zgcontrolregion','var':'_nJets'})
@@ -144,10 +152,15 @@ if __name__=="__main__":
     os.makedirs(datacarddir)
 
     for channel in channels:
+	# get region, year and variable to use
+	region = channel['name'][:-5]
 	year = channel['name'][-4:]
-	# define variable to use
 	variable = channel['var']
-	# set lumi uncertainty
+
+	################################################
+	# set magnitude of normalization uncertainties #
+	################################################
+	# set lumi uncertainty (dict of name to magnitude)
 	unc_lumi = {}
 	if year=='2016': unc_lumi = {'lumi':1.009, # correlated
 				     'lumi_2016': 1.022, # uncorrelated
@@ -159,11 +172,21 @@ if __name__=="__main__":
 	elif year=='2018': unc_lumi = {'lumi':1.02,
 				       'lumi_2018':1.015,
 				       'lumi_20172018':1.003}
-	# set trigger uncertainty
-	unc_trigger = {'trigger_'+year:1.02} # preliminary dummy value
-					     # uncorrelated
-	# set individual normalization uncertainties
+	# set trigger uncertainty (dict of name to magnitude)
+	unc_trigger = {'trigger_'+year:1.02}
+	# set individual normalization uncertainties (dict of name to magnitude)
 	unc_norm = {'norm_WZ':1.1,'norm_ZZH':1.1,'norm_tbartZ':1.15,'norm_Xgamma':1.1,'norm_nonprompt':1.3}
+	# set individual extrapolation uncertainties (dict of name to magnitude)
+	# note: contrary to general normalization uncertainties, these are only applied in specific regions!
+	unc_extrapol = {}
+	if 'signalregion_cat1' in region:
+	    unc_extrapol = {'extrapol_WZ':1.04}
+	elif 'signalregion_cat2' in region:
+	    unc_extrapol = {'extrapol_WZ':1.05}
+	elif 'signalregion_cat3' in region:
+	    unc_extrapol = {'extrapol_WZ':1.13}
+
+
 	# check if histogram file exists
 	if not os.path.exists(channel['path']):
 	    print('### WARNING ###: '+channel['path']+' not found, skipping it.')
@@ -199,6 +222,10 @@ if __name__=="__main__":
 	for process in processinfo:
 	    pcolumn = makecolumn(channel['name'],processinfo,process,systematiclist)
 	    columns.append(pcolumn)
+
+	###################################
+	# add normalization uncertainties #
+	###################################
 	# make rows
 	rows = []
 	# lumi uncertainty:
@@ -216,8 +243,17 @@ if __name__=="__main__":
 			'WZ':unc_trigger[triggersource],'ZZH':unc_trigger[triggersource],
 			'multiboson':unc_trigger[triggersource]}))
 	# norm uncertainties
-	for normsource in unc_norm.keys():
-	    rows.append(makerow(normsource,'lnN',processinfo,{normsource.split('_')[-1]:unc_norm[normsource]}))
+	for normsource,magnitude in unc_norm.items():
+	    rows.append(makerow(normsource,'lnN',processinfo,
+			{normsource.split('_')[-1]:magnitude}))
+	# extrapolation uncertainties
+	for extrapolsource,magnitude in unc_extrapol.items():
+            rows.append(makerow(extrapolsource,'lnN',processinfo,
+			{extrapolsource.split('_')[-1]:magnitude}))
+
+	#############################
+	# format and write the card #
+	#############################
 	# add rows to columns
 	for row in rows:
 	    for rowel,c in zip(row,columns):

@@ -72,9 +72,9 @@ bool passDilightleptonSkim( Event& event){
 
 bool passTrilightleptonSkim( Event& event ){
     // special skim analogous to trilepton but removing taus to save memory
-    if( !passLeptonicSkim( event,3) ) return false;
+    if( !passLeptonicSkim( event, 3 ) ) return false;
     event.removeTaus();
-    return ( event.numberOfLeptons()>=3 );
+    return ( event.numberOfLeptons() >= 3 );
 }
 
 bool passSkim( Event& event, const std::string& skimCondition ){

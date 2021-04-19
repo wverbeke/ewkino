@@ -5,7 +5,14 @@
 #include <functional>
 
 bool passES(Event& event, const std::string& eventselection, 
-		const std::string& selectiontype, const std::string& variation){
+		const std::string& selectiontype, const std::string& variation,
+		const bool selectbjets ){
+    // arguments:
+    // - object of type Event
+    // - event selection identifier, see map below for allowd values
+    // - selection type identifier, i.e. 3tight, 3prompt, fakerate or 2tight
+    // - variation identifier, i.e. all, nominal, or any JEC/JER/Uncl variation
+    // - boolean whether to select b-jets (set to false for b-tag shape normalization)
 
     // check if selectiontype is valid
     std::vector< std::string > seltypes{ "3tight","3prompt","fakerate","2tight"};
@@ -22,7 +29,7 @@ bool passES(Event& event, const std::string& eventselection,
     }*/
     // map event selection to function
     static std::map< std::string, std::function< 
-	bool(Event&, const std::string&, const std::string&) > > 
+	bool(Event&, const std::string&, const std::string&, const bool) > > 
 	    ESFunctionMap = {
 		{ "signalregion", pass_signalregion },
 		{ "wzcontrolregion", pass_wzcontrolregion },
@@ -31,12 +38,13 @@ bool passES(Event& event, const std::string& eventselection,
 		{ "ttzcontrolregion", pass_ttzcontrolregion },
 		{ "signalsideband_noossf", pass_signalsideband_noossf },
 		{ "signalsideband_noz", pass_signalsideband_noz },
+		{ "signalsideband", pass_signalsideband }, // simple logical OR of noossf and noz
 	    };
     auto it = ESFunctionMap.find( eventselection );
     if( it == ESFunctionMap.cend() ){
         throw std::invalid_argument( "unknown event selection condition " + eventselection );
     }
-    return (it->second)(event, selectiontype, variation);
+    return (it->second)(event, selectiontype, variation, selectbjets);
 }
 
 // help functions for event cleaning //
@@ -57,78 +65,32 @@ void cleanLeptonsAndJets(Event& event){
     event.applyLeptonConeCorrection();
 }
 
-// help functions for getting correct jet collection and met //
-
-JetCollection getjetcollection(const Event& event, const std::string& variation){
-    if( variation == "nominal" ){
-        return event.jetCollection().goodJetCollection();
-    } else if( variation == "JECDown" ){
-        return event.jetCollection().JECDownCollection().goodJetCollection();
-    } else if( variation == "JECUp" ){
-        return event.jetCollection().JECUpCollection().goodJetCollection();
-    } else if( variation == "JERDown" ){
-        return event.jetCollection().JERDownCollection().goodJetCollection();
-    } else if( variation == "JERUp" ){
-        return event.jetCollection().JERUpCollection().goodJetCollection();
-    } else if( variation == "UnclDown" ){
-        return event.jetCollection().goodJetCollection();
-    } else if( variation == "UnclUp" ){
-        return event.jetCollection().goodJetCollection();
-    } else if( stringTools::stringEndsWith(variation,"Up") ){
-	std::string jecvar = variation.substr(0, variation.size()-2);
-	return event.jetCollection().JECUpCollection( jecvar ).goodJetCollection();
-    } else if( stringTools::stringEndsWith(variation,"Down") ){
-	std::string jecvar = variation.substr(0, variation.size()-4);
-        return event.jetCollection().JECDownCollection( jecvar ).goodJetCollection();
-    } else {
-        throw std::invalid_argument( "Jet variation " + variation + " is unknown." );
-    }
-}
-
-Met getmet(const Event& event, const std::string& variation){
-    if( variation == "nominal" ){
-        return event.met();
-    } else if( variation == "JECDown" ){
-        return event.met().MetJECDown();
-    } else if( variation == "JECUp" ){
-        return event.met().MetJECUp();
-    } else if( variation == "JERDown" ){
-        return event.met();
-    } else if( variation == "JERUp" ){
-	return event.met();
-    } else if( variation == "UnclDown" ){
-        return event.met().MetUnclusteredDown();
-    } else if( variation == "UnclUp" ){
-        return event.met().MetUnclusteredUp();
-    } else if( stringTools::stringEndsWith(variation,"Up") ){
-	std::string jecvar = variation.substr(0, variation.size()-2);
-        return event.met().MetJECUp( jecvar );
-    } else if( stringTools::stringEndsWith(variation,"Down") ){
-	std::string jecvar = variation.substr(0, variation.size()-4);
-        return event.met().MetJECDown( jecvar );
-    } else {
-        throw std::invalid_argument( "Met variation " + variation + " is unknown." );
-    }
-}
-
-int eventCategory(Event& event, const std::string& variation){
+int eventCategory(Event& event, const std::string& variation, const bool selectbjets){
     // determine the event category based on the number of jets and b-jets
     // note that it is assumed the event has been passed through a signal region selection!
     // return values:
     // - if varation is "all", then 0 if at least one b-jet and at least 2 jets, -1 otherwise
     // - if variation is specific, then 1/2/3 for specifiec categories, -1 otherwise
+    // note: if selectbjets is false, then 0 is returned if at least 2 jets, -1 otherwise
 
     // if variation = "all", only apply most general selection: 
     // at least one b-jet and at least two jets in any variation
     if( variation=="all" ){
 	if( event.jetCollection().numberOfGoodAnyVariationJets()<2 ) return -1;
-	if( event.jetCollection().maxNumberOfMediumBTaggedJetsAnyVariation()<1 ) return -1;
+	if( selectbjets 
+	    && event.jetCollection().maxNumberOfMediumBTaggedJetsAnyVariation()<1 ) return -1;
 	return 0;
     }
-    // else, determine correct event category
-    JetCollection jetc = getjetcollection(event,variation);
+    // else, determine number of jets and b-jets in correct variation
+    JetCollection jetc = event.getJetCollection(variation);
     int njets = jetc.size();
     int nbjets = jetc.numberOfMediumBTaggedJets();
+    // if no b-jet selection required, simply require njets>=2
+    if( !selectbjets ){
+	if( njets<2 ) return -1;
+	return 0;
+    } 
+    // else, determine full event category
     // no bjets or (only 1 bjet and no additional jet): -1
     if(nbjets == 0 or (nbjets==1 and njets==1)) return -1;
     // one bjet and 2-3 jets: 1
@@ -139,9 +101,30 @@ int eventCategory(Event& event, const std::string& variation){
     return 3;
 }
 
+// help functions for determining if event belongs to a sub-category //
+
+float lWCharge( Event& event ){ // (event cannot be const here)
+    int lWindex = 0;
+    if(event.hasOSSFLightLeptonPair()){ lWindex = event.WLeptonIndex(); }
+    LeptonCollection::const_iterator lIt = event.leptonCollection().cbegin();
+    for(int i=0; i<lWindex; i++){++lIt;}
+    Lepton& lW = **lIt;
+    return lW.charge();
+}
+
+bool hasLeptonFromMEExternalConversion( const Event& event ){
+    for( const auto& leptonPtr : event.leptonCollection() ){
+        if( leptonPtr->isFO() && leptonFromMEExternalConversion( *leptonPtr ) ){
+            return true;
+        }
+    }
+    return false;
+}
+
 // help functions for overlap removal between inclusive and dedicated photon samples //
 
 bool leptonFromMEExternalConversion( const Lepton& lepton ){
+    // from Willem's ewkinoAnalysis code
     if( !( lepton.matchPdgId() == 22 ) ) return false;
     if( !( lepton.isPrompt() && lepton.provenanceConversion() == 0 ) ) return false;
     return true;
@@ -157,6 +140,7 @@ bool passPhotonOverlapRemoval( const Event& event ){
         isInclusiveSample = true;
     } else if( stringTools::stringContains( sampleName, "TTGamma" ) 
 	|| stringTools::stringContains( sampleName, "ZGToLLG" ) 
+	|| stringTools::stringContains( sampleName, "ZGTo2LG" )
 	|| stringTools::stringContains( sampleName, "WGToLNuG" ) ){
         isPhotonSample = true;
     }
@@ -167,14 +151,17 @@ bool passPhotonOverlapRemoval( const Event& event ){
 
     bool usePhotonSample = false;
     // method 1: check for prompt leptons matched to photons without provenanceConversion
-    /*for( const auto& leptonPtr : event.leptonCollection() ){
-        if( leptonPtr->isFO() && leptonFromMEExternalConversion( *leptonPtr ) ){
-            usePhotonSample = true;
-            break;
-        }
-    }*/
+    //if( hasLeptonFromMEExternalConversion( event ) ) usePhotonSample = true;
     // method 2: simply check if all leptons are prompt (note: need to select FO leptons first!)
-    if( allLeptonsArePrompt(event) ) usePhotonSample = true;
+    if( allLeptonsArePrompt(event) ){
+	// if all leptons are prompt -> use ZG sample
+	usePhotonSample = true;
+	// BUT potential problem in ZG samples with missing phase space (gen level photon cut)
+	// solved for 2016 by using LoosePtlPtg sample (? still checking)
+	// for 2017/2018, these samples have other problems, instead use DY for low pt part
+	//if(event.is2016()) usePhotonSample = true;
+	//else{}
+    }
 
     if( isInclusiveSample ){
         return !usePhotonSample;
@@ -251,7 +238,7 @@ bool passMllMassVeto( const Event& event ){
 // dedicated functions to check if event passes certain conditions //
 
 bool pass_signalregion(Event& event, const std::string& selectiontype, 
-			const std::string& variation){
+			const std::string& variation, const bool selectbjets){
     // apply basic object selection
     cleanLeptonsAndJets(event);
     // apply MET filters
@@ -279,12 +266,12 @@ bool pass_signalregion(Event& event, const std::string& selectiontype,
     if(!event.hasOSSFLightLeptonPair()) return false;
     if(!event.hasZTollCandidate(halfwindow)) return false;
     // number of jets and b-jets
-    if(eventCategory(event, variation)<0) return false;
+    if(eventCategory(event, variation, selectbjets)<0) return false;
     return true;
 }
 
 bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype, 
-				const std::string& variation){
+				const std::string& variation, const bool selectbjets){
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
     if(not event.passMetFilters()) return false;
@@ -311,6 +298,7 @@ bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype,
     // -> do not impose this condition here, call further downstream
     //if(eventCategory(event, variation)<0) return false;
     if(variation=="dummy") return true; // dummy to avoid unused parameter warning
+    if(selectbjets){} // dummy to avoid unused parameter warning
     return true;
 }
 
@@ -350,7 +338,7 @@ bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype,
 } */
 
 bool pass_signalsideband_noz(Event& event, const std::string& selectiontype,
-				const std::string& variation){
+				const std::string& variation, const bool selectbjets){
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
     if(not event.passMetFilters()) return false;
@@ -394,11 +382,21 @@ bool pass_signalsideband_noz(Event& event, const std::string& selectiontype,
     // -> do not impose this condition here, call further downstream
     //if(eventCategory(event, variation)<0) return false;
     if(variation=="dummy") return true; // dummy to avoid unused parameter warning
+    if(selectbjets){} // dummy to avoid unused parameter warning
     return true;
 }
 
+bool pass_signalsideband(Event& event, const std::string& selectiontype,
+				const std::string& variation, const bool selectbjets){
+    bool pass_noossf = pass_signalsideband_noossf(event, selectiontype, variation, selectbjets);
+    if( pass_noossf ) return true;
+    bool pass_noz = pass_signalsideband_noz(event, selectiontype, variation, selectbjets);
+    if( pass_noz ) return true;
+    return false;
+}
+
 bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
-				const std::string& variation){
+				const std::string& variation, const bool selectbjets){
     // very similar to signal region but b-jet veto and other specificities
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
@@ -425,11 +423,13 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
     if(!event.hasZTollCandidate(halfwindow)) return false;
     // b-jet veto and minimum MET threshold
     if( variation=="all" ){
-	if(event.jetCollection().minNumberOfMediumBTaggedJetsAnyVariation()>0) return false;
+	if(selectbjets 
+	    && event.jetCollection().minNumberOfMediumBTaggedJetsAnyVariation()>0) return false;
 	if(event.met().maxPtAnyVariation()<50) return false;
     } else{
-	if(getjetcollection(event,variation).numberOfMediumBTaggedJets()>0) return false;
-	if(getmet(event,variation).pt()<50.) return false;
+	if(selectbjets 
+	    && event.getJetCollection(variation).numberOfMediumBTaggedJets()>0) return false;
+	if(event.getMet(variation).pt()<50.) return false;
     }
     // calculate mass of 3-lepton system and veto mass close to Z mass
     if(fabs(event.leptonSystem().mass()-particle::mZ)<halfwindow) return false;
@@ -437,7 +437,7 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
 }
 
 bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
-				const std::string& variation){
+				const std::string& variation, const bool selectbjets){
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
     if(not event.passMetFilters()) return false;
@@ -477,11 +477,12 @@ bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
     if(fabs(llmass-particle::mZ)>halfwindow) return false;
     // dummy condition on variation to avoid warnings
     if(variation=="dummy") return true;
+    if(selectbjets){}
     return true;
 }
 
 bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
-			    const std::string& variation){
+			    const std::string& variation, const bool selectbjets){
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
     if(not event.passMetFilters()) return false;
@@ -512,18 +513,19 @@ bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
 	    lIt2!=event.leptonCollection().cend(); lIt2++){
 	    Lepton& lep2 = **lIt2;
 	    if(fabs((lep1+lep2).mass()-particle::mZ)<halfwindow) pairZmass = true;
+	    if(oppositeSignSameFlavor(lep1,lep2) && (lep1+lep2).mass() < 35.) return false;
 	}
     }
     if(pairZmass) return false;
     // dummy condition on variation to avoid warnings
     if(variation=="dummy") return true;
+    if(selectbjets){}
     return true;
 }
 
 bool pass_ttzcontrolregion(Event& event, const std::string& selectiontype, 
-			    const std::string& variation){
+			    const std::string& variation, const bool selectbjets){
     // ttz 4l control region, in addition to ttz 3l control region implicit in signal regions
-    // (testing phase)
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
     if(not event.passMetFilters()) return false;
@@ -577,10 +579,12 @@ bool pass_ttzcontrolregion(Event& event, const std::string& selectiontype,
     } else{
 	// require at least 2 central jets
 	unsigned int ncentraljets = 0;
-	for( auto jetPtr : getjetcollection(event,variation) ){
+	for( auto jetPtr : event.getJetCollection(variation) ){
 	    if(fabs(jetPtr->eta())<2.4) ncentraljets++;
 	}
 	if(ncentraljets<2) return false;
     }
+    // dummy condition to avoid unused parameter warning
+    if(selectbjets){}
     return true;
 }

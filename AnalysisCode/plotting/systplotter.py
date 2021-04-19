@@ -9,9 +9,11 @@ import numpy as np
 import math
 import json
 import os
-import plottools as tools
+import plottools as pt
+import histplotter_prefit as hpp
 sys.path.append('../tools')
 import histtools as ht
+import listtools as lt
 
 def findbytitle(histlist,title):
     # find a histogram by its title, return the index or -1 if not found
@@ -33,66 +35,18 @@ def findbyname(histlist,tag):
 def sethiststyle(hist,variable):
     # set color and line properties of a histogram
     systematic = hist.GetName().split(variable)[-1].strip('_')
-    hist.SetLineWidth(3)
-    hist.SetLineColor(getcolorsyst(systematic))
+    hist.SetLineWidth(2)
+    sysname = systematic
     if('Up' in systematic):
-	hist.SetLineStyle(0)
-    elif('Down' in systematic):
 	hist.SetLineStyle(2)
-
-def getcolorsyst(systematic):
-    # return a color corresponding to a given systematic
-    # for now return same color for up and down, maybe later asymmetrize
-
-    # acceptance uncertainties in shades of red
-    if(systematic=='nominal'): return ROOT.kBlack
-    if(systematic=='JECUp' or systematic=='JECDown'): return ROOT.kRed
-    if(systematic=='JERUp' or systematic=='JERDown'): return ROOT.kRed+2
-    if(systematic=='UnclUp' or systematic=='UnclDown'): return ROOT.kOrange-3
-    if(systematic=='JECSqSumAllUp' or systematic=='JECSqSumAllDown'): return ROOT.kYellow
-    if(systematic=='JECSqSumGroupedUp' or systematic=='JECSqSumGroupedDown'): return ROOT.kYellow+1
-    if('JECAll' in systematic): return ROOT.kGray
-    if('JECGrouped' in systematic): return ROOT.kGray
-
-    # lepton uncertainties in shades of blue
-    if(systematic=='muonIDUp' or systematic=='muonIDDown'): return ROOT.kBlue
-    if(systematic=='muonIDSystUp' or systematic=='muonIDSystDown'): return ROOT.kBlue
-    if(systematic=='muonIDStatUp' or systematic=='muonIDStatDown'): return ROOT.kBlue+2
-    if(systematic=='electronIDUp' or systematic=='electronIDDown'): return ROOT.kBlue-9
-    if(systematic=='electronIDSystUp' or systematic=='electronIDSystDown'): return ROOT.kBlue-9
-    if(systematic=='electronIDStatUp' or systematic=='electronIDStatDown'): return ROOT.kBlue-10
-    if(systematic=='electronRecoUp' or systematic=='electronRecoDown'): return ROOT.kBlue-5
-
-    # other weights in shades of green
-    if(systematic=='pileupUp' or systematic=='pileupDown'): return ROOT.kGreen-7
-    if(systematic=='bTag_heavyUp' or systematic=='bTag_heavyDown'): return ROOT.kGreen+1
-    if(systematic=='bTag_lightUp' or systematic=='bTag_lightDown'): return ROOT.kGreen+3
-    if(systematic=='prefireUp' or systematic=='prefireDown'): return ROOT.kGreen-5
-
-    # scales in shaded of purple
-    # first three are obsolete and replaced by qcdScalesShapeEnv and qcdScalesNorm
-    if(systematic=='fScaleUp' or systematic=='fScaleDown'): return ROOT.kMagenta
-    if(systematic=='rScaleUp' or systematic=='rScaleDown'): return ROOT.kMagenta+2
-    if(systematic=='rfScalesUp' or systematic=='rfScalesDown'): return ROOT.kMagenta+3
-    if(systematic=='isrScaleUp' or systematic=='isrScaleDown'): return ROOT.kViolet+1
-    if(systematic=='fsrScaleUp' or systematic=='fsrScaleDown'): return ROOT.kViolet+2
+	sysname = systematic.replace('Up','')
+    elif('Down' in systematic):
+	hist.SetLineStyle(0)
+	sysname = systematic.replace('Down','')
+    elif('ShapeVar' in systematic):
+	sysname = systematic[:systematic.find('ShapeVar')+8]
+    hist.SetLineColor( pt.getcolormap_systematics().get(sysname,ROOT.kBlack) )
     
-    # qcd scale variations in magenta
-    if('qcdScalesShapeVar' in systematic): return ROOT.kGray
-    if(systematic=='qcdScalesShapeEnvUp' or systematic=='qcdScalesShapeEnvDown'): 
-	return ROOT.kMagenta-9
-    if(systematic=='qcdScalesNormUp' or systematic=='qcdScalesNormDown'): 
-	return ROOT.kViolet+6
-    
-    # pdf variations in yellow
-    if('pdfShapeVar' in systematic): return ROOT.kGray
-    if(systematic=='pdfShapeEnvUp' or systematic=='pdfShapeEnvDown'): return ROOT.kOrange
-    if(systematic=='pdfShapeRMSUp' or systematic=='pdfShapeRMSDown'): return ROOT.kOrange+7
-    if(systematic=='pdfNormUp' or systematic=='pdfNormDown'): return ROOT.kOrange+10
-
-    print('### WARNING ###: tag not recognized (in getcolorsyst): '+str(systematic))
-    return ROOT.kBlack
-
 def getminmax(histlist,witherrors=False):
     # get suitable minimum and maximum values for plotting a hist collection (not stacked)
     totmax = 0.
@@ -121,32 +75,30 @@ def histlisttotxt(histlist,txtfile):
 	    toprint += '\n'
 	    txtf.write(toprint)
 
-def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,errorbars=False,
+def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,
+		    relative=True,errorbars=False,yaxrange=None,
 		    outtxtfile=""):
     
-    tools.setTDRstyle()
+    pt.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
     ### define global parameters for size and positioning
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
     cheight = 600 # height of canvas
-    cwidth = 450 # width of canvas
+    cwidth = 600 # width of canvas
     # fonts and sizes:
-    #titlefont = 6; titlesize = 60
-    labelfont = 5; labelsize = 22
-    axtitlefont = 5; axtitlesize = 22
-    #infofont = 6; infosize = 40
-    legendfont = 4; legendsize = 12
+    labelfont = 4; labelsize = 22
+    axtitlefont = 4; axtitlesize = 22
     # title offset
-    ytitleoffset = 2.
-    xtitleoffset = 1.
+    ytitleoffset = 2
+    xtitleoffset = 1
     # margins:
-    ptopmargin = 0.07
-    pbottommargin = 0.12
-    leftmargin = 0.2
-    rightmargin = 0.05
+    topmargin = 0.05
+    bottommargin = 0.1
+    leftmargin = 0.15
+    rightmargin = 0.25
     # legend box
-    plegendbox = [leftmargin+0.03,1-ptopmargin-0.25,1-rightmargin-0.03,1-ptopmargin-0.03]
+    plegendbox = [1-rightmargin+0.03,bottommargin+0.03,1-0.03,1-topmargin-0.03]
 
     ### get nominal histogram and remove from the list
     nominalindex = findbyname(mchistlist,"nominal")
@@ -177,8 +129,6 @@ def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,
     ### make legend for upper plot and add all histograms
     legend = ROOT.TLegend(plegendbox[0],plegendbox[1],plegendbox[2],plegendbox[3])
     legend.SetFillStyle(0)
-    legend.SetTextFont(legendfont)
-    legend.SetTextSize(legendsize)
     nentries = 0
     allJECHasLabel = False
     groupedJECHasLabel = False
@@ -202,18 +152,19 @@ def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,
         legend.AddEntry(hist,label,"l")
 	nentries += 1
     legend.AddEntry(nominalhist,nominalhist.GetTitle(),"l")
-    # determine number of columns for legend based on number of entries
-    ncolumns = int(math.ceil(float(nentries)/8))
-    legend.SetNColumns(ncolumns)
+    legend.SetNColumns(1)
 
     ### make canvas and pads
     c1 = ROOT.TCanvas("c1","c1")
     c1.SetCanvasSize(cwidth,cheight)
     pad1 = ROOT.TPad("pad1","",0.,0.,1.,1.)
-    pad1.SetTopMargin(ptopmargin)
-    pad1.SetBottomMargin(pbottommargin)
+    pad1.SetTopMargin(topmargin)
+    pad1.SetBottomMargin(bottommargin)
     pad1.SetLeftMargin(leftmargin)
     pad1.SetRightMargin(rightmargin)
+    pad1.SetFrameLineWidth(2)
+    pad1.SetGridx(1)
+    pad1.SetGridy(1)
     pad1.Draw()
     
     ### make upper part of the plot
@@ -223,10 +174,10 @@ def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,
     # if drawing error bars, also take statistical variation into account
     if errorbars:
 	(srangemin,srangemax) = getminmax([nominalhist],witherrors=True)
-	#rangemin = min(rangemin,srangemin)
-	#rangemax = max(rangemax,srangemax)
-    #(rangemin,rangemax) = (0.74,1.31) # temp override
     if not relative: rangemin = 0.
+    if yaxrange is not None:
+	rangemin = yaxrange[0]
+	rangemax = yaxrange[1]
     nominalhist.SetMinimum(rangemin)
     nominalhist.SetMaximum(rangemax)
 
@@ -239,6 +190,7 @@ def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,
     xax.SetTitleFont(10*axtitlefont+3)
     xax.SetTitleSize(axtitlesize)
     xax.SetTitleOffset(xtitleoffset)
+    xax.SetNdivisions(8,4,0,ROOT.kTRUE)
     # Y-axis layout
     yax = nominalhist.GetYaxis()
     yax.SetMaxDigits(3)
@@ -249,6 +201,7 @@ def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,
     yax.SetTitleFont(10*axtitlefont+3)
     yax.SetTitleSize(axtitlesize)
     yax.SetTitleOffset(ytitleoffset)
+    yax.SetNdivisions(10,5,0,ROOT.kTRUE)
 
     # histograms
     erroroption = ''
@@ -269,36 +222,104 @@ def plotsystematics(mchistlist,variable,yaxtitle,xaxtitle,outfile,relative=True,
     ROOT.gPad.RedrawAxis()
 
     # draw header
-    tools.drawLumi(pad1,lumitext="simulation")
+    pt.drawLumi(pad1,lumitext="simulation")
 
     ### save the plot
     c1.SaveAs(outfile+'.png')
+    c1.SaveAs(outfile+'.pdf')
     ### save txt files with values if requested
     if len(outtxtfile)>0: histlisttotxt([nominalhist]+mchistlist,outtxtfile)
 
 if __name__=="__main__":
     
-    ### Configure input parameters (hard-coded)
-    # file(s) to read the histograms from
-    # if the argument is a .root file, will use this file
-    # else will assume it's a folder and run on all .root files within
-    histdir = os.path.abspath('../systematics/output_test')
-    # variable to plot
-    variables = []
-    #variables = (['_abs_eta_recoil','_Mjj_max','_lW_asymmetry',
-    #            '_deepCSV_max','_lT','_MT','_dPhill_max',
-    #            '_pTjj_max','_dRlb_min','_HT','_dRlWrecoil','_dRlWbtagged',
-    #            '_M3l','_abs_eta_max','_nJets'])
-    variables += ['_eventBDT']
-    variables += ['_nMuons','_nElectrons','_nJets']
-    #variables += ['_rebinnedeventBDT']
+    ####################################################################
+    # set properties: variables, processes and systematics to consider #
+    ####################################################################
+
+    # define variables with axis titles, units, etc.
+    variables = ([
+        {'name':'_abs_eta_recoil','title':r'\left|\eta\right|_{recoil}','unit':''},
+        {'name':'_Mjj_max','title':r'm_{jet+jet}^{max}','unit':'GeV'},
+        {'name':'_lW_asymmetry','title':r'Asymmetry (lepton from W)','unit':''},
+        {'name':'_deepCSV_max','title':r'Highest b tagging discriminant','unit':''},
+        {'name':'_deepFlavor_max','title':r'Highest b tagging discriminant','unit':''},
+        {'name':'_lT','title':'L_{T}','unit':'GeV'},
+        {'name':'_MT','title':'M_{T}','unit':'GeV'},
+        {'name':'_pTjj_max','title':r'p_{T}^{max}(jet+jet)','unit':'GeV'},
+        {'name':'_dRlb_min','title':r'\Delta R(\ell,bjet)_{min}','unit':''},
+        {'name':'_dPhill_max','title':r'\Delta \Phi (\ell,\ell)_{max}','unit':''},
+        {'name':'_HT','title':r'H_{T}','unit':'GeV'},
+        {'name':'_nJets','title':r'Number of jets','unit':''},
+        {'name':'_nBJets','title':r'Number of b jets','unit':''},
+        {'name':'_dRlWrecoil','title':r'\Delta R(\ell_{W},jet_{recoil})','unit':''},
+        {'name':'_dRlWbtagged','title':r'\Delta R(\ell_{W},jet_{b-tagged})','unit':''},
+        {'name':'_M3l','title':r'm_{3\ell}','unit':'GeV'},
+        {'name':'_fineBinnedM3l','title':r'm_{3\ell}','unit':'GeV'},
+        {'name':'_abs_eta_max','title':r'\left|\eta\right|_{max}','unit':''},
+        {'name':'_eventBDT','title':r'Event BDT output score','unit':''},
+        {'name':'_nMuons','title':r'Number of muons in event','unit':''},
+        {'name':'_nElectrons','title':r'Number of electrons in event','unit':''},
+        {'name':'_yield','title':r'Total yield','unit':''},
+        {'name':'_leptonMVATOP_min','title':r'Minimum TOP MVA value in event','unit':''},
+        {'name':'_leptonMVAttH_min','title':r'Minimum ttH MVA value in event','unit':''},
+        {'name':'_rebinnedeventBDT','title':'Event BDT output score','unit':''},
+        {'name':'_leptonPtLeading','title':r'Leading lepton p_{T}','unit':'GeV'},
+        {'name':'_leptonPtSubLeading','title':r'Subleading lepton p_{T}','unit':'GeV'},
+        {'name':'_leptonPtTrailing','title':r'Trailing lepton p_{T}','unit':'GeV'},
+        {'name':'_fineBinnedleptonPtTrailing','title':r'Trailing lepton p_{T}','unit':'GeV'},
+        {'name':'_leptonEtaLeading','title':r'Leading lepton \eta','unit':''},
+        {'name':'_leptonEtaSubLeading','title':r'Subleading lepton \eta','unit':''},
+        {'name':'_leptonEtaTrailing','title':r'Trailing lepton \eta','unit':''},
+        {'name':'_jetPtLeading','title':r'Leading jet p_{T}','unit':'GeV'},
+        {'name':'_jetPtSubLeading','title':r'Subleading jet p_{T}','unit':'GeV'},
+        {'name':'_bestZMass','title':r'Mass of OSSF pair','unit':'GeV'},
+    ])
+    variables = [{'name':'_eventBDT','title':r'Event BDT output score','unit':''}]
+    # (smaller set for testing )
+
+    # processes (new convention):
+    simprocesses = (['tZq','WZ','multiboson','tX','ttZ','ZZH','Xgamma'])
+    simprocesses.append('nonprompt') # it is plotted as if simulated, even if taken from data
+
+    # processes (old convention):
+    #simprocesses = (['tZq','WZ','multiboson','tbarttX','tbartZ','ZZH','Xgamma'])
+    #simprocesses.append('nonprompt') # it is plotted as if simulated, even if taken from data
+
+    # processes (split ZG)
+    #simprocesses = (['tZq','WZ','multiboson','tX','ttZ','ZZH','Xgamma_int','Xgamma_ext'])
+    #simprocesses.append('nonprompt') # it is plotted as if simulated, even if taken from data
+
+    # get unsplit processes (e.g. Xgamma_int and Xgamma_ext -> Xgamma)
+    # (needed since the process-specific uncertainties take the unsplit name)
+    simprocesses_unsplit = {}
+    for p in simprocesses:
+        simprocesses_unsplit[p] = p.split('_')[0]
+
+    # color and label maps
+    #colormap = pt.getcolormap('tzqanalysis')
+    #labelmap = pt.getlabelmap('tzqanalysis')
 
     # systematics to draw
-    systematictags = [] # empty list for all systematics in file
-    systematictags += ['JECGrouped_TotalUp','JECGrouped_TotalDown','JECUp','JECDown']
+    systematictags = ['CR_'] # empty list for all systematics in file
     # systematics to exclude
     excludetags = [] # empty list to exclude nothing
-    #excludetags = ['JECGrouped']
+
+    # save some examples of systematictags and excludetags for typical plots in AN
+    # tags for PDF plot
+    #systematictags = ['pdf']
+    #excludetags = []
+    #simprocesses = ['tZq'] # (plots were originally made for tZq sample only,
+			   # not necessarily best choice, just only possibility then)
+    # tags for QCD scales plot
+    #systematictags = ['rScale','fScale','rfScales']
+    #excludetags = []
+    #simprocesses = ['tZq'] # (plots were originally made for tZq sample only,
+                           # not necessarily best choice, just only possibility then)
+    # tags for general plot
+    #systematictags = []
+    #excludetags = ['ShapeVar','rScale','fScale','rfScales','Norm']
+    #simprocesses = ['tZq'] # (plots were originally made for tZq sample only,
+                           # not necessarily best choice, just only possibility then)
 
     # save some examples of systematictags and excludetags for jec split studies
     # tags for grouped total
@@ -312,41 +333,107 @@ if __name__=="__main__":
     #excludetags = (['JECAll','Total','PileUpEnvelope','PileUpMuZero','FlavorZJet',
     #	'FlavorPhotonJet','FlavorPureGluon','FlavorPureQuark','FlavorPureCharm','FlavorPureBottom'])
     # tags for squared sum all
-    systematictags = ['JEC']
-    excludetags = (['JECGrouped','Total','PileUpEnvelope','PileUpMuZero','FlavorZJet',
-        'FlavorPhotonJet','FlavorPureGluon','FlavorPureQuark','FlavorPureCharm','FlavorPureBottom'])
+    #systematictags = ['JEC']
+    #excludetags = (['JECGrouped','Total','PileUpEnvelope','PileUpMuZero','FlavorZJet',
+    # 'FlavorPhotonJet','FlavorPureGluon','FlavorPureQuark','FlavorPureCharm','FlavorPureBottom'])
 
-    ### Overwrite using cmd args
-    if(len(sys.argv)==2):
-	histdir = os.path.abspath(sys.argv[1])
-    elif(not len(sys.argv)==1):
-	print('### ERROR ###: wrong number of command line args')
-	sys.exit()
+    ################################################################
+    # run the plotting function on the configuration defined above #
+    ################################################################
 
-    ### set output directory
+    # set output directory
     figdir = 'systplotter_output'
-    if os.path.exists(figdir):
-        os.system('rm -r '+figdir)
-    os.makedirs(figdir)
-    
-    ### set input files to run on
-    filelist = []
-    if histdir[-5:]=='.root': filelist.append(histdir)
-    else: filelist = [os.path.join(histdir,f) for f in os.listdir(histdir) if f[-5:]=='.root']
+    if not os.path.exists(figdir): os.makedirs(figdir)
 
-    ### loop over files and variables
-    for histfile in filelist:
-	for variable in variables:
-	    print('running on {}/{}'.format(histfile,variable))
-	    histlist = ht.loadallhistograms(histfile)
-	    histlist = ht.selecthistograms(histlist,mustcontainall=[variable],
-					    mustcontainone=systematictags+['nominal'],
+    # if 1 command line argument and it is a root file, run on this file
+    if(len(sys.argv)==2 and sys.argv[1][-5:]=='.root'):
+        histfile = os.path.abspath(sys.argv[1])
+        if not os.path.exists(histfile):
+            raise Exception('ERROR: requested to run on '+histfile
+                            +' but it does not seem to exist...')
+        histdir = histfile.rsplit('/',1)[0]
+        lumi = None
+        if '2016' in histfile: lumi = 35900
+        elif '2017' in histfile: lumi = 41500
+        elif '2018' in histfile: lumi = 59700
+        elif '1617' in histfile: lumi = 77400
+        elif 'allyears' in histfile: lumi = 137100
+        elif 'yearscombined' in histfile: lumi = 137100
+
+        # get all relevant histograms
+	mustcontainone = []
+        if len(systematictags)>0: mustcontainone = systematictags + ['nominal']
+        histlist = ht.loadhistograms(histfile,mustcontainone=mustcontainone,
+					       maynotcontainone=excludetags)
+	histdict = {}
+	for hist in histlist: histdict[hist.GetName()] = hist
+	# get all processes and compare to arguments
+	processlist = hpp.getprocesses(histdict,variables[0]['name'])
+	simprocesses_copy = simprocesses[:]
+	for p in simprocesses_copy:
+	    if p not in processlist:
+		print('WARNING: requested process {}'.format(p)
+			+' not found, skipping it...')
+		simprocesses.remove(p)
+        # get all systematics that should be condsidered
+        # note: assume they are the same for all variables...
+        shapesyslist = hpp.getsystematics(histdict,'.+',variables[0]['name'])
+	shapesyslist = lt.subselect_strings(shapesyslist,
+					    mustcontainone=systematictags,
 					    maynotcontainone=excludetags)[1]
-	    for hist in histlist: print(hist.GetName())
-	    figname = os.path.join(figdir,histfile.split('/')[-1].rstrip('.root')+'_'+variable)
+	print('extracted following relevant systematics from histogram file:')
+	for systematic in shapesyslist: print('  - '+systematic)
+	# make a dict encoding which systematics are present for which processes
+        shapesysdict = {}
+        for p in simprocesses:
+            shapesysdict[p] = []
+            for systematic in shapesyslist:
+		# special case: temporary additional disablings
+		if(p=='nonprompt' and systematic in ['CR_GluonMove','CR_QCD']): continue
+		# special case for ShapeVar systematics: no up and down
+		if('ShapeVar' in systematic):
+		    if( p+'_'+variables[0]['name']+'_'+systematic in histdict.keys() ):
+			shapesysdict[p].append(systematic)
+		# normal case: up and down variation must be present
+		else:
+		    if( p+'_'+variables[0]['name']+'_'+systematic+'Up' in histdict.keys()
+			and p+'_'+variables[0]['name']+'_'+systematic+'Down' in histdict.keys() ):
+			shapesysdict[p].append(systematic)
+        # prints for testing
+        print('found following shape systematics to be plotted:')
+        for p in simprocesses:
+            print(p)
+            for systematic in shapesysdict[p]:
+                print(' - '+systematic)
 
-	    ### re-order histograms to put individual pdf, qcd and jec variations in front
-	    ### (so they will be plotted in the background)
+	# loop over variables
+	for variable in variables:
+
+	    variable = variable['name'] # possible to extend here for nicer x axis title
+	    print('running on {}'.format(variable))
+
+	    # get the histograms
+	    histlist = []
+	    for systematic in sorted(shapesyslist):
+		issinglevar = False
+		if 'ShapeVar' in systematic: issinglevar = True
+		temp = hpp.get_single_systematic_histogram(histdict,simprocesses,
+			variable,systematic,shapesysdict,issinglevar=issinglevar)
+		if issinglevar:
+		    histlist.append(temp)
+		else:
+		    histlist.append(temp['Down'])
+		    histlist.append(temp['Up'])
+	    histlist.append(hpp.get_single_systematic_histogram(histdict,simprocesses,
+			    variable,'nominal',shapesysdict))
+	    print('found following histograms:')
+	    for hist in histlist: print(hist)
+	    
+	    figname = histfile.split('/')[-1].rstrip('.root')+'_var_'+variable 
+	    figname = os.path.join(figdir,figname)
+
+	    # re-order histograms to put individual pdf, qcd and jec variations in front
+	    # (so they will be plotted in the background)
 	    firsthistlist = []
 	    secondhistlist = []
 	    for hist in histlist:
@@ -358,10 +445,10 @@ if __name__=="__main__":
 		    secondhistlist.append(hist)
 	    histlist = firsthistlist + secondhistlist
 
-	    ### temporary: add root-sum-square of the individual JEC variations
-	    ### make sure to exclude the superfluous JEC variations in the selection above
-	    ### or the rss will be too large!
-	    jecsum = True
+	    # temporary: add root-sum-square of the individual JEC variations
+	    # make sure to exclude the superfluous JEC variations in the selection above
+	    # or the rss will be too large!
+	    jecsum = False
 	    if jecsum:
 		nominalhist = histlist[findbyname( histlist, 'nominal' )]
 		jecall = ht.selecthistograms(histlist,mustcontainall=['JECAll','Down'])[1]
@@ -397,7 +484,7 @@ if __name__=="__main__":
 		    histlist.append(jecgroupedup)
 		    histlist.append(jecgroupeddown)
 	    
-	    ### set plot properties
+	    # set plot properties
 	    binwidth = histlist[0].GetBinWidth(1)
 	    yaxtitle = 'yield'
 	    relyaxtitle = 'normalized yield'
@@ -405,4 +492,6 @@ if __name__=="__main__":
 	    plotsystematics(histlist,variable,yaxtitle,xaxtitle,figname+'_abs',relative=False,
 				errorbars=True)
 	    plotsystematics(histlist,variable,relyaxtitle,xaxtitle,figname+'_rel',relative=True,
-				errorbars=True,outtxtfile=figname+'_tab')
+				errorbars=True,
+				#yaxrange=(0.9,1.1),
+				outtxtfile=figname+'_tab')

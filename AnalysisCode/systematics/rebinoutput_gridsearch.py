@@ -59,10 +59,10 @@ for firstBinCount in firstBinCounts:
 	    thiscommands.append(cpcommand)
 	# make the rebin command and re-merge command
 	rebincommand = 'python rebinoutput.py '+thistopdir+' '+mode+' '
-	rebincommand += str(firstBinCount)+' '+str(binFactor)
+	rebincommand += str(firstBinCount)+' '+str(binFactor)+' runlocal'
 	thiscommands.append('echo "running rebinoutput.py command"')
 	thiscommands.append(rebincommand)
-	mergecommand = 'python mergeoutput.py '+thistopdir
+	mergecommand = 'python mergeoutput.py '+thistopdir+' runlocal'
 	thiscommands.append('echo "running mergeoutput.py command"')
 	thiscommands.append(mergecommand)
 	# make the combine commands

@@ -4,10 +4,13 @@
 from readsamplelist import readsamplelist
 import os
 
-def extendsamplelist(samplelist_name,directory):
+def extendsamplelist( samplelistpath, directory ):
     # returns a dictionary of files analogous to the result of readsamplelist,
     # but with an extra key 'file' pointing to the location of the file in directory
-    inputfiles = readsamplelist(samplelist_name,unique=True)
+    # input arguments:
+    # - samplelistpath: either string or list of strings representing path(s) to sample list file(s)
+    # - directory: path to a directory where the samples should be
+    inputfiles = readsamplelist( samplelistpath, unique=True )
     inputfilesnew = []
     missinglist = []
     available = [os.path.join(directory,f) for f in os.listdir(directory) if f[-5:]=='.root']
@@ -44,7 +47,7 @@ def findsample(sample_name,sample_list):
 
 ### test section ###
 if __name__=="__main__":
-    # command line args: samplelist_name directory
+    # command line args: samplelistpath directory
     import sys
     sl = extendsamplelist(sys.argv[1],sys.argv[2])
     for s in sl:

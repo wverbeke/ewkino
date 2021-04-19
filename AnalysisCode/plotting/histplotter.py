@@ -1,38 +1,15 @@
 ############################################################
 # A translation into python of ewkino/plotting/plotCode.cc #
 ############################################################
-# to be used after histfiller.py to create the actual plots of the histograms
 
 import ROOT
 import sys
+import os
 import numpy as np
 import json
-import os
-import plottools as tools
-
-def loadhistograms(histfile,prefix):
-    # load histograms from a root file.
-    # 'histfile' is a string containing the path to the input root file.
-    # 'prefix is the name of histograms to be loaded: 
-    # all histograms with name prefix + <int> will be loaded.
-    # the output is a python list of histograms, a normalization parameter (see histfiller.py) 
-    # and the luminosity that was used for normalization.
-    print('loading histograms...')
-    f = ROOT.TFile.Open(histfile)
-    try: normalization = int(f.Get("normalization")[0])
-    except: normalization = -1
-    if(normalization==1):
-        try: lumi = f.Get("lumi")[0]
-        except: lumi = 0.
-    else: lumi = 0
-    histlist = []
-    i = 0
-    while True:
-        if(f.Get(prefix+str(i)) == None): break
-        histlist.append(f.Get(prefix+str(i)))
-        histlist[i].SetDirectory(0)
-        i += 1
-    return (histlist,normalization,lumi)
+import plottools as pt
+sys.path.append(os.path.abspath('../tools'))
+import histtools as ht
 
 def orderhistograms(histlist,ascending=True):
     # order a list of histograms according to sumOfWeights
@@ -57,21 +34,6 @@ def stackcol(hist,color):
     hist.SetFillColor(color)
     hist.SetLineWidth(1)
     hist.SetLineColor(ROOT.kBlack)
-
-def setcolorTZQ(tag):
-    tag = tag.replace(' ','').replace('{','').replace('}','')
-    tag = tag.replace('#','').replace('/','').replace('+','')
-    # return a color corresponding to a given tag (so far very analysis-dependent...)
-    if(tag=='tZq'): return ROOT.kRed-7
-    if(tag=='nonprompt'): return ROOT.kOrange
-    if(tag=='WZ'): return ROOT.kCyan-7
-    if(tag=='multiboson'): return ROOT.kYellow+1
-    if(tag=='tbarttX'): return ROOT.kBlue-10
-    if(tag=='tbartZ'): return ROOT.kBlue-6
-    if(tag=='ZZH'): return ROOT.kTeal-5
-    if(tag=='Xgamma'): return ROOT.kMagenta-7
-    print('### WARNING ###: tag not recognized (in setcolorTZQ), returning default color')
-    return ROOT.kBlack
 
 def clip(hist):
     # set minimum value for all bins to zero (no net negative weight)
@@ -112,32 +74,73 @@ def drawbincontent(mchistlist,mchisterror,tag):
 	text.DrawLatex(xcoord, ycoord+0.3, '{:.2f}'.format(printvalue))
     return None
 
-def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,outfile):
+def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
+		signals=None,
+		dostat=True,datalabel=None,labelmap=None,colormap=None,
+		xaxtitle=None,yaxtitle=None,lumi=None,yaxlog=False,
+		extrainfos=[]):
+    ### make a (stacked) simulation vs. data plot
+    # arguments:
+    # - outfile is the output file where the figure will be saved
+    # - datahist is the data histogram
+    # - mchistlist is a list of simulated histograms
+    #   (note that the title of each histogram will be used to determine its label!)
+    #   (note that the title of each histogram will be used to determine its color!)
+    # - mcsyshist is a histogram containing the total systematic variation on the simulation
+    #   (note: the bin content of mcsyshist must be the absolute difference wrt nominal!)
+    #   (note: if dostat is False, mcsysthist must be the total uncertainty, not only systematic!
+    #          if dostat is True, mcsysthist is syst only;
+    #	       stat error will be taken from mcstathist if it is defined or from mchistlist otherwise!)
+    # - mcstathist is a histogram containing the total statistical variation on the simulation
+    #   (note: see above!)
+    # - signals = list of signal processes (will be put at the top of the plot)
+    # - datalabel is a string that will be used as legend entry for datahist (default Data)
+    # - labelmap is a dict mapping strings (histogram titles) to legend entries
+    # - colormap is a dict mapping strings (histogram titles) to colors
+    # - xaxtitle and yaxtitle are the axis titles
+    # - lumi is the luminosity value (float, in pb-1) that will be displayed
+    # - yaxlog is whether to make the y-axis log scale
+    # - extrainfos is a list of strings with extra info to display
     
-    tools.setTDRstyle()
+    pt.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
+    ### parse arguments
+    if datalabel is None: datalabel = "Data"
+    # if no labelmap, use histogram titles
+    if labelmap is None:
+	labelmap = {}
+	for hist in mchistlist: labelmap[hist.GetTitle()] = hist.GetTitle()
+    # if no colormap, use default colors
+    if colormap is None:
+	clist = ([ROOT.kRed-7,ROOT.kOrange,ROOT.kCyan-7,ROOT.kYellow+1,ROOT.kBlue-10,
+		    ROOT.kBlue-6,ROOT.kTeal-5,ROOT.kMagenta-7])
+	colormap = {}
+	for i,hist in mchistlist:
+	    colormap[hist.GetTitle()] = clist[ i%len(clist) ]
+	
     ### define global parameters for size and positioning
     cheight = 600 # height of canvas
-    cwidth = 450 # width of canvas
-    rfrac = 0.25 # fraction of ratio plot in canvas
+    cwidth = 600 # width of canvas
+    rfrac = 0.3 # fraction of ratio plot in canvas
     # fonts and sizes:
-    #titlefont = 6; titlesize = 60
-    labelfont = 5; labelsize = 15
-    axtitlefont = 5; axtitlesize = 22
-    #infofont = 6; infosize = 40
-    #legendfont = 4; legendsize = 40
+    labelfont = 4; labelsize = 22
+    axtitlefont = 4; axtitlesize = 27
+    infofont = 4; infosize = 20
     # title offset
-    ytitleoffset = 2.1
-    xtitleoffset = 4.5
+    ytitleoffset = 1.5
+    xtitleoffset = 3
     # margins:
     p1topmargin = 0.07
     p2bottommargin = 0.4
     leftmargin = 0.15
     rightmargin = 0.05
     # legend box
-    p1legendbox = [leftmargin+0.03,1-p1topmargin-0.25,1-rightmargin-0.03,1-p1topmargin-0.03]
+    p1legendbox = [leftmargin+0.35,1-p1topmargin-0.3,1-rightmargin-0.03,1-p1topmargin-0.03]
     p2legendbox = [leftmargin+0.03,0.84,1-rightmargin-0.03,0.97]
+    # extra info box parameters
+    infoleft = leftmargin+0.05
+    infotop = 1-p1topmargin-0.1
     # marker properties for data
     markerstyle = 20
     markercolor = 1
@@ -146,37 +149,57 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     ### order mc histograms
     # order by sumofweights
     mchistlist = orderhistograms(mchistlist)
-    # get tZq to the back (i.e. on top of the plot)
-    tzqindex = findbytitle(mchistlist,"tZq")
-    if(tzqindex>-1):
-        indices = list(range(len(mchistlist)))
-        indices.remove(tzqindex)
-        indices = indices+[tzqindex]
-        mchistlist = [mchistlist[i] for i in indices]
+    # get signals to the back (i.e. on top of the plot)
+    if signals is not None:
+	for signal in signals[::-1]:
+	    sindex = findbytitle(mchistlist,signal)
+	    if(sindex>-1):
+		indices = list(range(len(mchistlist)))
+		indices.remove(sindex)
+		indices = indices+[sindex]
+		mchistlist = [mchistlist[i] for i in indices]
 
     ### operations on mc histograms
     mchistsum = mchistlist[0].Clone()
     mchistsum.Reset()
     mchiststack = ROOT.THStack("mchiststack","")
     for hist in mchistlist:
-        stackcol(hist,setcolorTZQ(hist.GetTitle()))
+        stackcol( hist, colormap.get(hist.GetTitle(), ROOT.kBlack) )
 	clip(hist) # set negative bins to zero!
         mchistsum.Add(hist)
         mchiststack.Add(hist)
 
-    print('checkpoint 1')
-    
     ### calculate total mc error and set its histogram properties
     mcerror = mchistsum.Clone()
-    if mcsysthist is not None:
-        for i in range(1,mchistsum.GetNbinsX()+1):
-            staterror = mchistsum.GetBinError(i)
-            systerror = mcsysthist.GetBinContent(i)
-            mcerror.SetBinError(i,np.sqrt(np.power(staterror,2)+np.power(systerror,2)))
-    mcerror.SetFillStyle(3244)
+    mcstaterror = mchistsum.Clone()
+    # in case of dostat=False: mcsysthist represents total variation to plot
+    if not dostat:
+	if mcsysthist is None:
+	    raise Exception('ERROR in histplotter.py: option dostat = False'
+			    +' is not compatible with mcsysthist = None')
+	else:
+	    for i in range(1,mchistsum.GetNbinsX()+1):
+		mcerror.SetBinError(i,mcsysthist.GetBinContent(i))
+    # in case of dostat=True: add stat errors and syst errors quadratically
+    else:
+	if mcstathist is not None:
+	    # take statistical variations from externally provided histograms
+	    for i in range(1,mchistsum.GetNbinsX()+1):
+		mcstaterror.SetBinError(i,mcstathist.GetBinContent(i))
+		mcerror.SetBinError(i,mcstathist.GetBinContent(i))
+	if mcsysthist is not None:
+	    for i in range(1,mchistsum.GetNbinsX()+1):
+		staterror = mcstaterror.GetBinError(i)
+		systerror = mcsysthist.GetBinContent(i)
+		mcerror.SetBinError(i,np.sqrt(np.power(staterror,2)+np.power(systerror,2)))
     mcerror.SetLineWidth(0)
-    mcerror.SetFillColor(ROOT.kGray+2)
     mcerror.SetMarkerStyle(0)
+    # older style:
+    #mcerror.SetFillStyle(3244)
+    #mcerror.SetFillColor(ROOT.kGray+2)
+    # newer style:
+    mcerror.SetFillStyle(3254)
+    mcerror.SetFillColor(ROOT.kBlack)
 
     ### calculate total and statistical mc error (scaled)
     scstaterror = mcerror.Clone()
@@ -185,24 +208,38 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
         scstaterror.SetBinContent(i,1.)
         scerror.SetBinContent(i,1.)
         if not mcerror.GetBinContent(i)==0:
-            scstaterror.SetBinError(i,mchistsum.GetBinError(i)/mchistsum.GetBinContent(i))
+            scstaterror.SetBinError(i,mcstaterror.GetBinError(i)/mcstaterror.GetBinContent(i))
             scerror.SetBinError(i,mcerror.GetBinError(i)/mcerror.GetBinContent(i))
         else:
             scstaterror.SetBinError(i,0.)
             scerror.SetBinError(i,0.)
-    scstaterror.SetFillStyle(1001)
-    scerror.SetFillStyle(1001)
-    scstaterror.SetFillColor(ROOT.kCyan-4)
-    scerror.SetFillColor(ROOT.kOrange-4)
-    scstaterror.SetMarkerStyle(1)
-    scerror.SetMarkerStyle(1)
-
-    print('checkpoint 2')
+    # in case of dostat=False: plot only total scaled variation, same style as unscaled
+    if not dostat:
+	scstaterror.Reset()
+	scerror.SetLineWidth(0)
+	scerror.SetMarkerStyle(0)
+	# older style:
+	#scerror.SetFillStyle(3244)
+	#scerror.SetFillColor(ROOT.kGray+2)
+	# newer style:
+	scerror.SetFillStyle(3254)
+	scerror.SetFillColor(ROOT.kBlack)
+    # in case of dostat=True: plot total and stat only scaled variation
+    else:
+	scstaterror.SetFillStyle(1001)
+	scerror.SetFillStyle(1001)
+	#scstaterror.SetFillColor(ROOT.kCyan+1)
+	#scerror.SetFillColor(ROOT.kCyan-4)
+	scstaterror.SetFillColor(ROOT.kGray+1)
+        scerror.SetFillColor(ROOT.kGray)
+	scstaterror.SetMarkerStyle(1)
+	scerror.SetMarkerStyle(1)
 
     ### operations on data histogram
     datahist.SetMarkerStyle(markerstyle)
     datahist.SetMarkerColor(markercolor)
     datahist.SetMarkerSize(markersize)
+    datahist.SetLineColor(markercolor)
 
     ### calculate data to mc ratio
     ratiograph = ROOT.TGraphAsymmErrors(datahist)
@@ -219,20 +256,21 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     legend = ROOT.TLegend(p1legendbox[0],p1legendbox[1],p1legendbox[2],p1legendbox[3])
     legend.SetNColumns(2)
     legend.SetFillStyle(0)
-    legend.AddEntry(datahist,datahist.GetTitle(),"pe1")
+    #legend.AddEntry(datahist,datahist.GetTitle(),"pe1")
+    legend.AddEntry(datahist,datalabel,"pe1")
     for hist in mchistlist:
-        legend.AddEntry(hist,hist.GetTitle(),"f")
-    legend.AddEntry(mcerror,"total sim. unc.","f")
-
-    print('checkpoint 3')
+        legend.AddEntry(hist,labelmap.get(hist.GetTitle(), '-'),"f")
+    #legend.AddEntry(mcerror,"total sim. unc.","f")
+    legend.AddEntry(mcerror,"Uncertainty","f")
 
     ### make legend for lower plot and add all histograms
+    # (note: will not be drawn if dostat = False)
     legend2 = ROOT.TLegend(p2legendbox[0],p2legendbox[1],p2legendbox[2],p2legendbox[3])
-    legend2.SetNColumns(3); 
-    legend2.SetFillStyle(0);
-    legend2.AddEntry(scstaterror, "stat. pred. unc.", "f");
-    legend2.AddEntry(scerror, "total pred. unc.", "f");
-    legend2.AddEntry(ratiograph, "obs./pred.", "pe12");
+    legend2.SetNColumns(3) 
+    legend2.SetFillStyle(0)
+    legend2.AddEntry(scstaterror, "Stat. uncertainty", "f")
+    legend2.AddEntry(scerror, "Total uncertainty", "f")
+    legend2.AddEntry(ratiograph, datalabel+" / Pred.", "pe12")
 
     ### make canvas and pads
     c1 = ROOT.TCanvas("c1","c1")
@@ -242,16 +280,16 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     pad1.SetBottomMargin(0.03)
     pad1.SetLeftMargin(leftmargin)
     pad1.SetRightMargin(rightmargin)
+    pad1.SetFrameLineWidth(2)
     pad1.Draw()
     pad2 = ROOT.TPad("pad2","",0.,0.,1.,rfrac)
     pad2.SetTopMargin(0.01)
     pad2.SetBottomMargin(p2bottommargin)
     pad2.SetLeftMargin(leftmargin)
     pad2.SetRightMargin(rightmargin)
+    pad2.SetFrameLineWidth(2)
     pad2.Draw()
 
-    print('checkpoint 4')
-    
     ### make upper part of the plot
     pad1.cd()
     # determine range of pad
@@ -263,15 +301,15 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
 
     # X-axis layout
     xax = mcerror.GetXaxis()
-    xax.SetNdivisions(5,4,0,ROOT.kTRUE)
+    xax.SetNdivisions(10,5,0,ROOT.kTRUE)
     xax.SetLabelSize(0)
     # Y-axis layout
     yax = mcerror.GetYaxis()
     yax.SetMaxDigits(4)
-    yax.SetNdivisions(8,4,0,ROOT.kTRUE)
+    yax.SetNdivisions(10,5,0,ROOT.kTRUE)
     yax.SetLabelFont(10*labelfont+3)
     yax.SetLabelSize(labelsize)
-    yax.SetTitle(yaxtitle)
+    if yaxtitle is not None: yax.SetTitle(yaxtitle)
     yax.SetTitleFont(10*axtitlefont+3)
     yax.SetTitleSize(axtitlesize)
     yax.SetTitleOffset(ytitleoffset)
@@ -281,31 +319,41 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     # now draw in correct order
     mchiststack.Draw("hist same")
     mcerror.Draw("e2 same")
-    datahist.Draw("pe1 same")
+    datahist.Draw("pe e1 x0 same") 
+    # (note: e1 draws error bars, x0 suppresses horizontal error bars)
     legend.Draw("same")
     # draw some extra info if needed
     #drawbincontent(mchistlist,mcerror,'tZq')
     ROOT.gPad.RedrawAxis()
 
     # draw header
-    lumistr = '{0:.1f}'.format(lumi/1000.)
-    tools.drawLumi(pad1,lumitext=lumistr+" fb^{-1} (13 TeV)")
+    lumistr = ''
+    if lumi is not None:
+	lumistr = '{0:.3g}'.format(lumi/1000.)+' fb^{-1} (13 TeV)'
+    pt.drawLumi(pad1,extratext="",lumitext=lumistr)
+
+    # draw extra info
+    tinfo = ROOT.TLatex()
+    tinfo.SetTextFont(10*infofont+3)
+    tinfo.SetTextSize(infosize)
+    for i,info in enumerate(extrainfos):
+	tinfo.DrawLatexNDC(infoleft,infotop-(i+1)*0.05,info)
 
     ### make the lower part of the plot
     pad2.cd()
     # X-axis layout
     xax = scerror.GetXaxis()
-    xax.SetNdivisions(5,4,0,ROOT.kTRUE)
+    xax.SetNdivisions(10,5,0,ROOT.kTRUE)
     xax.SetLabelSize(labelsize)
     xax.SetLabelFont(10*labelfont+3)
-    xax.SetTitle(xaxtitle)
+    if xaxtitle is not None: xax.SetTitle(xaxtitle)
     xax.SetTitleFont(10*axtitlefont+3)
     xax.SetTitleSize(axtitlesize)
     xax.SetTitleOffset(xtitleoffset)
     # Y-axis layout
     yax = scerror.GetYaxis()
     yax.SetRangeUser(0.,1.999);
-    yax.SetTitle("obs./pred.");
+    yax.SetTitle(datalabel+" / Pred.")
     yax.SetMaxDigits(3)
     yax.SetNdivisions(4,5,0)
     yax.SetLabelFont(10*labelfont+3)
@@ -316,9 +364,9 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
 
     # draw objects
     scerror.Draw("e2")
-    scstaterror.Draw("e2 same")
-    ratiograph.Draw("pe01 same")
-    legend2.Draw("same")
+    if dostat: scstaterror.Draw("e2 same")
+    ratiograph.Draw("p e1 same")
+    if dostat: legend2.Draw("same")
     ROOT.gPad.RedrawAxis()
 
     # make and draw unit ratio line
@@ -330,81 +378,103 @@ def plotdatavsmc(datahist,mchistlist,mcsysthist,yaxtitle,yaxlog,xaxtitle,lumi,ou
     
     ### save the plot
     c1.SaveAs(outfile+'.png')
+    c1.SaveAs(outfile+'.eps')
 
 if __name__=="__main__":
-    # read a root file containing histograms and make the plots
-    # for all variables in an input dict (can be the same dict used for histfiller.py)
+
+    ### mainly used for quick testing, see e.g. histplotter_prefit.py for more correct usage
     
-    ### Configure input parameters (hard-coded)
-    # file to read the histograms from
-    histfile = os.path.abspath('histograms/histograms.root')
-    # variables with axis titles, units, etc.
-    variables = [
-        {'name':'_abs_eta_recoil','title':r'#||{#eta}_{recoil}','unit':''},
-        {'name':'_Mjj_max','title':r'M_{jet+jet}^{max}','unit':'GeV'},
-        {'name':'_lW_asymmetry','title':r'asymmetry (lepton from W)','unit':''},
-        {'name':'_deepCSV_max','title':r'highest deepCSV','unit':''},
-        {'name':'_lT','title':'L_{T}','unit':'GeV'},
-        {'name':'_MT','title':'M_{T}','unit':'GeV'},
-        {'name':'_pTjj_max','title':r'p_{T}^{max}(jet+jet)','unit':'GeV'},
-        {'name':'_dRlb_min','title':r'#Delta R(lep,bjet)_{min}','unit':''},
-        {'name':'_dPhill_max','title':r'#Delta #Phi (lep,lep)_{max}','unit':''},
-        {'name':'_HT','title':r'H_{T}','unit':'GeV'},
-        {'name':'_nJets','title':r'number of jets','unit':''},
-        {'name':'_dRlWrecoil','title':r'#Delta R(lep_{W},jet_{recoil})','unit':''},
-        {'name':'_dRlWbtagged','title':r'#Delta R(lep_{W},jet_{b-tagged})','unit':''},
-        {'name':'_M3l','title':r'M_{3l}','unit':'GeV'},
-        {'name':'_abs_eta_max','title':r'#||{#eta}_{max}','unit':''},
-	#{'name':'_eventBDT','title':r'event BDT output score','unit':''},
-	{'name':'_nMuons','title':r'number of muons in event','unit':''},
-	{'name':'_nElectrons','title':r'number of electrons in event','unit':''},
-	{'name':'_yield','title':r'total yield','unit':''},
-	#{'name':'_leptonMVATOP_min','title':r'minimum TOP MVA value in event','unit':''},
-	#{'name':'_leptonMVAttH_min','title':r'minimum ttH MVA value in event','unit':''},
-	{'name':'_leptonPtLeading','title':r'p_T^{leading}','unit':'GeV'},
-	{'name':'_leptonPtSubLeading','title':r'p_T^{subleading}','unit':'GeV'},
-	{'name':'_leptonPtTrailing','title':r'p_T^{trailing}','unit':'GeV'}	
-    ]
+    ####################################################################
+    # set properties: variables, processes and systematics to consider #
+    ####################################################################
 
-    ### Overwrite using cmd args
-    if(len(sys.argv)==3):
-	histfile = sys.argv[1]
-	variables = json.loads(sys.argv[2])
-    elif(not len(sys.argv)==1):
-	print('### ERROR ###: wrong number of command line args')
-	sys.exit()
+    # define variables with axis titles, units, etc.
+    #variables = [{'name':'_abs_eta_recoil','title':r'#||{#eta}_{recoil}','unit':''}]
+    variables = [{'name':'_eventBDT','title':'BDT output score','unit':''}]
+    # (smaller set for testing )
+    
+    # processes (new convention):
+    simprocesses = (['tZq','WZ','multiboson','tX','ttZ','ZZH','Xgamma'])
+    simprocesses.append('nonprompt') # it is plotted as if simulated, even if taken from data
+    dataprocesses = ['data'] # currently only one element is supported
 
-    histdir = histfile[:histfile.rfind('/')]
-    ### Loop over input variables
-    for k,vardict in enumerate(variables):
-        varname = str(vardict['name'])
-        # (explicit conversion from unicode to str seems necessary...)
+    # color and label maps
+    colormap = pt.getcolormap('tzqanalysis')
+    labelmap = pt.getlabelmap('tzqanalysis')
 
-        ### Load histograms
-        mchistlist,normalization,lumi = loadhistograms(histfile,'mc_'+varname+'_')
-	datahistlist,_,_ = loadhistograms(histfile,'data_'+varname+'_')
-        if not len(datahistlist)==1:
-            print('### ERROR ###: list of data histograms has unexpected length: '+str(len(datahistlist)))
-            sys.exit()
-        datahist = datahistlist[0]
-	npdatahistlist,_,_ = loadhistograms(histfile,'npdata_'+varname+'_')
-	if not (len(npdatahistlist)==0 or len(npdatahistlist)==1):
-	    print('### ERROR ###: list of nonprompt data histograms has unexpected length.')
-	    sys.exit()
-	npdatahist = None
-	if len(npdatahistlist)>0: 
-	    npdatahist = npdatahistlist[0]
-	    mchistlist.append(npdatahist)
-        
-        ### Set plot properties
-        binwidth = datahist.GetBinWidth(1)
-        if binwidth.is_integer():
-            yaxtitle = 'events / '+str(int(binwidth))+' '+vardict['unit']
-        else:
-            yaxtitle = 'events / {0:.2f}'.format(binwidth)+' '+vardict['unit']
-        xaxtitle = vardict['title']
-        if not vardict['unit']=='':
-            xaxtitle += '('+vardict['unit']+')'
-	figname = os.path.join(histdir,varname)
-	plotdatavsmc(datahist,mchistlist,None,yaxtitle,False,xaxtitle,lumi,figname+'_lin')
-	plotdatavsmc(datahist,mchistlist,None,yaxtitle,True,xaxtitle,lumi,figname+'_log')
+    # blind the event BDT variables
+    varstoblind = [var['name'] for var in variables if 'eventBDT' in var['name']]
+
+    # define extra info to display on slide
+    extrainfos = ['this is some','dummy info','for testing']
+
+    ################################################################
+    # run the plotting function on the configuration defined above #
+    ################################################################
+
+    # if 1 command line argument and it is a root file, run on this file
+    if(len(sys.argv)==2 and sys.argv[1][-5:]=='.root'):
+        histfile = os.path.abspath(sys.argv[1])
+        if not os.path.exists(histfile):
+            raise Exception('ERROR: requested to run on '+histfile
+                            +' but it does not seem to exist...')
+        histdir = os.path.dirname(histfile)
+        lumi = None
+        if '2016' in histfile: lumi = 35900
+        elif '2017' in histfile: lumi = 41500
+        elif '2018' in histfile: lumi = 59700
+        elif '1617' in histfile: lumi = 77400
+        elif 'allyears' in histfile: lumi = 137100
+        elif 'yearscombined' in histfile: lumi = 137100
+        if not 'signalregion' in histfile: varstoblind = []
+
+	# get all histograms
+        histlist = ht.loadhistograms(histfile,mustcontainall=['nominal'],
+		    mustcontainone=[var['name'] for var in variables])
+
+	# loop over input variables
+	for k,vardict in enumerate(variables):
+	    varname = str(vardict['name'])
+	    print('running on variable: '+varname)
+
+	    # load nominal histograms
+	    simhistlist = []
+	    for p in simprocesses:
+		selhists = ht.selecthistograms(histlist,mustcontainall=['nominal',varname,p])[1]
+		if len(selhists)==1:
+		    simhistlist.append(selhists[0])
+		else:
+		    raise Exception('ERROR in histplotter_prefit: a requested process is not'
+                                +' present in the provided histogram collection: {}'.format(p))
+	    datahists = ht.selecthistograms(histlist,mustcontainall=['nominal',varname,
+					    dataprocesses[0]])[1]
+	    if not len(datahists)==1:
+		# (maybe later allow multiple data entries but so far only one at a time is supported)
+		raise Exception('ERROR in histplotter_prefit: list of data histograms'
+                            +' has unexpected length: {}'.format(len(datahists)))
+	    datahist = datahists[0]
+
+	    # make dummy systematics
+            syshist = datahist.Clone()
+	    for i in range(0,syshist.GetNbinsX()+2):
+		syshist.SetBinContent(i,syshist.GetBinError(i))
+
+	    # if running blindly, reset the data histogram
+	    if varname in varstoblind:
+		datahist.Reset()
+
+	    # set plot properties
+	    yaxtitle = 'Number of events' # use simple title instead of mentioning bin width
+	    xaxtitle = vardict['title']
+	    if not vardict['unit']=='':
+		xaxtitle += '['+vardict['unit']+']'
+	    figname = 'histplotter_test_'+varname
+
+	    plotdatavsmc(figname+'_lin',datahist,simhistlist,syshist,signals=['tZq'],
+                        colormap=colormap,labelmap=labelmap,
+                        xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,yaxlog=False,
+			dostat=False,extrainfos=extrainfos)
+	    plotdatavsmc(figname+'_log',datahist,simhistlist,syshist,signals=['tZq'],
+                        colormap=colormap,labelmap=labelmap,
+                        xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,yaxlog=True,
+			dostat=False,extrainfos=extrainfos)

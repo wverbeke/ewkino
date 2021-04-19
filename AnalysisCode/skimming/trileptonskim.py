@@ -163,11 +163,11 @@ for sample_directory, sub_directory, output_directory in zip( sample_directories
 	    command = './skimmer {} {} {}'.format(f,output_directory,skim_condition)
 	    commands.append(command)
         # old qsub way
-        #script_name = 'trileptonskim.sh'
-        #with open( script_name, 'w') as script:
-        #    initializeJobScript( script )
-        #    for command in commands:
-        #        script.write( command+'\n' )
+        script_name = 'trileptonskim.sh'
+        with open( script_name, 'w') as script:
+            initializeJobScript( script )
+            for command in commands:
+                script.write( command+'\n' )
         # submit job and catch errors 
         #submitQsubJob( script_name, wall_time )
         # alternative: run locally (for testing and debugging)

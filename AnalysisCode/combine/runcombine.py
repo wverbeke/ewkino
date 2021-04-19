@@ -134,6 +134,13 @@ if __name__=="__main__":
     cleandatacarddir(datacarddir)
  
     counter = 0
+    # warning: if using runcombine multiple times shortly after each other,
+    # job description files will be overwritten, leading to errors.
+    # temporary solution is to set the counter to 1+highest number already present
+    shfiles = [f for f in os.listdir(os.getcwd()) if ('runcombine' in f and f[-3:]=='.sh')]
+    shnumbers = [int(f.replace('.sh','').replace('cjob_runcombine','')) for f in shfiles]
+    shnumbers = sorted(shnumbers)
+    counter = 0 if len(shnumbers)==0 else shnumbers[-1]+1
     # part 1: run combine command for all signal regions separately
     cards_all = [f for f in os.listdir(datacarddir) if f[-4:]=='.txt']
     cards_signalregion = subselect(cards_all,mustcontain=['signalregion'])

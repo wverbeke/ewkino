@@ -26,6 +26,8 @@ class Met : public PhysicsObject {
 	Met MetJECDown( const std::string source ) const;
 	Met MetJECUp( const std::string source) const;
 
+	Met getVariedMet( const std::string& variation ) const;
+
         //maximum variations of met pT
         double maxPtAnyVariation() const;
         double minPtAnyVariation() const;

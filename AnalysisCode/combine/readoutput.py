@@ -29,7 +29,45 @@ def readsigma(filename):
 		s = float(l.replace('Significance:','').strip(' '))
     return s
 
+def readdatacarddir(datacarddir,tag):
+    ### read an entire datacarddir and return the result
+    # - the inputs are a datacard directory and a tag;
+    #   only output files with _out_tag.txt are considered.
+    # - the output object is a list of dicts; each dict has the following keys:
+    #   'card','r','uperror','downerror','uperror_stat','downerror_stat', 's'
+
+    if not os.path.exists(datacarddir): 
+	print('### WARNING ### (in readdatacarddir): datacard dir {} not found'.format(datacarddir))
+	print('                returning None object')
+	return None
+
+    outputfiles = sorted([f for f in os.listdir(datacarddir) if '_out_'+tag+'.txt' in f])
+    reslist = []
+    for f in outputfiles:
+        card = f.replace('datacard_','').replace('dc_combined','').replace('_out_'+tag+'.txt','')
+        # read significance
+        if 'significance' in tag:
+            s = readsigma(os.path.join(datacarddir,f))
+            reslist.append({'card':card,'r':0,'uperror':0,'downerror':0,'s':s,
+                                'uperror_stat':0,'downerror_stat':0})
+        # read signal strength
+        if 'signalstrength' in tag:
+            (r,uperror,downerror) = readr(os.path.join(datacarddir,f))
+            reslist.append({'card':card,'r':r,'uperror':uperror,'downerror':downerror,'s':0,
+                                'uperror_stat':0,'downerror_stat':0})
+            # check if stat only file exists and if so, read it as well
+            fstat = f.replace('.txt','_stat.txt')
+            if os.path.exists(os.path.join(datacarddir,fstat)):
+                (rstat,uperror,downerror) = readr(os.path.join(datacarddir,fstat))
+                if abs(r-rstat) > 1e-12:
+                    print('### WARNING ###: best fit signal strength does not agree.')
+                else:
+                    reslist[-1]['uperror_stat'] = uperror
+                    reslist[-1]['downerror_stat'] = downerror
+    return reslist
+
 def formatline(title,strength=0,uperror=0,downerror=0,uperror_stat=0,downerror_stat=0,significance=0):
+    ### format a line for printing
     titlelen = 25
     numlen = 8
     res = str('{:<'+str(titlelen)+'}').format(title)
@@ -91,21 +129,21 @@ def formatlatextable(resdict_obs, resdict_exp):
     t += '\t\t\t'+r'channel & 2016 & 2017 & 2018 \\'+'\n'
     t += '\t\t\t'+r'\hline \hline'+'\n'
     t += '\t\t\t'+r'1 b-jet, 2-3 jets & '+'{} ({}) & {} ({}) & {} ({}) '.format(
-		    get(resdict_obs,'signalregion_1_2016'),get(resdict_exp,'signalregion_1_2016'),
-		    get(resdict_obs,'signalregion_1_2017'),get(resdict_exp,'signalregion_1_2017'),
-		    get(resdict_obs,'signalregion_1_2018'),get(resdict_exp,'signalregion_1_2018')
+		    get(resdict_obs,'signalregion_cat1_2016'),get(resdict_exp,'signalregion_cat1_2016'),
+		    get(resdict_obs,'signalregion_cat1_2017'),get(resdict_exp,'signalregion_cat1_2017'),
+		    get(resdict_obs,'signalregion_cat1_2018'),get(resdict_exp,'signalregion_cat1_2018')
 	 )+r'\\'+'\n'
     t += '\t\t\t'+r'\hline'+'\n'
     t += '\t\t\t'+r'1 b-jet, $\geq$ 4 jets & '+'{} ({}) & {} ({}) & {} ({}) '.format(
-                    get(resdict_obs,'signalregion_2_2016'),get(resdict_exp,'signalregion_2_2016'),
-                    get(resdict_obs,'signalregion_2_2017'),get(resdict_exp,'signalregion_2_2017'),
-                    get(resdict_obs,'signalregion_2_2018'),get(resdict_exp,'signalregion_2_2018')
+                    get(resdict_obs,'signalregion_cat2_2016'),get(resdict_exp,'signalregion_cat2_2016'),
+                    get(resdict_obs,'signalregion_cat2_2017'),get(resdict_exp,'signalregion_cat2_2017'),
+                    get(resdict_obs,'signalregion_cat2_2018'),get(resdict_exp,'signalregion_cat2_2018')
          )+r'\\'+'\n'
     t += '\t\t\t'+r'\hline'+'\n'
     t += '\t\t\t'+r'$\geq$ 2 b-jets & '+'{} ({}) & {} ({}) & {} ({}) '.format(
-                    get(resdict_obs,'signalregion_3_2016'),get(resdict_exp,'signalregion_3_2016'),
-                    get(resdict_obs,'signalregion_3_2017'),get(resdict_exp,'signalregion_3_2017'),
-                    get(resdict_obs,'signalregion_3_2018'),get(resdict_exp,'signalregion_3_2018')
+                    get(resdict_obs,'signalregion_cat3_2016'),get(resdict_exp,'signalregion_cat3_2016'),
+                    get(resdict_obs,'signalregion_cat3_2017'),get(resdict_exp,'signalregion_cat3_2017'),
+                    get(resdict_obs,'signalregion_cat3_2018'),get(resdict_exp,'signalregion_cat3_2018')
          )+r'\\'+'\n'
     t += '\t\t\t'+r'\hline'+'\n'
     t += '\t\t\t'+r'combination (+ control regions) & '+'{} ({}) & {} ({}) & {} ({}) '.format(
@@ -123,6 +161,7 @@ def formatlatextable(resdict_obs, resdict_exp):
     t += r'\end{table}'
     return t
 
+
 if __name__=='__main__':
 
     datacarddir = ''
@@ -135,32 +174,10 @@ if __name__=='__main__':
     tags = ['significance_exp','significance_obs','signalstrength_exp','signalstrength_obs']
     resdict = {}
     for tag in tags:
-	outputfiles = sorted([f for f in os.listdir(datacarddir) if '_out_'+tag+'.txt' in f])
-	print('---------------------------------------------')
-	print('--- '+tag+' ---')
-	print('---------------------------------------------')
-	reslist = []
-	for f in outputfiles:
-	    card = f.replace('datacard_','').replace('dc_combined','').replace('_out_'+tag+'.txt','')
-	    # read significance
-	    if 'significance' in tag:
-		s = readsigma(os.path.join(datacarddir,f))
-                reslist.append({'card':card,'r':0,'uperror':0,'downerror':0,'s':s,
-				    'uperror_stat':0,'downerror_stat':0})
-	    # read signal strength
-	    if 'signalstrength' in tag:
-		(r,uperror,downerror) = readr(os.path.join(datacarddir,f))
-		reslist.append({'card':card,'r':r,'uperror':uperror,'downerror':downerror,'s':0,
-				    'uperror_stat':0,'downerror_stat':0})
-		# check if stat only file exists and if so, read it as well
-		fstat = f.replace('.txt','_stat.txt')
-		if os.path.exists(os.path.join(datacarddir,fstat)):
-		    (rstat,uperror,downerror) = readr(os.path.join(datacarddir,fstat))
-		    if abs(r-rstat) > 1e-12:
-			print('### WARNING ###: best fit signal strength does not agree.')
-		    else:
-			reslist[-1]['uperror_stat'] = uperror
-			reslist[-1]['downerror_stat'] = downerror
+	reslist = readdatacarddir(datacarddir,tag)
+	print('------------------------------')
+	print('----- ' + tag+ ' -----')
+	print('------------------------------')
 	for res in reslist:
 	    print(formatline(res['card'],strength=res['r'],
 			    uperror=res['uperror'],downerror=res['downerror'],

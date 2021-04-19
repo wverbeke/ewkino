@@ -579,6 +579,7 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_jetHFEmFraction", _jetHFEmFraction, &b__jetHFEmFraction);
     _currentTreePtr->SetBranchAddress("_jetPileupIdFullDisc", _jetPileupIdFullDisc, &b__jetPileupIdFullDisc);
     _currentTreePtr->SetBranchAddress("_jetPileupIdFullId", _jetPileupIdFullId, &b__jetPileupIdFullId);
+    // old naming convention (before split JEC uncertainties):
     _currentTreePtr->SetBranchAddress("_met", &_met, &b__met);
     _currentTreePtr->SetBranchAddress("_metJECDown", &_met_JECDown, &b__met_JECDown);
     _currentTreePtr->SetBranchAddress("_metJECUp", &_met_JECUp, &b__met_JECUp);
@@ -590,6 +591,18 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_metPhiUnclDown", &_metPhi_UnclDown, &b__metPhi_UnclDown);
     _currentTreePtr->SetBranchAddress("_metPhiUnclUp", &_metPhi_UnclUp, &b__metPhi_UnclUp);
     _currentTreePtr->SetBranchAddress("_metSignificance", &_metSignificance, &b__metSignificance);
+    // new naming convention:
+    /*_currentTreePtr->SetBranchAddress("_met", &_met, &b__met);
+    _currentTreePtr->SetBranchAddress("_met_JECDown", &_met_JECDown, &b__met_JECDown);
+    _currentTreePtr->SetBranchAddress("_met_JECUp", &_met_JECUp, &b__met_JECUp);
+    _currentTreePtr->SetBranchAddress("_met_UnclDown", &_met_UnclDown, &b__met_UnclDown);
+    _currentTreePtr->SetBranchAddress("_met_UnclUp", &_met_UnclUp, &b__met_UnclUp);
+    _currentTreePtr->SetBranchAddress("_metPhi", &_metPhi, &b__metPhi);
+    _currentTreePtr->SetBranchAddress("_metPhi_JECDown", &_metPhi_JECDown, &b__metPhi_JECDown);
+    _currentTreePtr->SetBranchAddress("_metPhi_JECUp", &_metPhi_JECUp, &b__metPhi_JECUp);
+    _currentTreePtr->SetBranchAddress("_metPhi_UnclDown", &_metPhi_UnclDown, &b__metPhi_UnclDown);
+    _currentTreePtr->SetBranchAddress("_metPhi_UnclUp", &_metPhi_UnclUp, &b__metPhi_UnclUp);
+    _currentTreePtr->SetBranchAddress("_metSignificance", &_metSignificance, &b__metSignificance);*/
     
     if( containsGeneratorInfo() ){
         _currentTreePtr->SetBranchAddress("_weight", &_weight, &b__weight);

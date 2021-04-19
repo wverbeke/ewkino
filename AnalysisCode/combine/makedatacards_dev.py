@@ -21,7 +21,6 @@ def readhistfile(histfile,variable,doprint=True):
     keylist = f.GetListOfKeys()
     # temporary: define a limited list of systematics to ignore
     excludesystematics = []
-    #excludesystematics = (['isrScale','fsrScale'])
     # loop over all histograms in the file
     for key in keylist:
         hist = f.Get(key.GetName())
@@ -94,14 +93,6 @@ def makerow(systematic,stype,processinfo,processimpacts):
 	    row.append('-')
     return row
 
-def makeraterows(name,processinfo,processimpacts):
-    ### make rows corresponding to a rateParam declaration
-    ### inputs are for example 'rate_WZ', readhistfile(...)[0], {'WZ':0.08}
-    # note that processimpacts can only contain one key-value pair, unlike in makerow
-    row1 = [name,'rateParam','*',processimpacts.keys()[0],'1.0']
-    row2 = [name,'param','1.0',processimpacts[processimpacts.keys()[0]]]
-    return [row1]
-
 def makealigned(stringlist):
     ### append spaces to all strings in stringlist until they have the same length
     # get maximum length of strings in list
@@ -113,36 +104,56 @@ def makealigned(stringlist):
     for i,s in enumerate(stringlist):
 	stringlist[i] = str('{:<'+str(maxlen)+'}').format(s)
 
-def makestringfromrow(row):
-    res = ''
-    for rowel in row:
-	res += str(rowel)+'\t'
-    res += '\n'
-    return res
-
 if __name__=="__main__":
 
-    if len(sys.argv)!=3:
+    if len(sys.argv)<3:
 	print('### ERROR ###: need different number of command line args:')
 	print('               <input directory> and <datacard directory>')
 	sys.exit()
     topdir = sys.argv[1]
     datacarddir = sys.argv[2]
+    channelsuffix = ''
+    topchargesuffix = ''
+    # note: current implementation of channels and top/antitop:
+    # - for channels nothing in particular;
+    #   only refering to specific histogram files for the signal region;
+    #	for the rest the datacard has the same syntax as for the unchanneled fit;
+    #   separte channels will not be combined back into a common fit.
+    # - for top charge: 
+    #   additionally to specific histogram files,
+    #	process name is modified since tZq_top and tZq_antitop will be seen as separate signals
+    #   (e.g. to compute the ratio of both)
+    #   note: modify the names only in the signal regions, since the control regions are not split
+    #         this implies another tZq process will be present in the fit... not yet ideal
+    #	      maybe remove tZq from control regions? but not everywhere fully negligible...
+    #	      probably no need to remove, just consider it as a 'background' in the CR
+
+    for arg in sys.argv[3:]:
+	[key,val] = arg.split('=',1)
+	if key=='channel': channelsuffix = val
+	if key=='topcharge': topchargesuffix = val
+
     npfromdata = True
-    cnames = ['signalregion_1','signalregion_2','signalregion_3']
-    cnames.append('wzcontrolregion')
-    cnames.append('zzcontrolregion')
-    cnames.append('zgcontrolregion')
-    years = ['2016','2017','2018']
+    cnames = []
+    cnames.append({'region':'signalregion_cat1'+channelsuffix+topchargesuffix,'var':'_eventBDT'})
+    #cnames.append({'region':'signalregion_cat2'+channelsuffix+topchargesuffix,'var':'_eventBDT'})
+    #cnames.append({'region':'signalregion_cat3'+channelsuffix+topchargesuffix,'var':'_eventBDT'})
+    cnames.append({'region':'wzcontrolregion','var':'_MT'})
+    #cnames.append({'region':'zzcontrolregion','var':'_MT'})
+    #cnames.append({'region':'zgcontrolregion','var':'_nJets'})
+    #cnames.append({'region':'ttzcontrolregion','var':'_nBJets'})
+    #cnames.append({'region':'signalsideband_noossf_cat1','var':'_yield'})
+    #cnames.append({'region':'signalsideband_noz_cat1','var':'_yield'})
+    years = ['2016']
     # make dict to read channels
-    channels = {}
+    channels = []
     suffix = 'npfromdata' if npfromdata else 'npfromsim'
     for c in cnames:
+	region = c['region']
 	for year in years:
-	    channels[c+'_'+year] = os.path.join(topdir,year+'combined',c,suffix,'combined.root')
-    # define variable to fit on
-    signalvariable = '_eventBDT' # for signal regions
-    controlvariable = '_nJets' # for control regions
+	    channels.append( {'name':region+'_'+year,
+		    'path':os.path.join(topdir,year+'combined',region,suffix,'combined.root'),
+		    'var':c['var'] })
 
     if os.path.exists(datacarddir):
 	#print('### WARNING ###: directory already exists. Clean it? (y/n)')
@@ -153,10 +164,9 @@ if __name__=="__main__":
     os.makedirs(datacarddir)
 
     for channel in channels:
-	year = channel[-4:]
+	year = channel['name'][-4:]
 	# define variable to use
-	variable = controlvariable
-	if 'signalregion' in channel: variable = signalvariable
+	variable = channel['var']
 	# set lumi uncertainty
 	unc_lumi = {}
 	if year=='2016': unc_lumi = {'lumi':1.009, # correlated
@@ -173,32 +183,50 @@ if __name__=="__main__":
 	unc_trigger = {'trigger_'+year:1.02} # preliminary dummy value
 					     # uncorrelated
 	# set individual normalization uncertainties
-	# ttZ, Xgamma and nonpromt take the usual lnN uncertainties
-	unc_norm = {'norm_tbartZ':1.15,'norm_Xgamma':1.1,'norm_nonprompt':1.3}
-	# WZ and ZZH take rate parameters
-	unc_rate = {'rate_WZ':0.08,'rate_ZZH':0.08}
+	unc_norm = {'norm_WZ':1.1,'norm_ZZH':1.1,'norm_tbartZ':1.15,'norm_Xgamma':1.1,'norm_nonprompt':1.3}
 	# check if histogram file exists
-	if not os.path.exists(channels[channel]):
-	    print('### WARNING ###: '+channels[channel]+' not found, skipping it.')
-	    continue
-	print('making datacard for '+channels[channel]+'...')
+	if not os.path.exists(channel['path']):
+	    print('### WARNING ###: '+channel['path']+' not found, skipping it.')
+	    raise Exception('see warning above, break off for safety of not missing something')
+	print('making datacard for '+channel['path']+'...')
 	# copy root file to location
-	os.system('cp '+channels[channel]+' '+datacarddir+'/histograms_'+channel+'.root')
+	os.system('cp '+channel['path']+' '+datacarddir+'/histograms_'+channel['name']+'.root')
 	# get necessary info
-	(processinfo,systematiclist) = readhistfile(channels[channel],variable,doprint=False)
+	(processinfo,systematiclist) = readhistfile(channel['path'],variable,doprint=True)
+	# (processinfo is a dict mapping process names to a dict of info)
+	# redefine signal
+	# in case of top, modify tZq to tZq_top 
+	if( topchargesuffix!='' and 'signalregion' in channel['name'] ): 
+	    processinfo['tZq'+topchargesuffix] = processinfo['tZq']
+	    processinfo.pop('tZq')
+	    # also change systematics
+	    # DOES NOT WORK YET AS HISTOGRAM NAMES DO NOT CONTAIN TOPCHARGESUFFIX
+	    # also probably unwanted behaviour, tZq systematics should be correlated between
+	    # tZq_top and tZq_antitop (?)
+	    #systematics_copy = list(systematiclist)
+	    #for sys in systematics_copy:
+	    #	if 'tZq' in sys:
+	    #	    newsys = sys.replace('tZq','tZq'+topchargesuffix)
+	    #	    systematiclist.append(newsys)
+	    #	    systematiclist.remove(sys)
+	    #	    for p in processinfo.keys():
+	    #		processinfo[p]['systematics'][newsys] = processinfo[p]['systematics'].pop(sys)
+	    #systematiclist = sorted(systematiclist)
 	# open (recreate) datacard file
-	datacard = open(os.path.join(datacarddir,'datacard_'+channel+'.txt'),'w')
+	datacard = open(os.path.join(datacarddir,'datacard_'+channel['name']+'.txt'),'w')
 	# write nchannels, nprocesses and nparameters
 	datacard.write('imax\t1'+'\n') # write 1 for now, combine channels later
 	datacard.write('jmax\t'+str(len(processinfo)-1)+'\n')
 	datacard.write('kmax\t'+'*\n')
 	datacard.write(getseparator())
 	# write file info (WARNING: depends on convention how to rename the copied root files, see above)
-	datacard.write('shapes * '+channel+' histograms_'+channel+'.root $PROCESS_'+variable+'_nominal $PROCESS_'+variable+'_$SYSTEMATIC\n')
-	datacard.write('shapes data_obs '+channel+' histograms_'+channel+'.root data_'+variable+'_nominal\n')
+	datacard.write('shapes * '+channel['name']+' histograms_'+channel['name']+'.root $PROCESS_'+variable+'_nominal $PROCESS_'+variable+'_$SYSTEMATIC\n')
+	if topchargesuffix != '': 
+	    datacard.write('shapes tZq'+topchargesuffix+' '+channel['name']+' histograms_'+channel['name']+'.root tZq_'+variable+'_nominal tZq_'+variable+'_$SYSTEMATIC\n')
+	datacard.write('shapes data_obs '+channel['name']+' histograms_'+channel['name']+'.root data_'+variable+'_nominal\n')
 	datacard.write(getseparator())
 	# write bin info
-	datacard.write('bin\t\t'+channel+'\n')
+	datacard.write('bin\t\t'+channel['name']+'\n')
 	datacard.write('observation\t-1\n')
 	datacard.write(getseparator())
 	# make first and second column
@@ -210,33 +238,27 @@ if __name__=="__main__":
 	# make rest of the columns
 	columns = [c1,c2]
 	for process in processinfo:
-	    pcolumn = makecolumn(channel,processinfo,process,systematiclist)
+	    pcolumn = makecolumn(channel['name'],processinfo,process,systematiclist)
 	    columns.append(pcolumn)
 	# make rows
-	rows = [] # normal rows for shape and flat uncertainties
-	raterows = [] # rows for rate parameters
+	rows = []
 	# lumi uncertainty:
 	for lumisource in unc_lumi.keys():
-	    rows.append(makerow(lumisource,'lnN',processinfo,
-			{'tZq':unc_lumi[lumisource],'tbarttX':unc_lumi[lumisource],
-			'tbartZ':unc_lumi[lumisource],'Xgamma':unc_lumi[lumisource],
-			'WZ':unc_lumi[lumisource],'ZZH':unc_lumi[lumisource],
-			'multiboson':unc_lumi[lumisource]}))
+	    pdict = {}
+	    for p in processinfo.keys(): 
+		if p =='nonprompt': continue # estimated from data so no lumi unc.
+		pdict[p] = unc_lumi[lumisource]
+	    rows.append(makerow(lumisource,'lnN',processinfo,pdict))
 	# trigger uncertainty:
 	for triggersource in unc_trigger.keys():
-	    rows.append(makerow(triggersource,'lnN',processinfo,
-                        {'tZq':unc_trigger[triggersource],'tbarttX':unc_trigger[triggersource],
-			'tbartZ':unc_trigger[triggersource],'Xgamma':unc_trigger[triggersource],
-			'WZ':unc_trigger[triggersource],'ZZH':unc_trigger[triggersource],
-			'multiboson':unc_trigger[triggersource]}))
+	    pdict = {}
+            for p in processinfo.keys(): 
+		if p=='nonprompt': continue # estimated from data so no trigger unc.
+		pdict[p] = unc_lumi[lumisource]
+	    rows.append(makerow(triggersource,'lnN',processinfo,pdict))
 	# norm uncertainties
 	for normsource in unc_norm.keys():
-	    rows.append(makerow(normsource,'lnN',processinfo,
-				{normsource.split('_')[-1]:unc_norm[normsource]}))
-	for normsource in unc_rate.keys():
-	    for row in makeraterows(normsource,processinfo,
-			{normsource.split('_')[-1]:unc_rate[normsource]}): 
-		raterows.append(row)
+	    rows.append(makerow(normsource,'lnN',processinfo,{normsource.split('_')[-1]:unc_norm[normsource]}))
 	# add rows to columns
 	for row in rows:
 	    for rowel,c in zip(row,columns):
@@ -251,13 +273,9 @@ if __name__=="__main__":
 	    datacard.write('\n')
 	    if(row==3): datacard.write(getseparator())
 	datacard.write(getseparator())
-	for row in raterows:
-	    datacard.write(makestringfromrow(row))
-	datacard.write(getseparator())
-	    
 	# manage statistical uncertainties
 	threshold = 10
-	datacard.write(channel+' autoMCStats '+str(threshold))
+	datacard.write(channel['name']+' autoMCStats '+str(threshold))
     
 	# close datacard
 	datacard.close()

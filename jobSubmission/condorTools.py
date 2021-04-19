@@ -45,6 +45,8 @@ def initJobScript(name, cmssw_version='CMSSW_10_2_16_patch1'):
 	script.write('cd {}/src\n'.format( cmssw_version ) )
 	script.write('eval `scram runtime -sh`\n')
 	script.write('cd {}\n'.format( cwd ) )
+    # make executable (seems to be needed from 19/02/2021 onwards)
+    os.system('chmod +x '+fname)
     print('initJobScript created {}'.format(fname))
 
 def makeJobDescription(name, exe, argstring=None, stdout=None, stderr=None, log=None,

@@ -49,6 +49,7 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
     treeReader.setOutputTree( outputTreePtr.get() );
 
     long unsigned nentries = treeReader.numberOfEntries();
+    long unsigned npass = 0;
     for( long unsigned entry = 0; entry < nentries; ++entry ){
 
         //build event
@@ -56,6 +57,7 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
 
         //apply event selection
         if( !passSkim( event, skimCondition ) ) continue;
+	npass++;
 
         //fill new tree
         outputTreePtr->Fill();
@@ -66,6 +68,8 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
 
     //close output file
     outputFilePtr->Close();
+
+    std::cout << npass << " out of " << nentries << " events passed the skim." << std::endl;
 }
 
 

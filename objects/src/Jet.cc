@@ -23,8 +23,8 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
     _deepFlavor( treeReader._jetDeepFlavor_b[jetIndex] + treeReader._jetDeepFlavor_bb[jetIndex] + treeReader._jetDeepFlavor_lepb[jetIndex] ),
     _isTight( treeReader._jetIsTight[jetIndex] ),
     _isTightLeptonVeto( treeReader._jetIsTightLepVeto[jetIndex] ),
-    _pileupIdFullId( treeReader._jetPileupIdFullId[jetIndex] ), // not yet in current samples
-    //_pileupIdFullId( 0 ), // default value for now, equivalent to failing all working points
+    //_pileupIdFullId( treeReader._jetPileupIdFullId[jetIndex] ), // not yet in current samples
+    _pileupIdFullId( 0 ), // default value for now, equivalent to failing all working points
     _hasGenJet( false ), // default value here, modify below (only for MC)
     //WARNING : is hadron flavor defined for jets in data?
     // (attribute is taken directly from CMSSW pat::Jet::hadronFlavour, appears to be 0 for data)
@@ -37,7 +37,7 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
 {
     // set attributes that are only defined for simulated jets
     if( treeReader.isMC() ){
-	_hasGenJet = treeReader._jetHasGen[jetIndex];
+	//_hasGenJet = treeReader._jetHasGen[jetIndex]; // not yet in current samples
     }
     // set split JEC variations
     if( readAllJECVariations ){
@@ -214,12 +214,18 @@ Jet Jet::JetJERUp() const{
 Jet Jet::JetJECDown( const std::string source ) const{
     // note: this function checks both all and grouped variations,
     // need to check if there is no overlap in names between them!
+    // there is overlap but in that case they are supposed to be the same
     double newpt = 0.;
+    bool valid = false;
     for( auto mapEl: this->_pt_JECSourcesDown ){
-	if(source==mapEl.first){ newpt = mapEl.second; }
+	if(source==mapEl.first){ newpt = mapEl.second; valid = true; }
     }
     for( auto mapEl: this->_pt_JECGroupedDown ){
-        if(source==mapEl.first) newpt = mapEl.second;
+        if(source==mapEl.first){ newpt = mapEl.second; valid = true; }
+    }
+    if( !valid ){
+	throw std::invalid_argument( std::string("### ERROR ### in Jet::JetJECDown: ")
+		+ "variation '" + source + "' not valid");
     }
     return variedJet( newpt );
 }
@@ -228,12 +234,18 @@ Jet Jet::JetJECDown( const std::string source ) const{
 Jet Jet::JetJECUp( const std::string source ) const{
     // note: this function checks both all and grouped variations,
     // need to check if there is no overlap in names between them!
+    // there is overlap but in that case they are supposed to be the same
     double newpt = 0.;
+    bool valid = false;
     for( auto mapEl: this->_pt_JECSourcesUp ){
-        if(source==mapEl.first) newpt = mapEl.second;
+        if(source==mapEl.first){ newpt = mapEl.second; valid = true; }
     }
     for( auto mapEl: this->_pt_JECGroupedUp ){
-        if(source==mapEl.first) newpt = mapEl.second;
+        if(source==mapEl.first){ newpt = mapEl.second; valid = true; }
+    }
+    if( !valid ){
+        throw std::invalid_argument( std::string("### ERROR ### in Jet::JetJECUp: ")
+                + "variation '" + source + "' not valid");
     }
     return variedJet( newpt );
 }

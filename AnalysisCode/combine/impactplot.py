@@ -66,10 +66,10 @@ if __name__=='__main__':
     if not workspace[-5:]=='.root':
 	# in case a folder is given instead of a .root workspace, run over some files within it
 	wspaces = ([
-		    #'dc_combined_all.root',
-		    #'dc_combined_2016.root',
-		    #'dc_combined_2017.root',
-		    #'dc_combined_2018.root',
+		    'dc_combined_all.root',
+		    'dc_combined_2016.root',
+		    'dc_combined_2017.root',
+		    'dc_combined_2018.root',
 		    'dc_combined_signalregion_cat1.root',
 		    'dc_combined_signalregion_cat2.root',
 		    'dc_combined_signalregion_cat3.root'

@@ -5,7 +5,7 @@
 #include "TLine.h"
 
 void drawLumi(TPad* pad, const TString& extraText, const TString& lumiText){
-  	const float l = pad->GetLeftMargin();
+  	const float l = pad->GetLeftMargin()+0.03;
   	const float t = pad->GetTopMargin();
   	const float r = pad->GetRightMargin();
   	//const float b = pad->GetBottomMargin();
@@ -13,7 +13,7 @@ void drawLumi(TPad* pad, const TString& extraText, const TString& lumiText){
 	float CMSTextSize = pad->GetTopMargin()*0.8;
 	float lumiTextSize = pad->GetTopMargin()*0.6;
 
-	//float CMSTextOffset = pad->GetTopMargin()*0.2;
+	float CMSTextOffset = pad->GetTopMargin()*0.2;
 	float lumiTextOffset = pad->GetTopMargin()*0.2;
 	
 	pad->cd();
@@ -27,13 +27,13 @@ void drawLumi(TPad* pad, const TString& extraText, const TString& lumiText){
 	latex.SetTextAlign(11); 
 	latex.SetTextSize(CMSTextSize);
 	const float cmsX = latex.GetXsize();
-	latex.DrawLatex(l,1  -t + lumiTextOffset,"CMS");
+	latex.DrawLatex(l, 1-t-CMSTextSize-CMSTextOffset,"CMS");
 
 	const float extraTextSize = CMSTextSize*0.76;	 
 	latex.SetTextFont(52);
 	latex.SetTextSize(extraTextSize);
 	latex.SetTextAlign(11);
-	latex.DrawLatex(l + 1.2*cmsX, 1-t+lumiTextOffset, extraText);
+	latex.DrawLatex(l + 1.2*cmsX, 1-t-CMSTextSize-CMSTextOffset, extraText);
 
 	latex.SetTextFont(42);
 	latex.SetTextAlign(31);

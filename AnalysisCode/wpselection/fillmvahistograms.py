@@ -8,9 +8,9 @@ sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
 # define input files
-basedir = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'
+basedir = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_new/'
 inputfiles = ([
-		#basedir+'2016MC/tZq_ll_4f_PSweights_13TeV-amcatnlo-pythia8_Summer16.root',
+		basedir+'2016MC/tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_Summer16.root',
 		basedir+'2017MC/tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_Fall17.root',
 		basedir+'2018MC/tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-madgraph-pythia8_Autumn18.root'
 	     ])

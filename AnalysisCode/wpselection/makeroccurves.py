@@ -8,7 +8,7 @@ import ROOT
 import numpy as np
 import matplotlib.pyplot as plt
 sys.path.append('../tools')
-from smalltools import loadallhistograms
+import histtools as ht
 
 def getrocfromhists( signalhist, backgroundhist ):
     
@@ -22,9 +22,6 @@ def getrocfromhists( signalhist, backgroundhist ):
 	# threshold is lower edge of next bin
 	nsig[i] = signalhist.Integral(i+1,nbins+1)
 	nbck[i] = backgroundhist.Integral(i+1,nbins+1)
-	if(signalhist.GetBinLowEdge(i+1) > 0.9 and signalhist.GetBinLowEdge(i+1) < 0.901):
-	    print(nsig[i]/nsig[0])
-	    print(nbck[i]/nbck[0])
     # normalize 
     nsig = nsig[::-1]/nsig[0]
     nbck = nbck[::-1]/nbck[0]
@@ -46,11 +43,11 @@ def plotrocs( inputlist, outfilename, title='' ):
     ax.set_ylabel('signal efficiency')
     ax.set_xscale('log')
     # set x axis limits: hard-coded
-    ax.set_xlim(1e-4,1)
+    ax.set_xlim(1e-3,1)
     # set x axis limits
     #ax.set_xlim((np.amin(np.where(inputlist[0]['bckeff']>0.,inputlist[0]['bckeff'],1.))/2.,1.))
     # set y axis limits: hard-coded
-    ax.set_ylim(0.,1.001)
+    ax.set_ylim(0.7,1.001)
     # set y axis limits: adaptive limits based on measured signal efficiency array.
     #ylowlim = np.amin(np.where((sigeff>0.) & (bckeff>0.),sigeff,1.))
     #ylowlim = 2*ylowlim-1.
@@ -84,8 +81,15 @@ if __name__=='__main__':
     # (= input directory if only one argument was given)
     outputfiles = []
     if len(inputfiles)==1: outputfiles = [outputfilebasename]
-    else: outputfiles = ([os.path.join(outputfilebasename,f).replace('.root','') 
-			    for f in os.listdir(inputfile) if f[-5:]=='.root'])
+    else: 
+	outputfiles = [f.replace('.root','') for f in inputfiles]
+	# temp: additional naming conventions
+	for i,f in enumerate(outputfiles):
+	    (dirname,f) = os.path.split(f)
+	    ellist = f.split('_')
+	    pname = ellist[0]
+	    era = ellist[-1]
+	    outputfiles[i] = os.path.join(dirname,pname+'_'+era)
     
     mvanames = ['TTH','TZQ','TOP']
     clist = ['b','g','r']
@@ -104,7 +108,7 @@ if __name__=='__main__':
 		mvarocs = []
 		for i,mvaname in enumerate(mvanames):
 		    print('mva: '+mvaname)
-		    histlist = loadallhistograms(inputfile,mustcontain=[mvaname,flavour,pttag])
+		    histlist = ht.loadhistograms(inputfile,mustcontainall=[mvaname,flavour,pttag])
 		    print('found following histograms:')
 		    for hist in histlist: print('  '+hist.GetName())
 		    if len(histlist)!=2:

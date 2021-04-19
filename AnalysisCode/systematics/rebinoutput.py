@@ -81,7 +81,7 @@ def rebinoutput(topdir,year,region,npmode,samplelistdir,mode,firstbincount,binfa
     for f in filestomerge:
 	if 'fakerate' in f.split('/')[-2]: continue
 	print('now clipping {}'.format(f))
-	histtools.clipallhistograms(f,mustcontain=['_rebinnedeventBDT'])	
+	histtools.clipallhistograms(f,mustcontainall=['_rebinnedeventBDT'])	
 
 if __name__=='__main__':
 
@@ -92,6 +92,14 @@ if __name__=='__main__':
     # a specific year, region and npmode can also be specified
     # (if not, it will run on all years and regions defined below)
     # note: append 'f' to firstbincount to indicate fraction of total events instead of absolute!
+
+    # check for non-positional arguments
+    args = sys.argv[1:]
+    runlocal = False
+    if('runlocal' in args): 
+	runlocal = True
+	args.remove('runlocal')
+    # parse positional arguments
     topdir = ''
     mode = ''
     firstbincount = ''
@@ -100,19 +108,19 @@ if __name__=='__main__':
     region = ''
     npmode = ''
     runmultiple = True
-    if len(sys.argv)==5:
-	topdir = sys.argv[1]
-	mode = sys.argv[2]
-	firstbincount = sys.argv[3]
-	binfactor = sys.argv[4]
-    elif len(sys.argv)==8:
-	topdir = sys.argv[1]
-	mode = sys.argv[2]
-        firstbincount = sys.argv[3]
-        binfactor = sys.argv[4]
-	year = sys.argv[5]
-	region = sys.argv[6]
-	npmode = sys.argv[7]
+    if len(args)==4:
+	topdir = args[0]
+	mode = args[1]
+	firstbincount = args[2]
+	binfactor = args[3]
+    elif len(args)==7:
+	topdir = args[0]
+	mode = args[1]
+        firstbincount = args[2]
+        binfactor = args[3]
+	year = args[4]
+	region = args[5]
+	npmode = args[6]
 	runmultiple = False
     else:
         print('### ERROR ###: rebinoutput.py needs four command line arguments.')
@@ -174,10 +182,11 @@ if __name__=='__main__':
 		    script.write(command+'\n')
 		#submitQsubJob(script_name)
 		# alternative: run locally
-		os.system('bash '+script_name)
+		if runlocal: os.system('bash '+script_name)
 		commands.append(command)
 	# new condor way
-	#ct.submitCommandsAsCondorCluster('rebinoutput_cjob',commands)
+	if not runlocal:
+	    ct.submitCommandsAsCondorCluster('rebinoutput_cjob',commands)
 
     else:
 	rebinoutput(topdir,year,region,npmode,samplelistdir,mode,firstbincount,binfactor)
