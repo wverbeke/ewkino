@@ -4,14 +4,14 @@
 Met::Met( const TreeReader& treeReader,
 	    const bool readAllJECVariations, const bool readGroupedJECVariations ):
     PhysicsObject( treeReader._met, 0., treeReader._metPhi, treeReader._met ),
-    _pt_JECDown( treeReader._metJECDown ), 
-    _phi_JECDown( treeReader._metPhiJECDown ),
-    _pt_JECUp( treeReader._metJECUp ),
-    _phi_JECUp( treeReader._metPhiJECUp ),
-    _pt_UnclDown( treeReader._metUnclDown ),
-    _phi_UnclDown( treeReader._metPhiUnclDown ),
-    _pt_UnclUp( treeReader._metUnclUp ),
-    _phi_UnclUp( treeReader._metPhiUnclUp )
+    _pt_JECDown( treeReader._met_JECDown ), 
+    _phi_JECDown( treeReader._metPhi_JECDown ),
+    _pt_JECUp( treeReader._met_JECUp ),
+    _phi_JECUp( treeReader._metPhi_JECUp ),
+    _pt_UnclDown( treeReader._met_UnclDown ),
+    _phi_UnclDown( treeReader._metPhi_UnclDown ),
+    _pt_UnclUp( treeReader._met_UnclUp ),
+    _phi_UnclUp( treeReader._metPhi_UnclUp )
 {
     if( readAllJECVariations ){
 	for( const auto mapEl: treeReader._corrMETx_JECSourcesUp ){

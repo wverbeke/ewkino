@@ -582,16 +582,17 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_jetChargedEmFraction", _jetChargedEmFraction, &b__jetChargedEmFraction);
     _currentTreePtr->SetBranchAddress("_jetHFHadronFraction", _jetHFHadronFraction, &b__jetHFHadronFraction);
     _currentTreePtr->SetBranchAddress("_jetHFEmFraction", _jetHFEmFraction, &b__jetHFEmFraction);
+
     _currentTreePtr->SetBranchAddress("_met", &_met, &b__met);
-    _currentTreePtr->SetBranchAddress("_metJECDown", &_metJECDown, &b__metJECDown);
-    _currentTreePtr->SetBranchAddress("_metJECUp", &_metJECUp, &b__metJECUp);
-    _currentTreePtr->SetBranchAddress("_metUnclDown", &_metUnclDown, &b__metUnclDown);
-    _currentTreePtr->SetBranchAddress("_metUnclUp", &_metUnclUp, &b__metUnclUp);
+    _currentTreePtr->SetBranchAddress("_met_JECDown", &_met_JECDown, &b__met_JECDown);
+    _currentTreePtr->SetBranchAddress("_met_JECUp", &_met_JECUp, &b__met_JECUp);
+    _currentTreePtr->SetBranchAddress("_met_UnclDown", &_met_UnclDown, &b__met_UnclDown);
+    _currentTreePtr->SetBranchAddress("_met_UnclUp", &_met_UnclUp, &b__met_UnclUp);
     _currentTreePtr->SetBranchAddress("_metPhi", &_metPhi, &b__metPhi);
-    _currentTreePtr->SetBranchAddress("_metPhiJECDown", &_metPhiJECDown, &b__metPhiJECDown);
-    _currentTreePtr->SetBranchAddress("_metPhiJECUp", &_metPhiJECUp, &b__metPhiJECUp);
-    _currentTreePtr->SetBranchAddress("_metPhiUnclDown", &_metPhiUnclDown, &b__metPhiUnclDown);
-    _currentTreePtr->SetBranchAddress("_metPhiUnclUp", &_metPhiUnclUp, &b__metPhiUnclUp);
+    _currentTreePtr->SetBranchAddress("_metPhi_JECDown", &_metPhi_JECDown, &b__metPhi_JECDown);
+    _currentTreePtr->SetBranchAddress("_metPhi_JECUp", &_metPhi_JECUp, &b__metPhi_JECUp);
+    _currentTreePtr->SetBranchAddress("_metPhi_UnclDown", &_metPhi_UnclDown, &b__metPhi_UnclDown);
+    _currentTreePtr->SetBranchAddress("_metPhi_UnclUp", &_metPhi_UnclUp, &b__metPhi_UnclUp);
     _currentTreePtr->SetBranchAddress("_metSignificance", &_metSignificance, &b__metSignificance);
     
     if( containsGeneratorInfo() ){
@@ -677,15 +678,15 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
     outputTree->Branch("_nVertex",                      &_nVertex,                      "_nVertex/i");
     outputTree->Branch("_met",                          &_met,                          "_met/D");
-    outputTree->Branch("_metJECDown",                   &_metJECDown,                   "_metJECDown/D");
-    outputTree->Branch("_metJECUp",                     &_metJECUp,                     "_metJECUp/D");
-    outputTree->Branch("_metUnclDown",                  &_metUnclDown,                  "_metUnclDown/D");
-    outputTree->Branch("_metUnclUp",                    &_metUnclUp,                    "_metUnclUp/D");
+    outputTree->Branch("_met_JECDown",                  &_met_JECDown,                  "_met_JECDown/D");
+    outputTree->Branch("_met_JECUp",                    &_met_JECUp,                    "_met_JECUp/D");
+    outputTree->Branch("_met_UnclDown",                 &_met_UnclDown,                 "_met_UnclDown/D");
+    outputTree->Branch("_met_UnclUp",                   &_met_UnclUp,                   "_met_UnclUp/D");
     outputTree->Branch("_metPhi",                       &_metPhi,                       "_metPhi/D");
-    outputTree->Branch("_metPhiJECDown",                &_metPhiJECDown,                "_metPhiJECDown/D");
-    outputTree->Branch("_metPhiJECUp",                  &_metPhiJECUp,                  "_metPhiJECUp/D");
-    outputTree->Branch("_metPhiUnclDown",               &_metPhiUnclDown,               "_metPhiUnclDown/D");
-    outputTree->Branch("_metPhiUnclUp",                 &_metPhiUnclUp,                 "_metPhiUnclUp/D");
+    outputTree->Branch("_metPhi_JECDown",               &_metPhi_JECDown,               "_metPhi_JECDown/D");
+    outputTree->Branch("_metPhi_JECUp",                 &_metPhi_JECUp,                 "_metPhi_JECUp/D");
+    outputTree->Branch("_metPhi_UnclDown",              &_metPhi_UnclDown,              "_metPhi_UnclDown/D");
+    outputTree->Branch("_metPhi_UnclUp",                &_metPhi_UnclUp,                "_metPhi_UnclUp/D");
     outputTree->Branch("_metSignificance",              &_metSignificance,              "_metSignificance/D");
     outputTree->Branch("_passTrigger_e", &_passTrigger_e, "_passTrigger_e/O");
     outputTree->Branch("_passTrigger_ee", &_passTrigger_ee, "_passTrigger_ee/O");
