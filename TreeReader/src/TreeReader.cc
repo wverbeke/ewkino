@@ -195,7 +195,7 @@ void TreeReader::initializeJecSourcesGroupedMaps( TTree* treePtr ){
 // functions to find if a tree has branches with certain types of info //
 
 bool treeHasBranchWithName( TTree* treePtr, const std::string& nameToFind ){
-	TObjArray* branch_list = treePtr->GetListOfBranches();
+    TObjArray* branch_list = treePtr->GetListOfBranches();
     for( const auto& branchPtr : *branch_list ){
         std::string branchName = branchPtr->GetName();
 		if( stringTools::stringContains( branchName, nameToFind ) ){
@@ -463,11 +463,19 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_nTau", &_nTau, &b__nTau);
     _currentTreePtr->SetBranchAddress("_lPt", _lPt, &b__lPt);
     _currentTreePtr->SetBranchAddress("_lPtCorr", _lPtCorr, &b__lPtCorr);
+    _currentTreePtr->SetBranchAddress("_lPtScaleUp", _lPtScaleUp, &b__lPtScaleUp);
+    _currentTreePtr->SetBranchAddress("_lPtScaleDown", _lPtScaleDown, &b__lPtScaleDown);
+    _currentTreePtr->SetBranchAddress("_lPtResUp", _lPtResUp, &b__lPtResUp);
+    _currentTreePtr->SetBranchAddress("_lPtResDown", _lPtResDown, &b__lPtResDown);
     _currentTreePtr->SetBranchAddress("_lEta", _lEta, &b__lEta);
     _currentTreePtr->SetBranchAddress("_lEtaSC", _lEtaSC, &b__lEtaSC);
     _currentTreePtr->SetBranchAddress("_lPhi", _lPhi, &b__lPhi);
     _currentTreePtr->SetBranchAddress("_lE", _lE, &b__lE);
     _currentTreePtr->SetBranchAddress("_lECorr", _lECorr, &b__lECorr);
+    _currentTreePtr->SetBranchAddress("_lEScaleUp", _lEScaleUp, &b__lEScaleUp);
+    _currentTreePtr->SetBranchAddress("_lEScaleDown", _lEScaleDown, &b__lEScaleDown);
+    _currentTreePtr->SetBranchAddress("_lEResUp", _lEResUp, &b__lEResUp);
+    _currentTreePtr->SetBranchAddress("_lEResDown", _lEResDown, &b__lEResDown);
     _currentTreePtr->SetBranchAddress("_lFlavor", _lFlavor, &b__lFlavor);
     _currentTreePtr->SetBranchAddress("_lCharge", _lCharge, &b__lCharge);
     _currentTreePtr->SetBranchAddress("_dxy", _dxy, &b__dxy);
@@ -700,11 +708,19 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_nTau",                         &_nTau,                         "_nTau/i");
     outputTree->Branch("_lPt",                          &_lPt,                          "_lPt[_nL]/D");
     outputTree->Branch("_lPtCorr",                      &_lPtCorr,                      "_lPtCorr[_nLight]/D");
+    outputTree->Branch("_lPtScaleUp",			&_lPtScaleUp,                   "_lPtScaleUp[_nLight]/D");
+    outputTree->Branch("_lPtScaleDown",                 &_lPtScaleDown,                 "_lPtScaleDown[_nLight]/D");
+    outputTree->Branch("_lPtResUp",                     &_lPtResUp,                     "_lPtResUp[_nLight]/D");
+    outputTree->Branch("_lPtResDown",                   &_lPtResDown,                   "_lPtResDown[_nLight]/D");
     outputTree->Branch("_lEta",                         &_lEta,                         "_lEta[_nL]/D");
     outputTree->Branch("_lEtaSC",                       &_lEtaSC,                       "_lEtaSC[_nLight]/D");
     outputTree->Branch("_lPhi",                         &_lPhi,                         "_lPhi[_nL]/D");
     outputTree->Branch("_lE",                           &_lE,                           "_lE[_nL]/D");
     outputTree->Branch("_lECorr",                       &_lECorr,                       "_lECorr[_nLight]/D");
+    outputTree->Branch("_lEScaleUp",                    &_lEScaleUp,                    "_lEScaleUp[_nLight]/D");
+    outputTree->Branch("_lEScaleDown",                  &_lEScaleDown,                  "_lEScaleDown[_nLight]/D");
+    outputTree->Branch("_lEResUp",                      &_lEResUp,                      "_lEResUp[_nLight]/D");
+    outputTree->Branch("_lEResDown",                    &_lEResDown,                    "_lEResDown[_nLight]/D");
     outputTree->Branch("_lFlavor",                      &_lFlavor,                      "_lFlavor[_nL]/i");
     outputTree->Branch("_lCharge",                      &_lCharge,                      "_lCharge[_nL]/I");
     outputTree->Branch("_dxy",                          &_dxy,                          "_dxy[_nL]/D");

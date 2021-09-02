@@ -31,6 +31,10 @@ exe = './skimmer'
 if not os.path.exists(exe):
     raise Exception('ERROR: executable {} does not seem to exist'.format(exe))
 
+# create the output directory if it does not exist
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
 # run the skim job
 cmd = exe + ' ' + input_file_path + ' ' + output_dir + ' ' + skim_condition
 print('running command: {}'.format(cmd))
