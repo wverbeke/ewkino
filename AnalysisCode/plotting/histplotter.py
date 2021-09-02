@@ -77,7 +77,10 @@ def drawbincontent(mchistlist,mchisterror,tag):
 def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
 		signals=None,
 		dostat=True,datalabel=None,labelmap=None,colormap=None,
-		xaxtitle=None,yaxtitle=None,lumi=None,yaxlog=False,
+		xaxtitle=None,xaxinteger=False,
+		yaxtitle=None,yaxlog=False,yaxrange=None,
+		p1legendncols=None,p1legendbox=None,
+		extracmstext='',lumi=None,
 		extrainfos=[]):
     ### make a (stacked) simulation vs. data plot
     # arguments:
@@ -98,8 +101,10 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     # - labelmap is a dict mapping strings (histogram titles) to legend entries
     # - colormap is a dict mapping strings (histogram titles) to colors
     # - xaxtitle and yaxtitle are the axis titles
+    # - xaxinteger is a boolean whether to use only integer axis labels and ticks for the x-axis
     # - lumi is the luminosity value (float, in pb-1) that will be displayed
     # - yaxlog is whether to make the y-axis log scale
+    # - yaxrange: tuple of (min,max) for plotting range, overriding automatic range
     # - extrainfos is a list of strings with extra info to display
     
     pt.setTDRstyle()
@@ -136,7 +141,10 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     leftmargin = 0.15
     rightmargin = 0.05
     # legend box
-    p1legendbox = [leftmargin+0.35,1-p1topmargin-0.3,1-rightmargin-0.03,1-p1topmargin-0.03]
+    if p1legendbox is None: 
+	p1legendbox = [leftmargin+0.35,1-p1topmargin-0.3,1-rightmargin-0.03,1-p1topmargin-0.03]
+    if p1legendncols is None:
+	p1legendncols = 2
     p2legendbox = [leftmargin+0.03,0.84,1-rightmargin-0.03,0.97]
     # extra info box parameters
     infoleft = leftmargin+0.05
@@ -227,13 +235,11 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     # in case of dostat=True: plot total and stat only scaled variation
     else:
 	scstaterror.SetFillStyle(1001)
-	scerror.SetFillStyle(1001)
-	#scstaterror.SetFillColor(ROOT.kCyan+1)
-	#scerror.SetFillColor(ROOT.kCyan-4)
 	scstaterror.SetFillColor(ROOT.kGray+1)
-        scerror.SetFillColor(ROOT.kGray)
-	scstaterror.SetMarkerStyle(1)
-	scerror.SetMarkerStyle(1)
+	scstaterror.SetMarkerStyle(0)
+	scerror.SetFillStyle(3254)
+        scerror.SetFillColor(ROOT.kBlack)
+	scerror.SetMarkerStyle(0)
 
     ### operations on data histogram
     datahist.SetMarkerStyle(markerstyle)
@@ -254,11 +260,11 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
 
     ### make legend for upper plot and add all histograms
     legend = ROOT.TLegend(p1legendbox[0],p1legendbox[1],p1legendbox[2],p1legendbox[3])
-    legend.SetNColumns(2)
+    legend.SetNColumns(p1legendncols)
     legend.SetFillStyle(0)
     #legend.AddEntry(datahist,datahist.GetTitle(),"pe1")
     legend.AddEntry(datahist,datalabel,"pe1")
-    for hist in mchistlist:
+    for hist in mchistlist[::-1]: # reverse order to correspond to order of stack (?)
         legend.AddEntry(hist,labelmap.get(hist.GetTitle(), '-'),"f")
     #legend.AddEntry(mcerror,"total sim. unc.","f")
     legend.AddEntry(mcerror,"Uncertainty","f")
@@ -269,8 +275,9 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     legend2.SetNColumns(3) 
     legend2.SetFillStyle(0)
     legend2.AddEntry(scstaterror, "Stat. uncertainty", "f")
-    legend2.AddEntry(scerror, "Total uncertainty", "f")
-    legend2.AddEntry(ratiograph, datalabel+" / Pred.", "pe12")
+    # newer style: omit these entries as they are already in the upper pad
+    #legend2.AddEntry(scerror, "Total uncertainty", "f")
+    #legend2.AddEntry(ratiograph, datalabel+" / Pred.", "pe12")
 
     ### make canvas and pads
     c1 = ROOT.TCanvas("c1","c1")
@@ -295,7 +302,7 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     # determine range of pad
     if(yaxlog): pad1.SetLogy()
     (rangemin,rangemax) = getminmax(datahist,mcerror,yaxlog)
-    #(rangemin,rangemax) = (0,120) # temp override
+    if yaxrange is not None: (rangemin,rangemax) = yaxrange
     mcerror.SetMinimum(rangemin)
     mcerror.SetMaximum(rangemax)
 
@@ -330,7 +337,8 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     lumistr = ''
     if lumi is not None:
 	lumistr = '{0:.3g}'.format(lumi/1000.)+' fb^{-1} (13 TeV)'
-    pt.drawLumi(pad1,extratext="",lumitext=lumistr)
+    print(extracmstext)
+    pt.drawLumi(pad1,extratext=extracmstext,lumitext=lumistr)
 
     # draw extra info
     tinfo = ROOT.TLatex()
@@ -343,7 +351,20 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     pad2.cd()
     # X-axis layout
     xax = scerror.GetXaxis()
-    xax.SetNdivisions(10,5,0,ROOT.kTRUE)
+    if xaxinteger: 
+	# option 1:
+	#xax.SetOption("I") 
+	# does not work properly since it is not defined for TAxis, only TGAxis (?)
+	# option 2:
+	xax.SetNdivisions(xax.GetNbins()*2,0,0,ROOT.kFALSE)
+	for i in range(0,xax.GetNbins()+1):
+	    xax.ChangeLabel(2*i+1,-1,-1,-1,-1,-1," ")
+	# works, but half-integer ticks are still there...
+	# option 3: 
+	#xax.SetNdivisions(xax.GetNbins(),0,0,ROOT.kFALSE)
+	#xax.CenterLabels()
+	# does not work properly since labels are still half-integer but simply shifted
+    else: xax.SetNdivisions(10,5,0,ROOT.kTRUE)
     xax.SetLabelSize(labelsize)
     xax.SetLabelFont(10*labelfont+3)
     if xaxtitle is not None: xax.SetTitle(xaxtitle)
@@ -379,6 +400,7 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     ### save the plot
     c1.SaveAs(outfile+'.png')
     c1.SaveAs(outfile+'.eps')
+    c1.SaveAs(outfile+'.pdf')
 
 if __name__=="__main__":
 
@@ -390,8 +412,8 @@ if __name__=="__main__":
 
     # define variables with axis titles, units, etc.
     #variables = [{'name':'_abs_eta_recoil','title':r'#||{#eta}_{recoil}','unit':''}]
-    variables = [{'name':'_eventBDT','title':'BDT output score','unit':''}]
-    # (smaller set for testing )
+    #variables = [{'name':'_eventBDT','title':'BDT output score','unit':''}]
+    variables = [{'name':'_nMuons','title':'number of muons','unit':''}]
     
     # processes (new convention):
     simprocesses = (['tZq','WZ','multiboson','tX','ttZ','ZZH','Xgamma'])
@@ -403,7 +425,8 @@ if __name__=="__main__":
     labelmap = pt.getlabelmap('tzqanalysis')
 
     # blind the event BDT variables
-    varstoblind = [var['name'] for var in variables if 'eventBDT' in var['name']]
+    #varstoblind = [var['name'] for var in variables if 'eventBDT' in var['name']]
+    varstoblind = []
 
     # define extra info to display on slide
     extrainfos = ['this is some','dummy info','for testing']
@@ -472,9 +495,11 @@ if __name__=="__main__":
 
 	    plotdatavsmc(figname+'_lin',datahist,simhistlist,syshist,signals=['tZq'],
                         colormap=colormap,labelmap=labelmap,
-                        xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,yaxlog=False,
-			dostat=False,extrainfos=extrainfos)
+                        xaxtitle=xaxtitle,xaxinteger=True,
+			yaxtitle=yaxtitle,lumi=lumi,yaxlog=False,
+			dostat=True,extrainfos=extrainfos)
 	    plotdatavsmc(figname+'_log',datahist,simhistlist,syshist,signals=['tZq'],
                         colormap=colormap,labelmap=labelmap,
-                        xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,yaxlog=True,
-			dostat=False,extrainfos=extrainfos)
+                        xaxtitle=xaxtitle,xaxinteger=True,
+			yaxtitle=yaxtitle,lumi=lumi,yaxlog=True,
+			dostat=True,extrainfos=extrainfos)

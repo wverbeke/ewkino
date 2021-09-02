@@ -294,12 +294,14 @@ def histplotter_prefit(figname,histdict,variables,simprocesses,dataprocesses,his
 	ht.cliphistogram(syshist,clipboundary=1e-5)
 
         # set plot properties
+	# y-axis title
         binwidth = datahist.GetBinWidth(1)
-        #if binwidth.is_integer():
-        #    yaxtitle = 'events / '+str(int(binwidth))+' '+vardict['unit']
-        #else:
-        #    yaxtitle = 'events / {0:.2f}'.format(binwidth)+' '+vardict['unit']
-	yaxtitle = 'Number of events' # use simple title instead of mentioning bin width
+        if binwidth.is_integer():
+            yaxtitle = 'Number of events / '+str(int(binwidth))+' '+vardict['unit']
+        else:
+            yaxtitle = 'Number of events / {0:.2f}'.format(binwidth)+' '+vardict['unit']
+	# alternative: use simple title instead of mentioning bin width
+	#yaxtitle = 'Number of events'
         xaxtitle = vardict['title']
         if not vardict['unit']=='':
             xaxtitle += '['+vardict['unit']+']'

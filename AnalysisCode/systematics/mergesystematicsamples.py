@@ -1,6 +1,12 @@
 ############################################################################
 # a script for merging systematically varied samples with the nominal ones #
 ############################################################################
+# usage: the output of runsystematics is supposed to be split over different top-level directories,
+#        one for the nominal samples and one for the systematically varied samples.
+#        use this script after runsystematics and before mergeoutput,
+#        in order to rename the histograms in all systematically varied samples
+#        ('nominal' in systematic sample must be replaced by the name of the systematic)
+#        and copy them to the directory with nominal samples for further merging.
 
 import os
 import sys

@@ -32,7 +32,7 @@ for f in inputfiles:
     if('2016' in f): year = '2016'
     if('2017' in f): year = '2017'
     if('2018' in f): year = '2018'
-    lumimap = {'all':137100,'2016':35900,'2017':41500,'2018':59700}
+    lumimap = {'all':137600,'2016':36300,'2017':41500,'2018':59700}
     lumi = lumimap[year]
 
     histlist = ht.loadallhistograms(f)
@@ -61,8 +61,13 @@ for f in inputfiles:
 	for i in range(0,predictedsum.GetNbinsX()+2):
 	    predictedsyst.SetBinContent(i,predictedsum.GetBinContent(i)*0.3)
 
+	# axis titles: get from histograms
 	xaxtitle = observedhist.GetXaxis().GetTitle()
 	yaxtitle = observedhist.GetYaxis().GetTitle()
+	# ad-hoc fixes to the titles without having to rerun the closure test itself
+	if xaxtitle=='event BDT output score':
+	    xaxtitle = 'Event BDT discriminant'
+	    yaxtitle += ' units'
 
 	for h in predictedhists: 
 	    process = h.GetName().split('_predicted_')[1].split('_')[0]
@@ -70,19 +75,26 @@ for f in inputfiles:
 	observedhist.SetTitle("MC Observed")
 
 	colormap = {'TT': ROOT.kMagenta-7,'DY':ROOT.kMagenta+1}
-	labelmap = ({'TT':'FR '+r'(t#bar{t})', 
-		    'DY':'FR (DY)'})
+	labelmap = ({'TT':'Fake-rate prediction '+r'(t#kern[-0.]{#bar{t}})',
+		    'DY':'Fake-rate prediction '+r'(D#kern[0.]{Y})'})
+	#legendbox = [0.5,0.55,0.95,0.93]
+	legendbox = [0.5,0.55,0.9,0.93]
+	#extracmstext = '#splitline{Preliminary}{Supplementary}'
+	extracmstext = 'Simulation'
 	
 	hp.plotdatavsmc( os.path.join(outdir,var+'_'+figbasename), observedhist, 
 			    predictedhists, mcsysthist=predictedsyst,
 			    datalabel='MC Obs.', 
 			    colormap=colormap, labelmap=labelmap,
-			    xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi)
+			    xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,
+			    p1legendncols=1,p1legendbox=legendbox,
+			    extracmstext=extracmstext)
 	hp.plotdatavsmc( os.path.join(outdir,var+'_'+figbasename+'_log'), observedhist, 
 			    predictedhists, mcsysthist=predictedsyst, 
 			    datalabel='MC Obs.',
                             colormap=colormap, labelmap=labelmap,
                             xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,
+			    p1legendncols=1,p1legendbox=legendbox,
+			    extracmstext=extracmstext,
 			    yaxlog=True)
 
-    

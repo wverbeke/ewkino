@@ -40,7 +40,7 @@ if __name__=="__main__":
     cnames.append({'region':'signalregion_cat3','var':'_eventBDT'})
     #cnames.append({'region':'signalregion_cat123','var':'_eventBDT'})
     cnames.append({'region':'wzcontrolregion','var':'_MT'})
-    cnames.append({'region':'zzcontrolregion','var':'_MT'})
+    cnames.append({'region':'zzcontrolregion','var':'_nJets'})
     cnames.append({'region':'zgcontrolregion','var':'_nJets'})
     cnames.append({'region':'ttzcontrolregion','var':'_nBJets'})
     cnames.append({'region':'signalsideband_noossf_cat1','var':'_yield'})
@@ -63,9 +63,9 @@ if __name__=="__main__":
     #cnames.append({'region':'signalregion_cat1_ch3','var':'_eventBDT'})
     #cnames.append({'region':'signalregion_cat2_ch3','var':'_eventBDT'})
     #cnames.append({'region':'signalregion_cat3_ch3','var':'_eventBDT'})
-    years = ['2018']
+    years = ['2016','2017','2018']
     # define what processes to consider as signal and whether to allow a ratio measurement
-    signals = ['ttZ']
+    signals = ['tZq']
     ratio = []
 
     # make a list of channel info dicts for easy looping

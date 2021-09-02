@@ -37,7 +37,7 @@ if __name__=='__main__':
 	raise Exception('ERROR: wrong number of command line arguments')
 
     datacards = sorted([f for f in os.listdir(datacarddir) if f[-4:]=='.txt'])
-    newcards = getnewcards_lepchannels(datacards)
+    newcards = getnewcards_topchannels(datacards)
 
     print('propose following renamings:')
     for card,newcard in zip(datacards,newcards):

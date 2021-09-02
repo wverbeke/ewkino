@@ -55,13 +55,11 @@ def readdatacarddir( datacarddir, pois, tags=[], mode='txt', usedata=False ):
 	try:
 	    poiresults = opt.read_multisignalstrength( datacarddir, dc, pois=pois,
 			mode=mode, usedata=usedata, statonly=False )
-	    print(poiresults)
 	    for poi in pois: 
 		dcresult[poi] = ({'r':poiresults[poi][0],'downerror':poiresults[poi][1],
 							 'uperror':poiresults[poi][2],
 							 'downerror_stat':0,
 							 'uperror_stat':0})
-	    print(dcresult)
 	except:
 	    print('WARNING in readdatacarddir: pois for'
                         +' {} could not be read'.format(dc))
@@ -101,18 +99,19 @@ if __name__=='__main__':
     resdict = resdict[resdict.keys()[0]]
 
     # read inclusive result
-    res = opt.read_r( incldir, 'dc_combined_all.txt' )
+    res = opt.read_r( incldir, 'dc_combined_all.txt', usedata=usedata )
     resdict['r_tZq'] = {'r':res[0],'downerror':res[1],'uperror':res[2]}
     res = opt.read_r( incldir, 'dc_combined_all.txt', statonly=True, usedata=usedata )
     resdict['r_tZq']['downerror_stat'] = res[1]
     resdict['r_tZq']['uperror_stat'] = res[2]
-    print(resdict)
 
     # define a list for sorting
     orderlist = ['r_tZq_eee','r_tZq_eem','r_tZq_emm','r_tZq_mmm','r_tZq']
     # define labels
     for key,el in resdict.items():
-	el['label'] = key.replace('r_','')
+	label = key.replace('r_','')
+	label = label.replace('m','#mu')
+	el['label'] = label
 
     # write file for plotting
     writeplottingfile( resdict, 'lepchannels_readoutput_result.txt',

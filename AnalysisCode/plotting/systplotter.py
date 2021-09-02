@@ -275,11 +275,14 @@ if __name__=="__main__":
         {'name':'_bestZMass','title':r'Mass of OSSF pair','unit':'GeV'},
     ])
     variables = [{'name':'_eventBDT','title':r'Event BDT output score','unit':''}]
+    #variables = [{'name':'_yield','title':r'Total yield','unit':''}]
     # (smaller set for testing )
 
     # processes (new convention):
-    simprocesses = (['tZq','WZ','multiboson','tX','ttZ','ZZH','Xgamma'])
-    simprocesses.append('nonprompt') # it is plotted as if simulated, even if taken from data
+    #simprocesses = (['tZq'])
+    #simprocesses += (['WZ','multiboson','tX','ttZ','ZZH','Xgamma'])
+    #simprocesses.append('nonprompt') # it is plotted as if simulated, even if taken from data
+    simprocesses = (['WZ'])
 
     # processes (old convention):
     #simprocesses = (['tZq','WZ','multiboson','tbarttX','tbartZ','ZZH','Xgamma'])
@@ -300,7 +303,7 @@ if __name__=="__main__":
     #labelmap = pt.getlabelmap('tzqanalysis')
 
     # systematics to draw
-    systematictags = ['CR_'] # empty list for all systematics in file
+    systematictags = ['JECAll'] # empty list for all systematics in file
     # systematics to exclude
     excludetags = [] # empty list to exclude nothing
 
@@ -363,10 +366,16 @@ if __name__=="__main__":
         # get all relevant histograms
 	mustcontainone = []
         if len(systematictags)>0: mustcontainone = systematictags + ['nominal']
+	mustcontainall = []
+	if len(simprocesses)==1: mustcontainall.append(simprocesses[0])
+	if len(variables)==1: mustcontainall.append(variables[0]['name'])
         histlist = ht.loadhistograms(histfile,mustcontainone=mustcontainone,
-					       maynotcontainone=excludetags)
+					       maynotcontainone=excludetags,
+						mustcontainall=mustcontainall)
 	histdict = {}
-	for hist in histlist: histdict[hist.GetName()] = hist
+	for hist in histlist: 
+	    print(hist.GetName())
+	    histdict[hist.GetName()] = hist
 	# get all processes and compare to arguments
 	processlist = hpp.getprocesses(histdict,variables[0]['name'])
 	simprocesses_copy = simprocesses[:]

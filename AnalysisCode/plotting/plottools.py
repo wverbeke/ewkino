@@ -200,10 +200,12 @@ def drawLumi(pad, extratext="Preliminary",
     latex.SetTextFont(52);
     latex.SetTextSize(extraTextSize);
     latex.SetTextAlign(11);
+    nlines = 1+extratext.count('#splitline') # not yet generalized to all cases
     if not cms_in_grid: latex.DrawLatex(lmargin + 1.2*cmsX, 
                         1-tmargin+CMSTextVerticalOffset, extratext);
-    else: latex.DrawLatex(lmargin + 1.2*cmsX, 
-	    1-tmargin-CMSTextVerticalOffset-CMSTextSize, extratext);
+    else: latex.DrawLatex(lmargin + cmsX, 
+	    1-tmargin-CMSTextVerticalOffset-CMSTextSize-extraTextSize*0.8*(nlines-1), 
+	    extratext);
 
     latex.SetTextFont(42);
     latex.SetTextAlign(31);
@@ -287,6 +289,9 @@ def getcolormap_systematics():
     cmap['JER_2017'] = ROOT.kRed-4
     cmap['JER_2018'] = ROOT.kRed-4
     cmap['Uncl'] = ROOT.kRed-9
+    cmap['Uncl_2016'] = ROOT.kRed-9
+    cmap['Uncl_2017'] = ROOT.kRed-9
+    cmap['Uncl_2018'] = ROOT.kRed-9
     cmap['JECSqSumAll'] = ROOT.kYellow+1
     cmap['JECSqSumGrouped'] = ROOT.kYellow-7
     cmap['JECAll'] = ROOT.kGray
@@ -296,9 +301,15 @@ def getcolormap_systematics():
     cmap['muonID'] = ROOT.kBlue
     cmap['muonIDSyst'] = ROOT.kBlue
     cmap['muonIDStat'] = ROOT.kBlue+2
+    cmap['muonIDStat_2016'] = ROOT.kBlue+2
+    cmap['muonIDStat_2017'] = ROOT.kBlue+2
+    cmap['muonIDStat_2018'] = ROOT.kBlue+2
     cmap['electronID'] = ROOT.kBlue-9
     cmap['electronIDSyst'] = ROOT.kBlue-9
     cmap['electronIDStat'] = ROOT.kBlue-10
+    cmap['electronIDStat_2016'] = ROOT.kBlue-10
+    cmap['electronIDStat_2017'] = ROOT.kBlue-10
+    cmap['electronIDStat_2018'] = ROOT.kBlue-10
     cmap['electronReco'] = ROOT.kBlue-5
 
     # other weights in shades of green
@@ -311,9 +322,21 @@ def getcolormap_systematics():
     cmap['bTag_shape_lf'] = ROOT.kGreen+1
     cmap['bTag_shape_lfstats1'] = ROOT.kGreen+1
     cmap['bTag_shape_lfstats2'] = ROOT.kGreen+1
+    cmap['bTag_shape_lfstats1_2016'] = ROOT.kGreen+1
+    cmap['bTag_shape_lfstats2_2016'] = ROOT.kGreen+1
+    cmap['bTag_shape_lfstats1_2017'] = ROOT.kGreen+1
+    cmap['bTag_shape_lfstats2_2017'] = ROOT.kGreen+1
+    cmap['bTag_shape_lfstats1_2018'] = ROOT.kGreen+1
+    cmap['bTag_shape_lfstats2_2018'] = ROOT.kGreen+1
     cmap['bTag_shape_hf'] = ROOT.kGreen+3
     cmap['bTag_shape_hfstats1'] = ROOT.kGreen+3
     cmap['bTag_shape_hfstats2'] = ROOT.kGreen+3
+    cmap['bTag_shape_hfstats1_2016'] = ROOT.kGreen+1
+    cmap['bTag_shape_hfstats2_2016'] = ROOT.kGreen+1
+    cmap['bTag_shape_hfstats1_2017'] = ROOT.kGreen+1
+    cmap['bTag_shape_hfstats2_2017'] = ROOT.kGreen+1
+    cmap['bTag_shape_hfstats1_2018'] = ROOT.kGreen+1
+    cmap['bTag_shape_hfstats2_2018'] = ROOT.kGreen+1
     cmap['bTag_shape_cferr1'] = ROOT.kSpring+6
     cmap['bTag_shape_cferr2'] = ROOT.kGreen+6
 
@@ -329,12 +352,16 @@ def getcolormap_systematics():
     # isr/fsr in shades of violet
     cmap['isrShape'] = ROOT.kViolet+1
     cmap['isrNorm'] = ROOT.kViolet+1
+    cmap['isrShape_Xgamma'] = ROOT.kViolet+1
+    cmap['isrNorm_Xgamma'] = ROOT.kViolet+1
     cmap['fsrShape'] = ROOT.kViolet+2
     cmap['fsrNorm'] = ROOT.kViolet+2
 
     # qcd scale variations in magenta
     cmap['qcdScalesShapeVar'] = ROOT.kGray
     cmap['qcdScalesShapeEnv'] = ROOT.kMagenta-9
+    cmap['qcdScalesShapeEnv_tZq'] = ROOT.kMagenta-9
+    cmap['qcdScalesShapeEnv_Xgamma'] = ROOT.kMagenta-9
     cmap['qcdScalesNorm'] = ROOT.kViolet+6
 
     # pdf variations in yellow

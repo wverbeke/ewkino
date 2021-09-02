@@ -43,11 +43,11 @@
 
 ### not sure if this is the best one...
 ### cross section from AN-119-14
-#"Xgamma" ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v3_Moriond21_2017 59.21
+"Xgamma" ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v3_Moriond21_2017 59.21
 ### alternative ZG sample that should have better nBJet discription
 #"Xgamma" ZGToLLG_01J_5f_PDFWeights_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 59.21
 ### alternative ZG sample that should have better pt coverage
-"Xgamma" ZGToLLG_01J_LoosePtlPtg_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v2_Moriond21_2017 147.8
+#"Xgamma" ZGToLLG_01J_LoosePtlPtg_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2017v2-v2_Moriond21_2017 147.8
 
 ### WZ sample: powheg version
 #"WZ" WZTo3LNu_13TeV-powheg-pythia8/crab_MiniAOD2017v2-v2_Moriond21_2017 4.42965

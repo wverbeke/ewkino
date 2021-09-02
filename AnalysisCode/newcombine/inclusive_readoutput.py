@@ -200,26 +200,23 @@ def readdatacarddir( datacarddir, target='significance', usedata=False, method='
 	    # read significance
 	    sigma = opt.read_sigma( datacarddir, card, usedata=usedata )
 	    reslist.append({'card':name,'type':'significance','sigma':sigma})
-	    	#print('WARNING in readdatacarddir: significance for'
-		#	+' {} could not be read'.format(card))
         elif target=='signalstrength':
-	    r = 0
 	    (r,downerror,uperror) = opt.read_signalstrength( datacarddir, card, 
 					    statonly=False, usedata=usedata, method=method )
 	    reslist.append({'card':name,'type':'signalstrength',
                                 'r':r,'uperror':uperror,'downerror':downerror,
                                 'uperror_stat':0,'downerror_stat':0})
-	    	#print('WARNING in readdatacard: signalstrength for'
-		#	+' {} could not be read'.format(card))
-	    rstat = r
 	    (rstat,downerrorstat,uperrorstat) = opt.read_signalstrength( datacarddir, card, 
 						    statonly=True, usedata=usedata, method=method)
 	    reslist[-1]['uperror_stat'] = uperrorstat
 	    reslist[-1]['downerror_stat'] = downerrorstat
-		#print('WARNING in readdatacarddir: stat only uncertainty for'
-		#	+' {} could not be read'.format(card))
             if abs(r-rstat) > 1e-3:
                 print('WARNING in readdatacarddir: best fit signal strength does not agree.')
+	    # even small differences in r vs rstat can cause issues,
+	    # e.g. if r = 0.1 -0.1+0.17 and rstat = 0.11 -0.11+0.13
+	    # so modify here
+	    if r-downerror<1e-12: 
+		reslist[-1]['downerror_stat'] = downerror
     return reslist
 
 if __name__=='__main__':
@@ -234,7 +231,7 @@ if __name__=='__main__':
     dosignificance = True
     dosignalstrength = True
     usedata = True
-    method = 'FitDiagnostics'
+    method = 'any'
     
     if dosignificance:
 	print('### expected results for significance ###')

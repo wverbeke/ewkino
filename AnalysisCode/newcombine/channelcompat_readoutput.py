@@ -41,6 +41,8 @@ def readdatacardres( datacarddir, card, mode='txt', usedata=False ):
     stattxtfilename = txtfilename.replace('.txt','_stat.txt')
     txtfile = os.path.join(datacarddir,txtfilename)
     stattxtfile = os.path.join(datacarddir,stattxtfilename)
+    print(txtfile)
+    print(stattxtfile)
     # read pois with total uncertainties
     try:
 	chresults = opt.read_channelcompatibility_from_txt( txtfile )
@@ -97,9 +99,9 @@ if __name__=='__main__':
 	label = key.replace('r_','')
 	if label=='anti': label = 'antitop'
 	elif label=='ch0': label = 'eee'
-	elif label=='ch1': label = 'eem'
-	elif label=='ch2': label = 'emm'
-	elif label=='ch3': label = 'mmm'
+	elif label=='ch1': label = 'ee#mu'
+	elif label=='ch2': label = 'e#mu#mu'
+	elif label=='ch3': label = '#mu#mu#mu'
 	el['label'] = label
 
     # write file for plotting

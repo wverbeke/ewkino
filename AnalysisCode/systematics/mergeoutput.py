@@ -1,6 +1,6 @@
-#####################################################################################
-# a Python script to merge the output of runsystematics.py, basically advanced hadd #
-#####################################################################################
+##################################################################
+# merge the output of runsystematics.py, basically advanced hadd #
+##################################################################
 
 # this script performs several tasks
 # - merging the correct root files, depending on the year, region and nonprompt mode
@@ -51,6 +51,10 @@ def removehistogramsbytags(histfile,tags=[[]]):
     os.system('mv '+tempfilename+' '+histfile)
 
 def subselect_by_tag(filedirectory,samplelist,tagstodiscard=[],tagstokeep=[]):
+
+    ### note: not used apparenty in this script,
+    #         not sure if used anywhere...
+
     # make list of all tags
     filedict = extendsamplelist(samplelist,filedirectory)
     tags = []
@@ -116,10 +120,15 @@ if __name__=='__main__':
     args = sys.argv[1:]
     argscopy = args[:]
     runlocal = False
+    runqsub = True
     for arg in argscopy:
 	if(arg=='runlocal' or arg=='runlocal=True' or arg=='runlocal=true'):
 	    runlocal = True
 	    args.remove(arg)
+	if(arg=='runqsub'):
+	    runqsub = True
+	    args.remove(arg)
+    runcondor = not (runqsub or runlocal)
 
     # positional arguments
     runmultiple = True
@@ -185,19 +194,17 @@ if __name__=='__main__':
 		    command = 'python mergeoutput.py {} {} {} {}'.format(
 				topdir, year, region, npmode )
 		    # old qsub way:
-		    script_name = 'mergeoutput.sh'
-		    with open(script_name,'w') as script:
-			initializeJobScript(script)
-			script.write('cd {}\n'.format(cwd))
-			script.write(command+'\n')
-		    if not runlocal:
-		    	submitQsubJob(script_name)
-		    #else:
-		    #	if runlocal: os.system('bash '+script_name)
+		    if runqsub:
+			script_name = 'qsub_mergeoutput.sh'
+			with open(script_name,'w') as script:
+			    initializeJobScript(script)
+			    script.write('cd {}\n'.format(cwd))
+			    script.write(command+'\n')
+			submitQsubJob(script_name)
+		    elif runlocal: os.system('bash '+script_name)
 		    commands.append(command)
 	# new condor way:
-	#if not runlocal:
-	#    ct.submitCommandsAsCondorCluster('cjob_mergeoutput',commands)
+	if runcondor: ct.submitCommandsAsCondorCluster('cjob_mergeoutput',commands)
     
     else:
 	mergeoutput(topdir,year,region,npmode,samplelistdir)

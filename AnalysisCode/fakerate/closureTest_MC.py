@@ -17,15 +17,20 @@ import condorTools as ct
 isMCFR = sys.argv[1]
 use_mt = sys.argv[2]'''
 
+# job submission settings
+runqsub = True
+runlocal = False
+runcondor = True if (not runqsub and not runlocal) else False
+
+# closure test settings
 isMCFR = True
 use_mt = False
-
-years = ['2016','2017','2018','all']
+years = ['all']
 flavours = ['both'] 
 # (put any string different from 'muon' or 'electron' to include both)
-processes = ['TT','DY','all']
+processes = ['TT','DY']
 # (use 'TT', 'DY', 'all')
-selections = ['default','onebjet','twojets','signalregion'] 
+selections = ['default'] 
 # (use 'default', 'noossf', 'noz', 'signaljets', 'signalregion')
 path_to_xml_file = '/user/llambrec/ewkino/AnalysisCode/bdt/bdts_tzqtight/out_all_data/weights/'
 path_to_xml_file += 'tmvatrain_BDT.weights.xml'
@@ -46,15 +51,17 @@ for year in years:
 		command = './closureTest_MC {} {} {} {} {} {} {}'.format(
                             isMCFR,use_mt,selection,process,year,flavour,path_to_xml_file)
 		# old qsub way:
-		#script_name = 'closureTest_MC.sh'
-		#with open(script_name,'w') as script:
-		#	initializeJobScript(script)
-		#	script.write('cd {}\n'.format(cwd))
-		#	script.write(command+'\n')
-		#submitQsubJob(script_name)
-		# alternative: run locally
-		#os.system('bash '+script_name)
+		script_name = 'qsub_closureTest.sh'
+		with open(script_name,'w') as script:
+			initializeJobScript(script)
+			script.write('cd {}\n'.format(cwd))
+			script.write(command+'\n')
+		if runqsub:
+		    submitQsubJob(script_name)
+		if runlocal:
+		    os.system('bash '+script_name)
 		commands.append(command)
 
 # new condor way:
-ct.submitCommandsAsCondorCluster('closureTest_MC_cjob', commands)
+if runcondor:
+    ct.submitCommandsAsCondorCluster('cjob_closureTest', commands)

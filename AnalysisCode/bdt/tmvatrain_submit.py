@@ -47,14 +47,20 @@ for key in config.keys(): tmvacommand += ' '+key+'='+config[key]
 commands.append(tmvacommand)
 commands.append('echo ---command---')
 commands.append('echo {}'.format(tmvacommand))
-# old qsub way
-#script_name = 'tmvatrain.sh'
-#with open(script_name,'w') as script:
-#    initializeJobScript( script )
-#    for c in commands: script.write(c+'\n')
-# for testing: run sequentially on m-machine
-#os.system('bash '+script_name)
-# actual submission
-#submitQsubJob(script_name)
-# new condor way
-ct.submitCommandsAsCondorJob( 'cjob_tmvatrain', commands )
+
+qsub = True
+
+if qsub:
+    # old qsub way
+    script_name = 'tmvatrain.sh'
+    with open(script_name,'w') as script:
+        initializeJobScript( script )
+        for c in commands: script.write(c+'\n')
+    # for testing: run sequentially on m-machine
+    #os.system('bash '+script_name)
+    # actual submission
+    submitQsubJob(script_name)
+
+else:
+    # new condor way
+    ct.submitCommandsAsCondorJob( 'cjob_tmvatrain', commands )

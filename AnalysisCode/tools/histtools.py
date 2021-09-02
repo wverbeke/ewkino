@@ -189,9 +189,9 @@ def rootsumsquare( histlist ):
 
 ### printing ###
 
-def printhistogram(hist,naninfo=False):
+def printhistogram(hist,naninfo=False,returnstr=False):
 
-    print('### {} ###'.format(hist.GetName()))
+    infostr = '### {} ###\n'.format(hist.GetName())
     for i in range(0,hist.GetNbinsX()+2):
         bininfo = '  -----------\n'
         bininfo += '  bin: {} -> {}\n'.format(hist.GetBinLowEdge(i),
@@ -201,7 +201,9 @@ def printhistogram(hist,naninfo=False):
 	    bininfo += '    (isnan: {})\n'.format(math.isnan(hist.GetBinContent(i)))
 	    bininfo += '    (isinf: {})\n'.format(math.isinf(hist.GetBinContent(i)))
         bininfo += '  error: {}\n'.format(hist.GetBinError(i))
-        print(bininfo)
+	infostr += bininfo
+    if returnstr: return infostr
+    else: print(infostr)
 	
 def printhistograms( histfile, mustcontainall=[], mustcontainone=[],
 				maynotcontainall=[], maynotcontainone=[],

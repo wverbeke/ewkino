@@ -313,7 +313,7 @@ int main( int argc, char* argv[] ){
 	for( auto thisprocess: processes ){
 
 	    // set samples
-	    const std::string sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/trileptonskim/fakerate/";
+	    const std::string sampleDirectory = "/pnfs/iihe/cms/store/user/llambrec/trileptonskim_tzq_final/fakerate/";
 	    std::string sampleListBase = "../../fakeRate/sampleLists/samples_closureTest";
             std::string sampleListFile = sampleListBase+"_"+thisprocess+"_"+thisyear+".txt";
  
@@ -394,7 +394,9 @@ int main( int argc, char* argv[] ){
 
 		    // event is 'observed' if all leptons are tight 
 		    bool isObserved = true;
-		    double weight = event.scaledWeight();
+		    // temp on 07/06/2021: try with unit weight per event
+		    //double weight = event.scaledWeight();
+		    double weight = 1;
 		    for( const auto& leptonPtr : lightLeptons ){
 			if( !leptonPtr->isTight() ){
 			    isObserved = false;
@@ -431,6 +433,7 @@ int main( int argc, char* argv[] ){
 			}
 		    }
 		}
+		// prints for testing
 		/*std::cout<<"----- event ------"<<std::endl;
 		for(const auto& leptonPtr : lightLeptons ){
 		    std::cout<<*leptonPtr<<std::endl;
@@ -443,6 +446,7 @@ int main( int argc, char* argv[] ){
 	    }
         }
     }
+    // prints for testing
     /*std::cout<<"--- histogram ---"<<std::endl;
     for(int i=1; i<observedHists[0]->GetNbinsX()+1; ++i){
 	std::cout<<"bin: "<<i<<std::endl;

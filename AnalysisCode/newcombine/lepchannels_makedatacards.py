@@ -53,7 +53,7 @@ if __name__=="__main__":
     #cnames.append({'region':'ttzcontrolregion','var':'_nBJets','lcn':''})
     #cnames.append({'region':'signalsideband_noossf_cat1','var':'_yield','lcn':''})
     #cnames.append({'region':'signalsideband_noz_cat1','var':'_yield','lcn':''})
-    years = ['2018']
+    years = ['2016','2017','2018']
 
     # make a list of channel info dicts for easy looping
     channels = []

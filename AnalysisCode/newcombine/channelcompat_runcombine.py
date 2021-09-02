@@ -84,7 +84,7 @@ if __name__=="__main__":
     cbt.cleandatacarddir(datacarddir)
 
     # define what channels to consider
-    channel_options = get_channel_options_years()
+    channel_options = get_channel_options_lepchannels()
  
     # run combine command for a number of combination of cards
     if True:

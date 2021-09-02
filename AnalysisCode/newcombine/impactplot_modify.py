@@ -40,7 +40,7 @@ if __name__=='__main__':
     else: raise Exception('ERROR: input file must be a datacard or associated root workspace')
 
     # check if fit result exists and read best fit value
-    fitresultfile = os.path.join(datacarddir,inputname+'_out_signalstrength_obs.txt')
+    fitresultfile = os.path.join(datacarddir,inputname+'_out_fitdiagnostics_obs.txt')
     if not os.path.exists(fitresultfile):
 	raise Exception('ERROR: fit result file '+fitresultfile+' does not seem to exist...')
     (newbestfit,downerror,uperror) = opt.read_r( datacarddir, inputname+'.txt', usedata=True )

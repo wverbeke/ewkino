@@ -1,5 +1,5 @@
 ##################################################################
-# Script to read the output log files from the submission script #
+# script to read the output log files from the submission script #
 ##################################################################
 import os
 import sys
@@ -14,7 +14,7 @@ else:
     if not go=='y': sys.exit()
 
 clist = sortbyauc(getlogfiles(sdirname),printout=True)
-ftrm = ['out.root','outdata']
+ftrm = ['out.root','out_all_data']
 for el in clist[:-10]:
     thisdir = el[0]
     thisdir = thisdir[:thisdir.rfind('/')]

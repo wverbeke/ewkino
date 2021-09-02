@@ -55,9 +55,9 @@
 #"Xgamma" ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3_ext1-v1_Moriond21_2016 123.9
 ### ZG sample: ZGToLLG version
 # note: skim both ZGTo2LG and ZGToLLG, decide later which one to use
-#"Xgamma" ZGToLLG_01J_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3-v1_Moriond21_2016 59.21
+"Xgamma" ZGToLLG_01J_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3-v1_Moriond21_2016 59.21
 ### ZG sample: LoosePtlPtg version (relaxed generator cuts on l and g to avoid missing phase space)
-"Xgamma" ZGToLLG_01J_LoosePtlPtg_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3-v1_Moriond21_2016 124.8
+#"Xgamma" ZGToLLG_01J_LoosePtlPtg_5f_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_MiniAOD2016v3-v1_Moriond21_2016 124.8
 
 ### WZ sample: powheg version
 # note: skim both powheg and amcatnlo version, decide later which one to use

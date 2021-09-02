@@ -23,7 +23,8 @@ regions.append('all')
 #regions.append('signalregion_cat1')
 years = ['2016','2017','2018','years']
 # define what processes to consider as signal
-signals = ['tZq'] # remnant from other code, ignored here, hardcoded further downstream
+signals = ['tZq'] # remnant from other code, ignored here, hardcoded further downstream,
+		  # maybe change later
 
 # automatically determine what regions to consider if requested
 regionsdict = {}

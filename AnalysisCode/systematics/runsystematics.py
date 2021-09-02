@@ -21,13 +21,13 @@ import jobsplitting
 # but instead of a skimmer, a systematics executable is called.
 # command line arguments: see below
 
-if len(sys.argv) != 12:
+if len(sys.argv) != 13:
     print('### ERROR ###: runsystematics.py requires a different number of command-line arguments.')
     print('Normal usage from the command line:')
     print('python runsystematics.py input_directory samplelist output_directory,')
     print('                         event_selection, selection_type, event_category,')
-    print('			    split_samples, event_channel, topcharge, bdt_combine_mode,')
-    print('                         bdt_cut')
+    print('			    split_samples, event_channel, topcharge,') 
+    print('                         read_bdt, bdt_combine_mode, bdt_cut')
     # maybe add more command line arguments later, keep hard coded for now
     sys.exit()
 
@@ -47,8 +47,9 @@ signal_category = sys.argv[6] # put cat number (1-3), 0 for no nJets/nBJets cut
 split_samples = sys.argv[7] # whether or not to use sample splitting (see splitSampleTools!)
 signal_channel = sys.argv[8] # put number of muons, 4 for all channels
 topcharge = sys.argv[9] # put 'all', 'top' or 'antitop'
-bdt_combine_mode = sys.argv[10]
-bdt_cut = sys.argv[11]
+read_bdt = sys.argv[10]
+bdt_combine_mode = sys.argv[11]
+bdt_cut = sys.argv[12]
 nentries = 0 # put 0 for all available entries (maybe later make command line arg out of it)
 
 systematics = (['JEC','JER','Uncl', # acceptance
@@ -78,9 +79,9 @@ if event_selection not in (['signalregion',
     print('### ERROR ###: event_selection not in list of recognized event selections')
     sys.exit()
 if os.path.exists(output_directory):
-    #print('### WARNING ###: output direcory already exists. Clean it? (y/n)')
-    #go = raw_input()
-    #if not go=='y': sys.exit()
+    print('### WARNING ###: output direcory already exists. Clean it? (y/n)')
+    go = raw_input()
+    if not go=='y': sys.exit()
     os.system('rm -r '+output_directory)
 output_directory = os.path.abspath(output_directory)
 if bdt_combine_mode not in (['all','years','regions','years']):
@@ -178,22 +179,22 @@ for jobgroup in inputfiles:
 	    norm = xsec*lumi/float(hcounter)
 	# get command for this file
 	output_file_path = os.path.join(output_directory,inputfile.split('/')[-1])
-        command = './runsystematics {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
+        command = './runsystematics {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
                     inputfile, norm, output_file_path, nentries, process_name,
                     event_selection, selection_type, signal_category, 
 		    split_samples, signal_channel, topcharge,
-                    bdt_combine_mode, path_to_xml_file, bdt_cut)
+                    read_bdt, bdt_combine_mode, path_to_xml_file, bdt_cut)
         for systematic in systematics:
             command += ' {}'.format(systematic)
 	commands.append(command)
     commandgroups.append(commands)
     # old qsub way:
-    script_name = 'runsystematics.sh'
+    script_name = 'qjob_runsystematics.sh'
     with open(script_name,'w') as script:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
         for c in commands: script.write(c+'\n')
-    submitQsubJob(script_name, wall_time='48:00:00')
+    #submitQsubJob(script_name, wall_time='48:00:00')
     # alternative: run locally
     #os.system('bash '+script_name)
-#ct.submitCommandsAsCondorJobs('cjob_runsystematics',commandgroups)
+ct.submitCommandsAsCondorJobs('cjob_runsystematics',commandgroups)

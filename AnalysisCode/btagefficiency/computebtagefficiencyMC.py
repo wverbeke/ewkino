@@ -1,6 +1,11 @@
-##################################################################################
-# A Python wrapper for the computeBTagEfficienciesMC.cc program in the ewkino code #
-##################################################################################
+####################################################################################
+# A python wrapper for the computeBTagEfficienciesMC.cc program in the ewkino code #
+####################################################################################
+# note: the relevant samplelists are stored in the same place as the executable,
+#       the executable refers to theses lists hard-coded.
+#       also the output file location is hard-coded in the executable,
+#       only the resulting plots are stored here.
+# note: now copied the samplelists and output files here as backup for later reference
 
 import sys
 import os

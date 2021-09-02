@@ -16,10 +16,6 @@ sys.path.append(os.path.abspath('../newcombine'))
 import datacardtools as dct
 import uncertaintytools as ut
 import combinetools as ct
-sys.path.append('../../jobSubmission')
-import condorTools as condortools
-sys.path.append(os.path.abspath('../../skimmer'))
-from jobSubmission import initializeJobScript, submitQsubJob
 
 def readPostFitShapesFromWorkspace( histfile ):
     ### read an output file from the PostFitShapesFromWorkspace command
@@ -69,8 +65,8 @@ def runPostFitShapesFromWorkspace( workspace,datacard,mode,fitresultfile=None ):
     pfcmd += ' --print'
     pfcmd += ' --total-shapes'
 
-    os.system(pfcmd)
     print('running following command: {}'.format(pfcmd))
+    os.system(pfcmd)
 
     histdict = readPostFitShapesFromWorkspace( tempfile )
     # - the histdict contains an entry 'postfit' (if --total-shapes was added)
@@ -174,18 +170,20 @@ def makeworkspace(channels,signals,variables,outputdir,workspacename,
 
     # for each variable, create a combined workspace
     combinationdict = {}
+    combinationnames = [] # holding the keys to combinationdict in an ordered way
     for var in variables:
 	statonlysuffixes = ['']
         if dostatonly: statonlysuffixes = ['',statonlysuffix]
         for statsuffix in statonlysuffixes:
 	    combinationname = 'dc_combined_'+workspacename+'_var_'+var+statsuffix+'.txt'
 	    combinationdict[combinationname] = {}
+	    combinationnames.append(combinationname)
 	    for c in channels:
 		name = c['name']
 		combinationdict[combinationname]['datacard_'+name+'_var_'+var+statsuffix+'.txt'] = name
     ct.makecombinedcards( thisoutputdir, combinationdict )
     res = []
-    for wsname in combinationdict.keys():
+    for wsname in combinationnames:
 	onelinecmd = ''
 	for c in ct.get_workspace_commands( thisoutputdir, wsname ):
 	    onelinecmd += c+'; '
@@ -195,7 +193,9 @@ def makeworkspace(channels,signals,variables,outputdir,workspacename,
     return res
 
 def histplotter_postfit( simtoterrorhist, simstaterrorhist, simhistlist, datahist, figname, 
-			 xaxtitle=None, yaxtitle=None, lumi=None, extrainfos=[] ):
+			 xaxtitle=None, xaxinteger=False, yaxtitle=None, lumi=None, extrainfos=[],
+			 extracmstext='',
+			 yaxrange=(None,None) ):
     ### wrapper for plotdatavsmc
    
     # color and label maps
@@ -232,32 +232,52 @@ def histplotter_postfit( simtoterrorhist, simstaterrorhist, simhistlist, datahis
     # set plot properties
     binwidth = datahist.GetBinWidth(1)
     if yaxtitle is None: yaxtitle = 'Number of events'
-    if xaxtitle is None: xaxtitle = 'bin number'
+    if xaxtitle is None: xaxtitle = 'Bin number'
+
+    if None in yaxrange: yaxrange = None
 
     hp.plotdatavsmc(figname+'_lin',datahist,simhistlist,mcsysthist=simtoterrorhist,
 		    mcstathist=simstaterrorhist,
 		    signals=signals,
 		    dostat=dostat,
                     colormap=colormap,labelmap=labelmap,
-                    xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,yaxlog=False,
-		    extrainfos=extrainfos)
+                    xaxtitle=xaxtitle,xaxinteger=xaxinteger,
+		    yaxtitle=yaxtitle,lumi=lumi,yaxlog=False,
+		    yaxrange=yaxrange,
+		    extrainfos=extrainfos,
+		    extracmstext=extracmstext)
     hp.plotdatavsmc(figname+'_log',datahist,simhistlist,mcsysthist=simtoterrorhist,
 		    mcstathist=simstaterrorhist,
 		    signals=signals,
 		    dostat=dostat,
                     colormap=colormap,labelmap=labelmap,
-                    xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,yaxlog=True,
-		    extrainfos=extrainfos)
+                    xaxtitle=xaxtitle,xaxinteger=xaxinteger,
+		    yaxtitle=yaxtitle,lumi=lumi,yaxlog=True,
+		    extrainfos=extrainfos,
+		    extracmstext=extracmstext)
 
-def get_variable_list( istest=False ):
+def get_variable_list( onlyselected=False, istest=False ):
     ### get a dict of variables
     
     if istest: 
 	variables = ([
-	    {'name':'_M3l','title':r'm_{3l}','unit':'GeV'}
+	    {'name':'_eventBDT','title':r'Event BDT discriminant','unit':''}
 	])
 	return variables
 
+    if onlyselected:
+	variables = ([
+	    #{'name':'_MT','title':'Transverse W boson mass','unit':'GeV'},
+	    #{'name':'_nJets','title':r'Number of jets','unit':''},
+	    #{'name':'_nBJets','title':r'Number of b-tagged jets','unit':''},
+	    #{'name':'_fineBinnedM3l','title':r'm_{3l}','unit':'GeV'},
+	    #{'name':'_eventBDT','title':r'Event BDT discriminant','unit':''},
+	    #{'name':'_nMuons','title':r'Number of muons in event','unit':''},
+	    #{'name':'_Z_pt','title':'Z boson p_{T}','unit':'GeV'},
+	    {'name':'_lW_pt','title':'Lepton from W boson p_{T}','unit':'GeV'},
+	])
+	return variables
+	
     variables = ([
         {'name':'_abs_eta_recoil','title':r'\left|\eta\right|_{recoil}','unit':''},
         {'name':'_Mjj_max','title':r'm_{jet+jet}^{max}','unit':'GeV'},
@@ -266,6 +286,7 @@ def get_variable_list( istest=False ):
         {'name':'_deepFlavor_max','title':r'Highest b tagging discriminant','unit':''},
         {'name':'_lT','title':'L_{T}','unit':'GeV'},
 	{'name':'_MT','title':'Transverse W boson mass','unit':'GeV'},
+	{'name':'_smallRangeMT','title':'Transverse W boson mass','unit':'GeV'},
 	{'name':'_coarseBinnedMT','title':'Transverse W boson mass','unit':'GeV'},
         {'name':'_pTjj_max','title':r'p_{T}^{max}(jet+jet)','unit':'GeV'},
         {'name':'_dRlb_min','title':r'\Delta R(l,bjet)_{min}','unit':''},
@@ -278,7 +299,7 @@ def get_variable_list( istest=False ):
         {'name':'_M3l','title':r'm_{3l}','unit':'GeV'},
         {'name':'_fineBinnedM3l','title':r'm_{3l}','unit':'GeV'},
         {'name':'_abs_eta_max','title':r'\left|\eta\right|_{max}','unit':''},
-        {'name':'_eventBDT','title':r'Event BDT output score','unit':''},
+        {'name':'_eventBDT','title':r'Event BDT discriminant','unit':''},
         {'name':'_nMuons','title':r'Number of muons in event','unit':''},
         {'name':'_nElectrons','title':r'Number of electrons in event','unit':''},
         {'name':'_yield','title':r'Total yield','unit':''},
@@ -296,9 +317,9 @@ def get_variable_list( istest=False ):
         {'name':'_jetPtSubLeading','title':r'Subleading jet p_{T}','unit':'GeV'},
         {'name':'_bestZMass','title':r'Mass of OSSF pair','unit':'GeV'},
 	{'name':'_Z_pt','title':'Z boson p_{T}','unit':'GeV'},
-	{'name':'_coarseBinnedZ_pt','title':'Z boson p_{T}','unit':'GeV'},
-	{'name':'_lW_pt','title':'Lepton from W boson p_{T}','unit':'GeV'},
-	{'name':'_coarseBinnedlW_pt','title':'Lepton from W boson p_{T}','unit':'GeV'}
+        {'name':'_coarseBinnedZ_pt','title':'Z boson p_{T}','unit':'GeV'},
+        {'name':'_lW_pt','title':'Lepton from W boson p_{T}','unit':'GeV'},
+        {'name':'_coarseBinnedlW_pt','title':'Lepton from W boson p_{T}','unit':'GeV'}
     ])
     return variables
 
@@ -320,6 +341,16 @@ def cleanplotdir( plotdir ):
     os.system('rm {}/*.root'.format(plotdir))
     os.system('rm {}/*.txt'.format(plotdir))
 
+def cleanplotdir_hepdata( plotdir ):
+    ### remove the figures, txt files and unnecessary histogram files,
+    # keep the workspaces and postFitShapesFromWorkspace files
+    # also keep pdf files as the figures need to be added as well
+    os.system('rm {}/*.png'.format(plotdir))
+    os.system('rm {}/*.eps'.format(plotdir))
+    #os.system('rm {}/*.pdf'.format(plotdir))
+    os.system('rm {}/*.txt'.format(plotdir))
+    os.system('rm {}/histograms*.root'.format(plotdir))
+
 
 if __name__=='__main__':
 
@@ -327,11 +358,16 @@ if __name__=='__main__':
 
     ### parse input arguments
     # nonpositional arguments
-    doclean = True
-    dotestvars = False
-    runlocal = False
-    runqsub = False
-    unblind = False
+    doclean = True # remove .root and .txt files after plotting
+    hepdata = False # make input for hepdata entry (different cleaning at the end)
+    dotestvars = False # run on test variables only
+    doselectedvars = False # run on selected variables only
+    unblind = False # plot data points
+    label = '' # additional text on the plot
+    extracmstext = '' # additional text next to cms logo
+    ymin = None # min y value
+    ymax = None # max y value
+    # note: both ymin and ymax must be specified, else it will be ignored 
     args = sys.argv[1:]
     argscopy = args[:]
     nonposargs = []
@@ -341,32 +377,50 @@ if __name__=='__main__':
 	    print('found option noclean')
 	    args.remove(arg)
 	    nonposargs.append(arg)
+	if arg=='hepdata':
+	    hepdata = True
+	    print('found option hepdata')
+	    args.remove(arg)
+	    nonposargs.append(arg)
 	if arg=='dotestvars':
 	    dotestvars = True
 	    print('found option dotestvars')
 	    args.remove(arg)
 	    nonposargs.append(arg)
-	if arg=='runlocal':
-	    runlocal = True
-	    print('found option runlocal')
+	if arg=='doselectedvars':
+	    doselectedvars = True
+	    print('found option doselectedvars')
 	    args.remove(arg)
 	    nonposargs.append(arg)
-	if arg=='runqsub':
-	    runqsub = True
-            print('found option runqsub')
-            args.remove(arg)
-            nonposargs.append(arg)
 	if arg=='unblind':
 	    unblind = True
 	    print('found option unblind')
 	    args.remove(arg)
 	    nonposargs.append(arg)
+	if arg.split('=',1)[0]=='label':
+	    label = arg.split('=',1)[1]
+	    print('found label {}'.format(label))
+	    args.remove(arg)
+	    nonposargs.append('label=\''+label+'\'')
+	if arg.split('=',1)[0]=='extracmstext':
+	    extracmstext = arg.split('=',1)[1]
+	    print('found extracmstext {}'.format(extracmstext))
+	    args.remove(arg)
+	    nonposargs.append('extracmstext=\''+extracmstext+'\'')
+	if arg.split('=',1)[0]=='ymin':
+	    ymin = float(arg.split('=',1)[1])
+            args.remove(arg)
+            nonposargs.append(arg)
+	if arg.split('=',1)[0]=='ymax':
+            ymax = float(arg.split('=',1)[1])
+            args.remove(arg)
+            nonposargs.append(arg)
     # positional arguments
     if len(args)==4:	
 	workspace = args[0]
 	fitresultfile = os.path.abspath(args[1]) # note: ignored if making prefit plots
 	mode = args[2] # must be either 'prefit' or 'postfit'
-	outputdir = args[3] # note: ignored if running on a workspace directly
+	outputdir = args[3]
     else:
 	raise Exception('ERROR: wrong number of command line arguments.'
 			+' Found {}'.format(args))
@@ -380,7 +434,6 @@ if __name__=='__main__':
     ### if first argument is a workspace, directly run on that workspace
     if workspace[-5:]=='.root':
 	workspace = os.path.abspath(workspace)
-	thisoutputdir = os.path.dirname(workspace)
 
 	datacard = workspace.replace('.root','.txt')
 	if not os.path.exists(workspace):
@@ -419,8 +472,8 @@ if __name__=='__main__':
 		else:
 		    simhistdict[pkey].Add( thisdict[pkey].Clone() )
 	# clip all histograms and ignore artificial small values
-	ht.cliphistogram(simhisterror,clipboundary=1e-5)
-	for hist in simhistdict.values(): ht.cliphistogram(hist,clipboundary=1e-5)
+	ht.cliphistogram(simhisterror,clipboundary=1e-4)
+	for hist in simhistdict.values(): ht.cliphistogram(hist,clipboundary=1e-4)
 	# check that bin content of simhisterror = sum of processes
 	simhistsum = simhistdict[simhistdict.keys()[0]].Clone()
 	simhistsum.Reset()
@@ -428,8 +481,14 @@ if __name__=='__main__':
 	ht.printhistogram(simhistsum)
 	ht.printhistogram(simhisterror)
 	for i in range(0,simhistsum.GetNbinsX()+2):
-	    if( abs(simhistsum.GetBinContent(i)-simhisterror.GetBinContent(i)) > 1e-2 ):
-		raise Exception('ERROR: total simulation and sum-of-processes does not agree')
+	    if( abs(simhistsum.GetBinContent(i)-simhisterror.GetBinContent(i))
+		    > 5e-2*simhisterror.GetBinContent(i) ):
+		pass
+		#raise Exception('ERROR: total simulation and sum-of-processes does not agree'
+		#		+' for workspace {}.'.format(workspace)
+		#		+' found following histograms: {}\n{}'.format(
+		#		ht.printhistogram(simhistsum,returnstr=True),
+		#		ht.printhistogram(simhisterror,returnstr=True)))
 
 	# check if stat-only workspace exists and run on it
 	statworkspace = workspace.replace('.root','_statonly.root')
@@ -437,44 +496,28 @@ if __name__=='__main__':
 	simhiststaterror = None
 	if os.path.exists(statworkspace):
 	    print('trying to read stat-only uncertainties...')
-	    stathistdict = runPostFitShapesFromWorkspace( statworkspace,statdatacard,mode,
+	    # note: it appears best to always take prefit statistical uncertainty,
+	    #       as the final uncertainty on the signal seems to be incorporated in the 
+	    #       uncertainty on the signal histogram, even in case of only statistics
+	    stathistdict = runPostFitShapesFromWorkspace( statworkspace,statdatacard,'prefit',
 							    fitresultfile=fitresultfile )
 	    # get total simulated uncertainty (bin content = sum, bin error = stat+syst error)
-	    simhiststaterror = stathistdict[mode]['TotalProcs'].Clone()
+	    simhiststaterror = stathistdict['prefit']['TotalProcs'].Clone()
+	    ht.cliphistogram(simhiststaterror,clipboundary=1e-4)
 	    ht.printhistogram(simhiststaterror)
 	else:
 	    print('WARNING: stat-only workspace not found, considering only total uncertainty!')
 
 	# set lumi
 	lumi = 0.
-	if '2016' in workspace: lumi = 35900
+	if '2016' in workspace: lumi = 36300
 	elif '2017' in workspace: lumi = 41500
 	elif '2018' in workspace: lumi = 59700
-	else: lumi = 137100
+	else: lumi = 137600
 
-	# set extra info to display
-	extrainfos = []
-	if('signalregion' in workspace): extrainfos.append('tZq enriched')
-	if('wzcontrolregion' in workspace): extrainfos.append('WZ enriched')
-	if('zzcontrolregion' in workspace): extrainfos.append('ZZ enriched')
-	if('zgcontrolregion' in workspace): extrainfos.append(r'Z#gamma enriched')
-	if('ttzcontrolregion' in workspace): extrainfos.append(r't#bar{t}Z enriched')
-	if('signalsideband' in workspace): extrainfos.append('nonprompt enriched')
-	if('signalregion' in workspace and '_cat1_' in workspace): 
-	    extrainfos.append('1 b-jet, 2-3 jets')
-	if('signalregion' in workspace and '_cat2_' in workspace): 
-	    extrainfos.append(r'1 b-jet, #geq 4 jets')
-	if('signalregion' in workspace and '_cat3_' in workspace): 
-	    extrainfos.append(r'#geq 2 b-jets')
-	if('signalregion' in workspace and '_ch0_' in workspace): 
-	    extrainfos.append('channel eee')
-	if('signalregion' in workspace and '_ch1_' in workspace): 
-	    extrainfos.append('channel eem')
-	if('signalregion' in workspace and '_ch2_' in workspace): 
-	    extrainfos.append('channel emm')
-	if('signalregion' in workspace and '_ch3_' in workspace): 
-	    extrainfos.append('channel mmm')
-	
+	# parse label
+	extrainfos = label.split('\n')
+
 	# set x-axis title
 	var = ''
 	varsplit = workspace.split('_var_')
@@ -486,22 +529,55 @@ if __name__=='__main__':
 	    else:
 		varentry = varentry[0]
 		xaxtitle = varentry['title']
-		if varentry['unit']!='':
+		unit = varentry['unit']
+		if unit!='':
 		    xaxtitle += r' ['+varentry['unit']+r']'
+
+	# determine if need to use special xaxinteger setting
+	xaxinteger = True
+	# check if bin width is integer (will potentially not work well for variable bin width)
+	if( not simhistsum.GetBinWidth(1).is_integer() ): xaxinteger = False
+	print(simhistsum.GetBinWidth(1))
+	print(simhistsum.GetBinWidth(1).is_integer())
+	# check if low edge and up egde are half-integers
+	xaxlow = simhistsum.GetBinLowEdge(1)
+	xaxhigh = (simhistsum.GetBinLowEdge(simhistsum.GetNbinsX())
+		    +simhistsum.GetBinWidth(simhistsum.GetNbinsX()))
+	if( abs((abs(xaxlow)%1)-0.5)>1e-12 or abs((abs(xaxhigh)%1)-0.5)>1e-12 ):
+	    xaxinteger = False
+	# check if number of bins is equal to x-axis range
+	if( abs(simhistsum.GetNbinsX()-(xaxhigh-xaxlow))>1e-12 ): xaxinteger = False
+
+	# set y-axis title
+	yaxtitle = 'Number of events'
+	if( xaxtitle is not None ):
+	    binwidth = simhistsum.GetBinWidth(1) # will not work for variable bin width
+	    # write the number
+	    if binwidth.is_integer(): yaxtitle += ' / {}'.format(int(binwidth))
+	    else: yaxtitle += ' / {0:.2f}'.format(binwidth)
+	    # write the unit
+	    if unit!='': yaxtitle += ' '+unit
+	    else:
+		if( binwidth.is_integer() and binwidth==1 ): yaxtitle += ' unit'
+		else: yaxtitle += ' units'
 
 	# determine if blinding is needed
 	if( 'eventBDT' in var and 'signalregion' in datacard and not unblind ): datahist.Reset()
 
-	figname = workspace.replace('.root','')
+	# call plotting function
+	figname = os.path.basename(workspace).replace('.root','')
         figname = figname.replace('dc_combined_','')
         figname = figname.replace('datacard_','')
+	figname = os.path.join(outputdir,figname)
 	histplotter_postfit( simhisterror, simhiststaterror, simhistdict.values(), datahist, 
-			    figname, xaxtitle=xaxtitle, lumi=lumi, extrainfos=extrainfos )
+			    figname, xaxtitle=xaxtitle, yaxtitle=yaxtitle,
+			    lumi=lumi, extrainfos=extrainfos, extracmstext=extracmstext,
+			    xaxinteger=xaxinteger, yaxrange=(ymin,ymax) )
 
     ### if first argument is a dict matching a name to a list of channels, run on this combo
-    # mostly for internal use, do not try to call this manually
+    # see histplotter_postfit_looptzq.py for an example
     elif( isdict(workspace) ):
-	variables = get_variable_list( istest=dotestvars )
+	variables = get_variable_list( onlyselected=doselectedvars, istest=dotestvars )
 	print('running on the following variables:')
 	for v in variables: print('  - {}'.format(v['name']))
 	channelcombo = json.loads( workspace )
@@ -512,111 +588,14 @@ if __name__=='__main__':
 				    outputdir,comboname,dostatonly=True)
         for wspacepath in wspacepaths:
             command = 'python histplotter_postfit.py {} {} {} {}'.format(
-                        wspacepath,fitresultfile,mode,outputdir)
+                        wspacepath,fitresultfile,mode,os.path.dirname(wspacepath))
 	    for arg in nonposargs: command += ' '+arg
 	    os.system( command )
-	if doclean: cleanplotdir(os.path.dirname(wspacepaths[0]))
+	# clean directory from unnecessary files
+	if hepdata: cleanplotdir_hepdata(os.path.dirname(wspacepaths[0]))
+	elif doclean: cleanplotdir(os.path.dirname(wspacepaths[0]))
 
-    ### if first argument is a folder, run on predefined regions and years within it
     else:
-	workspace = os.path.abspath(workspace)
-
-	# define what histograms to read (regions, years, npdatatype)
-	npfromdata = True
-	regions = []
-	regions.append('all')
-	#regions.append('signalregion_cat1')
-	#regions.append('signalregion_cat2')
-	#regions.append('signalregion_cat3')
-	#regions.append('signalregion_cat123')
-	#regions.append('wzcontrolregion')
-	#regions.append('zzcontrolregion')
-	#regions.append('zgcontrolregion')
-	#regions.append('ttzcontrolregion')
-	#regions.append('signalsideband_noossf_cat1')
-	#regions.append('signalsideband_noossf_cat123')
-	#regions.append('signalsideband_noz_cat1')
-	#regions.append('signalsideband_noz_cat123')
-	#regions.append('signalsideband_cat1')
-        #regions.append('signalsideband_cat123')
-	#regions.append('signalregion_cat1_top')
-        #regions.append('signalregion_cat2_top')
-        #regions.append('signalregion_cat3_top')
-        #regions.append('signalregion_cat123_top')
-	#regions.append('signalregion_cat1_antitop')
-        #regions.append('signalregion_cat2_antitop')
-        #regions.append('signalregion_cat3_antitop')
-        #regions.append('signalregion_cat123_antitop')
-	years = ['2016','2017','2018']
-
-	# define what processes to consider as signal
-	signals = ['tZq']
-
-	# automatically determine what regions to consider if requested
-	regionsdict = {}
-	if( len(regions)==1 and regions[0]=='all' ):
-	    regionsdict[years[0]] = os.listdir(os.path.join(workspace,years[0]+'combined'))
-	    regionsdict['yearscombined'] = regionsdict[years[0]][:]
-	    for year in years[1:]:
-		regionsdict[year] = os.listdir(os.path.join(workspace,year+'combined'))
-		for r in regionsdict['yearscombined']:
-		    if r not in regionsdict[year]: regionsdict['yearscombined'].remove(r)
-	else:
-	    for year in years: regionsdict[year] = regions[:]
-	    regionsdict['yearscombined'] = regions[:]
-    
-	# make a list of channel info dicts for easy looping
-	channels = []
-	suffix = 'npfromdata' if npfromdata else 'npfromsim'
-	for year in years:
-	    for region in regionsdict[year]:
-		channels.append( {'name':region+'_'+year,
-		    'region':region,
-		    'year':year,
-		    'npfromdata':npfromdata,
-		    'path':os.path.join(workspace,year+'combined',region,suffix,'combined.root')})
-
-	commands = []
-	# make plots of individual channels
-	for c in channels:
-	    print('running on channel '+c['name'])
-	    channelcombo = ({'name':c['name'],'channels':[c],'signals':signals})
-	    channelcombostr = json.dumps(channelcombo).replace(' ','')
-	    cmd = "python histplotter_postfit.py '{}' {} {} {}".format(
-			    channelcombostr,fitresultfile,mode,outputdir)
-	    for arg in nonposargs: cmd += ' '+arg
-	    if runlocal: os.system(cmd)
-	    commands.append(cmd)
-
-	# make plots for full run II
-	if sorted(years)==['2016','2017','2018']:
-	    for region in regionsdict['yearscombined']:
-		print('running full run II for region '+region)
-		thischannels = [c for c in channels if c['region']==region]
-		print(thischannels)
-		thisname = region+'_yearscombined'
-		channelcombo = ({'name':thisname,'channels':thischannels,'signals':signals})
-		channelcombostr = json.dumps(channelcombo).replace(' ','')
-		cmd = "python histplotter_postfit.py '{}' {} {} {}".format(
-                            channelcombostr,fitresultfile,mode,outputdir)
-		for arg in nonposargs: cmd += ' '+arg
-		if runlocal: os.system(cmd)
-		commands.append(cmd)
-	
-	# submit jobs
-	# case 1: qsub
-	if runqsub:
-	    for command in commands:
-		script_name = 'qsub_histplotter_postfit.sh'
-		with open( script_name, 'w') as script:
-		    initializeJobScript( script )
-		    script.write( command+'\n' )
-		submitQsubJob( script_name )
-	# case 2: condor
-	if not (runqsub or runlocal):
-	    # need to escape double quotes by repeating them (not for running locally!)
-	    commands = [cmd.replace('"','""') for cmd in commands]
-	    condortools.submitCommandsAsCondorCluster( 'cjob_histplotter_postfit', commands )
-	    #pass
+	raise Exception('ERROR in histplotter_postfit.py: first argument is not recognized')
 
     sys.stderr.write('###done###\n')

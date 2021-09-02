@@ -37,22 +37,22 @@ if __name__=="__main__":
 
     # get top channel info
     (signals,topchannels) = get_topchannel_parameters()
-    to_bkg = [] # needed for syntax (see below)
-    ratio = [] # needed for syntax (see below)
+    #to_bkg = [] # needed for syntax (see below)
+    #ratio = [] # needed for syntax (see below)
     # for ratio measurement: 
     # - redefine only tZq_top or tZq_antitop as signal (but not both)
     # - introduce a rateParam to link both yields (automatically via 'ratio' argument)
-    #to_bkg = ['tZq','tZq_antitop']
-    #ratio = ['tZq_*']
+    to_bkg = ['tZq','tZq_antitop']
+    ratio = ['tZq_*']
 
     # define what histograms to read (regions, variables, years, npdatatype)
     npfromdata = True
     cnames = []
     for (tc,tcn) in topchannels.items():
-    #	cnames.append({'region':'signalregion_cat1'+tc,'var':'_eventBDT','tcn':tcn})
-    #	cnames.append({'region':'signalregion_cat2'+tc,'var':'_eventBDT','tcn':tcn})
-    #	cnames.append({'region':'signalregion_cat3'+tc,'var':'_eventBDT','tcn':tcn})
-	cnames.append({'region':'signalregion_cat123'+tc,'var':'_eventBDT','tcn':tcn})
+    	cnames.append({'region':'signalregion_cat1'+tc,'var':'_eventBDT','tcn':tcn})
+    	cnames.append({'region':'signalregion_cat2'+tc,'var':'_eventBDT','tcn':tcn})
+    	cnames.append({'region':'signalregion_cat3'+tc,'var':'_eventBDT','tcn':tcn})
+    #	cnames.append({'region':'signalregion_cat123'+tc,'var':'_eventBDT','tcn':tcn})
     #cnames.append({'region':'wzcontrolregion','var':'_MT','tcn':''})
     #cnames.append({'region':'zzcontrolregion','var':'_MT','tcn':''})
     #cnames.append({'region':'zgcontrolregion','var':'_nJets','tcn':''})

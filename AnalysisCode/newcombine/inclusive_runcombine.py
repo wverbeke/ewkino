@@ -110,6 +110,11 @@ if __name__=="__main__":
 
     # remove all previous output
     cbt.cleandatacarddir(datacarddir)
+
+    # choose method
+    method = 'fitdiagnostics'
+    if runfast: method = 'multidimfit'
+    #method = 'initimpacts' # temp for testing
  
     # part 1: run combine command for all signal regions separately
     if runelementary:
@@ -118,9 +123,13 @@ if __name__=="__main__":
 	if only2016: cards_sr = lt.subselect_strings(cards_sr,mustcontainall=['2016'])[1]
 	if only2017: cards_sr = lt.subselect_strings(cards_sr,mustcontainall=['2017'])[1]
 	if only2018: cards_sr = lt.subselect_strings(cards_sr,mustcontainall=['2018'])[1]
+
+	# temporary
+	#cards_sr = lt.subselect_strings(cards_sr,mustcontainall=['cat1','2018'])[1]
+
 	for card in sorted(cards_sr):
 	    print('running combine for '+card)
-	    commands = cbt.get_default_commands( datacarddir, card, fast=runfast,
+	    commands = cbt.get_default_commands( datacarddir, card, method=method,
 						includesignificance=not runfast,
 						includestatonly=dostatonly, 
 						includedata=usedata )
@@ -145,7 +154,7 @@ if __name__=="__main__":
 	    if(only2017 and not '2017' in card): continue
 	    if(only2018 and not '2018' in card): continue
 	    print('running combine for '+card)
-	    commands = cbt.get_default_commands( datacarddir, card, fast=runfast,
+	    commands = cbt.get_default_commands( datacarddir, card, method=method,
 						includesignificance=not runfast, 
 						includestatonly=dostatonly, 
 						includedata=usedata )
@@ -160,4 +169,3 @@ if __name__=="__main__":
 		    os.system('bash {}'.format(script_name))
 		elif runqsub:
 		    submitQsubJob( script_name )
-		    #pass

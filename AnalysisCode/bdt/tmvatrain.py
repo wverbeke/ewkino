@@ -5,7 +5,6 @@ import ROOT
 import sys
 import os
 import json
-#import tmvautils as u
 
 def pathtosidebandfile(filename,sidebanddir):
     ### return path to file in sideband directory corresponding to filename, '' if none

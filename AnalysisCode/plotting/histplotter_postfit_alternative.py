@@ -62,7 +62,8 @@ if __name__=='__main__':
 			histfilepath))
     (datacarddir,histfilename) = histfilepath.rsplit('/',1)
     channels = readchannels(histfilepath)
-    outputdir = histfilepath.replace('.root','_plots')
+    #outputdir = histfilepath.replace('.root','_plots')
+    outputdir = 'test'
     if os.path.exists(outputdir):
 	os.system('rm -r '+outputdir)
     os.makedirs(outputdir)

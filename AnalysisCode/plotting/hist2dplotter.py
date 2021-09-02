@@ -10,37 +10,6 @@ import os
 import plottools as tools
 from array import array
 
-'''def loadhistograms(histfile,mustcontain=[],mustnotcontain=[]):
-    # load histograms from a root file.
-    # 'histfile' is a string containing the path to the input root file.
-    # the output is a list of histograms
-    print('loading histograms...')
-    f = ROOT.TFile.Open(histfile)
-    histlist = []
-    keylist = f.GetListOfKeys()
-    for key in keylist:
-        hist = f.Get(key.GetName())
-        # check if histogram is readable
-        try:
-            bincontent = hist.GetBin(1,1)
-        except:
-            print('### WARNING ###: key "'+str(key.GetName())+'" does not correspond to valid hist.')
-	    continue
-        # check if histogram needs to be included
-        keep = True
-        for el in mustcontain:
-            if el not in hist.GetTitle(): keep = False; break;
-        for el in mustnotcontain:
-            if el in hist.GetTitle(): keep = False; break;
-        if not keep: continue;
-        # add hist to list
-	hist.SetDirectory(0)
-        histlist.append(hist)
-	# make sure the name corresponds to the one displayed in rootbrowser
-	hist.SetName(key.GetName())
-    return histlist '''
-# deprecated; should replace this everywhere by equivalent method in tools/histtools.py!
-
 def swapaxes( hist ):
     # switch x and y axes
     nbinsx = hist.GetNbinsX()
@@ -111,6 +80,7 @@ def getsmallouterflowhist( hist ):
     for i in range(2,nxbins+2):
 	for j in range(2,nybins+2):
 	    exthist.SetBinContent(i,j,hist.GetBinContent(i-1,j-1))
+	    exthist.SetBinError(i,j,hist.GetBinError(i-1,j-1))
     return exthist
 
 
@@ -195,7 +165,6 @@ def plot2dhistogram(hist, outfilepath, histtitle='', logx=False, logy=False,
 
 if __name__=='__main__':
    
-
     # default arguments 
     histfile = '/user/llambrec/ewkino/weights/weightFiles/bTagEff/'
     histfile += 'bTagEff_deepFlavor_looseLeptonCleaned_2016.root'

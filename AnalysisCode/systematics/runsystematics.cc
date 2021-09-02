@@ -95,6 +95,7 @@ double getVarValue(const std::string varname, std::map<std::string,double> varma
     // remove "fineBinned" from the varname to allow for e.g. fineBinnedeventBDT to be used
     std::string modvarname = stringTools::removeOccurencesOf(varname,"fineBinned");
     modvarname = stringTools::removeOccurencesOf(modvarname,"coarseBinned");
+    modvarname = stringTools::removeOccurencesOf(modvarname,"smallRange");
     // find this variable in the list of available variables
     std::map<std::string,double>::iterator it = varmap.find(modvarname);
     if(it == varmap.end()) return -9999; 
@@ -390,6 +391,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 				const std::shared_ptr<TH2D>& frmap_muon,
 				const std::shared_ptr<TH2D>& frmap_electron,
 				const std::vector<std::tuple<std::string,double,double,int>> vars,
+				bool readBDT,
 				TMVA::Reader* reader,
 				const double bdtCut,
 				std::vector<std::string> systematics){
@@ -434,11 +436,9 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
     }
 
     // make flat vector of variable names (often more convenient then argument structure)
-    bool doBDT = false;
     std::vector<std::string> variables;
     for(unsigned int i=0; i<vars.size(); ++i){
 	std::string variable = std::get<0>(vars[i]);
-	if(variable=="_eventBDT") doBDT=true;
 	variables.push_back(variable);
     }
 
@@ -636,7 +636,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 	std::string thisPName = (splitSamples)?splitProcessName( processName, event ):processName;
 	if(passnominal){
 	    varmap = eventFlattening::eventToEntry(event, norm, reweighter, selection_type, 
-					frmap_muon, frmap_electron, "nominal", doBDT, reader);
+					frmap_muon, frmap_electron, "nominal", readBDT, reader);
 	    // allow for additional selection on final BDT score
 	    // note: in principle this should be re-evaluated for every jec systematic,
 	    // but for now just do a cut-and-continue on nominal.
@@ -699,7 +699,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		}
 		if(passup){
 		    accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
-				    selection_type, frmap_muon, frmap_electron, upvar, doBDT, 
+				    selection_type, frmap_muon, frmap_electron, upvar, readBDT, 
 				    reader);
 		    double weight = accvarmap["_normweight"];
 		    // for JEC: propagate into b-tag shape reweighting
@@ -724,7 +724,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		}
 		if(passdown){
 		    accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
-				    selection_type, frmap_muon, frmap_electron, downvar, doBDT, 
+				    selection_type, frmap_muon, frmap_electron, downvar, readBDT, 
 				    reader);
 		    double weight = accvarmap["_normweight"];
 		    // for JEC: propagate into b-tag shape reweighting
@@ -761,7 +761,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    if(passup){
 			accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
 				    selection_type, frmap_muon, frmap_electron, thisupvar, 
-				    doBDT, reader);
+				    readBDT, reader);
 			double weight = accvarmap["_normweight"];
 			// for JEC: propagate into b-tag shape reweighting
 			if( considerbtagshape && jecvar!="RelativeSample" ){
@@ -793,7 +793,7 @@ void fillSystematicsHistograms(const std::string& pathToFile, const double norm,
 		    if(passdown){
 			accvarmap = eventFlattening::eventToEntry(event, norm, reweighter, 
 				selection_type, frmap_muon, frmap_electron, thisdownvar, 
-				doBDT, reader);
+				readBDT, reader);
 			double weight = accvarmap["_normweight"];
                         // for JEC: propagate into b-tag shape reweighting
                         if( considerbtagshape && jecvar!="RelativeSample" ){
@@ -1262,12 +1262,12 @@ int main( int argc, char* argv[] ){
 
     std::cerr << "###starting###" << std::endl;
 
-    if( argc < 16 ){
+    if( argc < 17 ){
         std::cerr << "### ERROR ###: runsystematics.cc requires at least 14 arguments to run...: ";
         std::cerr << "input_file_path, norm, output_file_path, nentries, process_name, ";
 	std::cerr << "event_selection, selection_type, signal_categories, "; 
 	std::cerr << "split_samples, signal_channels, topcharge, ";
-	std::cerr << "bdtCombineMode, pathToXMLFile, bdtCut, ";
+	std::cerr << "readBDT, bdtCombineMode, pathToXMLFile, bdtCut, ";
 	std::cerr << "at least one systematic" << std::endl;
         return -1;
     }
@@ -1296,25 +1296,49 @@ int main( int argc, char* argv[] ){
 	std::cerr << "top charge '" << topcharge << "' not recognized" << std::endl;
 	return -1;
     }
-    std::string& bdtCombineMode = argvStr[12]; // ignored if _eventBDT is not in list of variables
-    std::string& pathToXMLFile = argvStr[13]; // ignored if _eventBDT is not in list of variables
-    double bdtCut = std::stof(argvStr[14]); // put very small, e.g. -99, if not needed
+    bool readBDT = (argvStr[12]=="true" || argvStr[12]=="True"); // whether to create the BDT reader
+    std::string& bdtCombineMode = argvStr[13]; // ignored if _eventBDT is not in list of variables
+    std::string& pathToXMLFile = argvStr[14]; // ignored if _eventBDT is not in list of variables
+    double bdtCut = std::stof(argvStr[15]); // put very small, e.g. -99, if not needed
     std::vector<std::string> systematics;
-    for(int i=15; i<argc; i++){
+    for(int i=16; i<argc; i++){
 	systematics.push_back(argvStr[i]);
+    }
+
+    // printouts useful for debugging:
+    std::cout << "running ./runsystematics with following settings:" << std::endl;
+    std::cout << "input_file_path: " << input_file_path << std::endl;
+    std::cout << "norm: " << norm << std::endl;;
+    std::cout << "output_file_path: " << output_file_path << std::endl;
+    std::cout << "nentries: " << nentries << std::endl;
+    std::cout << "process_name: " << process_name << std::endl;
+    std::cout << "event_selection: " << event_selection << std::endl;
+    std::cout << "selection_type: " << selection_type << std::endl;
+    std::cout << "signal_catstring: " << signal_catstring << std::endl;
+    std::cout << "split_samples: " << split_samples << std::endl;
+    std::cout << "signal_chstring: " << signal_chstring << std::endl;
+    std::cout << "topcharge:" << topcharge << std::endl;
+    std::cout << "read_bdt" << readBDT << std::endl;
+    std::cout << "bdt_combine_mode:" << bdtCombineMode << std::endl;
+    std::cout << "path_to_xml_file: " << pathToXMLFile << std::endl;
+    std::cout << "bdtcut: "<< bdtCut << std::endl;
+    std::cout << "systematics: " << std::endl;
+    for(std::string systematic: systematics){
+	std::cout << "  - " << systematic << std::endl;
     }
 
     // make structure for variables
     std::vector<std::tuple<std::string,double,double,int>> vars;
-    vars.push_back(std::make_tuple("_abs_eta_recoil",0.,5.,20));
+    /*vars.push_back(std::make_tuple("_abs_eta_recoil",0.,5.,20));
     vars.push_back(std::make_tuple("_Mjj_max",0.,1200.,20));
     vars.push_back(std::make_tuple("_lW_asymmetry",-2.5,2.5,20));
     vars.push_back(std::make_tuple("_deepCSV_max",0.,1.,20));
     vars.push_back(std::make_tuple("_deepFlavor_max",0.,1.,20));
     vars.push_back(std::make_tuple("_lT",0.,800.,20));
     vars.push_back(std::make_tuple("_MT",0.,200.,20));
-    vars.push_back(std::make_tuple("_coarseBinnedMT",0.,200.,4.));
-    vars.push_back(std::make_tuple("_pTjj_max",0.,300.,20));
+    vars.push_back(std::make_tuple("_coarseBinnedMT",0.,200.,4.));*/
+    vars.push_back(std::make_tuple("_smallRangeMT", 0., 150., 15));
+    /*vars.push_back(std::make_tuple("_pTjj_max",0.,300.,20));
     vars.push_back(std::make_tuple("_dRlb_min",0.,3.15,20));
     vars.push_back(std::make_tuple("_dPhill_max",0.,3.15,20));
     vars.push_back(std::make_tuple("_HT",0.,800.,20));
@@ -1340,11 +1364,11 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_jetPtLeading",0.,100.,20));
     vars.push_back(std::make_tuple("_jetPtSubLeading",0.,100.,20));
     vars.push_back(std::make_tuple("_numberOfVertices",-0.5,70.5,71));
-    vars.push_back(std::make_tuple("_bestZMass",0.,150.,15));
-    vars.push_back(std::make_tuple("_lW_pt",0.,150.,15));
-    vars.push_back(std::make_tuple("_coarseBinnedlW_pt",0.,105.,4));
+    vars.push_back(std::make_tuple("_bestZMass",0.,150.,15));*/
+    vars.push_back(std::make_tuple("_lW_pt",10.,150.,14));
+    /*vars.push_back(std::make_tuple("_coarseBinnedlW_pt",0.,105.,4));
     vars.push_back(std::make_tuple("_Z_pt",0.,300.,15));
-    vars.push_back(std::make_tuple("_coarseBinnedZ_pt",0.,275.,4));
+    vars.push_back(std::make_tuple("_coarseBinnedZ_pt",0.,275.,4));*/
 
     // load fake rate maps if needed
     std::shared_ptr<TH2D> frmap_muon;
@@ -1368,12 +1392,8 @@ int main( int argc, char* argv[] ){
     }
     
     // load a TMVA Reader if needed
-    bool doBDT = false;
-    for(unsigned int i=0; i<vars.size(); ++i){
-        if(std::get<0>(vars[i])=="_eventBDT") doBDT=true;
-    }
     TMVA::Reader* reader = new TMVA::Reader();
-    if(doBDT){
+    if(readBDT){
 	std::string subDir = "bdts_"+LeptonSelector::leptonID();
 	std::string::size_type pos = pathToXMLFile.find("/bdt/");
 	if( pos != std::string::npos ){
@@ -1402,7 +1422,7 @@ int main( int argc, char* argv[] ){
 				    event_selection, selection_type, signal_categories,
 				    split_samples, signal_channels, topcharge,
 				    frmap_muon, frmap_electron, 
-				    vars, reader, bdtCut, systematics);
+				    vars, readBDT, reader, bdtCut, systematics);
 
     delete reader;
     std::cerr << "###done###" << std::endl;

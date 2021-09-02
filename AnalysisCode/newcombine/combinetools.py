@@ -159,6 +159,7 @@ def get_fitdiagnostics_commands(datacarddir,card,workspace=None,
     ss_command = 'combine -M FitDiagnostics '+workspace
     ss_command += ' -n '+name
     ss_command += ' --saveShapes --saveWithUncertainties'
+    ss_command += ' --plots' # for covariance matrix
     ss_command += ' --cminDefaultMinimizerStrategy 0'
     #ss_command += ' --robustFit=1'
     if defaultpoi: ss_command += ' --rMin 0 --rMax 5'
@@ -182,8 +183,8 @@ def get_fitdiagnostics_commands(datacarddir,card,workspace=None,
     return commands
 
 def get_multidimfit_commands(datacarddir, card, workspace=None,
-					dostatonly=False,usedata=False,
-					pois=['r']):
+					dostatonly=False, usedata=False,
+					pois=['r'], nuisance=''):
     ### get the commands to calculate the signal strength for multiple POIs
     # input arguments:
     # - datacarddir: directory of the datacards
@@ -192,6 +193,8 @@ def get_multidimfit_commands(datacarddir, card, workspace=None,
     # - dostatonly: boolean whether do statistical uncertainty only analysis
     # - usedata: boolean whether to use data (default: blind analysis)
     # - pois: list of parameters of interest (default: one poi called 'r')
+    # - nuisance: name of single nuisance parameter to keep, freeze the rest after initial fit
+    #             note: still experimental, not yet verified
     # output:
     # - list of commands that, when executed, will produce:
     #   -- txt file similar to card but with extension _out_multidimfit_exp(_stat) 
@@ -204,6 +207,8 @@ def get_multidimfit_commands(datacarddir, card, workspace=None,
     extension = '_out_multidimfit_exp'
     if usedata: extension = '_out_multidimfit_obs'
     if dostatonly: extension += '_stat'
+    dosinglenuisance = False if (nuisance=='' or dostatonly) else True
+    if dosinglenuisance: extension += '_'+nuisance
     name = basename + extension
     outtxtfile = name+'.txt'
     cwd = os.getcwd()
@@ -223,6 +228,61 @@ def get_multidimfit_commands(datacarddir, card, workspace=None,
         for poi in pois[1:]: ss_command += ',{}'.format(poi)
     # define options for stat only analysis
     stat_options = '--freezeParameters allConstrainedNuisances'
+    singlenuisance_options = '--floatParameters {}'.format(nuisance)
+    # define options for blinding data
+    toy_options = '-t -1'
+    if defaultpoi: toy_options += ' --expectSignal=1'
+    else:
+        toy_options += ' --setParameters {}=1'.format(pois[0])
+        for poi in pois[1:]: toy_options += ',{}=1'.format(poi)
+    # set correct options
+    if not usedata: ss_command += ' '+toy_options
+    if dostatonly or dosinglenuisance:
+	# special case as need to run two commands in sequence
+	init_command = ss_command.replace(' -n '+name,' -n '+name+'_initfit')
+	commands.append( init_command )
+	stat_command = ss_command.replace(workspace,
+			'higgsCombine'+name+'_initfit.MultiDimFit.mH120.root',1)
+	stat_command += ' --snapshotName "MultiDimFit"'
+	stat_command += ' '+stat_options
+	if dosinglenuisance: stat_command += ' '+singlenuisance_options
+	commands.append( stat_command+' > '+outtxtfile+' 2> '+outtxtfile )
+    else:	
+	commands.append( ss_command+' > '+outtxtfile+' 2> '+outtxtfile )
+    commands.append('cd {}'.format(cwd))
+    return commands
+
+def get_initimpacts_commands( datacarddir, card, workspace=None, 
+				dostatonly=False, usedata=False,
+				pois=['r'] ):
+    # attempt to try a third approach next to MultiDimFit and FitDiagnostics,
+    # consisting of the initial step of making impact plots
+    
+    if workspace is None: workspace = card.replace('.txt','.root')
+    basename = os.path.splitext(card)[0]
+    extension = '_out_initimpacts_exp'
+    if usedata: extension = '_out_initimpacts_obs'
+    if dostatonly: extension += '_stat'
+    name = basename + extension
+    outtxtfile = name+'.txt'
+    cwd = os.getcwd()
+    defaultpoi = (len(pois)==1 and pois[0]=='r')
+
+    commands = []
+    commands.append('cd {}'.format(datacarddir))
+    # define basic command
+    ss_command = 'combineTool.py -M Impacts --doInitialFit -d '+workspace
+    ss_command += ' -n '+name
+    ss_command += ' -m 120'
+    ss_command += ' --saveWorkspace'
+    ss_command += ' --cminDefaultMinimizerStrategy 0'
+    #ss_command += ' --robustFit=1'
+    if defaultpoi: ss_command += ' --rMin 0 --rMax 5'
+    else:
+        ss_command += ' --redefineSignalPOIs {}'.format(pois[0])
+        for poi in pois[1:]: ss_command += ',{}'.format(poi)
+    # define options for stat only analysis
+    stat_options = '--freezeParameters allConstrainedNuisances'
     # define options for blinding data
     toy_options = '-t -1'
     if defaultpoi: toy_options += ' --expectSignal=1'
@@ -232,16 +292,16 @@ def get_multidimfit_commands(datacarddir, card, workspace=None,
     # set correct options
     if not usedata: ss_command += ' '+toy_options
     if dostatonly:
-	# special case as need to run two commands in sequence
-	init_command = ss_command.replace(' -n '+name,' -n '+name+'_initfit')
-	commands.append( init_command )
-	stat_command = ss_command.replace(workspace,
-			'higgsCombine'+name+'_initfit.MultiDimFit.mH120.root',1)
-	stat_command += ' --snapshotName "MultiDimFit"'
-	stat_command += ' '+stat_options
-	commands.append( stat_command+' > '+outtxtfile+' 2> '+outtxtfile )
-    else:	
-	commands.append( ss_command+' > '+outtxtfile+' 2> '+outtxtfile )
+        # special case as need to run two commands in sequence
+        init_command = ss_command.replace(' -n '+name,' -n '+name+'_initfit')
+        commands.append( init_command )
+        stat_command = ss_command.replace(workspace,
+                        'higgsCombine_initialFit_'+name+'_initfit.MultiDimFit.mH120.root',1)
+        stat_command += ' --snapshotName "MultiDimFit"'
+        stat_command += ' '+stat_options
+        commands.append( stat_command+' > '+outtxtfile+' 2> '+outtxtfile )
+    else:
+        commands.append( ss_command+' > '+outtxtfile+' 2> '+outtxtfile )
     commands.append('cd {}'.format(cwd))
     return commands
 
@@ -290,12 +350,11 @@ def get_channelcompatibility_commands( datacarddir, card, workspace=None,
     commands.append('cd {}'.format(cwd))
     return commands
 
-def get_default_commands( datacarddir, card, fast=False, includesignificance=False, 
+def get_default_commands( datacarddir, card, method='multidimfit', includesignificance=False, 
 			    includestatonly=False, includedata=False ):
     ### get all default commands for a simple, inclusive measurement with 1 signal
     # input arguments: see above
-    # - fast: boolean whether to use FitDiagnostics method (for False)
-    #   or the faster MultiDimFit (for True)
+    # - method: 'multidimfit', 'fitdiagnostics' or 'initimpacts'
     # - includesignificance: boolean whether to include significance measurement
     #   additional to signal strength measurement
     # - includestatonly: boolean whether to calculate stat-only uncertainty 
@@ -304,7 +363,7 @@ def get_default_commands( datacarddir, card, fast=False, includesignificance=Fal
     commands = []
     for c in get_workspace_commands( datacarddir, card ): commands.append(c)
     # get commands for multidimfit
-    if fast:
+    if method=='multidimfit':
 	for c in get_multidimfit_commands( datacarddir, card, usedata=False,
 	    dostatonly=False): commands.append(c)
 	if includestatonly:
@@ -317,7 +376,7 @@ def get_default_commands( datacarddir, card, fast=False, includesignificance=Fal
 	    for c in get_multidimfit_commands( datacarddir, card, usedata=True,
                 dostatonly=True): commands.append(c)
     # get commands for fitdiagnostics
-    else:
+    elif method=='fitdiagnostics':
 	for c in get_fitdiagnostics_commands( datacarddir, card, dostatonly=False, 
 	    usedata=False ): commands.append(c)
 	if includestatonly:
@@ -328,6 +387,18 @@ def get_default_commands( datacarddir, card, fast=False, includesignificance=Fal
                 dostatonly=False): commands.append(c)
         if( includedata and includestatonly):
             for c in get_fitdiagnostics_commands( datacarddir, card, usedata=True,
+                dostatonly=True): commands.append(c)
+    elif method=='initimpacts':
+	for c in get_initimpacts_commands( datacarddir, card, dostatonly=False, 
+            usedata=False ): commands.append(c)
+        if includestatonly:
+            for c in get_initimpacts_commands( datacarddir, card, usedata=False,
+                dostatonly=True): commands.append(c)
+        if includedata:
+            for c in get_initimpacts_commands( datacarddir, card, usedata=True,
+                dostatonly=False): commands.append(c)
+        if( includedata and includestatonly):
+            for c in get_initimpacts_commands( datacarddir, card, usedata=True,
                 dostatonly=True): commands.append(c)
     # get significance commands
     if includesignificance:

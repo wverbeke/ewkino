@@ -9,7 +9,7 @@ def year_and_lumi_from_samplelist(samplelist_name):
     if '/' in slname: slname = slname[slname.rfind('/'):]
     year = ''
     lumi = -1.
-    if '2016' in slname: year = '2016'; lumi = 35900
+    if '2016' in slname: year = '2016'; lumi = 36300
     elif '2017' in slname: year = '2017'; lumi = 41500
     elif '2018' in slname: year = '2018'; lumi = 59700
     else:

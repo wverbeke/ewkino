@@ -3,20 +3,22 @@
 ##########################################
 import os
 import sys
+import json
 sys.path.append(os.path.abspath('../../skimmer'))
 from jobSubmission import initializeJobScript, submitQsubJob
 sys.path.append(os.path.abspath('../../jobSubmission'))
 import condorTools as ct
 
-def makeimpactplot(workspace,usedata,expectsignal):
+def makeimpactplot(workspace,usedata=False,expectsignal=True,poi='r'):
     ### run the commands to produce the impact plots for a given combine workspace (.root)
     
     workspace = os.path.abspath(workspace) # absolute path to workspace
     workspace_name = workspace.split('/')[-1].replace('.root','') # simple name of workspace
+    # define a name appendix depending on the options
     appendix = ''
+    if poi!='r': appendix += '_'+str(poi)
     if usedata: appendix += '_obs'
-    #appendix += '_nocmin' # temp when disabling cminDefaultMinimizerStrategy
-    #if not expectsignal: appendix += '_bkg'
+    if not expectsignal: appendix += '_bkg'
     subdir = workspace.replace('.root',appendix) # absolute path to subdirectory for this job
     if os.path.exists(subdir): os.system('rm -r '+subdir)
     os.makedirs(subdir)
@@ -27,7 +29,7 @@ def makeimpactplot(workspace,usedata,expectsignal):
     command += ' --rMin 0 --rMax 5'
     #command += ' --cminDefaultMinimizerStrategy 0'
     command += ' --robustFit=1'
-    command += ' --redefineSignalPOIs r_ratio' # temp for ratio measurement
+    if poi!='r': command += ' --redefineSignalPOIs {}'.format(poi)
     if( not usedata and expectsignal ): command += ' -t -1 --expectSignal 1'
     elif( not usedata and not expectsignal ): command += ' -t -1 --expectSignal 0'
     setdir = 'cd {}'.format(subdir)
@@ -56,6 +58,32 @@ if __name__=='__main__':
     
     usedata = False
     expectsignal = True
+    pois = ['r']
+    force = False
+
+    ### parse arguments
+    # first argument is the workspace or folder to run on, other arguments are keyword options
+
+    # set other args
+    for arg in sys.argv[2:]:
+        [argkey,argval] = arg.split('=',1)
+        if argkey=='usedata': usedata = (argval=='True' or argval=='true')
+        elif argkey=='expectsignal': expectsignal = (argval=='True' or argval=='true')
+        elif argkey=='pois': 
+	    print(argval)
+	    pois = json.loads(argval)
+	elif argkey=='force': force = (argval=='True' or argval=='true')
+        else: raise Exception('argument not recognized: {}'.format(arg))
+
+    if not force:
+	print('will run with following configuration:')
+	print('  usedata: {}'.format(usedata))
+	print('  expectsignal: {}'.format(expectsignal))
+	print('  pois: {}'.format(pois))
+	print('continue? (y/n)')
+	go = raw_input()
+	if not go=='y':
+	    sys.exit()
 
     # set workspace 
     if len(sys.argv)<2:
@@ -65,8 +93,14 @@ if __name__=='__main__':
     if not os.path.exists(workspace):
 	print('### ERROR ###: requested workspace does not seem to exist...')
 	sys.exit()
-    if not workspace[-5:]=='.root':
-	# in case a folder is given instead of a .root workspace, run over some files within it
+
+    # in case workspace is a root file, run on that workspace
+    if workspace[-5:]=='.root':
+	for poi in pois:
+	    makeimpactplot(workspace,usedata=usedata,expectsignal=expectsignal,poi=poi)
+
+    # else it is assumed to be a directory, run on some workspaces in it
+    else:
 	wspaces = ([
 		    'dc_combined_all.root',
 		    'dc_combined_2016.root',
@@ -92,18 +126,12 @@ if __name__=='__main__':
                     #'datacard_signalregion_cat3_2017.root',
                     #'datacard_signalregion_cat3_2018.root',
 		])
-	for wspace in wspaces:
+	for i,wspace in enumerate(wspaces):
 	    wspace = os.path.join(workspace,wspace)
 	    cmd = 'python impactplot.py {}'.format(wspace)
-	    for arg in sys.argv[2:]: cmd += ' '+arg
-	    print(cmd)
+	    for arg in sys.argv[2:]: cmd += ' '+arg.replace('"',r'\"')
+	    cmd += ' force=True'
+	    print('executing following command: '+str(cmd))
 	    os.system(cmd)
 	sys.exit()
 
-    # set other args
-    for arg in sys.argv[2:]:
-	[argkey,argval] = arg.split('=',1)
-	if argkey=='usedata': usedata = (argval=='True' or argval=='true')
-	if argkey=='expectsignal': expectsignal = (argval=='True' or argval=='true')
-
-    makeimpactplot(workspace,usedata,expectsignal)

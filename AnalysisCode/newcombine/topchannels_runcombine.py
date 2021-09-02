@@ -105,7 +105,7 @@ if __name__=="__main__":
 	elif arg=='only2016': only2016 = True
 	elif arg=='runlocal': runlocal = True
 	elif arg=='runqsub': runqsub = True
-	elif arg=='doseparate': doseparateSR = True
+	elif arg=='doseparateSR': doseparateSR = True
     runcondor = True
     if(runlocal or runqsub): runcondor = False
     dostatonly = True # maybe later add as command line arg
@@ -124,15 +124,18 @@ if __name__=="__main__":
 	    print('running combine for '+card)
 	    commands = cbt.get_default_commands( datacarddir, card, 
 			    includestatonly=dostatonly, includedata=usedata )
-	    if( not runlocal ):
+	    if( runcondor ):
 		ct.submitCommandsAsCondorJob( 'cjob_runcombine', commands )
 	    # alternative: run locally (for testing and debugging)
 	    else:
-		script_name = 'runlocal_runcombine.sh'
+		script_name = 'qsub_runcombine.sh'
 		with open( script_name, 'w' ) as script:
-		    initialsizeJobScript( script )
+		    initializeJobScript( script )
 		    for c in commands: script.write(c+'\n')
-		os.system('bash {}'.format(script_name))
+		if runlocal:
+		    os.system('bash {}'.format(script_name))
+		elif runqsub:
+		    submitQsubJob( script_name )
 
     # part 2: run combined fit of all channels
     combinationdict = getcardcombinations(datacarddir,verbose=True)
@@ -148,22 +151,23 @@ if __name__=="__main__":
         print('running combine for '+card)
 	commands = []
         (pois,pomap) = get_po_map( cdict.values(), get_topchannel_parameters()[1] )
+	nuisance = 'qcdScalesShapeEnv_tZq' # for testing
         commands += cbt.get_workspace_commands( datacarddir, card, options=pomap )
         commands += cbt.get_multidimfit_commands(
                         datacarddir, card, dostatonly=False, usedata=False,
-                        pois=pois )
+                        pois=pois, nuisance=nuisance )
         if dostatonly:
             commands += cbt.get_multidimfit_commands(
                             datacarddir, card, dostatonly=True, usedata=False,
-                            pois=pois )
+                            pois=pois, nuisance=nuisance )
         if usedata:
             commands += cbt.get_multidimfit_commands(
                             datacarddir, card, dostatonly=False, usedata=True,
-                            pois=pois )
+                            pois=pois, nuisance=nuisance )
         if( usedata and dostatonly ):
             commands += cbt.get_multidimfit_commands(
                             datacarddir, card, dostatonly=True, usedata=True,
-                            pois=pois )
+                            pois=pois, nuisance=nuisance )
 	if( runcondor ):
             ct.submitCommandsAsCondorJob( 'cjob_runcombine', commands )
         # alternative: run locally (for testing and debugging)

@@ -1,7 +1,6 @@
 ############################################################
 # make a plot of results for different channels to compare #
 ############################################################
-# partly copied from Gianny's ttg code...
 
 import sys
 import os
@@ -11,28 +10,46 @@ import plottools as pt
 
 def readchanneltxt(path_to_txtfile):
     ### read a txt file and return a list of channels that can be used for plotchannels
-    # expected formatting of txt file: label central statup statdown totup totdown
-    # note that label may not contain spaces, but underscores can be used instead
+    # expected formatting of txt file: name label central statup statdown totup totdown
+    # note: now more flexible allowing for any number of entries per channel,
+    #       as long as this number is the same for each channel.
+    # note: label may not contain spaces, but underscores can be used instead
+    # note: lines in the file starting with # will be ignored
     channels = []
+    nentries = -1
     f = open(path_to_txtfile,'r')
     for line in f:
+	if line[0]=='#': continue
+	line = line.strip(' ')
 	channel = line.split(' ')
-	if len(channel)!=6:
-	    raise Exception('### ERROR ### input txt file wrong format')
-	channel[0] = channel[0].replace('_',' ')
-	for i in range(len(channel))[1:]: channel[i] = float(channel[i])
+	if nentries>0 and len(channel)!=nentries:
+	    raise Exception('ERROR: inconsistent number of entries per channel'
+			    +' while reading input file {}'.format(path_to_txtfle))
+	nentries = len(channel)
+	# replace underscores by spaces except when a subscript is implied
+	channel[1] = channel[1].replace('_{','blablatemp')
+	channel[1] = channel[1].replace('_',' ')
+	channel[1] = channel[1].replace('blablatemp','_{')
+	for i in range(len(channel))[2:]: channel[i] = float(channel[i])
 	channels.append(channel)
     return channels
 
 def plotchannels(channels,outfile,
-		xaxtitle='',yaxtitle='',lumi='',xaxcentral=None,xaxrange=None):
+		showvalues=True,font=None,fontsize=None,
+		xaxtitle='',yaxtitle='',lumi='',
+		xaxcentral=None,xaxlinecoords=[],yaxlinecoords=[],
+		xaxrange=None,legendbox=None,
+		extracmstext=''):
     ### make the plot of different channels
     ### arguments:
-    # - channels is a list of lists of the form [label,central,statup,statdown,totup,totdown]
+    # - channels: list of lists of the form [name,label,central,statup,statdown,totup,totdown]
+    #             (note: name attribute is not used here)
     # - outfile: name of the output file to make (should not contain the file type extension!)
+    # - showvalues: boolean whether to plot the numerical values or only the labels
     # - xaxtitle, yaxtitle are axis titles (default: no title)
     # - lumi is luminosity value to put in header
     # - xaxcentral is x-axis value where to draw a vertical line (default: no vertical line)
+    # - xaxlinecoords: list of x-axis coordinates where to draw additional vertical lines
     # - xaxrange is range of x axis (default: 0-1.5)
 
     pt.setTDRstyle()
@@ -40,6 +57,8 @@ def plotchannels(channels,outfile,
     ROOT.gStyle.SetOptStat(0)
 
     # parse arguments
+    if font is None: font = 42 
+    if fontsize is None: fontsize = 0.04
     lumi = str(lumi)
     dolumi = True
     if lumi=='': dolumi=False
@@ -48,6 +67,8 @@ def plotchannels(channels,outfile,
     if xaxcentral is None: 
 	docentral = False
 	xaxcentral = 0
+    if legendbox is None: 
+	legendbox = [0.75, 0.80, 0.90, 0.90]
 
     # intializations
     c1 = ROOT.TCanvas("c1")
@@ -55,8 +76,8 @@ def plotchannels(channels,outfile,
     pad1.SetBottomMargin(0.15)
     pad1.SetLeftMargin(0.1)
     pad1.SetTopMargin(0.07)
-    pad1.SetGridx(1)
-    pad1.SetGridy(1)
+    #pad1.SetGridx(1)
+    #pad1.SetGridy(1)
     pad1.Draw()
     pad1.cd()
     nchannels = len(channels)
@@ -69,12 +90,12 @@ def plotchannels(channels,outfile,
 
     # loop over channels and make points and appropriate labels
     for cnum,channel in enumerate(channels):
-	label = str(channel[0])
-	central = float(channel[1])
-	statup = float(channel[2])
-	statdown = float(channel[3])
-	totup = float(channel[4])
-	totdown = float(channel[5])
+	label = str(channel[1])
+	central = float(channel[2])
+	statup = float(channel[3])
+	statdown = float(channel[4])
+	totup = float(channel[5])
+	totdown = float(channel[6])
 	systup = math.sqrt(totup**2-statup**2)
 	systdown = math.sqrt(totdown**2-statdown**2)
 
@@ -84,23 +105,26 @@ def plotchannels(channels,outfile,
 	points_statonly.SetPoint(cnum, central, cnum+1)
         points_statonly.SetPointError(cnum, statdown, statup, 0.5, 0.5)
 
-	centraltxt = '{:.2f}'.format(central)
-	statuptxt = '{:.2f}'.format(statup)
-	statdowntxt = '{:.2f}'.format(statdown)
-	systuptxt = '{:.2f}'.format(systup)
-	systdowntxt = '{:.2f}'.format(systdown)
-        valtxt = centraltxt
-	valtxt += '^{'+statuptxt+'}_{-'+statdowntxt+'} (stat)'
-	valtxt += '^{+'+systuptxt+'}_{-'+systdowntxt+'} (syst)'
-	labels.append(label+' '+valtxt)
+	if showvalues:
+	    centraltxt = '{:.2f}'.format(central)
+	    statuptxt = '{:.2f}'.format(statup)
+	    statdowntxt = '{:.2f}'.format(statdown)
+	    systuptxt = '{:.2f}'.format(systup)
+	    systdowntxt = '{:.2f}'.format(systdown)
+	    valtxt = centraltxt
+	    valtxt += '^{+'+statuptxt+'}_{-'+statdowntxt+'} (stat)'
+	    valtxt += '^{+'+systuptxt+'}_{-'+systdowntxt+'} (syst)'
+	    label += ': '+valtxt
+
+	labels.append(label)
 
     # set style for points
-    points.SetFillStyle(3001)
+    points.SetFillStyle(1001)
     points.SetFillColor(ROOT.kOrange-4)
     points.SetMarkerStyle(20)
 
     # set style for statonly points
-    points_statonly.SetFillStyle(3001)
+    points_statonly.SetFillStyle(1001)
     points_statonly.SetFillColor(ROOT.kCyan-4)
     points_statonly.SetMarkerStyle(20)
     
@@ -116,10 +140,12 @@ def plotchannels(channels,outfile,
     mg.GetXaxis().SetLabelSize(0.04)
     
     # y-axis layout
-    mg.GetYaxis().SetTitle(yaxtitle)
-    mg.GetYaxis().SetTitleSize(0.05)
-    mg.GetYaxis().SetTitleOffset(0.5)
-    mg.GetYaxis().SetLabelSize(0)
+    yax = mg.GetYaxis()
+    yax.SetTitle(yaxtitle)
+    yax.SetTitleSize(0.05)
+    yax.SetTitleOffset(0.5)
+    yax.SetLabelSize(0)
+    yax.SetTickLength(0)
     
     # unit line
     sm = ROOT.TLine(xaxcentral,0.5,xaxcentral,nchannels+0.5)
@@ -132,30 +158,47 @@ def plotchannels(channels,outfile,
     sm.SetLineWidth(1)
     sm.SetLineStyle(9)
 
+    # additional lines
+    vertlines = []
+    for xcoord in xaxlinecoords:
+	vertlines.append( ROOT.TLine(xcoord,0.3,xcoord,nchannels+0.7) )
+	vertlines[-1].SetLineWidth(1)
+	vertlines[-1].SetLineStyle(3)
+    horlines = []
+    for ycoord in yaxlinecoords:
+        horlines.append( ROOT.TLine(xaxrange[0],ycoord,xaxrange[1],ycoord) )
+        horlines[-1].SetLineWidth(1)
+        horlines[-1].SetLineStyle(3)
+
     # legend
-    leg = ROOT.TLegend(0.75, 0.80, 0.90, 0.90)
+    leg = ROOT.TLegend(legendbox[0],legendbox[1],legendbox[2],legendbox[3])
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
-    leg.AddEntry(points, 'stat+sys', "f")
-    leg.AddEntry(points_statonly, 'stat', "f")
+    leg.AddEntry(points,'Measurement',"p")
+    leg.AddEntry(points_statonly, 'Stat.', "f")
+    leg.AddEntry(points, 'Total', "f")
 
     # draw objects
     mg.Draw("P A2")
     if docentral: sm.Draw()
+    for vertline in vertlines: vertline.Draw()
+    for horline in horlines: horline.Draw()
     for cnum,label in enumerate(labels):
 	tex = ROOT.TLatex()
-        tex.SetTextSize(0.03)
+	tex.SetTextFont(font)
+        tex.SetTextSize(fontsize)
 	ypos = points.GetY()[cnum]
 	yposndc = (ypos - ROOT.gPad.GetY1())/(ROOT.gPad.GetY2()-ROOT.gPad.GetY1())
         tex.DrawLatexNDC(0.15,yposndc,label)
     leg.Draw()
-    pt.drawLumi(pad1,lumitext=lumi+" fb^{-1} (13 TeV)",cms_in_grid=False)
+    pt.drawLumi(pad1,extratext=extracmstext,lumitext=lumi+" fb^{-1} (13 TeV)",cms_in_grid=False)
 
     pad1.Update()
     c1.Update()
 
     ### save the plot
     c1.SaveAs(outfile.replace('.png','')+'.png')
+    c1.SaveAs(outfile.replace('.png','')+'.eps')
     c1.SaveAs(outfile.replace('.png','')+'.pdf')
 
 if __name__=='__main__':
@@ -174,9 +217,14 @@ if __name__=='__main__':
     channels = readchanneltxt(txtfile)
     #print(channels)
 
-    xaxrange = (-1,1.75)
+    xaxrange = (0.,1.75)
+    xaxlinecoords = [0.6,0.8,1.2,1.4,1.6]
+    yaxlinecoords = [0.5,1.5,2.5,3.5,4.5]
 
-    plotchannels(channels,figfile,
-		xaxcentral=1,xaxrange=xaxrange,
-		lumi=137,xaxtitle='signal strength',yaxtitle='channel')
+    plotchannels(channels,figfile,showvalues=False,
+		xaxcentral=1,xaxlinecoords=xaxlinecoords,
+		yaxlinecoords=yaxlinecoords,
+		xaxrange=xaxrange,
+		legendbox=[0.75, 0.78, 0.93, 0.91],
+		lumi=138,xaxtitle='Observed / Predicted',yaxtitle='')
     print('done!')

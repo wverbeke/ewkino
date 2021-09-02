@@ -69,15 +69,15 @@ for year in years:
 								fitplotdir,frmapdir)
 	    commands.append(command)
 	    # old qsub way:
-	    #script_name = 'fitFakeRateMeasurement.sh'
-            #with open(script_name,'w') as script:
-            #    initializeJobScript(script)
-            #    script.write(command+'\n')
-            #submitQsubJob(script_name) 
+	    script_name = 'fitFakeRateMeasurement.sh'
+            with open(script_name,'w') as script:
+                initializeJobScript(script)
+                script.write(command+'\n')
+            submitQsubJob(script_name) 
 	    # for testing: run locally
 	    #os.system('bash '+script_name)
 	else:
 	    print('### ERROR ###: method '+method+' not recognized')
 	    continue
 # new condor way:
-ct.submitCommandsAsCondorCluster('fitFakeRateMeasurement_cjob',commands)
+#ct.submitCommandsAsCondorCluster('fitFakeRateMeasurement_cjob',commands)

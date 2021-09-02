@@ -10,6 +10,23 @@ import histtools
 sys.path.append(os.path.abspath('../samplelists'))
 from extendsamplelist import extendsamplelist
 
+##### general help functions #####
+
+def getrootobjects(rootfile,subdir=''):
+    f = ROOT.TFile.Open(rootfile)
+    if subdir!='': f.cd(subdir)
+    keylist = [key.GetName() for key in ROOT.gDirectory.GetListOfKeys()]
+    keylistcopy = keylist[:]
+    # recursively loop over subdirectories
+    for key in keylist:
+	exists = f.GetDirectory(key)
+	if exists==None: continue # note: does not work with 'if xists is None'!
+	subkeylist = getrootobjects(rootfile,subdir=os.path.join(subdir,key))
+	for subkey in subkeylist: keylistcopy.append(os.path.join(subdir,key,subkey))
+    f.Close()
+    return keylistcopy
+
+
 ##### help functions for tree mode #####
 
 def mcfileyield(rootfile,treename,lumi=0.,xsec=0.,hcountername='blackJackAndHookers/hCounter'):
@@ -19,11 +36,24 @@ def mcfileyield(rootfile,treename,lumi=0.,xsec=0.,hcountername='blackJackAndHook
     # - the name of the tree within that root file
     # - luminosity and cross section (not strictly needed if tree contains fully normalized weights)
     # - name of hCounter object within the root file
+    
+    # check if file exists
+    if not os.path.exists(rootfile):
+	print('### ERROR ###: file "{}" does not seem to exist'.format(rootfile))
+	return res
+    # initializations
     f = ROOT.TFile.Open(rootfile)
     res = {'nEntries':0.,'nEvents':0.,'sumWeights':0.,'hCounter':0.,'nWeightedEvents':0.}
     # check if tree exists
-    try: tree = f.Get(treename); tree.GetEntry(0)
-    except: print('### ERROR ###: tree not found.'); return res
+    try: 
+	tree = f.Get(treename); tree.GetEntry(0)
+    except: 
+	print('### ERROR ###: tree "{}" not found in file "{}".'.format(
+		treename,rootfile))
+	print('Available objects:')
+	for objname in getrootobjects(rootfile):
+	    print(' - {}'.format(objname))
+	return res
     # get sum of weights and norm factor
     try: testweight = getattr(tree,'_weight')
     except: print('### ERROR ###: tree supposed to be MC but has no "_weight"'); return res
@@ -54,13 +84,25 @@ def datafileyield(rootfile,treename,evttags=[]):
     # - a path to a single root file
     # - the name of the tree within that root file
     # - list of event tags to exclude
+
+    # check if file exists
+    if not os.path.exists(rootfile):
+        print('### ERROR ###: file "{}" does not seem to exist'.format(rootfile))
+        return res
+    # intializations
     f = ROOT.TFile.Open(rootfile)
     res = {'nEntries':0.,'evtTags':evttags}
     # check if tree exists
     try: tree = f.Get(treename); tree.GetEntry(0)
-    except: print('### ERROR ###: tree not found.'); return res
+    except:
+        print('### ERROR ###: tree "{}" not found in file "{}".'.format(
+                treename,rootfile))
+        print('Available objects:')
+        for objname in getrootobjects(rootfile):
+            print(' - {}'.format(objname))
+        return res
     # allow fast bypass:
-    if evttags == -1:
+    if( evttags == -1 ):
 	res['nEntries'] = tree.GetEntries()
 	res['evtTags'] = []
 	return res
@@ -90,7 +132,7 @@ def samplelistyield(filedictlist,treename,year,lumi,dtype,doprint=True):
     for filedict in filedictlist:
         sname = filedict['sample_name']
 	dct = {}
-        if dtype=='MC':
+        if dtype=='sim':
             dct = mcfileyield(filedict['file'],treename,lumi=lumi,xsec=filedict['cross_section'])
         elif dtype=='data':
             dct = datafileyield(filedict['file'],treename,evttags)
@@ -129,7 +171,7 @@ def formatsamplelistyield(filedictlist,dtype):
 	if len(sname)>int(wcol1)-1: sname = sname[:int(wcol1)-5]
 	info = str('{:<'+wcol1+'}').format(sname)
 	info += str('{:<'+wcol2+'}').format('{0:.5E}'.format(filedict['cross_section']))
-	if dtype=='MC':
+	if dtype=='sim':
 	    info += str('{:<'+wcol3+'}').format(filedict['yield']['nEntries'])
 	    info += str('{:<'+wcol4+'}').format('{0:.3E}'.format(filedict['yield']['sumWeights']))
 	    info += str('{:<'+wcol5+'}').format('{0:.3E}'.format(filedict['yield']['hCounter']))
@@ -140,10 +182,11 @@ def formatsamplelistyield(filedictlist,dtype):
 	elif dtype=='data':
 	    info += str('{:<'+wcol3+'}').format(filedict['yield']['nEntries'])
 	    ndatatot += filedict['yield']['nEntries']
+	else: raise Exception('### ERROR ###: dtype not recognized!')
 	print(info)
     print('-'*width)
     info = str('{:<'+wcol1+'}').format('Total:')
-    if dtype=='MC':
+    if dtype=='sim':
 	info += str('{:<'+wcol2+'}{:<'+wcol3+'}{:<'+wcol4+'}{:<'+wcol5+'}').format('','','','')
 	info += str('{:<'+wcol6+'}').format('{0:.3E}'.format(nmctot))
 	info += str('{:<'+wcol7+'}').format('{0:.3E}'.format(nmctotweighted))
@@ -162,8 +205,9 @@ def histogramyield(hist):
     # - a TH1 object
     error = ROOT.Double(0)
     integral = hist.IntegralAndError(0,hist.GetNbinsX()+2,error)
+    nentries = hist.GetEntries()
     # (sets integral and error simultaneously)
-    return {'name':hist.GetName(),'yield':integral,'error':error}
+    return {'name':hist.GetName(),'yield':integral,'error':error,'nentries':nentries}
 
 def histogramfileyield(histfile,mustcontain=[],doprint=True):
     ### determine the yield of all histograms in histfile
@@ -182,8 +226,9 @@ def formathistogramfileyield(yieldlist):
     wcol1 = '40'
     wcol2 = '25'
     wcol3 = '25'
-    info = (str('{:<'+wcol1+'}{:<'+wcol2+'}{:<'+wcol3+'}')
-		.format('Name','Yield (integral)','Stat. error'))
+    wcol4 = '25'
+    info = (str('{:<'+wcol1+'}{:<'+wcol2+'}{:<'+wcol3+'}{:<'+wcol4+'}')
+		.format('Name','Yield (integral)','Stat. error','No. of entries'))
     width = len(info)
     print('_'*width)
     print(info)
@@ -196,10 +241,11 @@ def formathistogramfileyield(yieldlist):
         info = str('{:<'+wcol1+'}').format(name)
         info += str('{:<'+wcol2+'}').format('{0:.5E}'.format(yielddict['yield']))
 	info += str('{:<'+wcol3+'}').format('{0:.5E}'.format(yielddict['error']))
+	info += str('{:<'+wcol3+'}').format('{0:.5E}'.format(yielddict['nentries']))
         print(info)
     print('-'*width)
     info = str('{:<'+wcol1+'}').format('Total:')
-    #if dtype=='MC':
+    #if dtype=='sim':
     #    info += str('{:<'+wcol2+'}{:<'+wcol3+'}{:<'+wcol4+'}{:<'+wcol5+'}').format('','','','')
     #    info += str('{:<'+wcol6+'}').format('{0:.3E}'.format(nmctot))
     #    info += str('{:<'+wcol7+'}').format('{0:.3E}'.format(nmctotweighted))
@@ -249,6 +295,18 @@ if __name__=="__main__":
     if( len(sys.argv)<2 or sys.argv[1].split('=')[0]!='mode' ):
 	print('### ERROR ###: wrong command line args.')
 	print('Use like this: python yieldtable.py mode=< mode > < additional args >')
+	print('Available modes: tree, folder, samplelist, histogram, histogramSR.')
+	print('Additional arguments:')
+	print(' - for mode tree:')
+	print('     filename, treename, dtype')
+	print(' - for mode folder:')
+	print('     dirname, treename, dtype')
+	print(' - for mode samplelist:')
+	print('     samplelist, directory, treename')
+	print(' - for mode histogram:')
+	print('     histfile, (tags of histogram names to consider)')
+	print(' - for mode histogramSR:')
+	print('     topdir, npmode, (includeCR)')
 	sys.exit()
 
     mode = sys.argv[1].split('=')[1]
@@ -261,11 +319,12 @@ if __name__=="__main__":
 	treename = sys.argv[3]
 	dtype = sys.argv[4]
 	yielddict = {}
-	if dtype=='MC': yielddict = mcfileyield(rootfile,treename)
+	if dtype=='sim': yielddict = mcfileyield(rootfile,treename)
 	elif dtype=='data': yielddict = datafileyield(rootfile,treename,evttags=-1)
+	else: raise Exception('ERROR: argument dtype not recognized, must be either "sim" or "data"')
 	totdict = {}
 	totdict['sample_name'] = rootfile.split('/')[-1].replace('.root','')
-	totdict['cross_section'] = -1
+	totdict['cross_section'] = 0
 	totdict['yield'] = yielddict
 	formatsamplelistyield([totdict],dtype)
 
@@ -276,23 +335,20 @@ if __name__=="__main__":
         treename = sys.argv[3]
         dtype = sys.argv[4]
 	rootfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f[-5:]=='.root']
-	# temp: additional selection
-	#rootfiles = [f for f in rootfiles if 'data_combined' in f]
-	# print files:
 	print('found following files:')
 	for rf in rootfiles: print('-  '+rf)
 	filelist = []
 	evttags = []
 	for rootfile in rootfiles:
 	    yielddict = {}
-	    if dtype=='MC': yielddict = mcfileyield(rootfile,treename)
+	    if dtype=='sim': yielddict = mcfileyield(rootfile,treename)
 	    elif dtype=='data': 
 		yielddict = datafileyield(rootfile,treename,evttags=evttags)
 		# (use evttags=-1 above to skip overlap removal in data (also much faster))
 		evttags = yielddict['evtTags']
 	    totdict = {}
 	    totdict['sample_name'] = rootfile.split('/')[-1].replace('.root','')
-	    totdict['cross_section'] = -1
+	    totdict['cross_section'] = 0
 	    totdict['yield'] = yielddict
 	    filelist.append(totdict)
         formatsamplelistyield(filelist,dtype)
@@ -301,6 +357,7 @@ if __name__=="__main__":
 	print('mode = samplelist, required args: <samplelist> <directory> <treename>')	
 	(year,lumi) = tls.year_and_lumi_from_samplelist(sys.argv[2])
 	dtype = tls.data_type_from_samplelist(sys.argv[2])
+	if dtype=='MC': dtype = 'sim'
 	flist = extendsamplelist(sys.argv[2],sys.argv[3])
 	treename = sys.argv[4]
 	samplelistyield(flist,treename,year,lumi,dtype,doprint=True)
@@ -332,6 +389,10 @@ if __name__=="__main__":
 	# fill table
 	mustcontain = ['nominal','yield']
 	for yeardir in [y+'combined' for y in yeardirs]:
+	    if not os.path.exists(os.path.join(topdir,yeardir)):
+		print('### WARNING ###: directory {} does not exist, skipping it...'.format(
+			os.path.join(topdir,yeardir)))
+		continue
 	    regions = ['signalregion_cat'+str(i) for i in [1,2,3]]
 	    if includeCR:
 		regions += (['wzcontrolregion','zgcontrolregion',
@@ -341,7 +402,15 @@ if __name__=="__main__":
 	    table = {}
 	    # loop and fill all regions
 	    for regiondir in regions:
+		if not os.path.exists(os.path.join(topdir,yeardir,regiondir)):
+		    print('### WARNING ###: directory {} does not exist, skipping it...'.format(
+			    os.path.join(topdir,yeardir,regiondir)))
+		    continue
 		totdir = os.path.join(topdir,yeardir,regiondir,npmode,'combined.root')
+		if not os.path.exists(os.path.join(totdir)):
+		    print('### WARNING ###: file {} does not exist, skipping it...'.format(
+			    os.path.join(totdir)))
+		    continue
 		yieldlist = histogramfileyield(totdir,mustcontain=mustcontain)
 		yielddict = {}
 		totmc = 0.

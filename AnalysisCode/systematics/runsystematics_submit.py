@@ -28,6 +28,8 @@ channels = [['all']]
 topcharges = ['all']
 #topcharges = ['top','antitop']
 # (list of top charge strings, 'top', 'antitop' or 'all')
+read_bdt = True 
+# (need to put to true if using BDT information)
 bdtcut = 0.5
 
 #selection_types = []
@@ -39,7 +41,7 @@ bdtcut = 0.5
 
 bdt_combine_mode = 'all' # choose from 'all', 'years', 'regions' or 'none'
 
-outputfolder = 'output_tzqidmedium0p4_newfiles_bdtcut0p5' # only top-level directory needed here
+outputfolder = 'output_tzqidmedium0p4_rebintwovariables' # only top-level directory needed here
 
 for year in years:
     for datatype in datatypes:
@@ -61,7 +63,7 @@ for year in years:
 			#		+'/'+region+'_'+stype)
 			#inputfolder = ('/pnfs/iihe/cms/store/user/llambrec/trileptonskim/'
 			#		+year+datatype)
-			inputfolder = ('/pnfs/iihe/cms/store/user/llambrec/trileptonskim_new/'
+			inputfolder = ('/pnfs/iihe/cms/store/user/llambrec/trileptonskim_tzq_final/'
 					    +year+datatype)
 			#samplelist = '../samplelists/samplelists_tzq_v_iTuple/'
 			samplelist = '../samplelists/'
@@ -73,7 +75,8 @@ for year in years:
 			# for signal region and sidebands: run for categories
 			# remark: can put e.g. '123' which implies events from 1, 2 and 3 taken together!
 			if('signalregion' in region): 
-			    signal_categories = ['1','2','3','123']
+			    #signal_categories = ['1','2','3','123']
+			    signal_categories = ['123']
 			elif('signalsideband' in region): 
 			    signal_categories = ['1','123']
 
@@ -104,6 +107,6 @@ for year in years:
 			    cmd += thisoutputfolder+' '+region+' '+stype
 			    cmd += ' '+str(signal_category)+' '+str(splitsamples)
 			    cmd += ' '+str(signal_channel)+' '+str(topcharge)
-			    cmd += ' '+bdt_combine_mode+' '+str(bdtcut)
+			    cmd += ' '+str(read_bdt)+' '+bdt_combine_mode+' '+str(bdtcut)
 			    print('executing '+cmd)
 			    os.system(cmd)

@@ -7,6 +7,7 @@
 import sys
 import os
 import re
+import math
 
 def get_lumi_unc(processes,year,idstr='defaultrun2'):
     ### define conventional sets of luminosity uncertainty, to avoid typing every time
@@ -29,6 +30,15 @@ def get_lumi_unc(processes,year,idstr='defaultrun2'):
         elif year=='2018': unc = {'lumi':1.02,
                                   'lumi_2018':1.015,
                                   'lumi_20172018':1.003}
+    elif( idstr=='updatedrun2' ):
+	if year=='2016': unc = {'lumi':1.006,
+				'lumi_2016':1.01}
+	elif year=='2017': unc = {'lumi':1.009,
+				  'lumi_2017':1.02,
+				  'lumi_20172018':1.006}
+	elif year=='2018': unc = {'lumi':1.02,
+				  'lumi_2018':1.015,
+				  'lumi_20172018':1.002}
     else:
         raise Exception('ERROR in get_lumi_unc: idstr {} not recognized'.format(idstr))
     # make a dict mapping each source to their impacts on processes
@@ -66,9 +76,7 @@ def subselect_systematics( systematics ):
     # choose between pdf envelope or rms
     removesystematics.append('pdfShapeEnv')
     #removesystematics.append('_pdfShapeRMS')
-    # remove norm uncertainties
-    #removesystematics.append('pdfNorm')
-    # (warning: do not remove it here, as it needs to be taken into account for some processes)
+    # (warning: do not remove pdfNorm here, as it needs to be taken into account for some processes)
     # (need to disable it for specific processes in calling script)
 
     # remove the norm uncertainty related to ISR/FSR
@@ -77,7 +85,9 @@ def subselect_systematics( systematics ):
 	    removesystematics.append(sys+'Norm_'+p)
 
     # choose between total JEC, grouped sources or individual sources
-    removesystematics.append('JEC')
+    #removesystematics.append('JEC')
+    # update: signalregion cat2 2017 seems to have postfit plot issues with JECAll variations,
+    #         so keep single JEC variation but disable it where needed (see disable_default)
     removesystematics.append('JECGrouped.+')
     removesystematics.append('JECGrouped_Total')
     #removesystematics.append('JECAll.+')
@@ -130,7 +140,34 @@ def disable_default( processinfo, year, region, npfromdata ):
     # now dealt with in runsystematics by ignoring events with nominal weight 0.
     # but similar issue it seems in tX process, maybe later run over all samples with fix
     if year=='2017': processinfo.disablesys( 'pileup', ['tX'] )
-    if year=='2017' and region=='wzcontrolregion': processinfo.disablesys( 'pileup',['nonprompt'])
+    if year=='2017' and region=='wzcontrolregion': processinfo.disablesys( 'pileup', ['nonprompt'])
+    
+    # disable split JEC uncertainties in 2017 signalregion 2
+    # only need to disable for postfit plotting, fit itself does not seem to have problems
+    # issue not yet fully understood
+    # for now, replace by single JEC variation to see if that helps -> yes
+    dosinglejec = True # set to false for fit, true for postfit plots
+    if 'JEC' in processinfo.slist: processinfo.disablesys( 'JEC', processinfo.plist )
+    if dosinglejec:
+	if( 
+	    (year=='2017' and region=='signalregion_cat2')  
+	    ): 
+	    changelist = ['WZ','ttZ','ZZH','tX','multiboson','Xgamma']
+	    for sys in processinfo.slist:
+		if 'JECAll' in sys: processinfo.disablesys( sys, changelist )
+	    processinfo.enablesys( 'JEC', changelist, 1 )
+
+    # disable all systematics for WZ contribution to 2016 ZZ region
+    # only need to disable for postfit plotting, fit itself does not seem to have problems (?)
+    # issue not yet fully understood
+    # contribution is anyway quasi 0 (see e.g. prefit plots)
+    dodisablewzsys = True # set to false for the fit, true for postfit plots
+    if dodisablewzsys:
+	if(
+	    (year=='2016' and region=='zzcontrolregion')
+	    ):
+	    for sys in processinfo.slist:
+		processinfo.disablesys( sys, ['WZ'] ) 
 
 def addnormsys_default( processinfo, year, region, npfromdata ):
     ### add default normalization uncertainties to a ProcessInfoCollection object
@@ -138,7 +175,7 @@ def addnormsys_default( processinfo, year, region, npfromdata ):
     # add normalization uncertainties
     normsyslist = []
     # - add luminosity uncertainty
-    uncs_lumi = get_lumi_unc(processinfo.plist,year)
+    uncs_lumi = get_lumi_unc( processinfo.plist, year, idstr='updatedrun2' )
     for unc,impacts in uncs_lumi.items():
         processinfo.addnormsys( unc, impacts )
         if npfromdata: processinfo.disablesys( unc, ['nonprompt'] )

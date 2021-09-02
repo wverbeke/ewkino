@@ -95,6 +95,7 @@ if __name__=='__main__':
     ratiodir = ''
     directratio = False
     doratio = False
+    usedata = False
     args = sys.argv[1:]
     argscopy = args[:]
     # check keyword arguments
@@ -112,6 +113,8 @@ if __name__=='__main__':
 	    directratio = True
 	elif argkey=='doratio':
 	    doratio = (argval=='true' or argval=='True')
+	elif argkey=='usedata':
+	    usedata = (argval=='true' or argval=='True')
 	else:
 	    raise Exception('ERROR: keyword arg {} not recognized'.format(argkey))
 	args.remove(arg)
@@ -119,7 +122,6 @@ if __name__=='__main__':
 	raise Exception('ERROR: incompatible arguments: doratio was requested, ' 
 			+'but no direct ratio measurement directory was given, '
 			+'nor a per-channel directory from which the ratio can be calculated')
-    usedata = True # maybe later add as command line argument
     
     # print some info
     if not doincl:
@@ -131,6 +133,8 @@ if __name__=='__main__':
 	    print('         will calculate it from per-channel measurements')
 	else:
 	    print('         will ignore ratio measurement')
+    if not usedata:
+	print('WARNING: running in blinded mode')
 
     resdict = {}
 
@@ -189,11 +193,17 @@ if __name__=='__main__':
 	(totpoidict,totcorrdict) = opt.read_multisignalstrength( perchanneldir, 
 				    'dc_combined_all.txt',
 				    pois=pois, mode='root', usedata=usedata, correlations=True )
+	print('total uncertainties:')
+	print(totpoidict)
+	print(totcorrdict)
 	# get values, uperrors, downerrors and correlation for total uncertainties
 	(statpoidict,statcorrdict) = opt.read_multisignalstrength( perchanneldir, 
 					'dc_combined_all.txt',
 					pois=pois, mode='root', usedata=usedata,correlations=True, 
-					statonly=True )
+					 statonly=True )
+	print('statistical uncertainties:')
+	print(statpoidict)
+	print(statcorrdict)
 
 	# calculate ratio
 	resdict['r_ratio'] = ({'r':totpoidict['r_tZq_top'][0]/totpoidict['r_tZq_antitop'][0],
