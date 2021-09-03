@@ -2,9 +2,14 @@
 #define Electron_H
 
 //include other parts of code 
+#include "PhysicsObject.h"
 #include "LightLepton.h"
 
+template< typename ObjectType > class PhysicsObjectCollection;
+
 class Electron : public LightLepton{
+
+    friend class PhysicsObjectCollection<Electron>;
 
     public:
         Electron( const TreeReader&, const unsigned );

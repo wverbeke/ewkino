@@ -166,7 +166,7 @@ Electron Electron::ElectronScaleDown() const{
 
 
 Electron Electron::ElectronScaleUp() const{
-    return variedElectron( _pt_ScaleUp, _e_ScaleDown );
+    return variedElectron( _pt_ScaleUp, _e_ScaleUp );
 }
 
 
