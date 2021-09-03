@@ -41,6 +41,13 @@ class Electron : public LightLepton{
         bool isMediumPOGElectron() const{ return _isMediumPOGElectron; }
         bool isTightPOGElectron() const{ return _isTightPOGElectron; }
 
+	// create new Electron instances with varied momentum/energy scale
+	Electron variedElectron( const double, const double ) const;
+	Electron ElectronScaleUp() const;
+	Electron ElectronScaleDown() const;
+	Electron ElectronResUp() const;
+	Electron ElectronResDown() const;
+
         virtual std::ostream& print( std::ostream& os = std::cout ) const override;
 
     private:
@@ -73,6 +80,16 @@ class Electron : public LightLepton{
         bool _isLoosePOGElectron = false;
         bool _isMediumPOGElectron = false;
         bool _isTightPOGElectron = false;
+
+	// varied momentum/energy scales
+	double _pt_ScaleUp = 0;
+	double _pt_ScaleDown = 0;
+	double _pt_ResUp = 0;
+	double _pt_ResDown = 0;
+	double _e_ScaleUp = 0;
+	double _e_ScaleDown = 0;
+	double _e_ResUp = 0;
+	double _e_ResDown = 0;
         
         virtual Electron* clone() const & override{ return new Electron( *this ); }
         virtual Electron* clone() && override{ return new Electron( std::move( *this ) ); }
