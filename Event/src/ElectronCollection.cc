@@ -16,19 +16,19 @@ ElectronCollection ElectronCollection::buildVariedCollection(
     return ElectronCollection( electronVector );
 }
 
-ElectronCollection ElectronCollection::ElectronScaleDownCollection() const{
-    return buildVariedCollection( &Electron::ElectronScaleDown );
+ElectronCollection ElectronCollection::electronScaleDownCollection() const{
+    return buildVariedCollection( &Electron::electronScaleDown );
 }
 
-ElectronCollection ElectronCollection::ElectronScaleUpCollection() const{
-    return buildVariedCollection( &Electron::ElectronScaleUp );
+ElectronCollection ElectronCollection::electronScaleUpCollection() const{
+    return buildVariedCollection( &Electron::electronScaleUp );
 }
 
-ElectronCollection ElectronCollection::ElectronResDownCollection() const{
-    return buildVariedCollection( &Electron::ElectronResDown );
+ElectronCollection ElectronCollection::electronResDownCollection() const{
+    return buildVariedCollection( &Electron::electronResDown );
 }
 
-ElectronCollection ElectronCollection::ElectronResUpCollection() const{
-    return buildVariedCollection( &Electron::ElectronResUp );
+ElectronCollection ElectronCollection::electronResUpCollection() const{
+    return buildVariedCollection( &Electron::electronResUp );
 }
 

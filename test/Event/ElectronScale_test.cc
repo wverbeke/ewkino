@@ -1,7 +1,5 @@
 /*
-Test script for ElectronCollection.
-The following items will be tested:
-  - electron momentum and energy scale and resolution 
+Test script for electron momentum and energy scale propagation to ElectronCollection.
 */
 
 
@@ -17,7 +15,7 @@ The following items will be tested:
 #include <utility>
 #include <vector>
 
-void ElectronCollection_test( const std::string inputFilePath,
+void ElectronScale_test( const std::string inputFilePath,
 			      unsigned long nEntries ){
 
     TreeReader treeReader;
@@ -38,7 +36,7 @@ void ElectronCollection_test( const std::string inputFilePath,
 	}
 	std::cout << std::endl;
 
-	ElectronCollection scaleUpCollection = electronCollection.ElectronScaleUpCollection();
+	ElectronCollection scaleUpCollection = electronCollection.electronScaleUpCollection();
 	std::cout << "scale up collection:" << std::endl;
         for( std::shared_ptr<Electron> elPtr: scaleUpCollection ){
             elPtr->print(); std::cout << std::endl;
@@ -46,7 +44,7 @@ void ElectronCollection_test( const std::string inputFilePath,
         }
 	std::cout << std::endl;
 
-	ElectronCollection scaleDownCollection = electronCollection.ElectronScaleDownCollection();
+	ElectronCollection scaleDownCollection = electronCollection.electronScaleDownCollection();
         std::cout << "scale down collection:" << std::endl;
         for( std::shared_ptr<Electron> elPtr: scaleDownCollection ){
             elPtr->print(); std::cout << std::endl;
@@ -54,7 +52,7 @@ void ElectronCollection_test( const std::string inputFilePath,
         }
         std::cout << std::endl;
 
-	ElectronCollection resUpCollection = electronCollection.ElectronResUpCollection();
+	ElectronCollection resUpCollection = electronCollection.electronResUpCollection();
         std::cout << "res up collection:" << std::endl;
         for( std::shared_ptr<Electron> elPtr: resUpCollection ){
             elPtr->print(); std::cout << std::endl;
@@ -62,7 +60,7 @@ void ElectronCollection_test( const std::string inputFilePath,
         }
         std::cout << std::endl;
 	
-	ElectronCollection resDownCollection = electronCollection.ElectronResDownCollection();
+	ElectronCollection resDownCollection = electronCollection.electronResDownCollection();
         std::cout << "res down collection:" << std::endl;
         for( std::shared_ptr<Electron> elPtr: resDownCollection ){
             elPtr->print(); std::cout << std::endl;
@@ -85,6 +83,6 @@ int main( int argc, char* argv[] ){
     std::string& input_file_path = argvStr[1];
     long unsigned number_of_entries = std::stoul(argvStr[2]);
 
-    ElectronCollection_test( input_file_path, number_of_entries );
+    ElectronScale_test( input_file_path, number_of_entries );
     return 0;
 }

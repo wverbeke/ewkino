@@ -48,10 +48,10 @@ class Electron : public LightLepton{
 
 	// create new Electron instances with varied momentum/energy scale
 	Electron variedElectron( const double, const double ) const;
-	Electron ElectronScaleUp() const;
-	Electron ElectronScaleDown() const;
-	Electron ElectronResUp() const;
-	Electron ElectronResDown() const;
+	virtual Electron electronScaleUp() const;
+	virtual Electron electronScaleDown() const;
+	virtual Electron electronResUp() const;
+	virtual Electron electronResDown() const;
 
         virtual std::ostream& print( std::ostream& os = std::cout ) const override;
 

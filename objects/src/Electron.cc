@@ -160,22 +160,22 @@ Electron Electron::variedElectron(const double newPt, const double newE) const{
 }
 
 
-Electron Electron::ElectronScaleDown() const{
+Electron Electron::electronScaleDown() const{
     return variedElectron( _pt_ScaleDown, _e_ScaleDown );
 }
 
 
-Electron Electron::ElectronScaleUp() const{
+Electron Electron::electronScaleUp() const{
     return variedElectron( _pt_ScaleUp, _e_ScaleUp );
 }
 
 
-Electron Electron::ElectronResDown() const{
+Electron Electron::electronResDown() const{
     return variedElectron( _pt_ResDown, _e_ResDown );
 }
 
 
-Electron Electron::ElectronResUp() const{
+Electron Electron::electronResUp() const{
     return variedElectron( _pt_ResUp, _e_ResUp );
 }
 
