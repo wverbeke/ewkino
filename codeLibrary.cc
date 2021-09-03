@@ -20,6 +20,9 @@
 
 //include Event code 
 #include "Event/src/LeptonCollection.cc"
+#include "Event/src/MuonCollection.cc"
+#include "Event/src/ElectronCollection.cc"
+#include "Event/src/TauCollection.cc"
 #include "Event/src/JetCollection.cc"
 #include "Event/src/JetInfo.cc"
 #include "Event/src/TriggerInfo.cc"

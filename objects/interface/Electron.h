@@ -2,9 +2,14 @@
 #define Electron_H
 
 //include other parts of code 
+#include "PhysicsObject.h"
 #include "LightLepton.h"
 
+template< typename ObjectType > class PhysicsObjectCollection;
+
 class Electron : public LightLepton{
+
+    friend class PhysicsObjectCollection<Electron>;
 
     public:
         Electron( const TreeReader&, const unsigned );
@@ -41,6 +46,13 @@ class Electron : public LightLepton{
         bool isMediumPOGElectron() const{ return _isMediumPOGElectron; }
         bool isTightPOGElectron() const{ return _isTightPOGElectron; }
 
+	// create new Electron instances with varied momentum/energy scale
+	Electron variedElectron( const double, const double ) const;
+	virtual Electron electronScaleUp() const;
+	virtual Electron electronScaleDown() const;
+	virtual Electron electronResUp() const;
+	virtual Electron electronResDown() const;
+
         virtual std::ostream& print( std::ostream& os = std::cout ) const override;
 
     private:
@@ -73,6 +85,16 @@ class Electron : public LightLepton{
         bool _isLoosePOGElectron = false;
         bool _isMediumPOGElectron = false;
         bool _isTightPOGElectron = false;
+
+	// varied momentum/energy scales
+	double _pt_ScaleUp = 0;
+	double _pt_ScaleDown = 0;
+	double _pt_ResUp = 0;
+	double _pt_ResDown = 0;
+	double _e_ScaleUp = 0;
+	double _e_ScaleDown = 0;
+	double _e_ResUp = 0;
+	double _e_ResDown = 0;
         
         virtual Electron* clone() const & override{ return new Electron( *this ); }
         virtual Electron* clone() && override{ return new Electron( std::move( *this ) ); }

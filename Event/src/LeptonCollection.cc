@@ -386,3 +386,33 @@ double LeptonCollection::bestZBosonCandidateMass() const{
 void LeptonCollection::removeTaus(){
     selectObjects( &Lepton::isLightLepton );
 }
+
+LeptonCollection LeptonCollection::buildVariedElectronCollection(
+		    Electron (Electron::*variedElectron)() const ) const{
+    std::vector< std::shared_ptr< Lepton > > lepVector;
+    for( const auto& lepPtr : *this ){
+	if( lepPtr->isElectron() ){
+	    lepVector.push_back( std::make_shared< Electron >( 
+	    	( (dynamic_cast<Electron*>(lepPtr.get()))->*variedElectron)() ) );
+	}
+	else{ lepVector.push_back( lepPtr ); }
+    }
+    return LeptonCollection( lepVector );
+}
+
+LeptonCollection LeptonCollection::electronScaleDownCollection() const{
+    return buildVariedElectronCollection( &Electron::electronScaleDown );
+}
+
+LeptonCollection LeptonCollection::electronScaleUpCollection() const{
+    return buildVariedElectronCollection( &Electron::electronScaleUp );
+}
+
+LeptonCollection LeptonCollection::electronResDownCollection() const{
+    return buildVariedElectronCollection( &Electron::electronResDown );
+}
+
+LeptonCollection LeptonCollection::electronResUpCollection() const{
+    return buildVariedElectronCollection( &Electron::electronResUp );
+}
+

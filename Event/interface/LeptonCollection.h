@@ -76,6 +76,12 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
         //remove tau leptons from collection
         void removeTaus();
 
+	// build varied collections
+	LeptonCollection electronScaleUpCollection() const;
+        LeptonCollection electronScaleDownCollection() const;
+        LeptonCollection electronResUpCollection() const;
+        LeptonCollection electronResDownCollection() const;
+
     private:
 
         //clean electrons and taus
@@ -94,6 +100,11 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
 
         //number of unique lepton pairs satisfying given condition
         template< typename function_type > size_type numberOfUniquePairs( const function_type&  ) const;
+
+	// build varied collections
+	// maybe need to extend later for muon/tau variations
+	LeptonCollection buildVariedElectronCollection(
+			    Electron (Electron::*variedElectron)() const ) const;
 };
 
 

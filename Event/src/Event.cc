@@ -253,3 +253,38 @@ double Event::mtW(){
     initializeZBosonCandidate();
     return mt( WLepton(), met() );
 }
+
+// copy event with modified energy/momentum scales
+// experimental stage! need to check what attributes are copied or modified in-place!
+
+void Event::setLeptonCollection( const LeptonCollection& lepCollection ){
+    _leptonCollectionPtr = new LeptonCollection( lepCollection);
+}
+
+Event Event::variedLeptonCollectionEvent(
+		    LeptonCollection (LeptonCollection::*variedCollection)() const ) const{
+    Event newevt = Event( *this );
+    LeptonCollection lepCollection = (this->leptonCollection().*variedCollection)();
+    //newevt._leptonCollectionPtr = new LeptonCollection( lepCollection );
+    // (the above does not work since _leptonCollectionPtr is private,
+    //  try to solve by defining a public function doing the same thing, but not optimal.)
+    newevt.setLeptonCollection( lepCollection );  
+    return newevt;
+}
+
+Event Event::electronScaleUpEvent() const{
+    return variedLeptonCollectionEvent( &LeptonCollection::electronScaleUpCollection );
+}
+
+Event Event::electronScaleDownEvent() const{
+    return variedLeptonCollectionEvent( &LeptonCollection::electronScaleDownCollection );
+}
+
+Event Event::electronResUpEvent() const{
+    return variedLeptonCollectionEvent( &LeptonCollection::electronResUpCollection );
+}
+
+Event Event::electronResDownEvent() const{
+    return variedLeptonCollectionEvent( &LeptonCollection::electronResDownCollection );
+}
+

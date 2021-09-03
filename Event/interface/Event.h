@@ -232,6 +232,15 @@ class Event{
             return (hasGeneratorInfo())? _generatorInfoPtr->relativeWeightPsVar(psIndex) : 0.;
         }
 
+	// copy event with modified energy/momentum scales
+	// experimental stage! need to check what attributes are copied or modified in-place!
+	Event electronScaleUpEvent() const;
+	Event electronScaleDownEvent() const;
+	Event electronResUpEvent() const;
+	Event electronResDownEvent() const;
+	void setLeptonCollection( const LeptonCollection& );
+	// (to do: check if a public function arbitrarily modifying the lepton collection 
+	//         can be avoided...)
 
     private:
         LeptonCollection* _leptonCollectionPtr = nullptr;
@@ -265,6 +274,9 @@ class Event{
         //check the presence of susy information
         bool hasSusyMassInfo() const{ return ( _susyMassInfoPtr != nullptr ); }
         void checkSusyMassInfo() const;
+
+	Event variedLeptonCollectionEvent(
+                    LeptonCollection (LeptonCollection::*variedCollection)() const ) const;
 };
 
 #endif

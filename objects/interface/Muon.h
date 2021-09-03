@@ -2,10 +2,16 @@
 #define Muon_H
 
 //include other parts of code 
+#include "PhysicsObject.h"
 #include "LightLepton.h"
+
+
+template< typename objectType > class PhysicsObjectCollection;
 
 class Muon : public LightLepton {
     
+    friend class PhysicsObjectCollection<Muon>;
+
     public:
         Muon( const TreeReader&, const unsigned );
         Muon( const Muon& );

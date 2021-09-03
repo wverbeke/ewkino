@@ -14,9 +14,18 @@ class ElectronCollection : public PhysicsObjectCollection< Electron > {
 
     public:
         ElectronCollection( const TreeReader& );
+    
+	// make varied Electron collections
+	ElectronCollection electronScaleUpCollection() const;
+	ElectronCollection electronScaleDownCollection() const;
+	ElectronCollection electronResUpCollection() const;
+	ElectronCollection electronResDownCollection() const;
 
     private:
-        ElectronCollection( const std::vector< std::shared_ptr< Electron > >& electronVector ) : PhysicsObjectCollection< Electron >( electronVector ) {}
+        ElectronCollection( const std::vector< std::shared_ptr< Electron > >& electronVector ): 
+	    PhysicsObjectCollection< Electron >( electronVector ) {}
+	ElectronCollection buildVariedCollection(
+                    Electron (Electron::*variedElectron)() const ) const;
 
 };
 #endif 

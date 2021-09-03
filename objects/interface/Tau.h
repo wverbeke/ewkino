@@ -2,9 +2,14 @@
 #define Tau_H
 
 //include other parts of code 
+#include "PhysicsObject.h"
 #include "Lepton.h"
 
+template< typename objectType > class PhysicsObjectCollection;
+
 class Tau : public Lepton{
+
+    friend class PhysicsObjectCollection< Tau >;
 
     public:
         Tau( const TreeReader&, const unsigned );

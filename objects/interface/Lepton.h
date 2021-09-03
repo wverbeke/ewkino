@@ -58,6 +58,7 @@ class Lepton : public PhysicsObject {
         
         //pT before cone correction
         double uncorrectedPt() const{ return _uncorrectedPt; }
+	double uncorrectedE() const{ return _uncorrectedE; }
 
         //check what type of lepton the object is
         virtual bool isMuon() const = 0;
@@ -100,6 +101,7 @@ class Lepton : public PhysicsObject {
 
         //pT before cone correction
         double _uncorrectedPt;
+	double _uncorrectedE;
 
         Lepton( const Lepton&, LeptonSelector* );
         Lepton( Lepton&&, LeptonSelector* ) noexcept;
