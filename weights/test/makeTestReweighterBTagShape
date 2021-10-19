@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra -O3 -g
+CFLAGS= -Wl,--no-as-needed,-lpthread,-lTMVA
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= testReweighterBTagShape.cc ../../codeLibrary.o ../../AnalysisCode/eventselection/src/eventSelections.cc ../../AnalysisCode/eventselection/src/eventFlattening.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=testReweighterBTagShape
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
