@@ -22,7 +22,9 @@ TreeReader::TreeReader( const std::string& sampleListFile, const std::string& sa
 
 // functions for sample reading //
 
-void TreeReader::readSamples( const std::string& list, const std::string& directory, std::vector<Sample>& sampleVector ){
+void TreeReader::readSamples( const std::string& list, 
+			      const std::string& directory, 
+			      std::vector<Sample>& sampleVector ){
 
     //clean current sample list 
     sampleVector.clear();
@@ -32,7 +34,7 @@ void TreeReader::readSamples( const std::string& list, const std::string& direct
 
     //print sample information
     for(auto& sample : sampleVector){
-        std::cout << sample << std::endl;
+        std::cout << "sample: " << sample << std::endl;
     }
 }
 
@@ -54,7 +56,6 @@ void TreeReader::readSamples2016( const std::string& list, const std::string& di
 
     //check for errors
     checkSampleEraConsistency();
-
 }
 
 
@@ -90,10 +91,19 @@ void TreeReader::readSamples2018( const std::string& list, const std::string& di
 
 // functions for initializing maps of branches rather than hard-coded names //
 
-std::pair< std::map< std::string, bool >, std::map< std::string, TBranch* > > buildBranchMap( TTree* treePtr, const std::vector< std::string> nameIdentifiers, const std::string& antiIdentifier = "" ){
+std::pair< std::map< std::string, bool >, std::map< std::string, TBranch* > > buildBranchMap( 
+	TTree* treePtr, 
+	const std::vector< std::string> nameIdentifiers, 
+	const std::string& antiIdentifier = "" ){
     // build a map of branches from a given tree
     // all branches whose name contains nameIdentifier and not antiIdentifier will be added
-    // note: decisionMap returns false everywhere and branchMap only nullptrs!
+    // the return type is a pair of two objects:
+    // - map of branch name to boolean 
+    //   (e.g. usable for triggers)
+    //   (values are set to false everywhere)
+    // - map of branch name to branch pointer
+    //   (e.g. usable for many branches with similar names)
+    //   (branch pointers are set to nullptr everywhere)
     std::map< std::string, bool > decisionMap;
     std::map< std::string, TBranch* > branchMap;
     TObjArray* branch_list = treePtr->GetListOfBranches();
@@ -104,7 +114,8 @@ std::pair< std::map< std::string, bool >, std::map< std::string, TBranch* > > bu
 	    if( !stringTools::stringContains( branchName, nameIdentifier ) ) select = false;
 	}
 	if( !select ) continue;
-        if( antiIdentifier != "" && stringTools::stringContains( branchName, antiIdentifier ) ) continue;
+        if( antiIdentifier != "" 
+	    && stringTools::stringContains( branchName, antiIdentifier ) ) continue;
 	decisionMap[ branchName ] = false;
         branchMap[ branchName ] = nullptr;
     }
@@ -197,12 +208,12 @@ void TreeReader::initializeJecSourcesGroupedMaps( TTree* treePtr ){
 bool treeHasBranchWithName( TTree* treePtr, const std::string& nameToFind ){
     TObjArray* branch_list = treePtr->GetListOfBranches();
     for( const auto& branchPtr : *branch_list ){
-        std::string branchName = branchPtr->GetName();
-		if( stringTools::stringContains( branchName, nameToFind ) ){
-			return true;
-		}
-	}
-	return false;
+	std::string branchName = branchPtr->GetName();
+	    if( stringTools::stringContains( branchName, nameToFind ) ){
+		return true;
+	    }
+    }
+    return false;
 }
 
 
@@ -222,11 +233,8 @@ bool TreeReader::containsTriggerInfo( const std::string& triggerPath ) const{
 
 
 bool TreeReader::isData() const{
-    if( _currentSamplePtr ){
-        return _currentSamplePtr->isData();
-    } else {
-        return !containsGeneratorInfo();
-    }
+    if( _currentSamplePtr ) return _currentSamplePtr->isData();
+    else return !containsGeneratorInfo();
 }
 
 
@@ -250,9 +258,9 @@ void TreeReader::checkCurrentTree() const{
 
 
 void TreeReader::checkCurrentFile() const{
-	if( !_currentFilePtr ){
-		throw std::domain_error( "pointer to current TFile is nullptr." );
-	}
+    if( !_currentFilePtr ){
+	throw std::domain_error( "pointer to current TFile is nullptr." );
+    }
 }
 
 
@@ -295,12 +303,23 @@ long unsigned TreeReader::numberOfEntries() const{
 void TreeReader::initSample( const Sample& samp ){ 
 
     //update current sample
-    //I wonder if the extra copy can be avoided here, its however hard if we want to keep the functionality of reading the sample vector, and also having the function initSampleFromFile. It's not clear how we can make a new sample in one of them and refer to an existing one in the other. It can be done with a static Sample in 'initSampleFromFile', but this makes the entire TreeReader class unthreadsafe, so no parallel sample processing in one process can be done 
+    // old comment from Willem:
+    // "I wonder if the extra copy can be avoided here, 
+    // its however hard if we want to keep the functionality of reading the sample vector, 
+    // and also having the function initSampleFromFile. 
+    // It's not clear how we can make a new sample in one of them 
+    // and refer to an existing one in the other. 
+    // It can be done with a static Sample in 'initSampleFromFile', 
+    // but this makes the entire TreeReader class unthreadsafe, 
+    // so no parallel sample processing in one process can be done"
     _currentSamplePtr = std::make_shared< Sample >( samp );
     _currentFilePtr = samp.filePtr();
 
-    //Warning: this pointer is overwritten, but it is not a memory leak. ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
-    //The previous TFile is closed by the std::shared_ptr destructor, implicitly called above when opening a new TFile.
+    // old comment from Willem:
+    // "Warning: this pointer is overwritten, but it is not a memory leak. 
+    // ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
+    // The previous TFile is closed by the std::shared_ptr destructor, 
+    // implicitly called above when opening a new TFile."
     _currentTreePtr = (TTree*) _currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" );
     checkCurrentTree();
     initTree();
@@ -337,7 +356,9 @@ void TreeReader::initSample(){
 
 
 //initialize the current Sample directly from a root file, this is used when skimming
-void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool is2017, const bool is2018, const bool resetTriggersAndFilters ){
+void TreeReader::initSampleFromFile( const std::string& pathToFile, 
+				     const bool is2017, const bool is2018, 
+				     const bool resetTriggersAndFilters ){
 
     //check if file exists 
     if( !systemTools::fileExists( pathToFile ) ){
@@ -346,13 +367,18 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
 
     _currentFilePtr = std::shared_ptr< TFile >( new TFile( pathToFile.c_str() ) );
 
-    //Warning: this pointer is overwritten, but it is not a memory leak. ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
-    //The previous TFile is closed by the std::shared_ptr destructor, implicitly called above when opening a new TFile.
+    // old comment from Willem:
+    // "Warning: this pointer is overwritten, but it is not a memory leak. 
+    // ROOT is dirty and deletes the previous tree upon closure of the TFile it belongs to.
+    // The previous TFile is closed by the std::shared_ptr destructor, 
+    // implicitly called above when opening a new TFile."
     _currentTreePtr = (TTree*) _currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" );
     checkCurrentTree();
 
-    //make a new sample, and make sure the pointer remains valid
-    //new is no option here since this would also require a destructor for the class which does not work for the other initSample case
+    // make a new sample, and make sure the pointer remains valid
+    // old comment from Willem:
+    // "new is no option here since this would also require a destructor for the class, 
+    // which does not work for the other initSample case"
     _currentSamplePtr = std::make_shared< Sample >( pathToFile, is2017, is2018, isData() );
 
     //initialize tree
@@ -367,11 +393,11 @@ void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool i
 
 
 //automatically determine whether sample is 2017 or 2018 from file name 
-void TreeReader::initSampleFromFile( const std::string& pathToFile, const bool resetTriggersAndFilters ){
-    
+void TreeReader::initSampleFromFile( const std::string& pathToFile, 
+				     const bool resetTriggersAndFilters ){
     std::pair< bool, bool > is2017Or2018 = analysisTools::fileIs2017Or2018( pathToFile );
-    
-    initSampleFromFile( pathToFile, is2017Or2018.first, is2017Or2018.second, resetTriggersAndFilters );
+    initSampleFromFile( pathToFile, is2017Or2018.first, is2017Or2018.second, 
+			resetTriggersAndFilters );
 }
 
 
@@ -413,9 +439,13 @@ Event TreeReader::buildEvent( long unsigned entry,
 }
 
 
-template< typename T > void setMapBranchAddresses( TTree* treePtr, std::map< std::string, T >& variableMap, std::map< std::string, TBranch* > branchMap ){
+template< typename T > void setMapBranchAddresses( TTree* treePtr, 
+	std::map< std::string, T >& variableMap, 
+	std::map< std::string, TBranch* > branchMap ){
     for( const auto& variable : variableMap ){
-        treePtr->SetBranchAddress( variable.first.c_str(), &variableMap[ variable.first ], &branchMap[ variable.first ] );
+        treePtr->SetBranchAddress( variable.first.c_str(), 
+	    &variableMap[ variable.first ], 
+	    &branchMap[ variable.first ] );
     }
 }
 
@@ -426,7 +456,9 @@ template< typename T> void setMapOutputBranches( TTree* treePtr,
     // note: branchDataType should be e.g. "/O" for boolean, "[nJets]/D" for an array of doubles.
     // mind the slash!
     for( const auto& variable : variableMap ){
-        treePtr->Branch( variable.first.c_str(), &variableMap[ variable.first ], ( variable.first + branchDataType ).c_str() );
+        treePtr->Branch( variable.first.c_str(), 
+	    &variableMap[ variable.first ], 
+	    ( variable.first + branchDataType ).c_str() );
     }    
 }
 
@@ -631,20 +663,22 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
         _currentTreePtr->SetBranchAddress("_prefireWeightUp", &_prefireWeightUp, &b__prefireWeightUp);
     }
 
-	if( containsSusyMassInfo() ){
-		_currentTreePtr->SetBranchAddress("_mChi1", &_mChi1, &b__mChi1);
-		_currentTreePtr->SetBranchAddress("_mChi2", &_mChi2, &b__mChi2);
-	}
+    if( containsSusyMassInfo() ){
+	_currentTreePtr->SetBranchAddress("_mChi1", &_mChi1, &b__mChi1);
+	_currentTreePtr->SetBranchAddress("_mChi2", &_mChi2, &b__mChi2);
+    }
 
     //add all individually stored triggers 
-    //always reset triggers instead of rare case of combining primary datasets to prevent invalidating addresses set by setOutputTree
+    // always reset triggers instead of rare case of combining primary datasets 
+    // to prevent invalidating addresses set by setOutputTree
     if( resetTriggersAndFilters || _triggerMap.empty() ){
         initializeTriggerMap( _currentTreePtr );
     }
     setMapBranchAddresses( _currentTreePtr, _triggerMap, b__triggerMap );
 
     //add all individually stored MET filters
-    //always reset filters instead of rare case of combining primary datasets to prevent invalidating addresses set by setOutputTree
+    // always reset filters instead of rare case of combining primary datasets 
+    // to prevent invalidating addresses set by setOutputTree
     if( resetTriggersAndFilters || _MetFilterMap.empty() ){
         initializeMetFilterMap( _currentTreePtr );
     }
@@ -867,8 +901,8 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     }
 
     if( containsSusyMassInfo() ){
-		outputTree->Branch("_mChi1", &_mChi1, "_mChi1/D");
-		outputTree->Branch("_mChi2", &_mChi2, "_mChi2/D");
+	outputTree->Branch("_mChi1", &_mChi1, "_mChi1/D");
+	outputTree->Branch("_mChi2", &_mChi2, "_mChi2/D");
     }
 
     //write individual trigger decisions to output tree 
@@ -913,7 +947,7 @@ std::vector< std::shared_ptr< TH1 > > TreeReader::getHistogramsFromCurrentFile()
 	std::vector< std::shared_ptr< TH1 > > histogramVector;
 
 	//loop over keys in blackJackAndHookers directory
-    //this directory gets implicitly deleted by root when the current root file gets deleted. This can NOT be a shared_ptr since this directory will also make the root file inaccessible upon deletion (DIRTY ROOT!!!)
+	//this directory gets implicitly deleted by root when the current root file gets deleted. This can NOT be a shared_ptr since this directory will also make the root file inaccessible upon deletion (DIRTY ROOT!!!)
 	TDirectory* dir = (TDirectory*) _currentFilePtr->Get("blackJackAndHookers");
 
     //this is not a memory leak since this object will implicitly be deleted when 'dir' gets deleted (DIRTY ROOT!!!)
