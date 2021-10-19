@@ -1,0 +1,6 @@
+### Temporary sample list used only for testing a tZq sample with split JEC uncertainties!
+### The file is located at /pnfs/iihe/cms/store/user/kskovpen/heayNeutrinoEOY20
+
+### Formatting: "process name (may include spaces)" <space> sample name <space> cross-section
+
+"tZq" tZq_ll_4f_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2016v3-v1_noskim_EOY20_2016 0.0942

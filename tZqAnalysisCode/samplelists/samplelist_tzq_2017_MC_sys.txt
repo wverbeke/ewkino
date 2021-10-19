@@ -1,0 +1,16 @@
+### Sample list for 2017 MC samples used in the tZq analysis.
+### This list is taken (and modified) from the analysis note (AN-2018-100)
+
+### Formatting: "process name (may include spaces)" <space> sample name <space> cross-section
+
+### systematic variations of tZq
+"tZq" tZq_ll_4f_ckm_NLO_TuneCP5CR2_GluonMove_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 0.0942
+"tZq" tZq_ll_4f_ckm_NLO_TuneCP5down_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 0.0942
+"tZq" tZq_ll_4f_ckm_NLO_TuneCP5CR1_QCDbased_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 0.0942
+"tZq" tZq_ll_4f_ckm_NLO_TuneCP5up_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 0.0942
+
+### systematic variations of ttZ
+"ttZ" TTZToLLNuNu_M-10_TuneCP5up_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 0.2814
+"ttZ" TTZToLLNuNu_M-10_TuneCP5CR1_QCDbased_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 0.2814
+"ttZ" TTZToLLNuNu_M-10_TuneCP5CR2_GluonMove_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 0.2814
+"ttZ" TTZToLLNuNu_M-10_TuneCP5down_PSweights_13TeV-amcatnlo-pythia8/crab_MiniAOD2017v2-v1_Moriond21_2017 0.2814
