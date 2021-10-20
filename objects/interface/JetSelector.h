@@ -15,7 +15,7 @@ class JetSelector{
             
             if( jetPtr->is2016() ){
                 return isGood2016();
-            } else if( jetPtr->is2018() ){
+            } else if( jetPtr->is2017() ){
                 return isGood2017();
             } else {
                 return isGood2018();
