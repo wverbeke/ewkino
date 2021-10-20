@@ -34,6 +34,7 @@ class TreeReader {
         static const unsigned nL_max = 20;
         static const unsigned nJets_max = 100;
         static const unsigned gen_nL_max = 20;
+	static const unsigned nDs_max = 30;
 	// global event variables and weights
         ULong_t         _runNb;
         ULong_t         _lumiBlock;
@@ -244,6 +245,48 @@ class TreeReader {
 	// analysis specific variables: ewkino
         Double_t        _mChi1;
         Double_t        _mChi2;
+
+	// analysis specific variables: htowds
+	// D variables
+	unsigned _nDs = 0;
+	double _DInvMass[nDs_max];
+	unsigned _DType[nDs_max];
+	double _DPx[nDs_max];
+	double _DPy[nDs_max];
+	double _DPz[nDs_max];
+	double _DPt[nDs_max];
+	double _DEta[nDs_max];
+	double _DPhi[nDs_max];
+	double _DIsolation[nDs_max];
+	double _DDR[nDs_max];
+	bool _DHasFastGenMatch[nDs_max];
+	bool _DHasGenMatch[nDs_max];
+	// intermediate resonance variables
+	double _DIntResMass[nDs_max];
+	double _DIntResMassDiff[nDs_max];
+	double _DIntResX[nDs_max];
+	double _DIntResY[nDs_max];
+	double _DIntResZ[nDs_max];
+	double _DIntResVtxNormChi2[nDs_max];
+	// track variables
+	double _DFirstTrackPt[nDs_max];
+	double _DFirstTrackEta[nDs_max];
+	double _DFirstTrackPhi[nDs_max];
+	double _DSecondTrackPt[nDs_max];
+	double _DSecondTrackEta[nDs_max];
+	double _DSecondTrackPhi[nDs_max];
+	double _DThirdTrackPt[nDs_max];
+	double _DThirdTrackEta[nDs_max];
+	double _DThirdTrackPhi[nDs_max];
+	double _DFirstTrackX[nDs_max];
+	double _DFirstTrackY[nDs_max];
+	double _DFirstTrackZ[nDs_max];
+	double _DSecondTrackX[nDs_max];
+	double _DSecondTrackY[nDs_max];
+	double _DSecondTrackZ[nDs_max];
+	double _DThirdTrackX[nDs_max];
+	double _DThirdTrackY[nDs_max];
+	double _DThirdTrackZ[nDs_max];
 
 	// maps for passing triggers and metfilters
         std::map< std::string, bool > _triggerMap;
@@ -588,8 +631,49 @@ class TreeReader {
         TBranch        *b__mChi1;
         TBranch        *b__mChi2;
 
-        std::map< std::string, TBranch* > b__triggerMap;
-        std::map< std::string, TBranch* > b__MetFilterMap; 
+	// D variables
+	TBranch *b__nDs;
+	TBranch *b__DInvMass;
+	TBranch *b__DType;
+	TBranch *b__DPx;
+	TBranch *b__DPy;
+	TBranch *b__DPz;
+	TBranch *b__DPt;
+	TBranch *b__DEta;
+	TBranch *b__DPhi;
+	TBranch *b__DIsolation;
+	TBranch *b__DDR;
+	TBranch *b__DHasFastGenMatch;
+	TBranch *b__DHasGenMatch;
+	// intermediate resonance variables
+	TBranch *b__DIntResMass;
+	TBranch *b__DIntResMassDiff;
+	TBranch *b__DIntResX;
+	TBranch *b__DIntResY;
+	TBranch *b__DIntResZ;
+	TBranch *b__DIntResVtxNormChi2;
+	// track variables
+	TBranch *b__DFirstTrackPt;
+	TBranch *b__DFirstTrackEta;
+	TBranch *b__DFirstTrackPhi;
+	TBranch *b__DSecondTrackPt;
+	TBranch *b__DSecondTrackEta;
+	TBranch *b__DSecondTrackPhi;
+	TBranch *b__DThirdTrackPt;
+	TBranch *b__DThirdTrackEta;
+	TBranch *b__DThirdTrackPhi;
+	TBranch *b__DFirstTrackX;
+	TBranch *b__DFirstTrackY;
+	TBranch *b__DFirstTrackZ;
+	TBranch *b__DSecondTrackX;
+	TBranch *b__DSecondTrackY;
+	TBranch *b__DSecondTrackZ;
+	TBranch *b__DThirdTrackX;
+	TBranch *b__DThirdTrackY;
+	TBranch *b__DThirdTrackZ;
+
+	std::map< std::string, TBranch* > b__triggerMap;
+	std::map< std::string, TBranch* > b__MetFilterMap; 
 };
 
 #endif

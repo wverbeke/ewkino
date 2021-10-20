@@ -668,6 +668,47 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
 	_currentTreePtr->SetBranchAddress("_mChi2", &_mChi2, &b__mChi2);
     }
 
+    // D variables
+    _currentTreePtr->SetBranchAddress("_nDs", &_nDs, &b__nDs);
+    _currentTreePtr->SetBranchAddress("_DInvMass", &_DInvMass, &b__DInvMass);
+    _currentTreePtr->SetBranchAddress("_DType", &_DType, &b__DType);
+    _currentTreePtr->SetBranchAddress("_DPx", &_DPx, &b__DPx);
+    _currentTreePtr->SetBranchAddress("_DPy", &_DPy, &b__DPx);
+    _currentTreePtr->SetBranchAddress("_DPz", &_DPz, &b__DPz);
+    _currentTreePtr->SetBranchAddress("_DPt", &_DPt, &b__DPt);
+    _currentTreePtr->SetBranchAddress("_DEta", &_DEta, &b__DEta);
+    _currentTreePtr->SetBranchAddress("_DPhi", &_DPhi, &b__DPhi);
+    _currentTreePtr->SetBranchAddress("_DIsolation", &_DIsolation, &b__DIsolation);
+    _currentTreePtr->SetBranchAddress("_DDR", &_DDR, &b__DDR);
+    _currentTreePtr->SetBranchAddress("_DHasFastGenMatch", &_DHasFastGenMatch, &b__DHasFastGenMatch);
+    _currentTreePtr->SetBranchAddress("_DHasGenMatch", &_DHasGenMatch, &b__DHasGenMatch);
+    // intermediate resonance variables
+    _currentTreePtr->SetBranchAddress("_DIntResMass", &_DIntResMass, &b__DIntResMass);
+    _currentTreePtr->SetBranchAddress("_DIntResMassDiff", &_DIntResMassDiff, &b__DIntResMassDiff);
+    _currentTreePtr->SetBranchAddress("_DIntResX", &_DIntResX, &b__DIntResX);
+    _currentTreePtr->SetBranchAddress("_DIntResY", &_DIntResY, &b__DIntResY);
+    _currentTreePtr->SetBranchAddress("_DIntResZ", &_DIntResZ, &b__DIntResZ);
+    _currentTreePtr->SetBranchAddress("_DIntResVtxNormChi2", &_DIntResVtxNormChi2, &b__DIntResVtxNormChi2);
+    // track variables
+    _currentTreePtr->SetBranchAddress("_DFirstTrackPt", &_DFirstTrackPt, &b__DFirstTrackPt);
+    _currentTreePtr->SetBranchAddress("_DFirstTrackEta", &_DFirstTrackEta, &b__DFirstTrackEta);
+    _currentTreePtr->SetBranchAddress("_DFirstTrackPhi", &_DFirstTrackPhi, &b__DFirstTrackPhi);
+    _currentTreePtr->SetBranchAddress("_DSecondTrackPt", &_DSecondTrackPt, &b__DSecondTrackPt);
+    _currentTreePtr->SetBranchAddress("_DSecondTrackEta", &_DSecondTrackEta, &b__DSecondTrackEta);
+    _currentTreePtr->SetBranchAddress("_DSecondTrackPhi", &_DSecondTrackPhi, &b__DSecondTrackPhi);
+    _currentTreePtr->SetBranchAddress("_DThirdTrackPt", &_DThirdTrackPt, &b__DThirdTrackPt);
+    _currentTreePtr->SetBranchAddress("_DThirdTrackEta", &_DThirdTrackEta, &b__DThirdTrackEta);
+    _currentTreePtr->SetBranchAddress("_DThirdTrackPhi", &_DThirdTrackPhi, &b__DThirdTrackPhi);
+    _currentTreePtr->SetBranchAddress("_DFirstTrackX", &_DFirstTrackX, &b__DFirstTrackX);
+    _currentTreePtr->SetBranchAddress("_DFirstTrackY", &_DFirstTrackY, &b__DFirstTrackY);
+    _currentTreePtr->SetBranchAddress("_DFirstTrackZ", &_DFirstTrackZ, &b__DFirstTrackZ);
+    _currentTreePtr->SetBranchAddress("_DSecondTrackX", &_DSecondTrackX, &b__DSecondTrackX);
+    _currentTreePtr->SetBranchAddress("_DSecondTrackY", &_DSecondTrackY, &b__DSecondTrackY);
+    _currentTreePtr->SetBranchAddress("_DSecondTrackZ", &_DSecondTrackZ, &b__DSecondTrackZ);
+    _currentTreePtr->SetBranchAddress("_DThirdTrackX", &_DThirdTrackX, &b__DThirdTrackX);
+    _currentTreePtr->SetBranchAddress("_DThirdTrackY", &_DThirdTrackY, &b__DThirdTrackY);
+    _currentTreePtr->SetBranchAddress("_DThirdTrackZ", &_DThirdTrackZ, &b__DThirdTrackZ);
+
     //add all individually stored triggers 
     // always reset triggers instead of rare case of combining primary datasets 
     // to prevent invalidating addresses set by setOutputTree
@@ -904,6 +945,48 @@ void TreeReader::setOutputTree( TTree* outputTree ){
 	outputTree->Branch("_mChi1", &_mChi1, "_mChi1/D");
 	outputTree->Branch("_mChi2", &_mChi2, "_mChi2/D");
     }
+
+    // D variables
+    outputTree->Branch("_nDs", &_nDs, "_nDs/i");
+    outputTree->Branch("_DInvMass", &_DInvMass, "_DInvMass[_nDs]/D");
+    outputTree->Branch("_DType", &_DType, "_DType[_nDs]/D");
+    outputTree->Branch("_DPx", &_DPx, "_DPx[_nDs]/D");
+    outputTree->Branch("_DPy", &_DPy, "_DPx[_nDs]/D");
+    outputTree->Branch("_DPz", &_DPz, "_DPz[_nDs]/D");
+    outputTree->Branch("_DPt", &_DPt, "_DPt[_nDs]/D");
+    outputTree->Branch("_DEta", &_DEta, "_DPEta[_nDs]/D");
+    outputTree->Branch("_DPhi", &_DPhi, "_DPhi[_nDs]/D");
+    outputTree->Branch("_DIsolation", &_DIsolation, "_DIsolation[_nDs]/D");
+    outputTree->Branch("_DDR", &_DDR, "_DDR[_nDs]/D");
+    outputTree->Branch("_DHasFastGenMatch", &_DHasFastGenMatch, "_DHasFastGenMatch[_nDs]/O");
+    outputTree->Branch("_DHasGenMatch", &_DHasGenMatch, "_DHasGenMatch[_nDs]/O");
+    // intermediate resonance variables
+    outputTree->Branch("_DIntResMass", &_DIntResMass, "_DIntResMass[_nDs]/D");
+    outputTree->Branch("_DIntResMassDiff", &_DIntResMassDiff, "_DIntResMassDiff[_nDs]/D");
+    outputTree->Branch("_DIntResX", &_DIntResX, "_DIntResX[_nDs]/D");
+    outputTree->Branch("_DIntResY", &_DIntResY, "_DIntResY[_nDs]/D");
+    outputTree->Branch("_DIntResZ", &_DIntResZ, "_DIntResZ[_nDs]/D");
+    outputTree->Branch("_DIntResVtxNormChi2", &_DIntResVtxNormChi2, "_DIntResVtxNormChi2[_nDs]/D");
+    // track variables
+    outputTree->Branch("_DFirstTrackPt", &_DFirstTrackPt, "_DFirstTrackPt[_nDs]/D");
+    outputTree->Branch("_DFirstTrackEta", &_DFirstTrackEta, "_DFirstTrackEta[_nDs]/D");
+    outputTree->Branch("_DFirstTrackPhi", &_DFirstTrackPhi, "_DFirstTrackPhi[_nDs]/D");
+    outputTree->Branch("_DSecondTrackPt", &_DSecondTrackPt, "_DSecondTrackPt[_nDs]/D");
+    outputTree->Branch("_DSecondTrackEta", &_DSecondTrackEta, "_DSecondTrackEta[_nDs]/D");
+    outputTree->Branch("_DSecondTrackPhi", &_DSecondTrackPhi, "_DSecondTrackPhi[_nDs]/D");
+    outputTree->Branch("_DThirdTrackPt", &_DThirdTrackPt, "_DThirdTrackPt[_nDs]/D");
+    outputTree->Branch("_DThirdTrackEta", &_DThirdTrackEta, "_DThirdTrackEta[_nDs]/D");
+    outputTree->Branch("_DThirdTrackPhi", &_DThirdTrackPhi, "_DThirdTrackPhi[_nDs]/D");
+    outputTree->Branch("_DFirstTrackX", &_DFirstTrackX, "_DFirstTrackX[_nDs]/D");
+    outputTree->Branch("_DFirstTrackY", &_DFirstTrackY, "_DFirstTrackY[_nDs]/D");
+    outputTree->Branch("_DFirstTrackZ", &_DFirstTrackZ, "_DFirstTrackZ[_nDs]/D");
+    outputTree->Branch("_DSecondTrackX", &_DSecondTrackX, "_DSecondTrackX[_nDs]/D");
+    outputTree->Branch("_DSecondTrackY", &_DSecondTrackY, "_DSecondTrackY[_nDs]/D");
+    outputTree->Branch("_DSecondTrackZ", &_DSecondTrackZ, "_DSecondTrackZ[_nDs]/D");
+    outputTree->Branch("_DThirdTrackX", &_DThirdTrackX, "_DThirdTrackX[_nDs]/D");
+    outputTree->Branch("_DThirdTrackY", &_DThirdTrackY, "_DThirdTrackY[_nDs]/D");
+    outputTree->Branch("_DThirdTrackZ", &_DThirdTrackZ, "_DThirdTrackZ[_nDs]/D");
+
 
     //write individual trigger decisions to output tree 
     setMapOutputBranches( outputTree, _triggerMap, "/O" );
