@@ -94,6 +94,12 @@ DMeson& DMeson::operator=( DMeson&& rhs ) noexcept {
     return *this;
 }
 
+
+bool DMeson::isGood() const{
+    return selector->isGood();
+}
+
+
 std::ostream& DMeson::print( std::ostream& os ) const{
     os << "DMeson : ";
     PhysicsObject::print( os );

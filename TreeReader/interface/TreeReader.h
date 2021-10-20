@@ -329,12 +329,14 @@ class TreeReader {
 			    const bool readIndividualTriggers = false, 
 			    const bool readIndividualMetFilters = false,
 			    const bool readAllJECVariations = false,
-			    const bool readGroupedJECVariations = false );
+			    const bool readGroupedJECVariations = false,
+			    const bool readDCandidates = false );
         Event buildEvent( long unsigned, 
 			    const bool readIndividualTriggers = false, 
 			    const bool readIndividualMetFilters = false,
 			    const bool readAllJECVariations = false, 
-                            const bool readGroupedJECVariations = false );
+                            const bool readGroupedJECVariations = false,
+			    const bool readDCandidates = false );
 
         //check whether generator info is present in current tree
         bool containsGeneratorInfo() const;

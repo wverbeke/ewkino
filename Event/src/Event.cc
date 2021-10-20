@@ -8,11 +8,13 @@
 
 Event::Event( const TreeReader& treeReader, 
 		const bool readIndividualTriggers , const bool readIndividualMetFilters,
-		const bool readAllJECVariations, const bool readGroupedJECVariations ) :
+		const bool readAllJECVariations, const bool readGroupedJECVariations,
+		const bool readDCandidates ):
     // make collections of physics objects
     _leptonCollectionPtr( new LeptonCollection( treeReader ) ),
     _jetCollectionPtr( new JetCollection( treeReader,
 			readAllJECVariations, readGroupedJECVariations ) ),
+    _dmesonCollectionPtr( readDCandidates ? new DMesonCollection( treeReader ) : nullptr ),
     _metPtr( new Met( treeReader,
 			readAllJECVariations, readGroupedJECVariations ) ),
     // make additional information structures
@@ -34,6 +36,7 @@ Event::Event( const TreeReader& treeReader,
 Event::~Event(){
     delete _leptonCollectionPtr;
     delete _jetCollectionPtr;
+    if( hasDMesonCollection() ) delete _dmesonCollectionPtr;
     delete _metPtr;
     delete _triggerInfoPtr;
     delete _jetInfoPtr;
@@ -50,6 +53,9 @@ Event::~Event(){
 Event::Event( const Event& rhs ) :
     _leptonCollectionPtr( new LeptonCollection( *rhs._leptonCollectionPtr ) ),
     _jetCollectionPtr( new JetCollection( *rhs._jetCollectionPtr ) ),
+    _dmesonCollectionPtr( rhs.hasDMesonCollection() ? 
+			  new DMesonCollection( *rhs._dmesonCollectionPtr ) : 
+			  nullptr ),
     _metPtr( new Met( *rhs._metPtr ) ),
     _triggerInfoPtr( new TriggerInfo( *rhs._triggerInfoPtr ) ),
     _jetInfoPtr( new JetInfo( *rhs._jetInfoPtr ) ),
@@ -65,6 +71,7 @@ Event::Event( const Event& rhs ) :
 Event::Event( Event&& rhs ) noexcept :
     _leptonCollectionPtr( rhs._leptonCollectionPtr ),
     _jetCollectionPtr( rhs._jetCollectionPtr ),
+    _dmesonCollectionPtr( rhs._dmesonCollectionPtr ),
     _metPtr( rhs._metPtr ),
     _triggerInfoPtr( rhs._triggerInfoPtr ),
     _jetInfoPtr( rhs._jetInfoPtr ),
@@ -77,6 +84,7 @@ Event::Event( Event&& rhs ) noexcept :
 {
     rhs._leptonCollectionPtr = nullptr;
     rhs._jetCollectionPtr = nullptr;
+    rhs._dmesonCollectionPtr = nullptr;
     rhs._metPtr = nullptr;
     rhs._triggerInfoPtr = nullptr;
     rhs._jetInfoPtr = nullptr;
@@ -91,6 +99,7 @@ Event& Event::operator=( const Event& rhs ){
     if( this != &rhs ){
         delete _leptonCollectionPtr;
         delete _jetCollectionPtr;
+	if( hasDMesonCollection() ) delete _dmesonCollectionPtr;
         delete _metPtr;
         delete _triggerInfoPtr;
 	delete _jetInfoPtr;
@@ -104,6 +113,9 @@ Event& Event::operator=( const Event& rhs ){
 
         _leptonCollectionPtr = new LeptonCollection( *rhs._leptonCollectionPtr );
         _jetCollectionPtr = new JetCollection( *rhs._jetCollectionPtr );
+	_dmesonCollectionPtr = rhs.hasDMesonCollection() ? 
+			       new DMesonCollection( *rhs._dmesonCollectionPtr ) :
+			       nullptr;
         _metPtr = new Met( *rhs._metPtr );
         _triggerInfoPtr = new TriggerInfo( *rhs._triggerInfoPtr );
 	_jetInfoPtr = new JetInfo( *rhs._jetInfoPtr );
@@ -123,6 +135,7 @@ Event& Event::operator=( Event&& rhs ) noexcept{
     if( this != &rhs ){
         delete _leptonCollectionPtr;
         delete _jetCollectionPtr;
+	if( hasDMesonCollection() ) delete _dmesonCollectionPtr;
         delete _metPtr;
         delete _triggerInfoPtr;
 	delete _jetInfoPtr;
@@ -138,6 +151,8 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         rhs._leptonCollectionPtr = nullptr;
         _jetCollectionPtr = rhs._jetCollectionPtr;
         rhs._jetCollectionPtr = nullptr;
+	_dmesonCollectionPtr = rhs._dmesonCollectionPtr;
+	rhs._dmesonCollectionPtr = nullptr;
         _metPtr = rhs._metPtr;
         rhs._metPtr = nullptr;
         _triggerInfoPtr = rhs._triggerInfoPtr;
@@ -182,6 +197,19 @@ void Event::checkSusyMassInfo() const{
 SusyMassInfo& Event::susyMassInfo() const{
     checkSusyMassInfo();
     return *_susyMassInfoPtr;
+}
+
+
+void Event::checkDMesonCollection() const{
+    if( !hasDMesonCollection() ){
+	throw std::domain_error( "Trying to access D meson collection which is not present!" );
+    }
+}
+
+
+DMesonCollection& Event::dmesonCollection() const{
+    checkDMesonCollection();
+    return *_dmesonCollectionPtr;
 }
 
 

@@ -35,7 +35,8 @@ class Event{
 		const bool readIndividualTriggers = false, 
 		const bool readIndividualMetFilters = false,
 		const bool readAllJECVariations = false,
-		const bool readGroupedJECVariations = false );
+		const bool readGroupedJECVariations = false,
+		const bool readDCandidates = false );
         Event( const Event& );
         Event( Event&& ) noexcept;
 
@@ -47,6 +48,9 @@ class Event{
 
         LeptonCollection& leptonCollection() const{ return *_leptonCollectionPtr; }
         JetCollection& jetCollection() const{ return *_jetCollectionPtr; }
+	DMesonCollection& dmesonCollection() const;
+	// note: cannot simply return *_dmesonCollectionPtr since it might be nullptr
+	//       (if readDCandidates is false)
         Met& met() const{ return *_metPtr; }
         TriggerInfo& triggerInfo() const{ return *_triggerInfoPtr; }
 	JetInfo& jetInfo() const{ return *_jetInfoPtr; }
@@ -58,6 +62,8 @@ class Event{
 	    return (*_leptonCollectionPtr)[ leptonIndex ]; }
         Jet& jet( const JetCollection::size_type jetIndex ) const{ 
 	    return (*_jetCollectionPtr)[ jetIndex ]; }
+	DMeson& dmeson( const DMesonCollection::size_type dmesonIndex) const{
+	    return (*_dmesonCollectionPtr)[ dmesonIndex ]; }
 
 
         void sortLeptonsByPt() const{ _leptonCollectionPtr->sortByPt(); }
@@ -228,6 +234,7 @@ class Event{
     private:
         LeptonCollection* _leptonCollectionPtr = nullptr;
         JetCollection* _jetCollectionPtr = nullptr;
+	DMesonCollection* _dmesonCollectionPtr = nullptr;
         Met* _metPtr = nullptr;
         TriggerInfo* _triggerInfoPtr = nullptr;
 	JetInfo* _jetInfoPtr = nullptr;
@@ -256,6 +263,10 @@ class Event{
         //check the presence of susy information
         bool hasSusyMassInfo() const{ return ( _susyMassInfoPtr != nullptr ); }
         void checkSusyMassInfo() const;
+	
+	// check the presence of dmeson collection
+	bool hasDMesonCollection() const{ return ( _dmesonCollectionPtr != nullptr ); }
+	void checkDMesonCollection() const;
 
 	Event variedLeptonCollectionEvent(
                     LeptonCollection (LeptonCollection::*variedCollection)() const ) const;

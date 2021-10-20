@@ -423,19 +423,23 @@ void TreeReader::GetEntry( long unsigned entry ){
 
 Event TreeReader::buildEvent( const Sample& samp, long unsigned entry, 
 	const bool readIndividualTriggers, const bool readIndividualMetFilters,
-	const bool readAllJECVariations, const bool readGroupedJECVariations ){
+	const bool readAllJECVariations, const bool readGroupedJECVariations,
+	const bool readDCandidates ){
     GetEntry( samp, entry );
     return Event( *this, readIndividualTriggers, readIndividualMetFilters,
-			readAllJECVariations, readGroupedJECVariations );
+			readAllJECVariations, readGroupedJECVariations,
+			readDCandidates );
 }
 
 
 Event TreeReader::buildEvent( long unsigned entry, 
 	const bool readIndividualTriggers, const bool readIndividualMetFilters,
-	const bool readAllJECVariations, const bool readGroupedJECVariations ){
+	const bool readAllJECVariations, const bool readGroupedJECVariations,
+	const bool readDCandidates ){
     GetEntry( entry );
     return Event( *this, readIndividualTriggers, readIndividualMetFilters,
-			readAllJECVariations, readGroupedJECVariations );
+			readAllJECVariations, readGroupedJECVariations,
+			readDCandidates );
 }
 
 

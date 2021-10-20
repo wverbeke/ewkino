@@ -30,6 +30,9 @@ class DMeson : public PhysicsObject{
         double dR() const{ return _dR; }
         bool hasFastGenMatch() const{ return _hasFastGenMatch; }
         bool hasGenMatch() const{ return _hasGenMatch; }
+
+	// for selections
+	bool isGood() const override;
         
 	// print dmeson information
         virtual std::ostream& print( std::ostream& ) const override;

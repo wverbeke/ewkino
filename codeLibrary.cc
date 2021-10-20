@@ -26,6 +26,7 @@
 #include "Event/src/TauCollection.cc"
 #include "Event/src/JetCollection.cc"
 #include "Event/src/JetInfo.cc"
+#include "Event/src/DMesonCollection.cc"
 #include "Event/src/TriggerInfo.cc"
 #include "Event/src/GeneratorInfo.cc"
 #include "Event/src/SusyMassInfo.cc"
