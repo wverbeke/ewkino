@@ -11,11 +11,13 @@
 #include "objects/src/LeptonGeneratorInfo.cc"
 #include "objects/src/LeptonSelector.cc"
 #include "objects/src/GenMet.cc"
+#include "objects/src/DMeson.cc"
 #include "objectSelection/MuonSelector.cc"
 #include "objectSelection/ElectronSelector.cc"
 #include "objectSelection/TauSelector.cc"
 #include "objectSelection/JetSelector.cc"
 #include "objectSelection/bTagWP.cc"
+#include "objectSelection/DMesonSelector.cc"
 
 //include Event code 
 #include "Event/src/LeptonCollection.cc"
