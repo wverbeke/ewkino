@@ -95,10 +95,29 @@ DMeson& DMeson::operator=( DMeson&& rhs ) noexcept {
 }
 
 
+// for selections
+
 bool DMeson::isGood() const{
     return selector->isGood();
 }
 
+bool DMeson::passCut( double (DMeson::*property)() const,
+                      double minValue, double maxValue ) const{
+    return selector->passCut( property, minValue, maxValue );
+}
+
+bool DMeson::passCut( std::tuple< double (DMeson::*)() const,
+                          double, double > cut ) const{
+    return selector->passCut( cut );
+}
+
+bool DMeson::passCuts( std::vector< std::tuple< double (DMeson::*)() const,
+                                        double, double > > cuts ) const{
+    return selector->passCuts( cuts );
+}
+
+
+// for printing info
 
 std::ostream& DMeson::print( std::ostream& os ) const{
     os << "DMeson : ";

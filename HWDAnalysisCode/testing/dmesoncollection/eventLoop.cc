@@ -45,9 +45,16 @@ void eventLoop( const std::string& pathToFile, long nEvents ){
 	    std::cout << *dmeson << std::endl; // D meson properties
 	}
 
-	// do some selections
-	dmesonCollection.selectGoodDMesons();
-	std::cout << "after selection: " << dmesonCollection.size() << std::endl;
+	// select good D mesons
+	//dmesonCollection.selectGoodDMesons();
+	//std::cout << "after selection: " << dmesonCollection.size() << std::endl;
+
+	// select D mesons passing given cuts
+	std::vector< std::tuple< double (DMeson::*)() const, double, double > > cuts;
+	cuts.push_back( std::make_tuple( &DMeson::pt, 0., 10. ) );
+	dmesonCollection.selectPassingDMesons( cuts );
+	std::cout << "after selection: " << dmesonCollection.size() << std::endl;	
+	
     }
 }
 

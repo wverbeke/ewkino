@@ -33,6 +33,12 @@ class DMeson : public PhysicsObject{
 
 	// for selections
 	bool isGood() const override;
+	bool passCut( double (DMeson::*property)() const,
+                      double minValue, double maxValue ) const;
+        bool passCut( std::tuple< double (DMeson::*)() const,
+                                  double, double > ) const;
+        bool passCuts( std::vector< std::tuple< double (DMeson::*)() const,
+                                                double, double > > ) const;
         
 	// print dmeson information
         virtual std::ostream& print( std::ostream& ) const override;

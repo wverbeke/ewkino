@@ -16,6 +16,13 @@ class DMesonSelector{
             else return isGood2018();
         }
 
+	bool passCut( double (DMeson::*property)() const, 
+		      double minValue, double maxValue ) const;
+	bool passCut( std::tuple< double (DMeson::*)() const, 
+				  double, double > ) const;
+	bool passCuts( std::vector< std::tuple< double (DMeson::*)() const, 
+						double, double > > ) const;
+
     private:
         DMeson* dmesonPtr;
 
