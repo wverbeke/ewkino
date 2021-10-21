@@ -7,6 +7,7 @@
 //include other parts of framework
 #include "LeptonCollection.h"
 #include "JetCollection.h"
+#include "DMesonCollection.h"
 #include "GeneratorInfo.h"
 #include "TriggerInfo.h"
 #include "JetInfo.h"
