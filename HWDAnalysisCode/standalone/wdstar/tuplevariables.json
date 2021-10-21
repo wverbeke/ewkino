@@ -1,0 +1,8 @@
+[
+{"name": "_DMassDiff",
+ "size": "_nDs", 
+ "xlow": 0.14, 
+ "xhigh": 0.17,
+ "nbins": 30, 
+ "title": "m(D^{*}) - m(D^{0}) [GeV]"}
+]

@@ -10,3 +10,14 @@ codeLibrary.o
 # root files
 # (exceptions may exist, e.g. scalefactors, but should be added manually)
 **.root
+
+# images
+**.png
+**.pdf
+**.eps
+
+# pickled python objects
+**.pkl
+
+# analysis-specific: ignore other analysis codes
+tZqAnalysisCode

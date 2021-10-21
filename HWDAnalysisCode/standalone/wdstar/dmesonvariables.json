@@ -1,0 +1,22 @@
+[
+{"name": "massdiff",
+ "xlow": 0.14, 
+ "xhigh": 0.17,
+ "nbins": 30, 
+ "title": "m(D*) - m(D^{0}) [GeV]"},
+{"name": "pt",
+ "xlow": 0.0,
+ "xhigh": 15.0,
+ "nbins": 30,
+ "title": "p_{T}(D*)"},
+{"name":"mass",
+ "xlow":1.8,
+ "xhigh":2.2,
+ "nbins":30,
+ "title": "m(D*) [GeV]"},
+{"name":"intresmass",
+ "xlow":1.6,
+ "xhigh":2.1,
+ "nbins":30,
+ "title": "m(D^{0}) [GeV]"}
+]
