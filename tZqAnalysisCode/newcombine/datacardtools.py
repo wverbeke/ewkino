@@ -263,6 +263,13 @@ def readhistfile(histfile,variable,signals,
         if not systematic in pinfo[process].systematics:
             pinfo[process].addsys(systematic,1)
     # add all processes to a collection
+    if len(plist)==0:
+	print('WARNING in datacardtools.py/readhistfile: returning an empty ProcessInfoCollection;'
+		+' check if the file contains the right histograms and if they are read correctly.')
+    if len(slist)==0:
+	print('WARNING in datacardtools.py/readhistfile: returning a ProcessInfoCollection'
+		+' with no systematics;'
+                +' check if the file contains the right histograms and if they are read correctly.')
     PIC = ProcessInfoCollection()
     for p in pinfo.values():
 	PIC.addprocess(p)

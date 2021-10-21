@@ -1,0 +1,12 @@
+# gitignore file
+# see e.g. here: https://www.atlassian.com/git/tutorials/saving-changes/gitignore
+
+# compiled code library
+codeLibrary.o
+
+# compiled python code
+**.pyc
+
+# root files
+# (exceptions may exist, e.g. scalefactors, but should be added manually)
+**.root

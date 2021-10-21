@@ -22,9 +22,11 @@ def getlabel( tag ):
     if('signalsideband' in tag): extrainfos.append('Nonprompt enriched')
 
     if('signalregion' in tag and '_cat1_' in tag):
-        extrainfos.append('1 b jet, 2-3 jets')
+        extrainfos.append(r'1 b jet,')
+	extrainfos.append(r'2-3 jets')
     if('signalregion' in tag and '_cat2_' in tag):
-        extrainfos.append(r'1 b jet, #geq 4 jets')
+        extrainfos.append(r'1 b jet,')
+	extrainfos.append(r'#geq 4 jets')
     if('signalregion' in tag and '_cat3_' in tag):
         extrainfos.append(r'#geq 2 b jets')
     if('signalregion' in tag and '_cat123_' in tag):
@@ -38,7 +40,7 @@ def getlabel( tag ):
     if('signalregion' in tag and '_ch3_' in tag):
         extrainfos.append('channel mmm')
 
-    #extrainfos.append('BDT score > 0.5')
+    extrainfos.append('BDT score > 0.5')
 
     if len(extrainfos)==0: return None
     label = '\n'.join(extrainfos)
@@ -63,11 +65,11 @@ def getp2yaxrange( tag ):
     ### customize y axis range of bottom pad
 
     # default: default ranges (by passing None)
-    #return None
+    return None
 
     # for some plots in paper: smaller ranges
-    if('signalsideband' in tag): return (0.4, 1.599)
-    if('zgcontrolregion' in tag): return (0.601, 1.399)
+    #if('signalsideband' in tag): return (0.4, 1.599)
+    #if('zgcontrolregion' in tag): return (0.601, 1.399)
     return None
 
 def getextracmstext():
@@ -123,10 +125,10 @@ if __name__=='__main__':
     #regions.append('signalregion_cat1')
     #regions.append('signalregion_cat2')
     #regions.append('signalregion_cat3')
-    #regions.append('signalregion_cat123')
+    regions.append('signalregion_cat123')
     #regions.append('wzcontrolregion')
     #regions.append('zzcontrolregion')
-    regions.append('zgcontrolregion')
+    #regions.append('zgcontrolregion')
     #regions.append('ttzcontrolregion')
     #regions.append('signalsideband_noossf_cat1')
     #regions.append('signalsideband_noossf_cat123')

@@ -74,9 +74,11 @@ def plotchannels( thchannels, exchannels, outfile,
     thlinewidth = 0
     thdrawoptions = "P 2"
     thlegendattr = "f"
-    exfillcolorlist = [ROOT.kOrange-4,ROOT.kCyan-4]
+    #exfillcolorlist = [ROOT.kOrange-4,ROOT.kCyan-4]
+    exfillcolorlist = [ROOT.kAzure, ROOT.kRed]
     exfillstyle = 1001
-    exlinecolorlist = [ROOT.kOrange-4,ROOT.kCyan-4]
+    #exlinecolorlist = [ROOT.kOrange-4,ROOT.kCyan-4]
+    exlinecolorlist = [ROOT.kAzure, ROOT.kRed]
     exlinewidth = 5
     exdrawoptions = "P"
     exlegendattr = "l"

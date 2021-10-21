@@ -159,8 +159,10 @@ for page in xrange(n):
 		y2 = y1 + h
 		box = ROOT.TPaveText(0, y1, 1, y2, 'NDC')
 		plot.Set(box, TextSize=0.02, BorderSize=0, FillColor=0, TextAlign=12, Margin=0.005)
-		if i % 2 == 0:
-			box.SetFillColor(18)
+		# make every second box grey (disabled after final reading comment)
+		#if i % 2 == 0:
+		#	box.SetFillColor(18)
+		# add rank number (disabled after style comment)
 		#box.AddText('%i' % (n_params - i + page * show))
 		box.Draw()
 		boxes.append(box)
@@ -305,7 +307,7 @@ for page in xrange(n):
 	if externalPullDef:
 		plot.Set(h_pulls.GetXaxis(), TitleSize=0.04, LabelSize=0.03, Title=CP.returnTitle(args.pullDef))
 	else:
-		plot.Set(h_pulls.GetXaxis(), TitleSize=0.04, LabelSize=0.03, Title='(#hat{#theta}-#theta_{0})/#Delta#theta')
+		plot.Set(h_pulls.GetXaxis(), TitleSize=0.04, LabelSize=0.03, Title='(#hat{#theta}-#theta_{0}) / #Delta#theta')
 
 	plot.Set(h_pulls.GetYaxis(), LabelSize=0.04, TickLength=0.0)
 	h_pulls.GetYaxis().LabelsOption('v')

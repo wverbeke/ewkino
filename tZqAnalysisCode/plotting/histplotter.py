@@ -141,7 +141,8 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     infofont = 4; infosize = 20
     # title offset
     ytitleoffset = 1.5
-    xtitleoffset = 3
+    # temporary modification for an annoying comment on one figure:
+    xtitleoffset = 3.5
     # margins:
     p1topmargin = 0.07
     p2bottommargin = 0.4
@@ -151,7 +152,9 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     if p1legendbox is None: 
 	p1legendbox = [leftmargin+0.35,1-p1topmargin-0.3,1-rightmargin-0.03,1-p1topmargin-0.03]
 	# temporary modification for an annoying comment on one figure:
-	p1legendbox = [leftmargin+0.35,1-p1topmargin-0.35,1-rightmargin-0.03,1-p1topmargin-0.03]
+	#p1legendbox = [leftmargin+0.35,1-p1topmargin-0.35,1-rightmargin-0.03,1-p1topmargin-0.03]
+	# and another:
+	#p1legendbox = [leftmargin+0.3,1-p1topmargin-0.35,1-rightmargin-0.03,1-p1topmargin-0.03]
     if p1legendncols is None:
 	p1legendncols = 2
     p2legendbox = [leftmargin+0.03,0.84,1-rightmargin-0.03,0.97]
@@ -313,7 +316,7 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     (rangemin,rangemax) = getminmax(datahist,mcerror,yaxlog)
     if yaxrange is not None: (rangemin,rangemax) = yaxrange
     # temporary modification for an annoying comment on one figure:
-    rangemax = rangemax*1.2
+    #rangemax = rangemax*1.2
     mcerror.SetMinimum(rangemin)
     mcerror.SetMaximum(rangemax)
 
@@ -348,7 +351,6 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     lumistr = ''
     if lumi is not None:
 	lumistr = '{0:.3g}'.format(lumi/1000.)+' fb^{-1} (13 TeV)'
-    print(extracmstext)
     pt.drawLumi(pad1,extratext=extracmstext,lumitext=lumistr)
 
     # draw extra info
@@ -356,7 +358,7 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     tinfo.SetTextFont(10*infofont+3)
     tinfo.SetTextSize(infosize)
     for i,info in enumerate(extrainfos):
-	tinfo.DrawLatexNDC(infoleft,infotop-(i+1)*0.05,info)
+	tinfo.DrawLatexNDC(infoleft,infotop-(i+1)*0.07,info)
 
     ### make the lower part of the plot
     pad2.cd()

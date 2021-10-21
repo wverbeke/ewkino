@@ -111,7 +111,7 @@ def subselect_systematics( systematics ):
 		if rmtag==sys:
 		    keep = False
 		    break
-	#print(sys+' -> '+str(keep))
+	print(sys+' -> '+str(keep))
 	if keep: newsystlist.append(sys)
     return newsystlist
 
@@ -132,8 +132,8 @@ def disable_default( processinfo, year, region, npfromdata ):
     # (note: also check subselect_systematics!)
     processinfo.disablesys( 'pdfNorm', (['tZq','WZ','ZZH',
 					'ttZ','nonprompt',
-					#'Xgamma',
-					'Xgamma_int','Xgamma_ext'
+					'Xgamma',
+					#'Xgamma_int','Xgamma_ext'
 					] ) )
 
     # disable pileup for 2017 (problem in histograms for tZq sample)
@@ -189,8 +189,8 @@ def addnormsys_default( processinfo, year, region, npfromdata ):
     normsyslist.append(trname)
     # - add individual normalization uncertainties
     uncs_norm = ({'WZ':1.1,'ZZH':1.1,'ttZ':1.15,'nonprompt':1.3,
-		    #'Xgamma':1.1,
-		    'Xgamma_int':1.1,'Xgamma_ext':1.1
+		    'Xgamma':1.1,
+		    #'Xgamma_int':1.1,'Xgamma_ext':1.1
 		})
     # (full norm unc for all controlled processes)
     #uncs_norm = {'tbartZ':1.15,'Xgamma':1.1,'nonprompt':1.3}
