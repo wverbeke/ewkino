@@ -15,8 +15,53 @@
 #include "../interface/ReweighterPrefire.h"
 
 
+// --------------------------------------
+// empty reweighter for testing purposes 
+// --------------------------------------
 
-CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& weightDirectory, const std::string& year, const std::vector< Sample >& samples ) const{
+CombinedReweighter EmptyReweighterFactory::buildReweighter(
+        const std::string& weightDirectory,
+        const std::string& year,
+        const std::vector< Sample >& samples ) const{
+ 
+    // reweighter to return
+    CombinedReweighter combinedReweighter;
+    // dummy condition on args to avoid compilation warnings
+    if(weightDirectory=="" && year=="" && samples.size()==0) return combinedReweighter;
+
+    // add all reweighters needed formally, but each reweighter returns unity for each event
+    combinedReweighter.addReweighter( "muonID", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "muonIDSyst", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "muonIDStat", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "electronID", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "electronIDSyst", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "electronIDStat", std::make_shared< ReweighterEmpty >() );
+    if( year == "2016" || year == "2017" ){
+	combinedReweighter.addReweighter( "electronReco_pTBelow20",
+        std::make_shared< ReweighterEmpty >() );
+        combinedReweighter.addReweighter( "electronReco_pTAbove20",
+        std::make_shared< ReweighterEmpty >() );
+    } else if( year == "2018" ){
+	combinedReweighter.addReweighter( "electronReco",
+	std::make_shared< ReweighterEmpty >() );
+    }
+    combinedReweighter.addReweighter( "pileup", std::make_shared<ReweighterEmpty>() );
+    combinedReweighter.addReweighter( "bTag_heavy", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "bTag_light", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "bTag_shape", std::make_shared< ReweighterEmpty >() );
+    combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterEmpty >() );
+
+    return combinedReweighter;
+}
+
+// -------------------------------
+// reweighter for ewkino analysis 
+// -------------------------------
+
+CombinedReweighter EwkinoReweighterFactory::buildReweighter( 
+	const std::string& weightDirectory, 
+	const std::string& year, 
+	const std::vector< Sample >& samples ) const{
 
     analysisTools::checkYearString( year );
 
@@ -24,7 +69,8 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     CombinedReweighter combinedReweighter;
 
     //make muon ID Reweighter
-    // note: these files are not present in the repository, replace by code below in order for the reweighter to work!
+    // note: these files are not present in the repository, 
+    // replace by code below in order for the reweighter to work!
     /*TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_m_" + year + "_3lTight.root" ).c_str() );
     std::shared_ptr< TH2 > muonSFHist( dynamic_cast< TH2* >( muonSFFile->Get( "SFglobal" ) ) ); */
     TFile* muonSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/looseToTight_" + year + "_m_3l.root" ).c_str() );
@@ -36,7 +82,8 @@ CombinedReweighter EwkinoReweighterFactory::buildReweighter( const std::string& 
     combinedReweighter.addReweighter( "muonID", std::make_shared< ReweighterMuons >( muonReweighter ) );
 
     //make electron ID Reweighter
-    // note: these files are not present in the repository, replace by code below in order for the reweighter to work!
+    // note: these files are not present in the repository, 
+    // replace by code below in order for the reweighter to work!
     /*TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/leptonSF_e_" + year + "_3lTight.root" ).c_str() );
     std::shared_ptr< TH2 > electronSFHist( dynamic_cast< TH2* >( eleSFFile->Get( "SFglobal" ) ) ); */
     TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) + "weightFiles/leptonSF/looseToTight_" + year + "_e_3l.root" ).c_str() );

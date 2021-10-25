@@ -61,5 +61,6 @@
 #include "weights/src/ReweighterBTagLightFlavor.cc"
 #include "weights/src/ReweighterPileup.cc"
 #include "weights/src/ReweighterPrefire.cc"
+#include "weights/src/ReweighterEmpty.cc"
 #include "weights/src/CombinedReweighter.cc"
 #include "weights/src/ConcreteReweighterFactory.cc"
