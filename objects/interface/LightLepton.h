@@ -36,6 +36,7 @@ class LightLepton : public Lepton {
         //lepton MVA discriminant
         double leptonMVAtZq() const{ return _leptonMVAtZq; }
         double leptonMVAttH() const{ return _leptonMVAttH; }
+	double leptonMVATOP() const{ return _leptonMVATOP; }
 
         //check lepton type
         virtual bool isLightLepton() const override{ return true; }
@@ -65,6 +66,7 @@ class LightLepton : public Lepton {
         //lepton MVA output 
         double _leptonMVAtZq = 0;
         double _leptonMVAttH = 0;
+	double _leptonMVATOP = 0;
 
     protected: 
 
