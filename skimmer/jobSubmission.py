@@ -1,3 +1,8 @@
+### WARNING:
+### This functionality has been superseded by that in jobSubmission/qsubTools.py
+### which should be equivalent to here but better structured and with small updates.
+### This file is kept only for backward compatibility.
+
 
 #include python library classes
 import subprocess
