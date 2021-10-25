@@ -16,7 +16,8 @@ LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonInd
     _closestJetDeepFlavor( treeReader._closestJetDeepFlavor_b[leptonIndex] + treeReader._closestJetDeepFlavor_bb[leptonIndex] + treeReader._closestJetDeepFlavor_lepb[leptonIndex] ),
     _closestJetTrackMultiplicity( treeReader._selectedTrackMult[leptonIndex] ),
     _leptonMVAtZq( treeReader._leptonMvatZq[leptonIndex] ),
-    _leptonMVAttH( treeReader._leptonMvaTTH[leptonIndex] )
+    _leptonMVAttH( treeReader._leptonMvaTTH[leptonIndex] ),
+    _leptonMVATOP( treeReader._leptonMvaTOP[leptonIndex] )
 {
 
     //catch nan deep CSV values 
