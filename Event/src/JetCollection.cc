@@ -138,6 +138,34 @@ JetCollection JetCollection::JECDownCollection( std::string source ) const{
     return buildVariedCollection( &Jet::JetJECDown, source );
 }
 
+JetCollection JetCollection::getVariedJetCollection( const std::string& variation) const{
+    if( variation == "nominal" ){
+        return this->goodJetCollection();
+    } else if( variation == "JECDown" ){
+        return this->JECDownCollection().goodJetCollection();
+    } else if( variation == "JECUp" ){
+        return this->JECUpCollection().goodJetCollection();
+    } else if( variation == "JERDown" ){
+        return this->JERDownCollection().goodJetCollection();
+    } else if( variation == "JERUp" ){
+        return this->JERUpCollection().goodJetCollection();
+    } else if( variation == "UnclDown" ){
+        return this->goodJetCollection();
+    } else if( variation == "UnclUp" ){
+        return this->goodJetCollection();
+    } else if( stringTools::stringEndsWith(variation,"Up") ){
+        std::string jecvar = variation.substr(0, variation.size()-2);
+        return this->JECUpCollection( jecvar ).goodJetCollection();
+    } else if( stringTools::stringEndsWith(variation,"Down") ){
+        std::string jecvar = variation.substr(0, variation.size()-4);
+        return this->JECDownCollection( jecvar ).goodJetCollection();
+    } else {
+        throw std::invalid_argument( std::string("ERROR in getVariedJetCollection: ")
+	+ "jet variation " + variation + " is unknown." );
+    }
+}
+
+
 JetCollection::size_type JetCollection::numberOfLooseBTaggedJets() const{
     return count( &Jet::isBTaggedLoose );
 }

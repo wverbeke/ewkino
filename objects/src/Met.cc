@@ -104,6 +104,33 @@ Met Met::MetJECUp( const std::string source ) const{
     return variedMetPxPy( newpxy.first, newpxy.second );
 }
 
+Met Met::getVariedMet( const std::string& variation ) const{
+    if( variation == "nominal" ){
+        return *this;
+    } else if( variation == "JECDown" ){
+        return this->MetJECDown();
+    } else if( variation == "JECUp" ){
+        return this->MetJECUp();
+    } else if( variation == "JERDown" ){
+        return *this;
+    } else if( variation == "JERUp" ){
+        return *this;
+    } else if( variation == "UnclDown" ){
+        return this->MetUnclusteredDown();
+    } else if( variation == "UnclUp" ){
+        return this->MetUnclusteredUp();
+    } else if( stringTools::stringEndsWith(variation,"Up") ){
+        std::string jecvar = variation.substr(0, variation.size()-2);
+        return this->MetJECUp( jecvar );
+    } else if( stringTools::stringEndsWith(variation,"Down") ){
+        std::string jecvar = variation.substr(0, variation.size()-4);
+        return this->MetJECDown( jecvar );
+    } else {
+        throw std::invalid_argument( std::string("### ERROR ### in Met::getVariedMet: ")
+	+ "met variation " + variation + " is unknown." );
+    }
+}
+
 
 std::vector< double > Met::metPtVariations() const{
     return {
