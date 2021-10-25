@@ -7,6 +7,12 @@ New user specified ReweighterFactory derivates should be listed here
 
 #include "ReweighterFactory.h"
 
+class EmptyReweighterFactory : public ReweighterFactory {
+    public: 
+	virtual CombinedReweighter buildReweighter( const std::string&, const std::string&, const std::vector< Sample >& ) const override;
+};
+
+
 class EwkinoReweighterFactory : public ReweighterFactory {
 
     public:
