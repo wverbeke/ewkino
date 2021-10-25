@@ -108,7 +108,7 @@ void eventloopEventFlattening(
 int main( int argc, char* argv[] ){
     std::cerr<<"###starting###"<<std::endl;
     if( argc != 13  ){
-        std::cerr << "ERROR: eventFlattener requires the following arguments: ";
+        std::cerr << "ERROR: eventFlattener requires the following arguments: " << std::endl;
         std::cerr << "- input_file_path" << std::endl;
 	std::cerr << "- norm" << std::endl;
 	std::cerr << "- output_directory" << std::endl;
@@ -143,7 +143,7 @@ int main( int argc, char* argv[] ){
     bool doMVA = (argvStr[10]=="True" || argvStr[10]=="true");
     std::string pathToXMLFile = "";
     if(doMVA){ pathToXMLFile = argvStr[11]; }
-    long nevents = std::stol(argvStr[7]);
+    long nevents = std::stol(argvStr[12]);
 
     // check readability of input file
     bool validInput = rootFileTools::nTupleIsReadable( input_file_path );

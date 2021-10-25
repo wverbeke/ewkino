@@ -88,7 +88,7 @@ void eventFlattening::setVariables(std::map<std::string,double> varmap){
     _yield = getVariable( varmap, "_yield" );
     _leptonPtLeading = getVariable( varmap, "_leptonPtLeading" );
     _leptonEtaLeading = getVariable( varmap, "_leptonEtaLeading" );
-    _leptonChargeLeading = getVariable( varmap, "_leptonChargeLeading" );
+    _leptonChargeLeading = (int) getVariable( varmap, "_leptonChargeLeading" );
     _numberOfVertices = getVariable( varmap, "_numberOfVertices" );
     _fakeRateFlavour = (int) getVariable( varmap, "_fakeRateFlavour" );
 }
@@ -162,7 +162,7 @@ void eventFlattening::initOutputTree(TTree* outputTree){
     outputTree->Branch("_yield", &_yield, "_yield/F");
     outputTree->Branch("_leptonPtLeading", &_leptonPtLeading, "_leptonPtLeading/F");
     outputTree->Branch("_leptonEtaLeading", &_leptonEtaLeading, "_leptonEtaLeading/F");
-    outputTree->Branch("_leptonChargeLeading", &_leptonChargeLeading, "_leptonChargeLeading/F");
+    outputTree->Branch("_leptonChargeLeading", &_leptonChargeLeading, "_leptonChargeLeading/I");
     outputTree->Branch("_numberOfVertices", &_numberOfVertices, "_numberOfVertices/F");
     outputTree->Branch("_fakeRateFlavour", &_fakeRateFlavour, "_fakeRateFlavour/I");
 }
@@ -273,50 +273,53 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
         std::shared_ptr<Lepton> lep = *lIt;
         if(lep->isElectron()){
 	    std::shared_ptr<Electron> ele = std::static_pointer_cast<Electron>(lep);
-	    if(ele->leptonMVATOP() < varmap["_leptonMVATOP_min"]){
-	    varmap["_leptonMVATOP_min"] = ele->leptonMVATOP();
+	    if(ele->leptonMVATOP() < getVariable( varmap, "_leptonMVATOPMin" ) ){
+		varmap["_leptonMVATOPMin"] = ele->leptonMVATOP();
 	    }
         }
         else if(lep->isMuon()){
 	    std::shared_ptr<Muon> mu = std::static_pointer_cast<Muon>(lep);
-	    if(mu->leptonMVATOP() < varmap["_leptonMVATOP_min"]){
-	    varmap["_leptonMVATOP_min"] = mu->leptonMVATOP();
+	    if(mu->leptonMVATOP() < getVariable( varmap, "_leptonMVATOPMin" ) ){
+		varmap["_leptonMVATOPMin"] = mu->leptonMVATOP();
 	    }
         }
     }
-    varmap["_MT"] = event.mtW();
+    // varmap["_MT"] = event.mtW(); 
+    varmap["_MT"] = mt( lepcollection[0], met );
+    // note: cannot use event.mtW() as it is only defined for events with a Z candidate...
+    //       instead, use mt() as defined in the PhysicsObject class
 
     // loop over jets and find relevant quantities
     for(JetCollection::const_iterator jIt = jetcollection.cbegin();
 	    jIt != jetcollection.cend(); jIt++){
 	Jet& jet = **jIt;
         // if deepCSV is higher than maximum, modify max
-        if(jet.deepCSV()>varmap["_deepCSVMax"] and jet.inBTagAcceptance()){
+        if(jet.deepCSV()>getVariable(varmap, "_deepCSVMax") and jet.inBTagAcceptance()){
 	    varmap["_deepCSVMax"] = jet.deepCSV();
 	}
-	if(jet.deepFlavor()>varmap["_deepFlavorMax"] and jet.inBTagAcceptance()){
+	if(jet.deepFlavor()>getVariable(varmap, "_deepFlavorMax") and jet.inBTagAcceptance()){
 	    varmap["_deepFlavorMax"] = jet.deepFlavor();
 	}
     }
 
     // at this point all variables have been calculated; now set TTree and TReader variables
     setVariables(varmap);
+
+    // printouts for testing
+    /*std::cout << "some variables: " << std::endl;
+    std::cout << _leptonAsymmetry << std::endl;
+    std::cout << _deepCSVMax;
+    std::cout << _lT << std::endl;
+    std::cout << _MT << std::endl;;
+    std::cout << _HT << std::endl;
+    std::cout << _nJets << std::endl;
+    std::cout << _nBJets << std::endl; */
+
     // based on these variables: evaluate the BDT output if requested
     if(doMVA){
-
-	// printouts for testing
-	/*std::cout << "some variables: " << std::endl;
-	std::cout << _leptonAsymmetry << std::endl;
-	std::cout << _deepCSVMax;
-	std::cout << _lT << std::endl;
-	std::cout << _MT << std::endl;;
-	std::cout << _HT << std::endl;
-	std::cout << _nJets << std::endl;
-	std::cout << _nBJets << std::endl;*/
-	
 	varmap["_eventBDT"] = reader->EvaluateMVA( "BDT" );
 	// also reset the TTree variable _eventBDT!
-	_eventBDT = varmap["_eventBDT"];
+	_eventBDT = getVariable( varmap, "_eventBDT" );
     }
     
     // now return the varmap (e.g. to fill histograms)

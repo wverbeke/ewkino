@@ -11,6 +11,7 @@ Definition of event variables for H->W+Ds analysis
 
 // include other parts of framework
 #include "../../../Event/interface/Event.h"
+#include "../../../objects/interface/PhysicsObject.h"
 #include "../../../weights/interface/ConcreteReweighterFactory.h"
 
 // include other parts of the analysis code
