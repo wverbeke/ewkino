@@ -245,6 +245,9 @@ bool eventSelections::pass_signalregion(Event& event,
     if(event.getMet(variation).pt() < 10.) return false;
     // do lepton selection for different types of selections
     if(selectiontype!="tight") return false; // NOTE: to be extended
+    // select Ds mesons
+    if(not hasnDMesons(event, 1)) return false;
+    event.selectGoodDMesons();   
     return true;
 }
 
@@ -270,6 +273,9 @@ std::tuple<int,std::string> eventSelections::pass_signalregion_cutflow(
 	return std::make_tuple(4, "fail photon overlap removal"); }
     if(event.getMet(variation).pt() < 10.){ 
 	return std::make_tuple(5, "fail met pt threshold"); }
+    if(not hasnDMesons(event, 1)){
+	return std::make_tuple(6, "fail single good Ds meson"); }
+    event.selectGoodDMesons();
     return std::make_tuple(-1, "pass");
 }
 

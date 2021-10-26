@@ -38,6 +38,9 @@ if __name__=='__main__':
 	raise Exception('ERROR: unexpected number of histograms found: {}'.format(len(histlist)))
     hist = histlist[0]
 
+    # print the histogram to get numerical values
+    ht.printhistogram(hist)
+
     # modify the angle of the labels
     #for i in range(1,hist.GetNbinsX()+1):
     #	label = hist.GetXaxis().GetBinLabel(i)
@@ -54,4 +57,4 @@ if __name__=='__main__':
 			    xaxtitle=xaxtitle, yaxtitle=yaxtitle,
                             label=None, color=None, logy=False, drawoptions=drawoptions,
                             lumitext='', extralumitext='',
-			    bottommargin=0.4)
+			    bottommargin=0.45)
