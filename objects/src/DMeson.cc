@@ -26,6 +26,12 @@ DMeson::DMeson( const TreeReader& treeReader, const unsigned dIndex ):
     _dR( treeReader._DDR[dIndex] ),
     _hasFastGenMatch( treeReader._DHasFastGenMatch[dIndex] ),
     _hasGenMatch( treeReader._DHasGenMatch[dIndex] ),
+    _intResMass( treeReader._DIntResMass[dIndex] ),
+    _intResMassDiff( treeReader._DIntResMassDiff[dIndex] ),
+    _intResX( treeReader._DIntResX[dIndex] ),
+    _intResY( treeReader._DIntResY[dIndex] ),
+    _intResZ( treeReader._DIntResZ[dIndex] ),
+    _intResVtxNormChi2( treeReader._DIntResVtxNormChi2[dIndex] ),
     selector( new DMesonSelector( this ) )
     {}
 
@@ -38,6 +44,12 @@ DMeson::DMeson( const DMeson& rhs ) :
     _dR( rhs._dR ),
     _hasFastGenMatch( rhs._hasFastGenMatch ),
     _hasGenMatch( rhs._hasGenMatch ),
+    _intResMass( rhs._intResMass ),
+    _intResMassDiff( rhs._intResMassDiff ),
+    _intResX( rhs._intResX ),
+    _intResY( rhs._intResY ),
+    _intResZ( rhs._intResZ ),
+    _intResVtxNormChi2( rhs._intResVtxNormChi2 ),
     selector( new DMesonSelector( this ) )
     {}
 
@@ -50,6 +62,12 @@ DMeson::DMeson( DMeson&& rhs ) noexcept :
     _dR( rhs._dR ),
     _hasFastGenMatch( rhs._hasFastGenMatch ),
     _hasGenMatch( rhs._hasGenMatch ),
+    _intResMass( rhs._intResMass ),
+    _intResMassDiff( rhs._intResMassDiff ),
+    _intResX( rhs._intResX ),
+    _intResY( rhs._intResY ),
+    _intResZ( rhs._intResZ ),
+    _intResVtxNormChi2( rhs._intResVtxNormChi2 ),
     selector( new DMesonSelector( this ) )
     {}
 
@@ -66,6 +84,12 @@ void DMeson::copyNonPointerAttributes( const DMeson& rhs ){
     _dR = rhs._dR;
     _hasFastGenMatch = rhs._hasFastGenMatch;
     _hasGenMatch = rhs._hasGenMatch;
+    _intResMass = rhs._intResMass;
+    _intResMassDiff = rhs._intResMassDiff;
+    _intResX = rhs._intResX;
+    _intResY = rhs._intResY;
+    _intResZ = rhs._intResZ;
+    _intResVtxNormChi2 = rhs._intResVtxNormChi2;
 }
 
 

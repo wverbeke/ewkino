@@ -30,6 +30,13 @@ class DMeson : public PhysicsObject{
         double dR() const{ return _dR; }
         bool hasFastGenMatch() const{ return _hasFastGenMatch; }
         bool hasGenMatch() const{ return _hasGenMatch; }
+	double intResMass() const{ return _intResMass; }
+        double intResMassDiff() const{ return _intResMassDiff; }
+        double intResX() const{ return _intResX; }
+        double intResY() const{ return _intResY; }
+        double intResZ() const{ return _intResZ; }
+        double intResVtxNormChi2() const{ return _intResVtxNormChi2; }
+
 
 	// for selections
 	bool isGood() const override;
@@ -50,6 +57,13 @@ class DMeson : public PhysicsObject{
         double _dR = 0;
         bool _hasFastGenMatch = false;
         bool _hasGenMatch = false;
+	double _intResMass = 0;
+	double _intResMassDiff = 0;
+	double _intResX = 0;
+	double _intResY = 0;
+	double _intResZ = 0;
+	double _intResVtxNormChi2 = 0;
+	
         
         // dmeson selector 
         DMesonSelector* selector;
