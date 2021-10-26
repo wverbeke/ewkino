@@ -58,7 +58,7 @@ if __name__=='__main__':
 
     # make the commands
     cmds = []
-    cmds.append( make_eventselector_command(options_step1) )
+    cmds.append( make_eventselector_command(options) )
 
     # submit the job
     if options.runlocal:

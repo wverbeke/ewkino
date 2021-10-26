@@ -68,7 +68,7 @@ if __name__=='__main__':
 
     # make the commands
     cmds = []
-    cmds.append( make_eventflattener_command(options_step2) )
+    cmds.append( make_eventflattener_command(options) )
 
     # submit the job
     if options.runlocal:

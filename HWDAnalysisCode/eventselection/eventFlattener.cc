@@ -87,7 +87,7 @@ void eventloopEventFlattening(
     for(long entry = 0; entry < nEvents; entry++){
         if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<nEvents<<std::endl;
 	// build event and perform event selection
-        Event event = treeReader.buildEvent(entry);
+        Event event = treeReader.buildEvent(entry, false, false, false, false, true);
         if(!eventSelections::passEventSelection(event, eventSelection, 
 		selectionType, variation, true)) continue;
 	// set all high-level variables and make BDT output
