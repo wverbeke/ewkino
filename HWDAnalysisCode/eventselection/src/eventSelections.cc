@@ -8,6 +8,30 @@ Event selections for the H->W+Ds analysis
 //include c++ library classes
 #include <functional>
 
+
+void checkArguments( Event& event,
+		     const std::string& selectiontype,
+                     const std::string& variation){
+    // internal helper function to check validity of some arguments.
+    // common to passEventSelection and passCutFlow
+    
+    // check if selectiontype is valid
+    std::vector< std::string > seltypes{ "tight" };
+    if( std::find(seltypes.cbegin(), seltypes.cend(), selectiontype)==seltypes.cend() ){
+        throw std::invalid_argument("ERROR: unknown selection type: "+selectiontype);
+    }
+    // check if variation is valid
+    // note: need to check total JEC and split JEC variations separately
+    std::vector< std::string > variations{ "JECUp","JECDown","JERUp","JERDown",
+                                            "UnclUp","UnclDown",
+                                            "nominal","all" };
+    bool istot = ( std::find(variations.cbegin(), variations.cend(), variation)!=variations.cend() );
+    bool issplit = event.jetInfo().hasJECVariation( variation );
+    if( !istot && !issplit ){
+        throw std::invalid_argument("ERROR: unknown variation: "+variation);
+    }
+}
+
 bool eventSelections::passEventSelection(Event& event, 
 			const std::string& eventselection, 
 			const std::string& selectiontype, 
@@ -22,21 +46,7 @@ bool eventSelections::passEventSelection(Event& event,
     // - selectbjets: boolean whether to select b-jets 
     //   (set to false for b-tag shape normalization)
 
-    // check if selectiontype is valid
-    std::vector< std::string > seltypes{ "tight"};
-    if( std::find(seltypes.cbegin(), seltypes.cend(), selectiontype)==seltypes.cend() ){
-	throw std::invalid_argument("ERROR: unknown selection type: "+selectiontype);
-    }
-    // check if variation is valid
-    // note: need to check total JEC and split JEC variations separately
-    std::vector< std::string > variations{ "JECUp","JECDown","JERUp","JERDown",
-					    "UnclUp","UnclDown",
-					    "nominal","all" };
-    bool istot = ( std::find(variations.cbegin(), variations.cend(), variation)!=variations.cend() );
-    bool issplit = event.jetInfo().hasJECVariation( variation );
-    if( !istot && !issplit ){
-    	throw std::invalid_argument("ERROR: unknown variation: "+variation);
-    }
+    checkArguments(event, selectiontype, variation);
     // map event selection to function
     static std::map< std::string, std::function<
     bool(Event&, const std::string&, const std::string&, const bool) > > 
@@ -45,6 +55,26 @@ bool eventSelections::passEventSelection(Event& event,
         };
     auto it = ESFunctionMap.find( eventselection );
     if( it == ESFunctionMap.cend() ){
+        throw std::invalid_argument( "ERROR: unknown event selection condition " + eventselection );
+    }
+    return (it->second)(event, selectiontype, variation, selectbjets);
+}
+
+std::tuple<int, std::string> eventSelections::passCutFlow(Event& event,
+				const std::string& eventselection,
+				const std::string& selectiontype,
+				const std::string& variation,
+				const bool selectbjets ){
+    // similar to passEventSelection, but returning and int+description rather than a bool.
+    // this allows for cutflow studies
+    checkArguments(event, selectiontype, variation);
+    static std::map< std::string, std::function<
+    std::tuple<int, std::string>(Event&, const std::string&, const std::string&, const bool) > >
+        CFFunctionMap = {
+        { "signalregion", pass_signalregion_cutflow },
+        };
+    auto it = CFFunctionMap.find( eventselection );
+    if( it == CFFunctionMap.cend() ){
         throw std::invalid_argument( "ERROR: unknown event selection condition " + eventselection );
     }
     return (it->second)(event, selectiontype, variation, selectbjets);
@@ -203,4 +233,29 @@ bool eventSelections::pass_signalregion(Event& event,
     // do lepton selection for different types of selections
     if(selectiontype!="tight") return false; // NOTE: to be extended
     return true;
+}
+
+
+std::tuple<int,std::string> eventSelections::pass_signalregion_cutflow(
+	    Event& event,
+	    const std::string& selectiontype,
+	    const std::string& variation,
+	    const bool selectbjets){
+    // copy of pass_signalregion, but returning an int+description instead of a bool.
+    // this allows to make cutflow studies.
+    cleanLeptonsAndJets(event);
+    if(not event.passMetFilters()){ 
+	return std::make_tuple(0, "fail MET filters"); }
+    if(not passAnyTrigger(event)){ 
+	return std::make_tuple(1, "fail trigger"); }
+    if(!hasnTightLeptons(event, 1)){ 
+	return std::make_tuple(2, "fail single tight lepton"); }
+    event.selectTightLeptons();
+    if(not passLeptonPtThresholds(event)){ 
+	return std::make_tuple(3, "fail lepton pt threshold"); }
+    if(not passPhotonOverlapRemoval(event)){
+	return std::make_tuple(4, "fail photon overlap removal"); }
+    if(event.getMet(variation).pt() < 10.){ 
+	return std::make_tuple(5, "fail met pt threshold"); }
+    return std::make_tuple(-1, "pass");
 }

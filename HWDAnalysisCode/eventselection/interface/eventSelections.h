@@ -19,6 +19,11 @@ namespace eventSelections{
 			const std::string& selectiontype, 
 			const std::string& variation,
 			const bool selectbjets );
+    std::tuple<int,std::string> passCutFlow(Event& event,
+                        const std::string& eventselection,
+                        const std::string& selectiontype,
+                        const std::string& variation,
+                        const bool selectbjets );
 
     // help functions
     void cleanLeptonsAndJets(Event& event);
@@ -35,6 +40,9 @@ namespace eventSelections{
     // dedicated functions to check if event passes certain conditions //
     bool pass_signalregion(Event& event, const std::string& selectiontype, 
 	    const std::string& variation, const bool selectbjets);
+    std::tuple<int,std::string> pass_signalregion_cutflow(Event& event, 
+	    const std::string& selectiontype, const std::string& variation, 
+	    const bool selectbjets);
 
 }
 
