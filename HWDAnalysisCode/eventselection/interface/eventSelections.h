@@ -36,6 +36,7 @@ namespace eventSelections{
     bool hasnFOLeptons(const Event& event, int n);
     bool hasnTightLeptons(const Event& event, int n);
     bool allLeptonsArePrompt( const Event& event );
+    bool hasnDMesons(const Event& event, int n);
 
     // dedicated functions to check if event passes certain conditions //
     bool pass_signalregion(Event& event, const std::string& selectiontype, 
@@ -44,6 +45,8 @@ namespace eventSelections{
 	    const std::string& selectiontype, const std::string& variation, 
 	    const bool selectbjets);
 
+    bool pass_donly(Event& event, const std::string& selectiontype,
+            const std::string& variation, const bool selectbjets);
 }
 
 #endif

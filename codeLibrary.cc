@@ -12,6 +12,7 @@
 #include "objects/src/LeptonSelector.cc"
 #include "objects/src/GenMet.cc"
 #include "objects/src/DMeson.cc"
+#include "objects/src/Track.cc"
 #include "objectSelection/MuonSelector.cc"
 #include "objectSelection/ElectronSelector.cc"
 #include "objectSelection/TauSelector.cc"

@@ -52,6 +52,7 @@ bool eventSelections::passEventSelection(Event& event,
     bool(Event&, const std::string&, const std::string&, const bool) > > 
         ESFunctionMap = {
 	{ "signalregion", pass_signalregion },
+	{ "donly", pass_donly },
         };
     auto it = ESFunctionMap.find( eventselection );
     if( it == ESFunctionMap.cend() ){
@@ -209,6 +210,18 @@ bool eventSelections::allLeptonsArePrompt( const Event& event ){
 }
 
 
+// help functions for determining the number of D mesons with correct ID //
+
+bool eventSelections::hasnDMesons(const Event& event, int n){
+    int nD = 0;
+    for( const auto& dmesonPtr : event.dmesonCollection() ){
+        if( dmesonPtr->isGood() ){ ++nD; }
+    }
+    if( n!=nD ){ return false; }
+    return true;
+}
+
+
 // dedicated functions to check if event passes certain conditions //
 
 bool eventSelections::pass_signalregion(Event& event, 
@@ -258,4 +271,16 @@ std::tuple<int,std::string> eventSelections::pass_signalregion_cutflow(
     if(event.getMet(variation).pt() < 10.){ 
 	return std::make_tuple(5, "fail met pt threshold"); }
     return std::make_tuple(-1, "pass");
+}
+
+
+bool eventSelections::pass_donly(
+	    Event& event,
+	    const std::string& selectiontype,
+            const std::string& variation,
+            const bool selectbjets){
+    // selection that only cares about the presence of exactly one good D meson
+    if(not hasnDMesons(event, 1)) return false;
+    event.selectGoodDMesons();
+    return true;      
 }

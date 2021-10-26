@@ -5,10 +5,16 @@ DMeson selection
 */
 
 bool DMesonSelector::isGoodBase() const{
-    // note: just dummy conditions for now,
-    //       to be set correctly later!
-    if( dmesonPtr->pt() < 25 ) return false;
-    if( fabs( dmesonPtr->eta() ) > 2.4 ) return false;
+    // note: current implementation is based on a study from 20/10/2021,
+    //       see notes for details!
+    if( dmesonPtr->pt() < 12. ) return false;
+    if( dmesonPtr->isolation() < 0.65 ) return false;
+    if( dmesonPtr->dR()<0.02 || dmesonPtr->dR()>0.17 ) return false;
+    if( dmesonPtr->intResMass()<1. || dmesonPtr->intResMass()>1.04 ) return false;
+    if( dmesonPtr->intResMassDiff()<0.9 || dmesonPtr->intResMassDiff()>1.05 ) return false;
+    if( dmesonPtr->firstTrackPtr()->pt()<5. ) return false;
+    if( dmesonPtr->secondTrackPtr()->pt()<2. ) return false;
+    if( dmesonPtr->thirdTrackPtr()->pt()<1. ) return false;
     return true;
 }
 

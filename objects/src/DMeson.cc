@@ -32,6 +32,24 @@ DMeson::DMeson( const TreeReader& treeReader, const unsigned dIndex ):
     _intResY( treeReader._DIntResY[dIndex] ),
     _intResZ( treeReader._DIntResZ[dIndex] ),
     _intResVtxNormChi2( treeReader._DIntResVtxNormChi2[dIndex] ),
+    _firstTrackPtr( new Track( treeReader._DFirstTrackPt[dIndex],
+			       treeReader._DFirstTrackEta[dIndex],
+			       treeReader._DFirstTrackPhi[dIndex],
+			       treeReader._DFirstTrackX[dIndex],
+			       treeReader._DFirstTrackY[dIndex],
+			       treeReader._DFirstTrackZ[dIndex] ) ),
+    _secondTrackPtr( new Track( treeReader._DSecondTrackPt[dIndex],
+                                treeReader._DSecondTrackEta[dIndex],
+                                treeReader._DSecondTrackPhi[dIndex],
+                                treeReader._DSecondTrackX[dIndex],
+                                treeReader._DSecondTrackY[dIndex],
+                                treeReader._DSecondTrackZ[dIndex] ) ),
+    _thirdTrackPtr( new Track( treeReader._DThirdTrackPt[dIndex],
+                               treeReader._DThirdTrackEta[dIndex],
+                               treeReader._DThirdTrackPhi[dIndex],
+                               treeReader._DThirdTrackX[dIndex],
+                               treeReader._DThirdTrackY[dIndex],
+                               treeReader._DThirdTrackZ[dIndex] ) ),
     selector( new DMesonSelector( this ) )
     {}
 
@@ -50,6 +68,24 @@ DMeson::DMeson( const DMeson& rhs ) :
     _intResY( rhs._intResY ),
     _intResZ( rhs._intResZ ),
     _intResVtxNormChi2( rhs._intResVtxNormChi2 ),
+    _firstTrackPtr( new Track( rhs._firstTrackPtr->pt(),
+                               rhs._firstTrackPtr->eta(),
+                               rhs._firstTrackPtr->phi(),
+                               rhs._firstTrackPtr->x(),
+                               rhs._firstTrackPtr->y(),
+                               rhs._firstTrackPtr->z() ) ),
+    _secondTrackPtr( new Track( rhs._secondTrackPtr->pt(),
+                                rhs._secondTrackPtr->eta(),
+                                rhs._secondTrackPtr->phi(),
+                                rhs._secondTrackPtr->x(),
+                                rhs._secondTrackPtr->y(),
+                                rhs._secondTrackPtr->z() ) ),
+    _thirdTrackPtr( new Track( rhs._thirdTrackPtr->pt(),
+			       rhs._thirdTrackPtr->eta(),
+                               rhs._thirdTrackPtr->phi(),
+                               rhs._thirdTrackPtr->x(),
+                               rhs._thirdTrackPtr->y(),
+                               rhs._thirdTrackPtr->z() ) ),
     selector( new DMesonSelector( this ) )
     {}
 
@@ -68,11 +104,32 @@ DMeson::DMeson( DMeson&& rhs ) noexcept :
     _intResY( rhs._intResY ),
     _intResZ( rhs._intResZ ),
     _intResVtxNormChi2( rhs._intResVtxNormChi2 ),
+    _firstTrackPtr( new Track( rhs._firstTrackPtr->pt(),
+                               rhs._firstTrackPtr->eta(),
+                               rhs._firstTrackPtr->phi(),
+                               rhs._firstTrackPtr->x(),
+                               rhs._firstTrackPtr->y(),
+                               rhs._firstTrackPtr->z() ) ),
+    _secondTrackPtr( new Track( rhs._secondTrackPtr->pt(),
+                                rhs._secondTrackPtr->eta(),
+                                rhs._secondTrackPtr->phi(),
+                                rhs._secondTrackPtr->x(),
+                                rhs._secondTrackPtr->y(),
+                                rhs._secondTrackPtr->z() ) ),
+    _thirdTrackPtr( new Track( rhs._thirdTrackPtr->pt(),
+                               rhs._thirdTrackPtr->eta(),
+                               rhs._thirdTrackPtr->phi(),
+                               rhs._thirdTrackPtr->x(),
+                               rhs._thirdTrackPtr->y(),
+                               rhs._thirdTrackPtr->z() ) ),
     selector( new DMesonSelector( this ) )
     {}
 
 
 DMeson::~DMeson(){
+    delete _firstTrackPtr;
+    delete _secondTrackPtr;
+    delete _thirdTrackPtr;
     delete selector;
 }
 

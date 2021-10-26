@@ -9,10 +9,12 @@ Definition of event variables for H->W+Ds analysis
 
 // definition of the variables used for filling the ouput TTree
 // (and evaluating an TMVA::Reader if requested)
+
 // event id variables
 ULong_t _runNb = 0;
 ULong_t _lumiBlock = 0;
 ULong_t _eventNb = 0;
+
 // event weight for simulation
 Float_t _weight = 0; // generator weight
 Float_t _scaledWeight = 0; // generator weight scaled by cross section and lumi
@@ -20,6 +22,7 @@ Float_t _totWeight = 0; // total weight, including scaled weight, reweighting an
 Float_t _leptonReweight = 1; // lepton reweighting factor
 Float_t _nonLeptonReweight = 1; // all other reweighting factors
 Float_t _fakeRateWeight = 0; // fake rate reweighting factor
+
 // event BDT variables
 // NOTE: BDT still to be designed for this analysis so not sure yet...
 Float_t _leptonAsymmetry = 0;
@@ -30,8 +33,10 @@ Float_t _MT = 0;
 Float_t _HT = 0;
 Float_t _nJets = 0;
 Float_t _nBJets = 0;
+
 // BDT output score
 Float_t _eventBDT = 0.;
+
 // other variables
 Int_t _nMuons = 0;
 Int_t _nElectrons = 0;
@@ -42,6 +47,11 @@ Float_t _leptonEtaLeading = 0.;
 Int_t _leptonChargeLeading = 0;
 Float_t _numberOfVertices = 0.;
 Int_t _fakeRateFlavour = -1;
+Int_t _dsHasFastGenMatch = -1;
+
+// internal variables for debugging and testing
+Bool_t _hasValidDs = 0; // event has exactly one Ds
+Bool_t _hasValidLepton = 0; // event has exactly one lepton
 
 
 double eventFlattening::getVariable( const std::map<std::string,double>& varmap, 
@@ -91,6 +101,10 @@ void eventFlattening::setVariables(std::map<std::string,double> varmap){
     _leptonChargeLeading = (int) getVariable( varmap, "_leptonChargeLeading" );
     _numberOfVertices = getVariable( varmap, "_numberOfVertices" );
     _fakeRateFlavour = (int) getVariable( varmap, "_fakeRateFlavour" );
+    _dsHasFastGenMatch = (int) getVariable( varmap, "_dsHasFastGenMatch" );
+
+    _hasValidDs = (bool) getVariable( varmap, "_hasValidDs" );
+    _hasValidLepton = (bool) getVariable( varmap, "_hasValidLepton" );
 }
 
 std::map< std::string, double > eventFlattening::initVarMap(){
@@ -121,6 +135,10 @@ std::map< std::string, double > eventFlattening::initVarMap(){
     {"_numberOfVertices",0},
     
     {"_fakeRateFlavour",-1},
+
+    {"_dsHasFastGenMatch",-1},
+
+    {"_hasValidDs",0}, {"_hasValidLepton",0},
     
     };
     return varmap;    
@@ -165,7 +183,13 @@ void eventFlattening::initOutputTree(TTree* outputTree){
     outputTree->Branch("_leptonChargeLeading", &_leptonChargeLeading, "_leptonChargeLeading/I");
     outputTree->Branch("_numberOfVertices", &_numberOfVertices, "_numberOfVertices/F");
     outputTree->Branch("_fakeRateFlavour", &_fakeRateFlavour, "_fakeRateFlavour/I");
+    outputTree->Branch("_dsHasFastGenMatch", &_dsHasFastGenMatch, "_dsHasFastGenMatch/I");
+
+    // internal variables for debugging and testing
+    outputTree->Branch("_hasValidDs", &_hasValidDs, "_hasValidDs/O");
+    outputTree->Branch("_hasValidLepton", &_hasValidLepton, "_hasValidLepton/O");
 }
+
 
 TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader, 
 	const std::string& pathToXMLFile ){
@@ -186,7 +210,9 @@ TMVA::Reader* eventFlattening::initializeReader( TMVA::Reader* reader,
  
 // main function //
 
-std::map< std::string, double > eventFlattening::eventToEntry(Event& event, const double norm,
+std::map< std::string, double > eventFlattening::eventToEntry(
+		Event& event, 
+		const double norm,
 		const CombinedReweighter& reweighter,
 		const std::string& selection_type, 
 		const std::shared_ptr< TH2D>& frMap_muon, 
@@ -202,7 +228,15 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
 
     // re-initialize all variables in the map
     std::map< std::string, double > varmap = initVarMap();
- 
+
+    // initializations
+    bool hasvalidds = (event.dmesonCollection().size()==1);
+    if( hasvalidds ) varmap["_hasValidDs"] = 1;
+    // (note: to decide whether it is best to put ==1 or >0)
+    bool hasvalidlepton = (event.leptonCollection().size()==1);
+    if( hasvalidlepton ) varmap["_hasValidLepton"] = 1;
+    // (note: to decide whether it is best to put ==1 or >0)
+
     // sort leptons and jets by pt
     event.sortJetsByPt();
     event.sortLeptonsByPt();
@@ -252,16 +286,28 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
     // (warning: a lot of event methods work on this collection implicitly,
     // so changing the definition here is not enough!)
     LeptonCollection lepcollection = event.leptonCollection();
+    // get dmeson collection as well
+    DMesonCollection dmesoncollection = event.dmesonCollection();
+
+    // directly available Ds meson properties
+    if( hasvalidds ){
+	varmap["_dsHasFastGenMatch"] = (double) dmesoncollection[0].hasFastGenMatch();
+    }
 
     // number of muons and electrons
     varmap["_nMuons"] = lepcollection.numberOfMuons();
     varmap["_nElectrons"] = lepcollection.numberOfElectrons();
 
-    // lepton pt, eta and charge
-    varmap["_leptonPtLeading"] = lepcollection[0].pt();
-    varmap["_leptonEtaLeading"] = lepcollection[0].eta();
-    varmap["_leptonChargeLeading"] = lepcollection[0].charge();
-    varmap["_leptonAsymmetry"] = std::fabs(lepcollection[0].eta())*lepcollection[0].charge();
+    // directly available lepton properties
+    if( hasvalidlepton ){
+	varmap["_leptonPtLeading"] = lepcollection[0].pt();
+	varmap["_leptonEtaLeading"] = lepcollection[0].eta();
+	varmap["_leptonChargeLeading"] = lepcollection[0].charge();
+	varmap["_leptonAsymmetry"] = std::fabs(lepcollection[0].eta())*lepcollection[0].charge();
+	varmap["_MT"] = mt( lepcollection[0], met );
+	// note: cannot use event.mtW() as it is only defined for events with a Z candidate...
+	//       instead, use mt() as defined in the PhysicsObject class
+    }
     
     // other more or less precomputed event variables
     varmap["_lT"] = lepcollection.scalarPtSum() + met.pt();
@@ -284,10 +330,6 @@ std::map< std::string, double > eventFlattening::eventToEntry(Event& event, cons
 	    }
         }
     }
-    // varmap["_MT"] = event.mtW(); 
-    varmap["_MT"] = mt( lepcollection[0], met );
-    // note: cannot use event.mtW() as it is only defined for events with a Z candidate...
-    //       instead, use mt() as defined in the PhysicsObject class
 
     // loop over jets and find relevant quantities
     for(JetCollection::const_iterator jIt = jetcollection.cbegin();

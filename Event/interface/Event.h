@@ -97,6 +97,9 @@ class Event{
         JetCollection mediumBTagCollection() const{ return _jetCollectionPtr->mediumBTagCollection(); }
         JetCollection tightBTagCollection() const{ return _jetCollectionPtr->tightBTagCollection(); }
 
+	// D meson selection and cleaning
+	void selectGoodDMesons() const{ _dmesonCollectionPtr->selectGoodDMesons(); }
+
         //lepton selection and cleaning
         void selectLooseLeptons(){ _leptonCollectionPtr->selectLooseLeptons(); }
         void selectFOLeptons(){ _leptonCollectionPtr->selectFOLeptons(); }

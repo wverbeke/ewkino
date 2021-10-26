@@ -3,6 +3,7 @@
 
 // include other parts of code 
 #include "PhysicsObject.h"
+#include "Track.h"
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../Tools/interface/stringTools.h"
 
@@ -36,7 +37,9 @@ class DMeson : public PhysicsObject{
         double intResY() const{ return _intResY; }
         double intResZ() const{ return _intResZ; }
         double intResVtxNormChi2() const{ return _intResVtxNormChi2; }
-
+	Track* firstTrackPtr() const{ return _firstTrackPtr; }
+	Track* secondTrackPtr() const{ return _secondTrackPtr; }
+	Track* thirdTrackPtr() const{ return _thirdTrackPtr; }
 
 	// for selections
 	bool isGood() const override;
@@ -63,8 +66,11 @@ class DMeson : public PhysicsObject{
 	double _intResY = 0;
 	double _intResZ = 0;
 	double _intResVtxNormChi2 = 0;
-	
+	Track* _firstTrackPtr = nullptr;
+	Track* _secondTrackPtr = nullptr;
+	Track* _thirdTrackPtr = nullptr;
         
+
         // dmeson selector 
         DMesonSelector* selector;
 
