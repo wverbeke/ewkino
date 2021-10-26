@@ -1,17 +1,34 @@
-#####################################################
-# Run eventSelector and eventFlattener sequentially #
-#####################################################
+######################
+# Run eventFlattener #
+######################
 
 import sys
 import os
-import copy
 
-from eventSelector import make_eventselector_command
-from eventFlattener import make_eventflattener_command
 sys.path.append('../../jobSubmission')
 import qsubTools as qt
 sys.path.append('../tools/python')
 import optiontools as opt
+
+def make_eventflattener_command( options ):
+    ### make a command line call to ./eventFlattener
+    # input arguments:
+    # - options: object of type OptionCollection with correct attributes
+    
+    cmd = './eventFlattener'
+    cmd += ' {}'.format(options.inputfile)
+    cmd += ' {}'.format(options.norm)
+    cmd += ' {}'.format(options.outputdir)
+    cmd += ' {}'.format(options.outputfilename)
+    cmd += ' {}'.format(options.eventselection)
+    cmd += ' {}'.format(options.selectiontype)
+    cmd += ' {}'.format(options.variation)
+    cmd += ' {}'.format(options.muonfrmapfile)
+    cmd += ' {}'.format(options.electronfrmapfile)
+    cmd += ' {}'.format(options.domva)
+    cmd += ' {}'.format(options.mvaxmlpath)
+    cmd += ' {}'.format(options.nevents)
+    return cmd
 
 
 if __name__=='__main__':
@@ -49,23 +66,9 @@ if __name__=='__main__':
     if not os.path.exists(options.outputdir):
 	os.makedirs(options.outputdir)
 
-    # define intermediate output file
-    intfilename = options.outputfilename.replace('.root','_tmp.root')
-    intfilepath = os.path.join(options.outputdir, intfilename)
-
-    # modify option collection for event selection
-    options_step1 = copy.deepcopy( options )
-    options_step1.outputfilename = intfilename
-
-    # modify option collection for event flattening
-    options_step2 = copy.deepcopy( options )
-    options_step2.inputfile = intfilepath
-
     # make the commands
     cmds = []
-    cmds.append( make_eventselector_command(options_step1) )
     cmds.append( make_eventflattener_command(options_step2) )
-    cmds.append( 'rm {}'.format(intfilepath) )
 
     # submit the job
     if options.runlocal:
@@ -73,4 +76,4 @@ if __name__=='__main__':
 	    print('now running {}...'.format(cmd))
 	    os.system(cmd)
     else:
-	qt.submitCommandsAsQsubJob( cmds, 'qsub_eventflow.sh' )
+	qt.submitCommandsAsQsubJob( cmds, 'qsub_eventflattener.sh' )
