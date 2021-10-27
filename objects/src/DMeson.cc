@@ -14,9 +14,10 @@ DMeson::DMeson( const TreeReader& treeReader, const unsigned dIndex ):
         treeReader._DPt[dIndex], 
         treeReader._DEta[dIndex], 
         treeReader._DPhi[dIndex], 
-        treeReader._DPt[dIndex], 
-	// (to do: decide if this approximation is good enough, 
-	// or if an additional variable _DE in the ntuplizer is needed.)
+        std::sqrt( treeReader._DPt[dIndex]*treeReader._DPt[dIndex]
+		  +treeReader._DPz[dIndex]*treeReader._DPz[dIndex] ), 
+	// (to do: add variable for total energy (or approximately momentum)
+	//         in ntuplizer)
         treeReader.is2016(), 
         treeReader.is2017() 
     ),
