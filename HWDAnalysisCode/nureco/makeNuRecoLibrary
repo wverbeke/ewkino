@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra -O3 -g -c
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= nuRecoLibrary.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=nuRecoLibrary.o
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)

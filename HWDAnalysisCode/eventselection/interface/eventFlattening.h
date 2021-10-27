@@ -17,6 +17,7 @@ Definition of event variables for H->W+Ds analysis
 // include other parts of the analysis code
 #include "eventSelections.h"
 #include "../../tools/interface/fakeRateTools.h"
+#include "../../nureco/interface/nuReco.h"
 
 namespace eventFlattening{
 
@@ -40,6 +41,13 @@ namespace eventFlattening{
 		const bool doMVA,
 		TMVA::Reader* reader);
 
+    // internal help functions for reconstruction
+    std::pair<PhysicsObject,PhysicsObject> makeHiggsAndNeutrinoCandidate( 
+	const Lepton& lepton, const Met& met,
+        double nupz, const DMeson& dmeson);
+    std::pair<PhysicsObject,PhysicsObject> bestHiggsAndNeutrinoCandidate( 
+	const Lepton& lepton, const Met& met,
+        std::pair<double,double> nupzcands, const DMeson& dmeson);
 }
 
 #endif

@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wextra -O3 -g
 CFLAGS= -Wl,--no-as-needed,-lTMVA
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= eventFlattener.cc src/eventSelections.cc src/eventFlattening.cc ../tools/HWDToolLibrary.o ../../codeLibrary.o
+SOURCES= eventFlattener.cc src/eventSelections.cc src/eventFlattening.cc ../nureco/nuRecoLibrary.o ../tools/HWDToolLibrary.o ../../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=eventFlattener
 
