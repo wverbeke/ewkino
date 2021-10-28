@@ -7,6 +7,7 @@ import sys
 import os
 sys.path.append('../tools/python')
 import plottools as pt
+import histtools as ht
 import optiontools as opt
 
 def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None, 
@@ -14,7 +15,9 @@ def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None,
 			    lumitext='', extralumitext='',
 			    topmargin=None, bottommargin=None,
 			    leftmargin=None, rightmargin=None,
-			    xaxlabelfont=None, xaxlabelsize=None ):
+			    xaxlabelfont=None, xaxlabelsize=None,
+			    writebincontent=False, bincontentfont=None, 
+			    bincontentsize=None, bincontentfmt=None ):
     ### drawing a single histogram
     # - label: string for the legend entry for this histogram.
     #	note: if label is 'auto', the implicit title of the TH1 will be used.
@@ -47,6 +50,9 @@ def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None,
     yaxlabelfont = 4; yaxlabelsize = 22
     axtitlefont = 4; axtitlesize = 26
     legendfont = 4
+    if bincontentfont is None: bincontentfont = 4
+    if bincontentsize is None: bincontentsize = 12
+    if bincontentfmt is None: bincontentfmt = '{:.3f}'
     # margins
     if leftmargin is None: leftmargin = 0.15
     if rightmargin is None: rightmargin = 0.05
@@ -120,6 +126,18 @@ def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None,
     pt.drawLumi(pad1, extratext=extralumitext, lumitext=lumitext)
     if label is not None: leg.Draw("same")
     #if title is not None: ttitle.DrawLatexNDC(titlebox[0],titlebox[1],title)
+
+    # write bin contents
+    if writebincontent:
+	bintext = ROOT.TLatex()
+	bintext.SetTextAlign(21)
+	bintext.SetTextFont(bincontentfont)
+	bintext.SetTextSize(bincontentsize)
+	for i in range(1, hist.GetNbinsX()+1):
+	    xcoord  = hist.GetXaxis().GetBinCenter(i)
+	    ycoord  = hist.GetBinContent(i)+hist.GetBinErrorUp(i)
+	    printvalue = hist.GetBinContent(i)
+	    bintext.DrawLatex(xcoord, ycoord+0.05, bincontentfmt.format(printvalue))
 
     c1.SaveAs(figname.split('.')[0]+'.png')
 

@@ -39,7 +39,7 @@ std::shared_ptr<TH1D> makeCutFlowHistogram( const std::string& pathToFile,
     // initialize output histogram
     std::shared_ptr<TH1D> cutFlowHist = std::make_shared<TH1D>( 
 	"cutFlowHist", "cutFlowHist;cutflow value;number of events", 
-	maxCutFlowValue+2, -1.5, maxCutFlowValue+0.5);
+	maxCutFlowValue+1, -0.5, maxCutFlowValue+0.5);
     // set the bin labels to empty strings
     for( int i=1; i<cutFlowHist->GetNbinsX()+1; ++i){
 	cutFlowHist->GetXaxis()->SetBinLabel(i, "");
@@ -62,7 +62,7 @@ std::shared_ptr<TH1D> makeCutFlowHistogram( const std::string& pathToFile,
 	    throw std::runtime_error(msg);
 	}
 	// determine corresponding bin number
-	int binnb = cutFlowValue+2;
+	int binnb = cutFlowValue+1;
 	// set the bin label if not done so before
 	if( std::string(cutFlowHist->GetXaxis()->GetBinLabel(binnb))==std::string("") ){
 	    cutFlowHist->GetXaxis()->SetBinLabel(binnb, cutFlowDescription.c_str());

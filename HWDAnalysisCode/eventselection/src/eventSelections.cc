@@ -232,13 +232,13 @@ bool eventSelections::pass_signalregion(Event& event,
     cleanLeptonsAndJets(event);
     // apply MET filters
     if(not event.passMetFilters()) return false;
-    // apply trigger thresholds
-    if(not passAnyTrigger(event)) return false;
     // select a single tight lepton
     if(!hasnTightLeptons(event, 1)) return false;
     event.selectTightLeptons();
     // lepton pt threshold
     if(not passLeptonPtThresholds(event)) return false;
+    // apply trigger thresholds
+    if(not passAnyTrigger(event)) return false;
     // overlap removal between dedicated photon and general samples
     if(not passPhotonOverlapRemoval(event)) return false;
     // MET
@@ -261,22 +261,22 @@ std::tuple<int,std::string> eventSelections::pass_signalregion_cutflow(
     // this allows to make cutflow studies.
     cleanLeptonsAndJets(event);
     if(not event.passMetFilters()){ 
-	return std::make_tuple(0, "fail MET filters"); }
-    if(not passAnyTrigger(event)){ 
-	return std::make_tuple(1, "fail trigger"); }
+	return std::make_tuple(0, "Fail MET filters"); }
     if(!hasnTightLeptons(event, 1)){ 
-	return std::make_tuple(2, "fail single tight lepton"); }
+	return std::make_tuple(1, "Fail single tight lepton"); }
     event.selectTightLeptons();
     if(not passLeptonPtThresholds(event)){ 
-	return std::make_tuple(3, "fail lepton pt threshold"); }
+	return std::make_tuple(2, "Fail lepton pt threshold"); }
+    if(not passAnyTrigger(event)){
+        return std::make_tuple(3, "Fail trigger"); }
     if(not passPhotonOverlapRemoval(event)){
-	return std::make_tuple(4, "fail photon overlap removal"); }
+	return std::make_tuple(4, "Fail photon overlap removal"); }
     if(event.getMet(variation).pt() < 10.){ 
-	return std::make_tuple(5, "fail met pt threshold"); }
+	return std::make_tuple(5, "Fail met pt threshold"); }
     if(not hasnDMesons(event, 1)){
-	return std::make_tuple(6, "fail single good Ds meson"); }
+	return std::make_tuple(6, "Fail single good Ds meson"); }
     event.selectGoodDMesons();
-    return std::make_tuple(-1, "pass");
+    return std::make_tuple(7, "Pass");
 }
 
 
