@@ -11,6 +11,8 @@ import optiontools as opt
 
 def load_variables( jsonfile ):
     ### read a collection of histograms settings (i.e. variable name + other settings)
+    # return type: same as encoded in json file,
+    #		   usually a list of dicts of histogram info.
     with open(jsonfile, 'r') as f:
 	variables = json.load(f)
     return variables
