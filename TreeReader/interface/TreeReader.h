@@ -259,6 +259,7 @@ class TreeReader {
 	double _DPt[nDs_max];
 	double _DEta[nDs_max];
 	double _DPhi[nDs_max];
+	double _DE[nDs_max];
 	double _DIsolation[nDs_max];
 	double _DDR[nDs_max];
 	bool _DHasFastGenMatch[nDs_max];
@@ -274,12 +275,15 @@ class TreeReader {
 	double _DFirstTrackPt[nDs_max];
 	double _DFirstTrackEta[nDs_max];
 	double _DFirstTrackPhi[nDs_max];
+	double _DFirstTrackP[nDs_max];
 	double _DSecondTrackPt[nDs_max];
 	double _DSecondTrackEta[nDs_max];
 	double _DSecondTrackPhi[nDs_max];
+	double _DSecondTrackP[nDs_max];
 	double _DThirdTrackPt[nDs_max];
 	double _DThirdTrackEta[nDs_max];
 	double _DThirdTrackPhi[nDs_max];
+	double _DThirdTrackP[nDs_max];
 	double _DFirstTrackX[nDs_max];
 	double _DFirstTrackY[nDs_max];
 	double _DFirstTrackZ[nDs_max];
@@ -646,6 +650,7 @@ class TreeReader {
 	TBranch *b__DPt;
 	TBranch *b__DEta;
 	TBranch *b__DPhi;
+	TBranch *b__DE;
 	TBranch *b__DIsolation;
 	TBranch *b__DDR;
 	TBranch *b__DHasFastGenMatch;
@@ -661,12 +666,15 @@ class TreeReader {
 	TBranch *b__DFirstTrackPt;
 	TBranch *b__DFirstTrackEta;
 	TBranch *b__DFirstTrackPhi;
+	TBranch *b__DFirstTrackP;
 	TBranch *b__DSecondTrackPt;
 	TBranch *b__DSecondTrackEta;
 	TBranch *b__DSecondTrackPhi;
+	TBranch *b__DSecondTrackP;
 	TBranch *b__DThirdTrackPt;
 	TBranch *b__DThirdTrackEta;
 	TBranch *b__DThirdTrackPhi;
+	TBranch *b__DThirdTrackP;
 	TBranch *b__DFirstTrackX;
 	TBranch *b__DFirstTrackY;
 	TBranch *b__DFirstTrackZ;

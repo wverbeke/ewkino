@@ -1,7 +1,7 @@
 CC=g++ -Wall -Wextra -O3 -g
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= eventSelector.cc src/eventSelections.cc ../../codeLibrary.o ../tools/HWDToolLibrary.o
+SOURCES= eventSelector.cc src/eventSelections.cc ../tools/HWDToolLibrary.cc ../../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=eventSelector
 

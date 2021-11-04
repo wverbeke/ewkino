@@ -6,9 +6,9 @@
 #include <string>
 
 
-Track::Track( double pt, double eta, double phi,
+Track::Track( double pt, double eta, double phi, double p,
 		double x, double y, double z ):
-    PhysicsObject( pt, eta, phi, pt ), 
+    PhysicsObject( pt, eta, phi, pt, p ), 
     _x( x ),
     _y( y ),
     _z( z )

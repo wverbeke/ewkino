@@ -683,6 +683,7 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_DPt", &_DPt, &b__DPt);
     _currentTreePtr->SetBranchAddress("_DEta", &_DEta, &b__DEta);
     _currentTreePtr->SetBranchAddress("_DPhi", &_DPhi, &b__DPhi);
+    _currentTreePtr->SetBranchAddress("_DE", &_DE, &b__DE);
     _currentTreePtr->SetBranchAddress("_DIsolation", &_DIsolation, &b__DIsolation);
     _currentTreePtr->SetBranchAddress("_DDR", &_DDR, &b__DDR);
     _currentTreePtr->SetBranchAddress("_DHasFastGenMatch", &_DHasFastGenMatch, &b__DHasFastGenMatch);
@@ -698,12 +699,15 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
     _currentTreePtr->SetBranchAddress("_DFirstTrackPt", &_DFirstTrackPt, &b__DFirstTrackPt);
     _currentTreePtr->SetBranchAddress("_DFirstTrackEta", &_DFirstTrackEta, &b__DFirstTrackEta);
     _currentTreePtr->SetBranchAddress("_DFirstTrackPhi", &_DFirstTrackPhi, &b__DFirstTrackPhi);
+    _currentTreePtr->SetBranchAddress("_DFirstTrackP", &_DFirstTrackP, &b__DFirstTrackP);
     _currentTreePtr->SetBranchAddress("_DSecondTrackPt", &_DSecondTrackPt, &b__DSecondTrackPt);
     _currentTreePtr->SetBranchAddress("_DSecondTrackEta", &_DSecondTrackEta, &b__DSecondTrackEta);
     _currentTreePtr->SetBranchAddress("_DSecondTrackPhi", &_DSecondTrackPhi, &b__DSecondTrackPhi);
+    _currentTreePtr->SetBranchAddress("_DSecondTrackP", &_DSecondTrackP, &b__DSecondTrackP);
     _currentTreePtr->SetBranchAddress("_DThirdTrackPt", &_DThirdTrackPt, &b__DThirdTrackPt);
     _currentTreePtr->SetBranchAddress("_DThirdTrackEta", &_DThirdTrackEta, &b__DThirdTrackEta);
     _currentTreePtr->SetBranchAddress("_DThirdTrackPhi", &_DThirdTrackPhi, &b__DThirdTrackPhi);
+    _currentTreePtr->SetBranchAddress("_DThirdTrackP", &_DThirdTrackP, &b__DThirdTrackP);
     _currentTreePtr->SetBranchAddress("_DFirstTrackX", &_DFirstTrackX, &b__DFirstTrackX);
     _currentTreePtr->SetBranchAddress("_DFirstTrackY", &_DFirstTrackY, &b__DFirstTrackY);
     _currentTreePtr->SetBranchAddress("_DFirstTrackZ", &_DFirstTrackZ, &b__DFirstTrackZ);
@@ -962,6 +966,7 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_DPt", &_DPt, "_DPt[_nDs]/D");
     outputTree->Branch("_DEta", &_DEta, "_DPEta[_nDs]/D");
     outputTree->Branch("_DPhi", &_DPhi, "_DPhi[_nDs]/D");
+    outputTree->Branch("_DE", &_DE, "_DE[_nDs]/D");
     outputTree->Branch("_DIsolation", &_DIsolation, "_DIsolation[_nDs]/D");
     outputTree->Branch("_DDR", &_DDR, "_DDR[_nDs]/D");
     outputTree->Branch("_DHasFastGenMatch", &_DHasFastGenMatch, "_DHasFastGenMatch[_nDs]/O");
@@ -977,12 +982,15 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_DFirstTrackPt", &_DFirstTrackPt, "_DFirstTrackPt[_nDs]/D");
     outputTree->Branch("_DFirstTrackEta", &_DFirstTrackEta, "_DFirstTrackEta[_nDs]/D");
     outputTree->Branch("_DFirstTrackPhi", &_DFirstTrackPhi, "_DFirstTrackPhi[_nDs]/D");
+    outputTree->Branch("_DFirstTrackP", &_DFirstTrackP, "_DFirstTrackP[_nDs]/D");
     outputTree->Branch("_DSecondTrackPt", &_DSecondTrackPt, "_DSecondTrackPt[_nDs]/D");
     outputTree->Branch("_DSecondTrackEta", &_DSecondTrackEta, "_DSecondTrackEta[_nDs]/D");
     outputTree->Branch("_DSecondTrackPhi", &_DSecondTrackPhi, "_DSecondTrackPhi[_nDs]/D");
+    outputTree->Branch("_DSecondTrackP", &_DSecondTrackP, "_DSecondTrackP[_nDs]/D");
     outputTree->Branch("_DThirdTrackPt", &_DThirdTrackPt, "_DThirdTrackPt[_nDs]/D");
     outputTree->Branch("_DThirdTrackEta", &_DThirdTrackEta, "_DThirdTrackEta[_nDs]/D");
     outputTree->Branch("_DThirdTrackPhi", &_DThirdTrackPhi, "_DThirdTrackPhi[_nDs]/D");
+    outputTree->Branch("_DThirdTrackP", &_DThirdTrackP, "_DThirdTrackP[_nDs]/D");
     outputTree->Branch("_DFirstTrackX", &_DFirstTrackX, "_DFirstTrackX[_nDs]/D");
     outputTree->Branch("_DFirstTrackY", &_DFirstTrackY, "_DFirstTrackY[_nDs]/D");
     outputTree->Branch("_DFirstTrackZ", &_DFirstTrackZ, "_DFirstTrackZ[_nDs]/D");

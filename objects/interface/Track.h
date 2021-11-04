@@ -9,8 +9,8 @@
 class Track : public PhysicsObject{
     
     public:
-        Track( double pt, double eta, double phi,
-		double x, double y, double z );
+	Track( double pt, double eta, double phi, double p,
+                double x, double y, double z );
 
         Track( const Track& );
         Track( Track&& ) noexcept;
@@ -20,6 +20,7 @@ class Track : public PhysicsObject{
         Track& operator=( const Track& );
         Track& operator=( Track&& ) noexcept;
 
+	double p() const{ return energy(); } // use p() and energy() interchangeably for tracks!
         double x() const{ return _x; }
         double y() const{ return _y; }
         double z() const{ return _z; }
