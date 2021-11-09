@@ -249,6 +249,11 @@ class TreeReader {
         Double_t        _mChi2;
 
 	// analysis specific variables: htowds
+	// gen-level variables
+	int _genhtowdEventType = 0;
+	double _genhtowdHPt = 0;
+	double _genhtowdHEta = 0;
+	double _genhtowdHPhi = 0;
 	// D variables
 	unsigned _nDs = 0;
 	double _DInvMass[nDs_max];
@@ -640,6 +645,11 @@ class TreeReader {
         TBranch        *b__mChi1;
         TBranch        *b__mChi2;
 
+	// gen-level variables
+	TBranch *b__genhtowdEventType;
+	TBranch *b__genhtowdHPt;
+	TBranch *b__genhtowdHEta;
+	TBranch *b__genhtowdHPhi;
 	// D variables
 	TBranch *b__nDs;
 	TBranch *b__DInvMass;

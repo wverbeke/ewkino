@@ -24,6 +24,7 @@ Event::Event( const TreeReader& treeReader,
 			readAllJECVariations, readGroupedJECVariations ) ),
     _eventTagsPtr( new EventTags( treeReader ) ),
     _generatorInfoPtr( treeReader.isMC() ? new GeneratorInfo( treeReader ) : nullptr ),
+    _htowdGenInfoPtr( treeReader.isMC() ? new HToWDGenInfo( treeReader ) : nullptr ),
     _susyMassInfoPtr( treeReader.isSusy() ? new SusyMassInfo( treeReader ) : nullptr ),
     _numberOfVertices( treeReader._nVertex ),
 
@@ -43,6 +44,7 @@ Event::~Event(){
     delete _eventTagsPtr;
     if( hasGeneratorInfo() ){
         delete _generatorInfoPtr;
+	delete _htowdGenInfoPtr;
     }
     if( hasSusyMassInfo() ){
         delete _susyMassInfoPtr;
@@ -61,6 +63,7 @@ Event::Event( const Event& rhs ) :
     _jetInfoPtr( new JetInfo( *rhs._jetInfoPtr ) ),
     _eventTagsPtr( new EventTags( *rhs._eventTagsPtr ) ),
     _generatorInfoPtr( rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr ),
+    _htowdGenInfoPtr( rhs.hasGeneratorInfo() ? new HToWDGenInfo( *rhs._htowdGenInfoPtr ) : nullptr ),
     _susyMassInfoPtr( rhs.hasSusyMassInfo() ? new SusyMassInfo( *rhs._susyMassInfoPtr ) : nullptr ),
     _numberOfVertices( rhs._numberOfVertices ),
     _weight( rhs._weight ),
@@ -77,6 +80,7 @@ Event::Event( Event&& rhs ) noexcept :
     _jetInfoPtr( rhs._jetInfoPtr ),
     _eventTagsPtr( rhs._eventTagsPtr ),
     _generatorInfoPtr( rhs._generatorInfoPtr ),
+    _htowdGenInfoPtr( rhs._htowdGenInfoPtr ),
     _susyMassInfoPtr( rhs._susyMassInfoPtr ),
     _numberOfVertices( rhs._numberOfVertices ),
     _weight( rhs._weight ),
@@ -90,6 +94,7 @@ Event::Event( Event&& rhs ) noexcept :
     rhs._jetInfoPtr = nullptr;
     rhs._eventTagsPtr = nullptr;
     rhs._generatorInfoPtr = nullptr;
+    rhs._htowdGenInfoPtr = nullptr;
     rhs._susyMassInfoPtr = nullptr;
     rhs._samplePtr = nullptr;
 }
@@ -106,6 +111,7 @@ Event& Event::operator=( const Event& rhs ){
         delete _eventTagsPtr;
         if( hasGeneratorInfo() ){
             delete _generatorInfoPtr;
+	    delete _htowdGenInfoPtr;
         }
         if( hasSusyMassInfo() ){
             delete _susyMassInfoPtr;
@@ -121,6 +127,7 @@ Event& Event::operator=( const Event& rhs ){
 	_jetInfoPtr = new JetInfo( *rhs._jetInfoPtr );
         _eventTagsPtr = new EventTags( *rhs._eventTagsPtr );
         _generatorInfoPtr = rhs.hasGeneratorInfo() ? new GeneratorInfo( *rhs._generatorInfoPtr ) : nullptr;
+	_htowdGenInfoPtr = rhs.hasGeneratorInfo() ? new HToWDGenInfo( *rhs._htowdGenInfoPtr ) : nullptr;
         _susyMassInfoPtr = rhs.hasSusyMassInfo() ? new SusyMassInfo( *rhs._susyMassInfoPtr ) : nullptr;
 
         _numberOfVertices = rhs._numberOfVertices;
@@ -142,6 +149,7 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         delete _eventTagsPtr;
         if( hasGeneratorInfo() ){
             delete _generatorInfoPtr;
+	    delete _htowdGenInfoPtr;
         }
         if( hasSusyMassInfo() ){
             delete _susyMassInfoPtr;
@@ -163,6 +171,8 @@ Event& Event::operator=( Event&& rhs ) noexcept{
         rhs._eventTagsPtr = nullptr;
         _generatorInfoPtr = rhs._generatorInfoPtr;
         rhs._generatorInfoPtr = nullptr;
+	_htowdGenInfoPtr = rhs._htowdGenInfoPtr;
+	rhs._htowdGenInfoPtr = nullptr;
         _susyMassInfoPtr = rhs._susyMassInfoPtr;
         rhs._susyMassInfoPtr = nullptr;
 
@@ -186,6 +196,10 @@ GeneratorInfo& Event::generatorInfo() const{
     return *_generatorInfoPtr;
 }
 
+HToWDGenInfo& Event::htowdGenInfo() const{
+    checkGeneratorInfo();
+    return *_htowdGenInfoPtr;
+}
 
 void Event::checkSusyMassInfo() const{
     if( !hasSusyMassInfo() ){

@@ -673,6 +673,11 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
 	_currentTreePtr->SetBranchAddress("_mChi2", &_mChi2, &b__mChi2);
     }
 
+    // gen-level variables
+    _currentTreePtr->SetBranchAddress("_genhtowdEventType", &_genhtowdEventType, &b__genhtowdEventType);
+    _currentTreePtr->SetBranchAddress("_genhtowdHPt", &_genhtowdHPt, &b__genhtowdHPt);
+    _currentTreePtr->SetBranchAddress("_genhtowdHEta", &_genhtowdHEta, &b__genhtowdHEta);
+    _currentTreePtr->SetBranchAddress("_genhtowdHPhi", &_genhtowdHPhi, &b__genhtowdHPhi);
     // D variables
     _currentTreePtr->SetBranchAddress("_nDs", &_nDs, &b__nDs);
     _currentTreePtr->SetBranchAddress("_DInvMass", &_DInvMass, &b__DInvMass);

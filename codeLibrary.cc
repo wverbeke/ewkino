@@ -30,6 +30,7 @@
 #include "Event/src/DMesonCollection.cc"
 #include "Event/src/TriggerInfo.cc"
 #include "Event/src/GeneratorInfo.cc"
+#include "Event/src/HToWDGenInfo.cc"
 #include "Event/src/SusyMassInfo.cc"
 #include "Event/src/EventTags.cc"
 #include "Event/src/Event.cc"

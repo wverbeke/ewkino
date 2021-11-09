@@ -9,6 +9,7 @@
 #include "JetCollection.h"
 #include "DMesonCollection.h"
 #include "GeneratorInfo.h"
+#include "HToWDGenInfo.h"
 #include "TriggerInfo.h"
 #include "JetInfo.h"
 #include "EventTags.h"
@@ -25,6 +26,7 @@ class Met;
 class TriggerInfo;
 class JetInfo;
 class GeneratorInfo;
+class HToWDGenInfo;
 class Sample;
 
 
@@ -57,6 +59,7 @@ class Event{
 	JetInfo& jetInfo() const{ return *_jetInfoPtr; }
         EventTags& eventTags() const{ return *_eventTagsPtr; }
         GeneratorInfo& generatorInfo() const;
+	HToWDGenInfo& htowdGenInfo() const;
         SusyMassInfo& susyMassInfo() const;
 
 	// return jet collection and met with varied JEC/JER/Uncl uncertainties
@@ -250,6 +253,7 @@ class Event{
 	JetInfo* _jetInfoPtr = nullptr;
         EventTags* _eventTagsPtr = nullptr;
         GeneratorInfo* _generatorInfoPtr = nullptr;
+	HToWDGenInfo* _htowdGenInfoPtr = nullptr;
         SusyMassInfo* _susyMassInfoPtr = nullptr;
         unsigned _numberOfVertices = 0;
         double _weight = 1;
