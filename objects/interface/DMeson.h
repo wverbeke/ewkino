@@ -25,6 +25,7 @@ class DMeson : public PhysicsObject{
         DMeson& operator=( const DMeson& );
         DMeson& operator=( DMeson&& ) noexcept;
 
+	// elementary properties
         double invMass() const{ return _invMass; }
         double type() const{ return _type; }
         double isolation() const{ return _isolation; }
@@ -40,6 +41,17 @@ class DMeson : public PhysicsObject{
 	Track* firstTrackPtr() const{ return _firstTrackPtr; }
 	Track* secondTrackPtr() const{ return _secondTrackPtr; }
 	Track* thirdTrackPtr() const{ return _thirdTrackPtr; }
+
+	// compound properties
+	double firstTrackPt() const;
+	double secondTrackPt() const;
+	double thirdTrackPt() const;
+	double twotrackSpatialSeparationX() const;
+	double twotrackSpatialSeparationY() const;
+	double twotrackSpatialSeparationZ() const;
+	double restrackSpatialSeparationX() const;
+	double restrackSpatialSeparationY() const;
+	double restrackSpatialSeparationZ() const;
 
 	// for selections
 	bool isGood() const override;

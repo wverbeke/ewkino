@@ -183,6 +183,30 @@ DMeson& DMeson::operator=( DMeson&& rhs ) noexcept {
 }
 
 
+// compound properties
+
+double DMeson::firstTrackPt() const{ return _firstTrackPtr->pt(); }
+double DMeson::secondTrackPt() const{ return _secondTrackPtr->pt(); }
+double DMeson::thirdTrackPt() const{ return _thirdTrackPtr->pt(); }
+double DMeson::twotrackSpatialSeparationX() const{
+    return std::fabs(_firstTrackPtr->x() - _secondTrackPtr->x());
+}
+double DMeson::twotrackSpatialSeparationY() const{
+    return std::fabs(_firstTrackPtr->y() - _secondTrackPtr->y());
+}
+double DMeson::twotrackSpatialSeparationZ() const{
+    return std::fabs(_firstTrackPtr->z() - _secondTrackPtr->z());
+}
+double DMeson::restrackSpatialSeparationX() const{
+    return std::fabs(_intResX - _thirdTrackPtr->x());
+}
+double DMeson::restrackSpatialSeparationY() const{
+    return std::fabs(_intResY - _thirdTrackPtr->y());
+}
+double DMeson::restrackSpatialSeparationZ() const{
+    return std::fabs(_intResZ - _thirdTrackPtr->z());
+}
+
 // for selections
 
 bool DMeson::isGood() const{
