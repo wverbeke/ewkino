@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra -O3 -g
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= fillDsGenMatchComparison.cc ../tools/HWDToolLibrary.cc ../../codeLibrary.o
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=fillDsGenMatchComparison
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)

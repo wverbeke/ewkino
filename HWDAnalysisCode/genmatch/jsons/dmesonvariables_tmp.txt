@@ -1,0 +1,16 @@
+invMass	m(D_{s}) [GeV]	50	1.0	2.5	
+pt	p_{T}(D_{s})	30	0.0	100.0	
+isolation	isolation	20	0.0	1.0	
+dR	#Delta R(#phi,#pi)	20	0.0	0.2	
+intResMass	m(#phi) [GeV]	30	0.95	1.1	
+intResMassDiff	m(D_{s}) - m(#phi) [GeV]	50	0.0	1.5	
+intResVtxNormChi2	normalized #chi^{2} of vertex fit	30	0.0	15.0	
+firstTrackPt	p_{T}(first track)	30	0.0	30.0	
+secondTrackPt	p_{T}(second track)	30	0.0	30.0	
+thirdTrackPt	p_{T}(third track)	30	0.0	50.0	
+twotrackSpatialSeparationX	two-track spatial separation (x-direction)	30	0.0	0.05	
+twotrackSpatialSeparationY	two-track spatial separation (y-direction)	30	0.0	0.05	
+twotrackSpatialSeparationZ	two-track spatial separation (z-direction)	30	0.0	0.05	
+restrackSpatialSeparationX	res-track spatial separation (x-direction)	30	0.0	0.15	
+restrackSpatialSeparationY	res-track spatial separation (y-direction)	30	0.0	0.15	
+restrackSpatialSeparationZ	res-track spatial separation (z-direction)	30	0.0	0.5	
