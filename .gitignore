@@ -24,5 +24,7 @@ codeLibrary.o
 tZqAnalysisCode
 # compiled code library
 HWDAnalysisCode/tools/*.o
-# hyperopt output
+# hyperopt output and grids
 HWDAnalysisCode/standalone/hyperopt/output_*
+HWDAnalysisCode/standalone/hyperopt/grids/*.pkl
+HWDAnalysisCode/standalone/hyperopt/grids/*.json

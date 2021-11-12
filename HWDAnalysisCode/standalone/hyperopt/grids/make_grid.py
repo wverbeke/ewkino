@@ -7,28 +7,31 @@ import os
 import json
 import pickle as pkl
 from hyperopt import hp
+sys.path.append('../../tools')
+import optiontools as opt
 
-### define constants ###
-phimass = 1.019
-
-def grid_configuration():
-    ### define the current grid configuration
-    # should return a dict matching names to lists;
-    # the first element in each list is a hp object,
-    # the next elements in each list are initiazer arguments
-    grid = {}
-    grid['_DIntResMass_min'] = [hp.quniform, '_DIntResMass_min', phimass-0.07, phimass, 0.01]
-    grid['_DIntResMass_max'] = [hp.quniform, '_DIntResMass_max', phimass, phimass+0.07, 0.01]
-    grid['_DIntResMassDiff_min'] = [hp.quniform, '_DIntResMassDiff_min', 0.5, 1., 0.05]
-    grid['_DIntResMassDiff_max'] = [hp.quniform, '_DIntResMassDiff_max', 0.8, 1.3, 0.05]
-    grid['_DFirstTrackPt_min'] = [hp.quniform, '_DFirstTrackPt_min', 0., 10., 1.]
-    grid['_DSecondTrackPt_min'] = [hp.quniform, '_DSecondTrackPt_min', 0., 10., 1.]
-    grid['_DThirdTrackPt_min'] = [hp.quniform, '_DThirdTrackPt_min', 0., 20., 1.]
-    grid['_DPt_min'] = [hp.quniform, '_DPt_min', 0., 40., 2.]
-    grid['_DDR_min'] = [hp.quniform, '_DDR_min', 0., 0.05, 0.01]
-    grid['_DDR_max'] = [hp.quniform, '_DDR_max', 0.1, 0.2, 0.01]
-    grid['_DIsolation_min'] = [hp.quniform, '_DIsolation_min', 0., 1., 0.05]
-    return grid
+def read_grid_configuration( jsonfile ):
+    ### read grid configuration from a json file
+    # input arguments:
+    # - jsonfile: path to a json file containing a valid grid definition.
+    #             the json object should be a list of dicts,
+    #             each dict should have the following items:
+    #             - variable: name of the ntuple variable to cut on
+    #             - cuttype: either min or max
+    #		  - hptype: name of a hyperopt range function, e.g. quniform
+    #             - minvalue, maxvalue, stepsize
+    # output type:
+    # dict containing the grid information
+    # keys: strings formed as variable + '_' + cuttype
+    # values: lists of the form [hyperopt range function, arguments to hyperopt range function]
+    with open(jsonfile, 'r') as f:
+	jsonobj = json.load(f)
+    config = {}
+    for el in jsonobj:
+	key = '{}_{}'.format(el['variable'],el['cuttype'])
+	value = [getattr(hp,el['hptype']), key, el['minvalue'], el['maxvalue'], el['stepsize']]
+	config[key] = value
+    return config
 
 def make_grid( config ):
     ### make a hyperopt search grid based on a given configuration
@@ -49,12 +52,30 @@ def make_str( config ):
     return res
 
 if __name__=='__main__':
+    
+    # read options
+    options = []
+    options.append( opt.Option('inputjson', vtype='path') )
+    options.append( opt.Option('outputfile', vtype='path') )
+    options = opt.OptionCollection( options )
+    if len(sys.argv)==1:
+        print('Use with following options:')
+        print(options)
+        sys.exit()
+    else:
+        options.parse_options( sys.argv[1:] )
+        print('Found following configuration:')
+        print(options)
+        print('')
 
-    # set options
-    outputfile = 'grid'
+    # parse options
+    if not options.inputjson[-5:]=='.json':
+	raise Exception('ERROR: input file is supposed to be in .json format')
+    if not os.path.exists(options.inputjson):
+	raise Exception('ERROR: input file {} does not seem to exist...'.format(options.inputjson))
 
     # get the current grid configuration
-    config = grid_configuration()
+    config = read_grid_configuration( options.inputjson )
 
     # make the actual hyperopt grid
     grid = make_grid(config)
@@ -66,7 +87,7 @@ if __name__=='__main__':
 
     # pack both in a dict and writ to a pkl file
     out = {'grid':grid, 'description':gridstr}
-    outputpkl = os.path.splitext(outputfile)[0]+'.pkl'
+    outputpkl = os.path.splitext(options.outputfile)[0]+'.pkl'
     with open(outputpkl,'w') as f:
 	pkl.dump(out, f)
     print('grid written to {}.'.format(outputpkl))
