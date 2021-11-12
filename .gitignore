@@ -19,5 +19,10 @@ codeLibrary.o
 # pickled python objects
 **.pkl
 
-# analysis-specific: ignore other analysis codes
+# analysis-specific:
+# ignore other analysis codes
 tZqAnalysisCode
+# compiled code library
+HWDAnalysisCode/tools/*.o
+# hyperopt output
+HWDAnalysisCode/standalone/hyperopt/output_*
