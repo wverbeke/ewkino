@@ -1,0 +1,22 @@
+{
+ "architecture":	[
+			    [4,1],
+                            [4,2,1],
+			    [8,1],
+                            [8,4,1],
+                            [8,16,8,1],
+			    [16,1],
+			    [16,8,1]
+			],
+ "activation":		[
+			    "relu",
+			    "tanh",
+			    "sigmoid"
+			],
+ "last_activation":	[   "sigmoid"  ],
+ "loss":		[   "binary_crossentropy"   ],
+ "training_options":	[
+			    {"epochs":10, "verbose":1, "batch_size":128, "validation_split":0.2},
+			    {"epochs":20, "verbose":1, "batch_size":128, "validation_split":0.2}
+			]
+}

@@ -1,0 +1,14 @@
+[
+{
+ "variable":"_DIntResMass",
+ "size":"_nDs"
+},
+{
+ "variable":"_DIsolation",
+ "size":"_nDs"
+},
+{
+ "variable":"_DHasFastGenMatch",
+ "size":"_nDs"
+}
+]
