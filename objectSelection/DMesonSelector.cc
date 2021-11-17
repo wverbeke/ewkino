@@ -5,7 +5,7 @@ DMeson selection
 */
 
 bool DMesonSelector::isGoodBase() const{
-    // note: current implementation is based on a study from 20/10/2021,
+    // note: implementation below is based on a study from 20/10/2021,
     //       see notes for details!
     if( dmesonPtr->pt() < 12. ) return false;
     if( dmesonPtr->isolation() < 0.65 ) return false;
@@ -15,6 +15,16 @@ bool DMesonSelector::isGoodBase() const{
     if( dmesonPtr->firstTrackPtr()->pt()<5. ) return false;
     if( dmesonPtr->secondTrackPtr()->pt()<2. ) return false;
     if( dmesonPtr->thirdTrackPtr()->pt()<1. ) return false;
+    // note: implementation below is based on a study from 17/11/2021,
+    //       see notes for details!
+    /*if( dmesonPtr->pt() < 6. ) return false;
+    if( dmesonPtr->isolation() < 0.6 ) return false;
+    if( dmesonPtr->dR()<0. || dmesonPtr->dR()>0.19 ) return false;
+    if( dmesonPtr->intResMass()<0.97 || dmesonPtr->intResMass()>1.04 ) return false;
+    if( dmesonPtr->intResMassDiff()<0.9 || dmesonPtr->intResMassDiff()>1. ) return false;
+    if( dmesonPtr->firstTrackPtr()->pt()<2. ) return false;
+    if( dmesonPtr->secondTrackPtr()->pt()<3. ) return false;
+    if( dmesonPtr->thirdTrackPtr()->pt()<1. ) return false;*/
     return true;
 }
 

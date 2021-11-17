@@ -5,8 +5,6 @@
 import ROOT
 import sys
 import os
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import pickle as pkl
 from hyperopt import hp, fmin, tpe, STATUS_OK, Trials
 from functools import partial
@@ -16,31 +14,6 @@ import metrictools as mt
 import logtools as lt
 
 ### define help functions ###
-
-def loss_plot( losses, labellist=None, colorlist=None,
-		title=None, 
-		xlims=None, xaxtitle='iteration', 
-		yaxlog=False, yaxtitle='loss'):
-    ### plot one or multiple arrays of loss values
-    fig,ax = plt.subplots()
-    dolegend = True
-    if labellist is None:
-	dolegend = False
-	labellist = ['dummy']*len(losses)
-    if colorlist is None:
-	colormap = mpl.cm.get_cmap('jet', len(losses))
-	colorlist = [mpl.colors.rgb2hex(colormap(i)) for i in range(colormap.N)]
-    for loss, label, color in zip(losses, labellist, colorlist):
-	ax.plot(loss, color=color, 
-                linewidth=2, label=label)
-    if dolegend: ax.legend()
-    if yaxlog: ax.set_yscale('log')
-    if xlims is not None: ax.set_xlim(xlims)
-    if title is not None: ax.set_title(title)
-    if xaxtitle is not None: ax.set_xlabel(xaxtitle)
-    if yaxtitle is not None: ax.set_ylabel(yaxtitle)
-    #plt.show(block=False)
-    return (fig,ax)
 
 def pass_cuts( cuts, tree, evtidx, instidx=None ):
 
@@ -131,7 +104,7 @@ def calculate_loss( tree, cuts, lossfunction='negstob',
 
 if __name__=='__main__':
 
-    print('### starting ###\n')
+    # read options
     options = []
     options.append( opt.Option('inputfile', vtype='path') )
     options.append( opt.Option('treename', default='blackJackAndHookers/blackJackAndHookersTree') )
@@ -151,16 +124,14 @@ if __name__=='__main__':
         sys.exit()
     else:
         options.parse_options( sys.argv[1:] )
-        print('Found following configuration:')
-        print(options)
-	print('')
 
     # set logfile first and redirect all output if needed
-    if( os.path.exists(options.logfile) ):
-        os.system('rm {}'.format(options.logfile))
-    log = lt.StdOutRedirector(options.logfile)
-    sys.stdout = log
-    sys.stderr = log
+    if options.logfile is not None:
+	if( os.path.exists(options.logfile) ):
+	    os.system('rm {}'.format(options.logfile))
+	log = lt.StdOutRedirector(options.logfile)
+	sys.stdout = log
+	sys.stderr = log
     print('### starting ###\n')
     print('Found following configuration:')
     print(options)

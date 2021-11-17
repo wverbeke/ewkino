@@ -5,9 +5,12 @@
 import sys
 import os
 import pickle as pkl
-import run_hyperopt as hp
-sys.path.append('../')
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+sys.path.append('../tools')
 import optiontools as opt
+sys.path.append('../plotting')
+import plotloss as pl
 
 if __name__=='__main__':
 
@@ -54,7 +57,7 @@ if __name__=='__main__':
 	losses.append( loss )
 
     # make the figure
-    (fig,ax) = hp.loss_plot( losses, title=None,
+    (fig,ax) = pl.plotloss( losses, title=None,
                 xlims=None, xaxtitle='iteration',
                 yaxlog=False, yaxtitle='loss' )
     fig.savefig(options.outputfile)

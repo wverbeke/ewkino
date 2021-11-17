@@ -104,6 +104,8 @@ int eventSelections::eventCategory(Event& event,
 				   const bool selectbjets){
     // determine the event category
     // NOTE: not yet defined for this analysis
+    // dummy conditions on (so far) unused parameters
+    if( event.isMC() && variation=="dummy" && selectbjets ) return 0;
     return 0;
 }
 
@@ -247,7 +249,9 @@ bool eventSelections::pass_signalregion(Event& event,
     if(selectiontype!="tight") return false; // NOTE: to be extended
     // select Ds mesons
     if(not hasnDMesons(event, 1)) return false;
-    event.selectGoodDMesons();   
+    event.selectGoodDMesons();
+    // dummy conditions on (so far) unused parameters
+    if( selectiontype=="dummy" && selectbjets ) return true;
     return true;
 }
 
@@ -276,6 +280,9 @@ std::tuple<int,std::string> eventSelections::pass_signalregion_cutflow(
     if(not hasnDMesons(event, 1)){
 	return std::make_tuple(6, "Fail single good Ds meson"); }
     event.selectGoodDMesons();
+    // dummy conditions on (so far) unused parameters
+    if( selectiontype=="dummy" && selectbjets ){ 
+	return std::make_tuple(7, "Pass"); }
     return std::make_tuple(7, "Pass");
 }
 
@@ -288,5 +295,7 @@ bool eventSelections::pass_donly(
     // selection that only cares about the presence of exactly one good D meson
     if(not hasnDMesons(event, 1)) return false;
     event.selectGoodDMesons();
+    // dummy conditions on (so far) unused parameters
+    if( selectiontype=="dummy" && variation=="dummy" && selectbjets ) return true;
     return true;      
 }
