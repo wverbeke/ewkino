@@ -1,0 +1,1 @@
+hmass	reconstructed Higgs boson mass [GeV]	50	0.0	250	

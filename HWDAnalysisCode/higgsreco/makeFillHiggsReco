@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra -O3 -g
+CFLAGS= -Wl,--no-as-needed,-lTMVA
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= fillHiggsReco.cc src/higgsReco.cc ../eventselection/src/eventSelections.cc ../nureco/nuRecoLibrary.cc ../tools/HWDToolLibrary.cc ../../codeLibrary.o
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=fillHiggsReco
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)

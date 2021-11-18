@@ -1,0 +1,7 @@
+[
+{"name":"hmass",
+ "xlow":0.0,
+ "xhigh":250,
+ "nbins":50,
+ "title": "reconstructed Higgs boson mass [GeV]"}
+]

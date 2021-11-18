@@ -108,7 +108,7 @@ int main( int argc, char* argv[] ){
 
     std::cerr<<"###starting###"<<std::endl;
     if( argc != 6 ){
-        std::cerr << "ERROR: dsGenMatchComparison_fill requires 5 arguments to run: " << std::endl;
+        std::cerr << "ERROR: fillDsGenMatchComparison requires 5 arguments to run: " << std::endl;
 	std::cerr << "- input file" << std::endl;
 	std::cerr << "- output file" << std::endl;
 	std::cerr << "- variable file" << std::endl;
