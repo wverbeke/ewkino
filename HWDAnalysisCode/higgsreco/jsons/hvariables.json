@@ -1,7 +1,22 @@
 [
 {"name":"hmass",
+ "xlow":100,
+ "xhigh":250,
+ "nbins":50,
+ "title": "reconstructed Higgs boson mass [GeV]"},
+{"name":"hpt",
  "xlow":0.0,
  "xhigh":250,
  "nbins":50,
- "title": "reconstructed Higgs boson mass [GeV]"}
+ "title": "reconstructed Higgs boson p_{T} [GeV]"},
+{"name":"heta",
+ "xlow":-5,
+ "xhigh":5,
+ "nbins":30,
+ "title": "reconstructed Higgs boson #eta"},
+{"name":"hphi",
+ "xlow":-3.14,
+ "xhigh":3.14,
+ "nbins":30,
+ "title": "reconstructed Higgs boson #phi"}
 ]

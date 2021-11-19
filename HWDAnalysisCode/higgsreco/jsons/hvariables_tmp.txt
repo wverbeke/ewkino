@@ -1,1 +1,4 @@
-hmass	reconstructed Higgs boson mass [GeV]	50	0.0	250	
+hmass	reconstructed Higgs boson mass [GeV]	50	100	250	
+hpt	reconstructed Higgs boson p_{T} [GeV]	50	0.0	250	
+heta	reconstructed Higgs boson #eta	30	-5	5	
+hphi	reconstructed Higgs boson #phi	30	-3.14	3.14	

@@ -50,6 +50,7 @@ std::vector<std::pair<PhysicsObject,PhysicsObject>> higgsReco::makeHiggsAndNeutr
 std::vector<std::string> higgsReco::genericHiggsRecoMethods(){
     std::vector<std::string> methods = {    "maxnupz", "minnupz",
 					    "maxhpz", "minhpz",
+					    "mindrnulep",
 					    "bestmass" };
     return methods;
 }
@@ -111,11 +112,17 @@ std::pair<PhysicsObject,PhysicsObject> higgsReco::genericHiggsReco( const Event&
 	if( std::abs(firsthpz) > std::abs(secondhpz) ) return hoptions[0];
 	else return hoptions[1];
     } else if( method=="minhpz"){
-	// choos higgs boson solution with smallest z-momentum
+	// choose higgs boson solution with smallest z-momentum
 	double firsthpz = hoptions[0].first.pt();
         double secondhpz = hoptions[1].first.pt();
         if( std::abs(firsthpz) > std::abs(secondhpz) ) return hoptions[1];
 	else return hoptions[0];
+    } else if( method=="mindrnulep"){
+        // choose neutrino solution closest to the charged lepton
+        double firstdr = deltaR(hoptions[0].second,lepcollection[0]);
+	double seconddr = deltaR(hoptions[1].second,lepcollection[0]);
+        if( firstdr > seconddr ) return hoptions[1];
+        else return hoptions[0];
     } else if( method=="bestmass" ){
 	// choose candidate with best nominal higgs boson mass
 	double firsthmass = hoptions[0].first.mass();

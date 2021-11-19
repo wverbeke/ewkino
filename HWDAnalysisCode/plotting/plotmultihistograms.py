@@ -10,28 +10,32 @@ import histtools as ht
 import plottools as pt
 import optiontools as opt
 
-def plotmultihistograms(histlist, figname, title=None, xaxtitle=None, yaxtitle=None,
+def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxtitle=None,
 			normalize=False, normalizefirst=False, 
 			dolegend=True, labellist=None, 
 			colorlist=None,
-			logy=False, drawoptions='', 
+			logy=False, ymaxlinfactor=1.8, yminlogfactor=0.2, ymaxlogfactor=100,
+			drawoptions='', 
 			lumitext='', extralumitext = '',
-			doratio=False, ratiorange=None, yrange=None, yminzero=False ):
+			doratio=False, ratiorange=None, ylims=None, yminzero=False):
     ### plot multiple overlaying histograms (e.g. for shape comparison)
     # note: the ratio plot will show ratios w.r.t. the first histogram in the list!
     # arguments:
     # - histlist, colorlist, labellist: lists of TH1, ROOT colors and labels respectively
+    # - figname: name of the figure to save (if None, do not save but return plot dictionary)
     # - title, xaxtitle, yaxtitle, figname: self-explanatory
     # - normalize: boolean whether to put all histogram integrals to unit surface area
     # - normalizefirst: boolean whether to normalize first histogram in list and scale others 
     #                   by the same factor (do not use together with normalize)
     # - dolegend: boolean whether to make a legend (histogram title is used if no labellist)
     # - logy: boolean whether to make y-axis logarithmic
+    # - ymaxlinfactor: factor by which to multiply maximum y value (for linear y-axis)
+    # - yminlogfactor and ymaxlogfactor: same as above but for log scale
     # - drawoptions: string passed to TH1.Draw
     #   see https://root.cern/doc/master/classTHistPainter.html for a full list of options
     # - lumitext and extralumitext: luminosity value and extra text
     # - ratiorange: a tuple of (ylow,yhigh) for the ratio pad, default (0,2)
-    # - yrange: a tuple of (ylow,yhigh) for the upper pad
+    # - ylims: a tuple of (ylow,yhigh) for the upper pad
     # - yminzero: whether to clip minimum y to zero.
 
     pt.setTDRstyle()
@@ -39,8 +43,8 @@ def plotmultihistograms(histlist, figname, title=None, xaxtitle=None, yaxtitle=N
 
     ### parse arguments
     if colorlist is None:
-        colorlist = ([ROOT.kAzure-4,ROOT.kAzure+6,ROOT.kViolet,ROOT.kMagenta-9,
-                      ROOT.kRed,ROOT.kPink-9,ROOT.kBlue+1])
+        colorlist = ([ROOT.kAzure-4, ROOT.kAzure+6, ROOT.kViolet, ROOT.kMagenta-9,
+                      ROOT.kRed, ROOT.kGreen+1, ROOT.kGreen-1])
     if( len(histlist)>len(colorlist) ):
         raise Exception('ERROR in plotmultihistograms:'
 			+' histogram list is longer than color list')
@@ -56,6 +60,7 @@ def plotmultihistograms(histlist, figname, title=None, xaxtitle=None, yaxtitle=N
     # fonts and sizes:
     labelfont = 4; labelsize = 22
     axtitlefont = 4; axtitlesize = 26
+    infofont = 4; infosize = 26
     legendfont = 4; 
     # margins and title offsets
     ytitleoffset = 1.5
@@ -72,8 +77,9 @@ def plotmultihistograms(histlist, figname, title=None, xaxtitle=None, yaxtitle=N
     rightmargin = 0.05
     # legend box
     pentryheight = 0.05
+    if len(histlist)>3: pentryheight = 0.04
     if doratio: pentryheight = 0.07
-    plegendbox = ([leftmargin+0.3,1-p1topmargin-pentryheight*len(histlist),
+    plegendbox = ([leftmargin+0.3,1-p1topmargin-0.03-pentryheight*len(histlist),
 		    1-rightmargin-0.03,1-p1topmargin-0.03])
 
     ### normalization and style operations on histograms
@@ -137,17 +143,23 @@ def plotmultihistograms(histlist, figname, title=None, xaxtitle=None, yaxtitle=N
 
     ### make upper part of the plot
     pad1.cd()
+
+    # get x-limits (for later use)
+    nbins = histlist[0].GetNbinsX()
+    xlims = (histlist[0].GetBinLowEdge(1),
+	     histlist[0].GetBinLowEdge(nbins)+histlist[0].GetBinWidth(nbins))
+    # get and set y-limits
     (totmin,totmax) = ht.getminmax(histlist)
-    # log scale
+    # in case of log scale
     if logy:
         pad1.SetLogy()
-	if yrange is None: yrange = (totmin/5,totmax*1e2)
-    # lin scale
+	if ylims is None: ylims = (totmin*yminlogfactor, totmax*ymaxlogfactor)
+    # in case of lin scale
     else:
-	if yrange is None: yrange = (0.,totmax*1.8)
-    if yminzero and yrange[0]<0: yrange = (0.,yrange[1])
-    histlist[0].SetMaximum(yrange[1])
-    histlist[0].SetMinimum(yrange[0])
+	if ylims is None: ylims = (0.,totmax*ymaxlinfactor)
+    if yminzero and ylims[0]<0: ylims = (0.,ylims[1])
+    histlist[0].SetMaximum(ylims[1])
+    histlist[0].SetMinimum(ylims[0])
 
     # X-axis layout
     xax = histlist[0].GetXaxis()
@@ -186,9 +198,14 @@ def plotmultihistograms(histlist, figname, title=None, xaxtitle=None, yaxtitle=N
     pt.drawLumi(pad1, extratext=extralumitext, lumitext=lumitext, rfrac=rfrac)
 
     if not doratio: 
-	# save the plot
-	c1.SaveAs(figname.replace('.png','')+'.png')
-	return
+	# return or save the plot
+	if figname is None:
+	    plotobject = {'canvas':c1, 'pads':(pad1), 'xlims':xlims, 'ylims':ylims,
+			    'legend':legend}
+	    return plotobject
+	else:
+	    c1.SaveAs(figname.replace('.png','')+'.png')
+	    return None
 
     ### make the lower part of the plot
     pad2.cd()
@@ -227,8 +244,14 @@ def plotmultihistograms(histlist, figname, title=None, xaxtitle=None, yaxtitle=N
     line.SetLineStyle(2)
     line.Draw("same")
 
-    ### save the plot
-    c1.SaveAs(figname.replace('.png','')+'.png')
+    # return or save the plot
+    if figname is None:
+        plotobject = {'canvas':c1, 'pads':(pad1,pad2), 'xlims':xlims, 'ylims':ylims,
+			'legend':legend}
+        return plotobject
+    else:
+        c1.SaveAs(figname.replace('.png','')+'.png')
+        return None
 
 
 if __name__=='__main__':

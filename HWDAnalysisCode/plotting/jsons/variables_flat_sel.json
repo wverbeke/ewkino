@@ -50,8 +50,8 @@
 
 {"name":"_hEta",
  "weight": "_totWeight",
- "xlow": -2.5,
- "xhigh": 2.5,
+ "xlow": -5,
+ "xhigh": 5,
  "nbins": 30,
  "title": "#eta(H)"},
 

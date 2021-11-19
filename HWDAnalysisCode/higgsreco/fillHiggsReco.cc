@@ -32,6 +32,9 @@ void fillHistograms( const PhysicsObject& higgsCandidate,
     double varvalue = 0;
     for( it=histograms.begin(); it!=histograms.end(); ++it ){
         if( it->first == "hmass" ) varvalue = higgsCandidate.mass();
+	else if( it->first == "hpt" ) varvalue = higgsCandidate.pt();
+	else if( it->first == "heta" ) varvalue = higgsCandidate.eta();
+	else if( it->first == "hphi" ) varvalue = higgsCandidate.phi();
 	else{
             std::string msg = "ERROR: unrecognized variable in histogram map: ";
             msg += it->first;
@@ -39,12 +42,12 @@ void fillHistograms( const PhysicsObject& higgsCandidate,
         }
         std::shared_ptr<TH1D> hist = it->second;
         int nbins = hist->GetNbinsX();
-        double xlow = hist->GetBinLowEdge(0);
+        double xlow = hist->GetBinLowEdge(1);
         double xhigh = hist->GetBinLowEdge(nbins)+hist->GetBinWidth(nbins);
         if( varvalue > xhigh ){
             varvalue = xhigh - hist->GetBinWidth(nbins)/2.; }
         if( varvalue < xlow ){
-            varvalue = xlow + hist->GetBinWidth(0)/2.; }
+            varvalue = xlow + hist->GetBinWidth(1)/2.; }
         it->second->Fill( varvalue, weight );
     }
 }
@@ -103,13 +106,14 @@ void fillHiggsReco(
 
 int main( int argc, char* argv[] ){
     std::cerr<<"###starting###"<<std::endl;
-    if( argc != 6  ){
-        std::cerr << "ERROR: fillHiggsReco requires 5 arguments to run: " << std::endl;
+    if( argc != 7  ){
+        std::cerr << "ERROR: fillHiggsReco requires 6 arguments to run: " << std::endl;
         std::cerr << "- input file" << std::endl;
 	std::cerr << "- output file" << std::endl;
 	std::cerr << "- variable file" << std::endl;
 	std::cerr << "- event selection" << std::endl;
 	std::cerr << "- number of events" << std::endl;
+	std::cerr << "- method" << std::endl;
         return -1;
     }
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
@@ -118,11 +122,13 @@ int main( int argc, char* argv[] ){
     std::string& variable_file_path = argvStr[3];
     std::string& event_selection = argvStr[4];
     long nprocess = std::stol(argvStr[5]);
+    std::string& method = argvStr[6];
 
     // initialize the histograms
     std::vector<HistogramVariable> vars = variableTools::readVariables( variable_file_path );
     std::map<std::string,std::map<std::string, std::shared_ptr<TH1D>>> hists;
-    std::vector<std::string> methods = higgsReco::genericHiggsRecoMethods();
+    std::vector<std::string> methods = {method};
+    if( method=="all" ) methods = higgsReco::genericHiggsRecoMethods();
     for( std::string method: methods ){
 	std::map<std::string, std::shared_ptr<TH1D>> thishists;
 	thishists = variableTools::initializeHistograms( vars );

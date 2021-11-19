@@ -61,8 +61,16 @@ def fillhistograms( tree, variables, nprocess=-1 ):
 	    # determine weight
 	    weight = 1
 	    if 'weight' in el.keys(): weight = getattr(tree, el['weight'])
-            # fill the histogram
+            # get the histogram
 	    hist = el['hist']
+	    # determine the bin (taking into account outerflow)
+	    # (added on 19/11, not yet tested)
+	    nbins = hist.GetNbinsX()
+	    xmin = hist.GetBinLowEdge(1)
+	    xmax = hist.GetBinLowEdge(nbins)+hist.GetBinWidth(nbins)
+	    if varvalue<xmin: varvalue = xmin + hist.GetBinWidth(1)/float(2.)
+	    if varvalue>xmax: varvalue = xmax - hist.GetBinWidth(nbins)/float(2.)
+	    # fill the histogram
             hist.Fill(varvalue, weight)
 
 

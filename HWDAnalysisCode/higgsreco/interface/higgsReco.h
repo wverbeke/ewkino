@@ -8,6 +8,7 @@ Definition of Higgs reconstruction methods
 // include other parts of framework
 #include "../../../Event/interface/Event.h"
 #include "../../../objects/interface/PhysicsObject.h"
+#include "../../../objects/interface/LorentzVector.h"
 
 // include other parts of the analysis code
 #include "../../eventselection/interface/eventSelections.h"

@@ -22,6 +22,7 @@ def make_fillhiggsreco_command( options ):
     cmd += ' {}'.format(options.txtvarfile)
     cmd += ' {}'.format(options.eventselection)
     cmd += ' {}'.format(options.nevents)
+    cmd += ' {}'.format(options.method)
     return cmd
 
 if __name__=='__main__':
@@ -33,6 +34,7 @@ if __name__=='__main__':
     options.append( opt.Option('variables', vtype='path', required=True) )
     options.append( opt.Option('eventselection', default='signalregion') )
     options.append( opt.Option('nevents', vtype='int', default=-1) )
+    options.append( opt.Option('method', default='all') )
     # meta options
     options.append( opt.Option('runlocal', vtype='bool', default=False) )
     options = opt.OptionCollection( options )
