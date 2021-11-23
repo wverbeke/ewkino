@@ -18,6 +18,8 @@ if __name__=='__main__':
     options.append( opt.Option('inputfile', vtype='path', required=True) )
     options.append( opt.Option('outputdir', vtype='path', required=True) )
     options.append( opt.Option('variables', vtype='path', required=True) )
+    options.append( opt.Option('overflow', vtype='bool', default=True) )
+    options.append( opt.Option('underflow', vtype='bool', default=True) )
     options = opt.OptionCollection( options )
     if len(sys.argv)==1:
         print('Use with following options:')
@@ -45,6 +47,17 @@ if __name__=='__main__':
 	    if hist.GetName().split('_',-1)[0]==varname: 
 		thishistlist.append(hist)
 	print('found {} histograms'.format(len(thishistlist)))
+
+	# remove under- and/or overflow bins if requested
+	# preliminary implementation, simply put first and last bin to zero
+	if not options.underflow:
+	    for hist in thishistlist: 
+		hist.SetBinContent(1,0)
+		hist.SetBinError(1,0)
+	if not options.overflow:
+	    for hist in thishistlist:
+		hist.SetBinContent(hist.GetNbinsX(),0)
+		hist.SetBinError(hist.GetNbinsX(),0)
 
 	# other settiings
 	labels = [hist.GetName().split('_',-1)[1] for hist in thishistlist]
@@ -85,7 +98,7 @@ if __name__=='__main__':
 		tinfo.SetTextSize(22)
 		tinfo.SetTextColor(ROOT.kBlack)
 		xcoord = 120.
-		ycoord = -15
+		ycoord = ylims[0]-0.04*(ylims[1]-ylims[0])
 		tinfo.DrawLatex(xcoord, ycoord, 'm(H)')
 
 	    # save the figure
