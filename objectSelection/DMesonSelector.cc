@@ -14,7 +14,7 @@ bool DMesonSelector::isGoodBase() const{
     if( dmesonPtr->intResMassDiff()<0.9 || dmesonPtr->intResMassDiff()>1.05 ) return false;
     if( dmesonPtr->firstTrackPtr()->pt()<5. ) return false;
     if( dmesonPtr->secondTrackPtr()->pt()<2. ) return false;
-    if( dmesonPtr->thirdTrackPtr()->pt()<1. ) return false;
+    if( dmesonPtr->thirdTrackPtr()->pt()<1. ) return false; 
     // note: implementation below is based on a study from 17/11/2021,
     //       see notes for details!
     /*if( dmesonPtr->pt() < 6. ) return false;

@@ -1,0 +1,15 @@
+{
+    "1": "Acceptance",
+    "2": "Kaon track p_{T}",
+    "3": "Kaon track high purity",
+    "4": "Kaon tracks charge",
+    "5": "Kaon tracks separation",
+    "6": "Vertex fit validity",
+    "7": "Vertex fit #chi^{2}",
+    "8": "Resonance mass",
+    "9": "Pion track p_{T}",
+    "10": "Track #DeltaR",
+    "11": "D_{s} candidate p_{T}",
+    "12": "Isolation",
+    "13": "Pass"
+}

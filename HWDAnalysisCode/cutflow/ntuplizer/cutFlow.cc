@@ -1,5 +1,5 @@
 /*
-Perform cutflow study
+Perform cutflow study (on ntuplizer level)
 */
 
 // include c++ library classes 
@@ -14,39 +14,62 @@ Perform cutflow study
 #include "TTree.h"
 
 // include other parts of framework
-#include "../../TreeReader/interface/TreeReader.h"
-#include "../../Tools/interface/stringTools.h"
-#include "../../Event/interface/Event.h"
+//#include "../../TreeReader/interface/TreeReader.h"
+//#include "../../Tools/interface/stringTools.h"
+//#include "../../Event/interface/Event.h"
 
 // include other parts of the analysis code
-#include "../tools/interface/rootFileTools.h"
-#include "../eventselection/interface/eventSelections.h"
+#include "../../tools/interface/rootFileTools.h"
 
 std::shared_ptr<TH1D> makeCutFlowHistogram( const std::string& pathToFile,
-			const std::string& eventSelection, 
-			const std::string& selectionType, 
-			const std::string& variation,
+			const std::string& cutFlowVarName,
 			long nEvents,
-			int maxCutFlowValue ){
-    // make a TH1D containing the output of cutflow event selection.
-    // the output of the cutflow eventselection function is an integer number
-    // (usually the number of cuts passed, but see eventselection/src/eventSelections for details)
+			unsigned maxCutFlowValue ){
+    // make a TH1D containing a cutflow variable as defined in the ntuplizer.
     
+    // experimental to avoid the need for a TreeReader
+    TBranch *b__cutFlowVar;
+    UInt_t _cutFlowVar;
+    std::shared_ptr< TFile > _currentFilePtr;
+    _currentFilePtr = std::shared_ptr< TFile >( new TFile( pathToFile.c_str() ) );
+    TTree* _currentTreePtr;
+    _currentTreePtr = (TTree*) _currentFilePtr->Get( "blackJackAndHookers/blackJackAndHookersTree" );
+    _currentTreePtr->SetBranchAddress(cutFlowVarName.c_str(), &_cutFlowVar, &b__cutFlowVar); 
+
     // initialize TreeReader
-    TreeReader treeReader;
-    treeReader.initSampleFromFile( pathToFile );
+    //TreeReader treeReader;
+    //treeReader.initSampleFromFile( pathToFile );
     
     // initialize output histogram
     std::shared_ptr<TH1D> cutFlowHist = std::make_shared<TH1D>( 
 	"cutFlowHist", "cutFlowHist;cutflow value;number of events", 
 	maxCutFlowValue+1, -0.5, maxCutFlowValue+0.5);
+    cutFlowHist->SetDirectory(0);
     // set the bin labels to empty strings
     for( int i=1; i<cutFlowHist->GetNbinsX()+1; ++i){
 	cutFlowHist->GetXaxis()->SetBinLabel(i, "");
     }
 
+    // experimental to avoid the need for a TreeReader
+    long numberOfEntries = _currentTreePtr->GetEntries();
+    if( nEvents<0 || nEvents>numberOfEntries ) nEvents = numberOfEntries;
+    for(long entry = 0; entry < nEvents; entry++){
+        if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<nEvents<<std::endl;
+	_currentTreePtr->GetEntry(entry);
+        unsigned cutFlowValue = _cutFlowVar;
+        if( cutFlowValue>maxCutFlowValue ){
+            std::string msg = "WARNING: cutFlowValue is "+std::to_string(cutFlowValue);
+            msg += " while maximum was set to "+std::to_string(maxCutFlowValue);
+            msg += "; please run again with larger maxCutFlowValue.";
+            throw std::runtime_error(msg);
+        }
+        // fill the histogram
+        cutFlowHist->Fill(cutFlowValue);
+    }
+   
+
     // do event loop
-    long numberOfEntries = treeReader.numberOfEntries();
+    /*long numberOfEntries = treeReader.numberOfEntries();
     if( nEvents<0 || nEvents>numberOfEntries ) nEvents = numberOfEntries;
     for(long entry = 0; entry < nEvents; entry++){
 	if(entry%1000 == 0) std::cout<<"processed: "<<entry<<" of "<<nEvents<<std::endl;
@@ -69,7 +92,9 @@ std::shared_ptr<TH1D> makeCutFlowHistogram( const std::string& pathToFile,
 	}
 	// fill the histogram
 	cutFlowHist->Fill(cutFlowValue);
-    }
+    }*/
+
+    _currentFilePtr->Close();
     return cutFlowHist;
 }
 
@@ -77,34 +102,29 @@ std::shared_ptr<TH1D> makeCutFlowHistogram( const std::string& pathToFile,
 int main( int argc, char* argv[] ){
 
     std::cerr<<"###starting###"<<std::endl;
-    if( argc != 8 ){
+    if( argc != 6 ){
         std::cerr << "ERROR: cutFlow requires the following arguments: " << std::endl;
-	std::cerr << "- input_file_path" << std::endl;
-	std::cerr << "- output_file_path" << std::endl;
-	std::cerr << "- event_selection" << std::endl;
-	std::cerr << "- selection_type" <<std::endl;
-	std::cerr << "- variation" << std::endl;
-	std::cerr << "- nevents" << std::endl;
-	std::cerr << "- max_cutflow_value" << std::endl;
+	std::cerr << "- input file path" << std::endl;
+	std::cerr << "- cutflow variable name" << std::endl;
+	std::cerr << "- output file path" << std::endl;
+	std::cerr << "- number of events to process" << std::endl;
+	std::cerr << "- max cutflow value" << std::endl;
 	return -1;
     }
 
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
     std::string& input_file_path = argvStr[1];
-    std::string& output_file_path = argvStr[2];
-    std::string& event_selection = argvStr[3];
-    std::string& selection_type = argvStr[4];
-    std::string& variation = argvStr[5];
-    long nevents = std::stol(argvStr[6]);
-    int max_cutflow_value = std::stoi(argvStr[7]);
+    std::string& cutflow_var_name = argvStr[2];
+    std::string& output_file_path = argvStr[3];
+    long nevents = std::stol(argvStr[4]);
+    unsigned max_cutflow_value = (unsigned) std::stoi(argvStr[5]);
    
     bool validInput = rootFileTools::nTupleIsReadable( input_file_path );
     if(!validInput){ return -1; }
  
     // make the cutflow histogram
     std::shared_ptr<TH1D> cutFlowHist = makeCutFlowHistogram( 
-			input_file_path, event_selection, 
-			selection_type, variation,
+			input_file_path, cutflow_var_name,
 			nevents, max_cutflow_value );
 
     // write to output file

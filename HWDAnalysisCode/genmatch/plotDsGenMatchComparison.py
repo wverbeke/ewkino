@@ -74,7 +74,7 @@ if __name__=='__main__':
                         colorlist=None,
                         logy=False, drawoptions='hist e',
                         lumitext='', extralumitext = '',
-                        doratio=False, ratiorange=None, yrange=None, yminzero=False )
+                        doratio=False, ratiorange=None, yminzero=False )
 
 	# make normalized plot
 	figname = os.path.join(options.outputdir, varname+'_norm')
@@ -88,4 +88,4 @@ if __name__=='__main__':
                         colorlist=None,
                         logy=False, drawoptions='hist e',
                         lumitext='', extralumitext = '',
-                        doratio=False, ratiorange=None, yrange=None, yminzero=False )
+                        doratio=False, ratiorange=None, yminzero=False )
