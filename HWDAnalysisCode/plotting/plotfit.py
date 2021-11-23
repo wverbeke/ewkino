@@ -1,6 +1,7 @@
-########################################
-# plot and compare multiple histograms #
-########################################
+#######################################################
+# plot and compare a histogram with a fitted function #
+#######################################################
+# note: originally copied from plotmultihistograms.py (on 23/11/2021)
 
 import ROOT
 import sys
@@ -10,47 +11,64 @@ import histtools as ht
 import plottools as pt
 import optiontools as opt
 
-def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxtitle=None,
-			normalize=False, normalizefirst=False, 
-			dolegend=True, labellist=None, 
-			colorlist=None,
+def plotfit(datahist, funclist, histlist=None, figname=None, 
+			title=None, xaxtitle=None, yaxtitle=None,
+			dolegend=True, 
+			datalabel=None,
+			histlabellist=None, histcolorlist=None,
+			funclabellist=None, funccolorlist=None,
 			logy=False, ymaxlinfactor=1.8, yminlogfactor=0.2, ymaxlogfactor=100,
-			drawoptions='', 
+			ylims=None, yminzero=False,
+			histdrawoptions='', 
 			lumitext='', extralumitext = '',
-			doratio=False, ratiorange=None, ylims=None, yminzero=False):
-    ### plot multiple overlaying histograms (e.g. for shape comparison)
-    # note: the ratio plot will show ratios w.r.t. the first histogram in the list!
+			doratio=False, ratiorange=None ):
+    ### plot multiple overlaying histograms with fitted functions overlaid
+    # note: the ratio plot will show ratio between the datahist and 
+    #       the first function in funclist;
+    #       other objects are not shown in the ratio pad (for now)
     # arguments:
-    # - histlist, colorlist, labellist: lists of TH1, ROOT colors and labels respectively
+    # - datahist: TH1 object representing data to fit to
+    # - funclist: list of TF1 objects
+    # - histlist: list of TH1 objects
     # - figname: name of the figure to save (if None, do not save but return plot dictionary)
-    # - title, xaxtitle, yaxtitle, figname: self-explanatory
-    # - normalize: boolean whether to put all histogram integrals to unit surface area
-    # - normalizefirst: boolean whether to normalize first histogram in list and scale others 
-    #                   by the same factor (do not use together with normalize)
+    # - title, xaxtitle, yaxtitle: self-explanatory
     # - dolegend: boolean whether to make a legend (histogram title is used if no labellist)
+    # - datalabel: label for datahist
+    # - histlabellist and histcolorlist: lists of labels and ROOT colors for histlist
+    # - funclabellist and funccolorlist: lists of labels and ROOT colors for funclist
     # - logy: boolean whether to make y-axis logarithmic
     # - ymaxlinfactor: factor by which to multiply maximum y value (for linear y-axis)
     # - yminlogfactor and ymaxlogfactor: same as above but for log scale
-    # - drawoptions: string passed to TH1.Draw
+    # - ylims: a tuple of (ylow,yhigh) for the upper pad (overwrites previous args)
+    # - yminzero: whether to clip minimum y to zero (overwrites previous args)
+    # - histdrawoptions: string passed to TH1.Draw (not applied to datahist, only to histlist!)
     #   see https://root.cern/doc/master/classTHistPainter.html for a full list of options
     # - lumitext and extralumitext: luminosity value and extra text
+    # - doratio: boolean whether to make a lower pad with ratio
     # - ratiorange: a tuple of (ylow,yhigh) for the ratio pad, default (0,2)
-    # - ylims: a tuple of (ylow,yhigh) for the upper pad
-    # - yminzero: whether to clip minimum y to zero.
 
     pt.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
     ### parse arguments
-    if colorlist is None:
-        colorlist = ([ROOT.kAzure-4, ROOT.kAzure+6, ROOT.kViolet, ROOT.kMagenta-9,
-                      ROOT.kRed, ROOT.kGreen+1, ROOT.kGreen-1])
-    if( len(histlist)>len(colorlist) ):
-        raise Exception('ERROR in plotmultihistograms:'
-			+' histogram list is longer than color list')
-    if(labellist is not None and len(labellist)!=len(histlist)):
-	raise Exception('ERROR in plotmultihistograms:'
-			+' length of label list does not agree with histogram list')
+    if funccolorlist is None:
+	funccolorlist = ([ROOT.kRed, ROOT.kGreen+1, ROOT.kGreen-1])
+    if( len(funclist)>len(funccolorlist) ):
+        raise Exception('ERROR in plotfit:'
+                        +' function list is longer than color list')
+    if(funclabellist is not None and len(funclabellist)!=len(funclist)):
+        raise Exception('ERROR in plotfit:'
+                        +' length of label list does not agree with function list')
+    if histlist is None: histlist=[]
+    if histcolorlist is None:
+	histcolorlist = ([ROOT.kAzure-4, ROOT.kAzure+6, ROOT.kViolet, ROOT.kMagenta-9])
+    if( len(histlist)>len(histcolorlist) ):
+	raise Exception('ERROR in plotfit:'
+		        +' histogram list is longer than color list')
+    if(histlabellist is not None and len(histlabellist)!=len(histlist)):
+	raise Exception('ERROR in plotfit:'
+		        +' length of label list does not agree with histogram list')
+
 
     ### define global parameters for size and positioning
     cheight = 600 # height of canvas
@@ -75,49 +93,70 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     p2bottommargin = 0.4
     leftmargin = 0.15
     rightmargin = 0.05
+    # marker properties for data
+    markerstyle = 20
+    markercolor = 1
+    markersize = 0.75  
     # legend box
     pentryheight = 0.05
     if doratio: pentryheight = 0.07
     nentries = 1 + len(funclist) + len(histlist)
     if nentries>3: pentryheight = pentryheight*0.8
     plegendbox = ([leftmargin+0.3,1-p1topmargin-0.03-pentryheight*nentries,
-                    1-rightmargin-0.03,1-p1topmargin-0.03])
+		    1-rightmargin-0.03,1-p1topmargin-0.03])
 
-    ### normalization and style operations on histograms
-    scale = 1
-    if( normalizefirst ): scale = histlist[0].Integral("width")
+    ### style operations on data histogram
+    datahist.SetMarkerStyle(markerstyle)
+    datahist.SetMarkerColor(markercolor)
+    datahist.SetMarkerSize(markersize)
+    datahist.SetLineColor(markercolor)
+    datahist.SetStats(ROOT.kFALSE)
+
+    ### style operations on functions
+    for i,func in enumerate(funclist):
+	func.SetLineColor(funccolorlist[i])
+        func.SetLineWidth(3)
+        #func.SetLineStyle(?)
+
+    ### style operations on other histograms
     for i,hist in enumerate(histlist):
         hist.SetLineWidth(3)
-        hist.SetLineColor(colorlist[i])
-        if normalize: scale = hist.Integral("width")
-        for j in range(0,hist.GetNbinsX()+2):
-            hist.SetBinContent(j,hist.GetBinContent(j)/scale)
-            hist.SetBinError(j,hist.GetBinError(j)/scale)
+        hist.SetLineColor(histcolorlist[i])
 
-    ### make ratio histograms
-    ratiohistlist = []
-    for hist in histlist:
-	rhist = hist.Clone()
-	for j in range(0,rhist.GetNbinsX()+2):
-	    scale = histlist[0].GetBinContent(j)
-	    if scale<1e-12:
-		rhist.SetBinContent(j,0)
-		rhist.SetBinError(j,10)
-	    else:
-		rhist.SetBinContent(j,rhist.GetBinContent(j)/scale)
-		rhist.SetBinError(j,rhist.GetBinError(j)/scale)
-	ratiohistlist.append(rhist)
+    ### make ratio histogram
+    ratiohist = datahist.Clone()
+    for j in range(0,ratiohist.GetNbinsX()+2):
+	scale = funclist[0].Eval(ratiohist.GetBinCenter(j))
+	if scale<1e-12:
+	    ratiohist.SetBinContent(j,0)
+	    ratiohist.SetBinError(j,10)
+	else:
+	    ratiohist.SetBinContent(j,ratiohist.GetBinContent(j)/scale)
+	    ratiohist.SetBinError(j,ratiohist.GetBinError(j)/scale)
+
+    ### make the raio function (i.e. constant at 1)
+    ratiofunc = ROOT.TF1("ratiofunc", "1.0", funclist[0].GetXmin(), funclist[0].GetXmax())
+    ratiofunc.SetLineColor(funccolorlist[0])
+    ratiofunc.SetLineWidth(3)
  
-    ### make legend for upper plot and add all histograms
+    ### make legend for upper plot and add all objects
     legend = ROOT.TLegend(plegendbox[0],plegendbox[1],plegendbox[2],plegendbox[3])
     legend.SetNColumns(1)
     legend.SetFillColor(ROOT.kWhite)
     legend.SetTextFont(10*legendfont+3)
     legend.SetBorderSize(1)
+    # add other histograms
     for i,hist in enumerate(histlist):
         label = hist.GetTitle()
-        if labellist is not None: label = labellist[i]
+        if histlabellist is not None: label = histlabellist[i]
         legend.AddEntry(hist,label,"l")
+    # add functions
+    for i,func in enumerate(funclist):
+        if funclabellist is not None:
+            legend.AddEntry(func,funclabellist[i],"l")
+    # add data histogram
+    if datalabel is None: datalabel=datahist.GetTitle()
+    legend.AddEntry(datahist, datalabel, "pe1")
 
     ### make canvas and pads
     c1 = ROOT.TCanvas("c1","c1")
@@ -146,11 +185,11 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     pad1.cd()
 
     # get x-limits (for later use)
-    nbins = histlist[0].GetNbinsX()
-    xlims = (histlist[0].GetBinLowEdge(1),
-	     histlist[0].GetBinLowEdge(nbins)+histlist[0].GetBinWidth(nbins))
+    nbins = datahist.GetNbinsX()
+    xlims = (datahist.GetBinLowEdge(1),
+	     datahist.GetBinLowEdge(nbins)+datahist.GetBinWidth(nbins))
     # get and set y-limits
-    (totmin,totmax) = ht.getminmax(histlist)
+    (totmin,totmax) = ht.getminmax(histlist+[datahist])
     # in case of log scale
     if logy:
         pad1.SetLogy()
@@ -159,11 +198,11 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     else:
 	if ylims is None: ylims = (0.,totmax*ymaxlinfactor)
     if yminzero and ylims[0]<0: ylims = (0.,ylims[1])
-    histlist[0].SetMaximum(ylims[1])
-    histlist[0].SetMinimum(ylims[0])
+    datahist.SetMaximum(ylims[1])
+    datahist.SetMinimum(ylims[0])
 
     # X-axis layout
-    xax = histlist[0].GetXaxis()
+    xax = datahist.GetXaxis()
     xax.SetNdivisions(5,4,0,ROOT.kTRUE)
     if doratio:
 	xax.SetLabelSize(0)
@@ -176,7 +215,7 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
 	    xax.SetTitleSize(axtitlesize)
 	    xax.SetTitleOffset(xtitleoffset)
     # Y-axis layout
-    yax = histlist[0].GetYaxis()
+    yax = datahist.GetYaxis()
     yax.SetMaxDigits(3)
     yax.SetNdivisions(8,4,0,ROOT.kTRUE)
     yax.SetLabelFont(10*labelfont+3)
@@ -187,12 +226,21 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
 	yax.SetTitleSize(axtitlesize)
 	yax.SetTitleOffset(ytitleoffset)
 
-    # histograms
-    histlist[0].Draw(drawoptions)
-    for hist in histlist[1:]:
-        hist.Draw("same "+drawoptions)
+    ### draw all objects in upper pad
+    # first draw reference histogram to get axes right
+    datahist.Draw()
+    # draw other histograms
+    for hist in histlist:
+        hist.Draw("same "+histdrawoptions)
+    # draw functions
+    for func in funclist:
+	func.Draw("same")
+    # re-draw datahist on top
+    datahist.Draw("same")
+    # draw legend
     if dolegend:
 	legend.Draw("same")
+    # re-draw axes on top
     ROOT.gPad.RedrawAxis()
 
     # draw header
@@ -210,7 +258,7 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
 
     ### make the lower part of the plot
     pad2.cd()
-    xax = ratiohistlist[0].GetXaxis()
+    xax = ratiohist.GetXaxis()
     xax.SetNdivisions(5,4,0,ROOT.kTRUE)
     xax.SetLabelSize(labelsize)
     xax.SetLabelFont(10*labelfont+3)
@@ -220,7 +268,7 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
 	xax.SetTitleSize(axtitlesize)
 	xax.SetTitleOffset(xtitleoffset)
     # Y-axis layout
-    yax = ratiohistlist[0].GetYaxis()
+    yax = ratiohist.GetYaxis()
     if ratiorange==None: ratiorange = (0,1.999)
     yax.SetRangeUser(ratiorange[0],ratiorange[1]);
     yax.SetMaxDigits(3)
@@ -232,18 +280,14 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     yax.SetTitleSize(axtitlesize)
     yax.SetTitleOffset(ytitleoffset)
 
-    # draw objects
-    ratiohistlist[0].Draw(drawoptions)
-    for hist in ratiohistlist[1:]:
-        hist.Draw("same "+drawoptions)
+    # first draw reference histogram to get axes right
+    ratiohist.Draw()
+    # now draw unit line
+    ratiofunc.Draw("same")
+    # re-draw ratio hist on top
+    ratiohist.Draw("same")
+    # re-draw axes on top
     ROOT.gPad.RedrawAxis()
-
-    # make and draw unit ratio line
-    xmax = histlist[0].GetXaxis().GetBinUpEdge(histlist[0].GetNbinsX())
-    xmin = histlist[0].GetXaxis().GetBinLowEdge(1)
-    line = ROOT.TLine(xmin,1,xmax,1)
-    line.SetLineStyle(2)
-    line.Draw("same")
 
     # return or save the plot
     if figname is None:
