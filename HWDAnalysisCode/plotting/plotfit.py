@@ -116,7 +116,8 @@ def plotfit(datahist, funclist, histlist=None, figname=None,
     for i,func in enumerate(funclist):
 	func.SetLineColor(funccolorlist[i])
         func.SetLineWidth(3)
-        #func.SetLineStyle(?)
+	# make all except the first one dashed
+	if i>0: func.SetLineStyle(2)
 
     ### style operations on other histograms
     for i,hist in enumerate(histlist):
