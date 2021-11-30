@@ -7,6 +7,11 @@ import os
 sys.path.append(os.path.abspath('../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
+# read command line arguments
+runlocal = False
+for arg in sys.argv[1:]:
+    if arg=='runlocal': runlocal = True
+
 # set global properties
 isMCFR = True
 use_mt = False
@@ -40,6 +45,5 @@ for year in years:
 			    isMCFR,use_mt,process,year,flavour,
 			    sampledirectory,samplelist)
 		script.write(command+'\n')
-	    submitQsubJob(script_name)
-	    # alternative: run locally
-	    #os.system('bash '+script_name)
+	    if runlocal: os.system('bash '+script_name)
+	    else: submitQsubJob(script_name)

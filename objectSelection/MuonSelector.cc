@@ -115,6 +115,21 @@ bool MuonSelector::isFO2018() const{
 }
 
 
+bool MuonSelector::isFORunTime( double ptRatioCut, double deepFlavorCut ) const{
+    // function for FO optimization, use ONLY in MC fake rate grid search
+    if( !isLoose() ) return false;
+    if( muonPtr->uncorrectedPt() <= 10 ) return false;
+    if (muonPtr->trackPtError() / muonPtr->trackPt() >= 0.2) return false;
+
+    if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
+        if( muonPtr->ptRatio() <= ptRatioCut ) return false;
+	if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+    }
+
+    return true;
+}
+   
+
 /*
 tight muon selection
 */

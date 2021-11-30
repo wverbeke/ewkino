@@ -7,10 +7,16 @@ import os
 sys.path.append(os.path.abspath('../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
+# read command line arguments
+runlocal = False
+testrun = False
+for arg in sys.argv[1:]:
+    if arg=='runlocal': runlocal = True
+    if arg=='testrun': testrun = True
+
 # set global properties
 years = ['2016','2017','2018']
 flavours = ['electron','muon']
-istestrun = False
 samplelistdirectory = os.path.abspath('sampleListsNew')
 # (see also below in loop to set the correct sample list name per flavour/year!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'
@@ -36,17 +42,16 @@ for year in years:
 		nsamples += 1
 	print('found '+str(nsamples)+' samples for '+year+' '+flavour+'s.')
         for i in range(nsamples):
-	    if(istestrun and i!=11): continue
+	    if(testrun and i!=11): continue
             script_name = 'fillMCFakeRateMeasurement.sh'
             with open(script_name,'w') as script:
                 initializeJobScript(script)
                 script.write('cd {}\n'.format(cwd))
                 command = './fillMCFakeRateMeasurement {} {} {} {} {} {}'.format(
-			    flavour,year,sampledirectory,samplelist,i,istestrun)
+			    flavour,year,sampledirectory,samplelist,i,testrun)
                 script.write(command+'\n')
-	    if not istestrun:
-		submitQsubJob(script_name)
-            # alternative: run locally
+	    # for a test run: run locally
+	    if testrun: os.system('bash '+script_name)
 	    else:
-		os.system('bash '+script_name)
-
+		if runlocal: os.system('bash '+script_name)
+		else: submitQsubJob(script_name)

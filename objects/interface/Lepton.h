@@ -50,6 +50,8 @@ class Lepton : public PhysicsObject {
         //lepton id decisions 
         bool isLoose() const{ return selector->isLoose(); }
         bool isFO() const{ return selector->isFO(); }
+	bool isFORunTime( double ptRatioCut, double deepFlavorCut ) const{ 
+	    return selector->isFORunTime(ptRatioCut, deepFlavorCut); }
         bool isTight() const{ return selector->isTight(); }
         virtual bool isGood() const override{ return isFO(); }
 

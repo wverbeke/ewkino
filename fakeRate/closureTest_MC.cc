@@ -16,19 +16,14 @@ std::vector< HistInfo > makeDistributionInfoDefault(){
     std::vector< HistInfo > histInfoVec = {
 	HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 10, 200 ),
 	HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 10, 150 ),
-	HistInfo( "leptonPtTrailing", "P_{T}^{trailing lepton} (GeV)", 10, 10, 100 ),
 
 	HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
 	HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
-	HistInfo( "leptonEtaTrailing", "|#eta|^{trailing lepton}", 10, 0, 2.5 ),
-	
+
+	HistInfo( "nLeptons", "number of leptons", 3, 1.5, 4.5 ),	
 	HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 300 ),
-        HistInfo( "mt", "M_{T}^{W} (GeV)", 10, 0, 300 ),
-	HistInfo( "mll", "M_{ll} (GeV)", 10, 0, 200 ),
 	HistInfo( "ltmet", "L_{T} + E_{T}^{miss} (GeV)", 10, 0, 300 ),
 	HistInfo( "ht", "H_{T} (GeV)", 10, 0, 600 ),
-	HistInfo( "m3l", "M_{3l} (GeV)", 10, 0, 300 ), 
-	HistInfo( "mt3l", "M_{T}^{3l} (GeV)", 10, 0, 300 ),
 
 	HistInfo( "nJets", "number of jets", 8, 0, 8 ),
 	HistInfo( "nBJets", "number of b-jets (medium deepFlavour)", 4, 0, 4 ),
@@ -69,7 +64,10 @@ bool passClosureTestEventSelection( Event& event, const bool requireMuon = false
     event.applyLeptonConeCorrection();
     event.cleanElectronsFromLooseMuons();
     event.selectFOLeptons();
-    if( event.numberOfLightLeptons() != 3 ) return false;
+    if( event.numberOfLightLeptons() < 2 ) return false;
+    if( event.numberOfLightLeptons() == 2 
+	&& event.lightLeptonCollection()[0].charge() 
+	   != event.lightLeptonCollection()[1].charge() ) return false;
     event.selectGoodJets();
     event.cleanJetsFromFOLeptons();
     event.sortLeptonsByPt();
@@ -85,7 +83,7 @@ bool passClosureTestEventSelection( Event& event, const bool requireMuon = false
 	else if( leptonPtr->isPrompt() ) ++numberOfPromptLeptons;
     }
     if( numberOfNonPromptLeptons < 1 ) return false;
-    if( ( numberOfNonPromptLeptons + numberOfPromptLeptons ) != 3 ) return false;
+    if( ( numberOfNonPromptLeptons + numberOfPromptLeptons ) < 2 ) return false;
     return true;
 }
 
@@ -183,26 +181,14 @@ int main( int argc, char* argv[] ){
             if( !passClosureTestEventSelection( event, onlyMuonFakes, onlyElectronFakes ) ) continue;
 	    LightLeptonCollection lightLeptons = event.lightLeptonCollection();
 
-	    // fill variables
-            double mll = 0, mtW = 0;
-            if( event.hasOSSFLightLeptonPair() ){
-                mll = event.bestZBosonCandidateMass();
-                mtW = event.mtW();
-            } else{
-                mll = ( lightLeptons[0] + lightLeptons[1] ).mass();
-                mtW = mt( lightLeptons[2], event.met() );
-            }
             //compute plotting variables 
             std::vector< double > variables = { 
-		lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
-                lightLeptons[0].absEta(), lightLeptons[1].absEta(), lightLeptons[2].absEta(),
+		lightLeptons[0].pt(), lightLeptons[1].pt(),
+                lightLeptons[0].absEta(), lightLeptons[1].absEta(),
+		static_cast< double >( lightLeptons.size() ),
                 event.metPt(),
-                mtW,
-                mll,
                 lightLeptons.scalarPtSum() + event.metPt(),
                 event.HT(),
-                lightLeptons.mass(),
-                mt( lightLeptons.objectSum(), event.met() ),
                 static_cast< double >( event.numberOfJets() ),
                 static_cast< double >( event.numberOfMediumBTaggedJets() ),
                 static_cast< double >( event.numberOfVertices() )

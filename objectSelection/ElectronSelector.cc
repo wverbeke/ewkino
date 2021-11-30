@@ -103,6 +103,25 @@ bool ElectronSelector::isFO2018() const{
 }
 
 
+bool ElectronSelector::isFORunTime( double ptRatioCut, double deepFlavorCut ) const{
+    // function for FO optimization, use ONLY in MC fake rate grid search!
+    if( !isLoose() ) return false;
+    if( electronPtr->uncorrectedPt() <= 10 ) return false;
+    if( electronPtr->hOverE() >= 0.1 ) return false;
+    if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
+    if( !electronPtr->passChargeConsistency() ) return false;
+    if( !electronPtr->passConversionVeto() ) return false;
+
+    if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
+        //if( !electronPtr->isLoosePOGElectron() ) return false;
+        if( electronPtr->ptRatio() <= ptRatioCut ) return false;
+	if( electronPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+    }
+
+    return true;   
+}
+
+
 /*
 tight electron selection
 */

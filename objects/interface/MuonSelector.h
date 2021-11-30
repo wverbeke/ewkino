@@ -29,6 +29,7 @@ class MuonSelector : public LeptonSelector {
 	virtual bool isFO2016PostVFP() const override;
         virtual bool isFO2017() const override;
         virtual bool isFO2018() const override;
+	virtual bool isFORunTime(double,double) const override;
 
         virtual bool isTightBase() const override;
         virtual bool isTight2016PreVFP() const override;

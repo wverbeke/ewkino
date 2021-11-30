@@ -83,6 +83,15 @@ void LeptonCollection::selectFOLeptons(){
 }
 
 
+void LeptonCollection::selectFORunTimeLeptons( double ptRatioCut, double deepFlavorCut ){
+   for( const_iterator it = cbegin(); it != cend(); ){
+        if( ! (**it).isFORunTime( ptRatioCut, deepFlavorCut ) ){
+            it = erase( it );
+        } else ++it;
+    }
+}
+
+
 void LeptonCollection::selectTightLeptons(){
     selectObjects( &Lepton::isTight );
 }

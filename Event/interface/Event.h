@@ -93,6 +93,8 @@ class Event{
         //lepton selection and cleaning
         void selectLooseLeptons(){ _leptonCollectionPtr->selectLooseLeptons(); }
         void selectFOLeptons(){ _leptonCollectionPtr->selectFOLeptons(); }
+	void selectFORunTimeLeptons( double ptRatioCut, double deepFlavorCut ){
+	    _leptonCollectionPtr->selectFORunTimeLeptons(ptRatioCut, deepFlavorCut); }
         void selectTightLeptons(){ _leptonCollectionPtr->selectTightLeptons(); }
        	void cleanElectronsFromLooseMuons( const double coneSize = 0.05 ){ _leptonCollectionPtr->cleanElectronsFromLooseMuons( coneSize ); }
         void cleanElectronsFromFOMuons( const double coneSize = 0.05 ){ _leptonCollectionPtr->cleanElectronsFromFOMuons( coneSize ); }
