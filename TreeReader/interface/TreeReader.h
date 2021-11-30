@@ -306,6 +306,8 @@ class TreeReader {
 
         //check which year the current sample belongs to
         bool is2016() const;
+	bool is2016PreVFP() const;
+	bool is2016PostVFP() const;
         bool is2017() const;
         bool is2018() const;
 

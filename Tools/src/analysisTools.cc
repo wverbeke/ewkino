@@ -109,6 +109,23 @@ void analysisTools::printDataCard(const std::string& cardName, const double obsY
 
 
 //check what year a sample file corresponds to
+
+bool analysisTools::fileIs2016PreVFP( const std::string& filePath ){
+    /*return (stringTools::stringContains(filePath, "Summer20UL16MiniAODAPV")
+        || stringTools::stringContains(filePath, "preVFP"));*/
+    // return false for now (working on pre-UL files, use 2016 postVFP as if it is 2016)
+    return false;
+}
+
+
+bool analysisTools::fileIs2016PostVFP( const std::string& filePath ){
+    // return simply 2016 check for now!
+    return (stringTools::stringContains(filePath, "MiniAOD2016")
+        || stringTools::stringContains(filePath, "Run2016")
+	|| stringTools::stringContains(filePath, "Summer16") );
+}
+
+
 bool analysisTools::fileIs2017( const std::string& filePath ){
     return ( stringTools::stringContains( filePath, "MiniAOD2017" ) 
         || stringTools::stringContains( filePath, "Run2017" ) 

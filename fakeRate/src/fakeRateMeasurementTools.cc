@@ -265,10 +265,7 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
     const bool isMuon =  ( flavor == "muon" );
     
     // define binning for 2D histograms
-    // old binning:
-    const std::vector< double > ptBins = {10., 20., 30., 45., 65., 100.};
-    // new binning:
-    //const std::vector< double > ptBins = {10., 15., 20., 30., 45., 100.};
+    const std::vector< double > ptBins = {10., 15., 20., 30., 45., 100.};
     std::vector< double > etaBins;
     if( isMuon ){
         etaBins = { 0., 1.2, 2.1, 2.4 }; 

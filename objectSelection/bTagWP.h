@@ -30,5 +30,13 @@ namespace bTagWP{
     double looseDeepFlavor2018();
     double mediumDeepFlavor2018();
     double tightDeepFlavor2018();
+
+    double looseDeepFlavor2016PreVFP();
+    double mediumDeepFlavor2016PreVFP();
+    double tightDeepFlavor2016PreVFP();
+
+    double looseDeepFlavor2016PostVFP();
+    double mediumDeepFlavor2016PostVFP();
+    double tightDeepFlavor2016PostVFP();
 }
 #endif

@@ -17,9 +17,11 @@ class PhysicsObject{
     public:
         
         PhysicsObject() = default;
-        //PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy ):
-        //    vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ) {} 
-        PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy, const bool objectIs2016 = false, const bool objectIs2017 = false );
+        PhysicsObject( double transverseMomentum, double pseudoRapidity, 
+			double azimuthalAngle, double energy, 
+			const bool objectIs2016PreVFP = false, 
+			const bool objectIs2016PostVFP = false,
+			const bool objectIs2017 = false );
 
         //define both copy and move constructors and assignment operators 
         PhysicsObject( const PhysicsObject& ) = default;
@@ -45,9 +47,11 @@ class PhysicsObject{
         PhysicsObject& operator+=( const PhysicsObject& );
         PhysicsObject& operator-=( const PhysicsObject& );
 
-        bool is2016() const{ return is2016Object; }
+        bool is2016PreVFP() const{ return is2016PreVFPObject; }
+	bool is2016PostVFP() const{ return is2016PostVFPObject; }
+	bool is2016() const{ return (is2016PreVFP() || is2016PostVFP()); }
         bool is2017() const{ return is2017Object; }
-        bool is2018() const{ return !( is2016Object || is2017Object ); }
+        bool is2018() const{ return !( is2016() || is2017() ); }
 
         virtual ~PhysicsObject() = default;
 
@@ -61,7 +65,8 @@ class PhysicsObject{
     private:
         LorentzVector vector; 
 
-        bool is2016Object = false;
+        bool is2016PreVFPObject = false;
+	bool is2016PostVFPObject = false;
         bool is2017Object = false;
 
         //virtual PhysicsObject* clone() const &{ return new PhysicsObject( *this ); } 

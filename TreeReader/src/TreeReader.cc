@@ -266,7 +266,19 @@ void TreeReader::checkCurrentFile() const{
 
 bool TreeReader::is2016() const{
     checkCurrentSample();
-    return _currentSamplePtr->is2016();
+    return (is2016PreVFP() || is2016PostVFP() );
+}
+
+
+bool TreeReader::is2016PreVFP() const{
+    checkCurrentSample();
+    return _currentSamplePtr->is2016PreVFP();
+}
+
+
+bool TreeReader::is2016PostVFP() const{
+    checkCurrentSample();
+    return _currentSamplePtr->is2016PostVFP();
 }
 
 

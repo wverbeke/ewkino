@@ -29,9 +29,11 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
     _xSec = ( xSecString == "" ? 0 : std::stod( xSecString ) );
 
     setIsData();
-    auto is2017Or2018 = analysisTools::fileIs2017Or2018( _fileName );
-    _is2017 = is2017Or2018.first;
-    _is2018 = is2017Or2018.second;
+    //auto is2017Or2018 = analysisTools::fileIs2017Or2018( _fileName );
+    _is2016PreVFP = analysisTools::fileIs2016PreVFP( _fileName );
+    _is2016PostVFP = analysisTools::fileIs2016PostVFP( _fileName );
+    _is2017 = analysisTools::fileIs2017( _fileName );
+    _is2018 = analysisTools::fileIs2018( _fileName );
 
     //unique name is equal to fileName without file extension
     _uniqueName = stringTools::fileNameWithoutExtension( _fileName );

@@ -1,15 +1,16 @@
 #include "../interface/PhysicsObject.h"
 
 
-PhysicsObject::PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy, const bool objectIs2016, const bool objectIs2017 ) :
+PhysicsObject::PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy, const bool objectIs2016PreVFP, const bool objectIs2016PostVFP, const bool objectIs2017 ) :
     vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ),
-    is2016Object( objectIs2016 ),
+    is2016PreVFPObject( objectIs2016PreVFP ),
+    is2016PostVFPObject( objectIs2016PostVFP ),
     is2017Object( objectIs2017 )
     {}
 
 
 void PhysicsObject::setLorentzVector( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energyValue ){
-    *this = PhysicsObject( transverseMomentum, pseudoRapidity, azimuthalAngle, energyValue, is2016Object, is2017Object );
+    *this = PhysicsObject( transverseMomentum, pseudoRapidity, azimuthalAngle, energyValue, is2016PreVFPObject, is2016PostVFPObject, is2017Object );
 }
 
 

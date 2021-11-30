@@ -14,7 +14,8 @@ years = ['2016','2017','2018']
 flavours = ['muon','electron','both'] 
 # (put any string different from 'muon' or 'electron' to include both)
 processes = ['TT','DY']
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/fakerate/'
+#sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim_tzq_final/fakerate/'
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate/'
 samplelistdirectory = os.path.abspath('sampleLists')
 # (see also below to set correct sample list name in loop!)
 
