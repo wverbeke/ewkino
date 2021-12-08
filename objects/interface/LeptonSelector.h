@@ -27,7 +27,7 @@ class LeptonSelector {
 	virtual bool isFO2016PostVFP() const = 0;
         virtual bool isFO2017() const = 0;
         virtual bool isFO2018() const = 0;
-	virtual bool isFORunTime(double,double) const = 0;
+	virtual bool isFORunTime(double,double,int) const = 0;
 
         virtual bool isTightBase() const = 0;
         virtual bool isTight2016PreVFP() const = 0;

@@ -83,9 +83,9 @@ void LeptonCollection::selectFOLeptons(){
 }
 
 
-void LeptonCollection::selectFORunTimeLeptons( double ptRatioCut, double deepFlavorCut ){
+void LeptonCollection::selectFORunTimeLeptons( double ptRatioCut, double deepFlavorCut, int extraCut ){
    for( const_iterator it = cbegin(); it != cend(); ){
-        if( ! (**it).isFORunTime( ptRatioCut, deepFlavorCut ) ){
+        if( ! (**it).isFORunTime( ptRatioCut, deepFlavorCut, extraCut ) ){
             it = erase( it );
         } else ++it;
     }

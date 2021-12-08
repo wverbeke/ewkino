@@ -63,10 +63,10 @@ bool TauSelector::isFO2018() const{
 }
 
 
-bool TauSelector::isFORunTime( double ptRatioCut, double deepFlavorCut ) const{
+bool TauSelector::isFORunTime( double ptRatioCut, double deepFlavorCut, int extraCut ) const{
     if( !isLoose() ) return false;
     // dummy conditions to avoid compilation warnings
-    if( ptRatioCut<0. && deepFlavorCut<0. ) return true;
+    if( ptRatioCut<0. && deepFlavorCut<0. && extraCut<-9999 ) return true;
     return true;
 }
 

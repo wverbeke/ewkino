@@ -27,7 +27,7 @@ class LeptonCollection : public PhysicsObjectCollection< Lepton > {
         //select leptons
         void selectLooseLeptons();
         void selectFOLeptons();
-	void selectFORunTimeLeptons( double ptRatioCut, double deepFlavorCut );
+	void selectFORunTimeLeptons( double ptRatioCut, double deepFlavorCut, int extraCut );
         void selectTightLeptons();
 
         //build collection of leptons passing certain selection
