@@ -34,6 +34,12 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
     _is2016PostVFP = analysisTools::fileIs2016PostVFP( _fileName );
     _is2017 = analysisTools::fileIs2017( _fileName );
     _is2018 = analysisTools::fileIs2018( _fileName );
+    // printouts for testing
+    /*std::cout << "Sample year:" << std::endl;
+    std::cout << "_is2016PreVFP: " << _is2016PreVFP << std::endl;
+    std::cout << "_is2016PostVFP: " << _is2016PostVFP << std::endl;
+    std::cout << "_is2017: " << _is2017 << std::endl;
+    std::cout << "_is2018: " << _is2018 << std::endl;*/
 
     //unique name is equal to fileName without file extension
     _uniqueName = stringTools::fileNameWithoutExtension( _fileName );
