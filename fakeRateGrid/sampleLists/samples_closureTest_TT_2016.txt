@@ -1,0 +1,3 @@
+TT	    TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_Summer16.root			87.31
+TT          TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root         182.17540224
+TT          TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_Summer16.root      182.17540224
