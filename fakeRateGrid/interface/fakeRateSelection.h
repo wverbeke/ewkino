@@ -13,7 +13,8 @@ class Event;
 namespace fakeRate{
     
     bool passFakeRateEventSelection( Event& event, bool onlyMuon = false, bool onlyElectrons = false,
-	    bool onlyTightLeptons = false, double ptRatioCut=0., double deepFlavorCut=0.,
+	    bool onlyTightLeptons = false, 
+	    double ptRatioCut=0., double deepFlavorCut=0., int extraCut=0,
 	    bool requireJet = true, double jetDeltaRCut = 1, double jetPtCut = 25);
 
 }

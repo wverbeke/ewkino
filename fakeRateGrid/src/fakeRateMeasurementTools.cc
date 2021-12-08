@@ -5,7 +5,7 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
 					    const std::string& sampleDirectory, 
 					    const std::string& sampleList,
 					    const unsigned sampleIndex,
-					    double ptRatioCut, double deepFlavorCut,
+					    double ptRatioCut, double deepFlavorCut, int extraCut,
 					    const bool isTestRun, const long nEvents ){
 
     std::cout<<"starting function fillMCFakeRateMeasurementHistograms"<<std::endl;
@@ -100,7 +100,8 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
 	//            onlyTight, ptRatioCut, deepFlavorCut, 
 	//            requireJet, deltaR, jetPt (def 25) 
         if( !fakeRate::passFakeRateEventSelection( event, isMuon, !isMuon, 
-						    false, ptRatioCut, deepFlavorCut,
+						    false, 
+						    ptRatioCut, deepFlavorCut, extraCut,
 						    true, 0.7, 25.) ) continue;
 
         LightLepton& lepton = event.lightLeptonCollection()[ 0 ];

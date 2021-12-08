@@ -10,7 +10,7 @@
 
 //event selection for fake-rate measurement 
 bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool onlyElectrons, 
-	bool onlyTightLeptons, double ptRatioCut, double deepFlavorCut,
+	bool onlyTightLeptons, double ptRatioCut, double deepFlavorCut, int extraCut,
 	bool requireJet, double jetDeltaRCut, double jetPtCut ){
 
     //ignore taus here since we are measuring light lepton fake-rate
@@ -27,7 +27,7 @@ bool fakeRate::passFakeRateEventSelection( Event& event, bool onlyMuons, bool on
     if( onlyTightLeptons ){
         event.selectTightLeptons();
     } else {
-        event.selectFORunTimeLeptons( ptRatioCut, deepFlavorCut );
+        event.selectFORunTimeLeptons( ptRatioCut, deepFlavorCut, extraCut );
     }
     if( event.numberOfLightLeptons() != 1 ){
         return false;

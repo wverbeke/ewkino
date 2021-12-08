@@ -27,5 +27,5 @@
 
 void fillMCFakeRateMeasurementHistograms(const std::string& leptonFlavor, const std::string& year,
     const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,
-    double ptRatioCut=0., double deepFlavorCut=0.,
+    double ptRatioCut, double deepFlavorCut, int extraCut,
     const bool isTestRun = false, const long nEvents = -1 );

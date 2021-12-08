@@ -15,6 +15,7 @@ year = sys.argv[2]
 flavour = sys.argv[3]
 ptRatioCut = sys.argv[4]
 deepFlavorCut = sys.argv[5]
+extraCut = sys.argv[6]
 
 # read other command line arguments
 runlocal = False
@@ -33,6 +34,7 @@ print('  - year {}'.format(year))
 print('  - flavour {}'.format(flavour))
 print('  - ptRatioCut {}'.format(ptRatioCut))
 print('  - deepFlavorCut {}'.format(deepFlavorCut))
+print('  - extraCut {}'.format(extraCut))
 print('  - runlocal {}'.format(runlocal))
 print('  - testrun {}'.format(testrun))
 print('  - nevents {}'.format(nevents))
@@ -66,10 +68,10 @@ for i in range(nsamples):
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
 	script.write('cd {}\n'.format(outputdir))
-        command = '../fillMCFakeRateMeasurement {} {} {} {} {} {} {} {} {}'.format(
+        command = '../fillMCFakeRateMeasurement {} {} {} {} {} {} {} {} {} {}'.format(
 		    flavour,year,sampledirectory,
 		    samplelist,i,
-		    ptRatioCut, deepFlavorCut,
+		    ptRatioCut, deepFlavorCut, extraCut,
 		    testrun, nevents)
         script.write(command+'\n')
     print('created job script for sample {} of {}'.format(i+1,nsamples))
