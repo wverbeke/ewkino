@@ -110,6 +110,6 @@ if __name__=='__main__':
 			#	cmds, cmssw_version='CMSSW_10_2_25')
 			else: submitQsubJob(script_name)
 
-if( runcondor and not testrun ):
-    ct.submitCommandsAsCondorCluster('cjob_gridMCFakeRateMeasurement', condorclustercmds,
+    if( runcondor and not testrun ):
+	ct.submitCommandsAsCondorCluster('cjob_gridMCFakeRateMeasurement', condorclustercmds,
                                         cmssw_version='CMSSW_10_2_25')

@@ -7,6 +7,10 @@ import os
 sys.path.append(os.path.abspath('../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 
+# prntouts for logging
+print('arguments provided on the command line:')
+print(sys.argv)
+
 # read fixed command line arguments
 workingdir = sys.argv[1]
 year = sys.argv[2]
@@ -14,6 +18,7 @@ flavour = sys.argv[3]
 process = sys.argv[4]
 ptRatioCut = sys.argv[5]
 deepFlavorCut = sys.argv[6]
+extraCut = sys.argv[7]
 
 # read command line arguments
 runlocal = False
@@ -33,6 +38,7 @@ print('  - flavour {}'.format(flavour))
 print('  - process {}'.format(process))
 print('  - ptRatioCut {}'.format(ptRatioCut))
 print('  - deepFlavorCut {}'.format(deepFlavorCut))
+print('  - extraCut {}'.format(extraCut))
 print('  - runlocal {}'.format(runlocal))
 print('  - istestrun {}'.format(testrun))
 print('  - nevents {}'.format(nevents))
@@ -53,15 +59,15 @@ if not os.path.exists('./closureTest_MC'):
 
 # sumbit jobs
 cwd = os.getcwd()
-script_name = 'qjob_closureTest_MC_{}_{}_{}.sh'.format(workingdir,year,flavour)
+script_name = 'qjob_closureTest_MC_{}_{}_{}_{}.sh'.format(workingdir,year,flavour,process)
 with open(script_name,'w') as script:
     initializeJobScript(script)
     script.write('cd {}\n'.format(cwd))
     script.write('cd {}\n'.format(workingdir))
-    command = '../closureTest_MC {} {} {} {} {} {} {} {} {} {} {}'.format(
+    command = '../closureTest_MC {} {} {} {} {} {} {} {} {} {} {} {}'.format(
 		    isMCFR, use_mt, process, year, flavour,
 		    sampledirectory,samplelist,
-		    ptRatioCut, deepFlavorCut,
+		    ptRatioCut, deepFlavorCut, extraCut,
 		    testrun, nevents )
     script.write(command+'\n')
 if testrun: os.system('bash '+script_name)

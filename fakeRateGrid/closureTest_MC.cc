@@ -67,14 +67,16 @@ std::shared_ptr< TH2D > readFRMap( const std::string& flavor, const std::string&
 }
 
 bool passClosureTestEventSelection( Event& event, 
-				    const double ptRatioCut, const double deepFlavorCut,
+				    const double ptRatioCut, 
+				    const double deepFlavorCut,
+				    const int extraCut,
 				    const bool requireMuon = false, 
 				    const bool requireElectron = false ){
     // do basic event selection
     event.removeTaus();
     event.applyLeptonConeCorrection();
     event.cleanElectronsFromLooseMuons();
-    event.selectFORunTimeLeptons(ptRatioCut, deepFlavorCut);
+    event.selectFORunTimeLeptons(ptRatioCut, deepFlavorCut, extraCut);
     if( event.numberOfLightLeptons() < 2 ) return false;
     if( event.numberOfLightLeptons() == 2 
 	&& event.lightLeptonCollection()[0].charge() 
@@ -109,10 +111,10 @@ bool passClosureTestEventSelection( Event& event,
 
 double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_muon,  
 			const std::shared_ptr< TH2D >& frMap_electron,
-			const double ptRatioCut, const double deepFlavorCut ){
+			const double ptRatioCut, const double deepFlavorCut, const int extraCut ){
     double weight = -1.;
     for( const auto& leptonPtr : event.lightLeptonCollection() ){
-        if( leptonPtr->isFORunTime(ptRatioCut,deepFlavorCut) && !leptonPtr->isTight() ){
+        if( leptonPtr->isFORunTime(ptRatioCut,deepFlavorCut, extraCut) && !leptonPtr->isTight() ){
 
             double croppedPt = std::min( leptonPtr->pt(), 99. );
 	    //double croppedPt = std::min( leptonPtr->pt(), 44.9 );
@@ -159,10 +161,11 @@ int main( int argc, char* argv[] ){
     
     // check command line arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-    if( !(argvStr.size() == 12) ){
-        std::cerr<<"found "<<argc - 1<<" command line args, while 11 are needed."<<std::endl;
+    if( !(argvStr.size() == 13) ){
+        std::cerr<<"found "<<argc - 1<<" command line args, while 12 are needed."<<std::endl;
         std::cerr<<"usage: ./closureTest_MC isMCFR use_mT process year flavour";
-	std::cerr<<" sampleDirectory sampleList ptRatioCut deepFlavorCut isTestRun nEvents"<<std::endl;
+	std::cerr<<" sampleDirectory sampleList ptRatioCut deepFlavorCut extraCut";
+	std::cerr<<" isTestRun nEvents"<<std::endl;
         return 1;
     }
     
@@ -176,8 +179,9 @@ int main( int argc, char* argv[] ){
     std::string sampleListFile = argvStr[7];
     const double ptRatioCut = std::stod(argvStr[8]);
     const double deepFlavorCut = std::stod(argvStr[9]);
-    const bool isTestRun = (argvStr[10]=="True" or argvStr[10]=="true");
-    long nEvents = std::stol(argvStr[11]);
+    const int extraCut = std::stoi(argvStr[10]);
+    const bool isTestRun = (argvStr[11]=="True" or argvStr[11]=="true");
+    long nEvents = std::stol(argvStr[12]);
     if( flavor!="electron" && flavor!="muon" ){ flavor=""; }
     setTDRStyle();
 
@@ -224,7 +228,8 @@ int main( int argc, char* argv[] ){
             Event event = treeReader.buildEvent( entry );
 
             // apply event selection
-            if( !passClosureTestEventSelection( event, ptRatioCut, deepFlavorCut, onlyMuonFakes, onlyElectronFakes ) ){
+            if( !passClosureTestEventSelection( event, ptRatioCut, deepFlavorCut, extraCut,
+						onlyMuonFakes, onlyElectronFakes ) ){
 		 continue; }
 	    LightLeptonCollection lightLeptons = event.lightLeptonCollection();
 
@@ -259,7 +264,7 @@ int main( int argc, char* argv[] ){
 
 		//compute event weight with fake-rate
 		weight = weight*fakeRateWeight( event, fakeRateMap_muon, fakeRateMap_electron, 
-						ptRatioCut, deepFlavorCut );
+						ptRatioCut, deepFlavorCut, extraCut );
 		for( std::vector< double >::size_type v = 0; v < variables.size(); ++v ){
                     predictedHists[v]->Fill( std::min( variables[v],  histInfoVec[v].maxBinCenter() ), 
 						weight );
