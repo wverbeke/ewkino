@@ -60,6 +60,7 @@ std::shared_ptr< TH2D > readFRMap( const std::string& flavor, const std::string&
 
 bool passClosureTestEventSelection( Event& event, const bool requireMuon = false, 
 				    const bool requireElectron = false ){
+    // do basic selections
     event.removeTaus();
     event.applyLeptonConeCorrection();
     event.cleanElectronsFromLooseMuons();
@@ -71,7 +72,11 @@ bool passClosureTestEventSelection( Event& event, const bool requireMuon = false
     event.selectGoodJets();
     event.cleanJetsFromFOLeptons();
     event.sortLeptonsByPt();
-    
+   
+    // determine number of leptons in this event
+    size_t numberOfLeptons = event.numberOfLightLeptons();
+
+    // check which ones are prompt and which ones nonprompt
     size_t numberOfNonPromptLeptons = 0;
     size_t numberOfPromptLeptons = 0;
     for( auto& leptonPtr : event.lightLeptonCollection() ){
@@ -82,8 +87,10 @@ bool passClosureTestEventSelection( Event& event, const bool requireMuon = false
         }
 	else if( leptonPtr->isPrompt() ) ++numberOfPromptLeptons;
     }
+
+    // require at least one nonprompt lepton of correct flavour
     if( numberOfNonPromptLeptons < 1 ) return false;
-    if( ( numberOfNonPromptLeptons + numberOfPromptLeptons ) < 2 ) return false;
+    if( ( numberOfNonPromptLeptons + numberOfPromptLeptons ) != numberOfLeptons ) return false;
     return true;
 }
 
