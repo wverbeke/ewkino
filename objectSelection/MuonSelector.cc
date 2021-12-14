@@ -67,11 +67,6 @@ bool MuonSelector::isFOBase() const{
     if( !isLoose() ) return false;
     if( muonPtr->uncorrectedPt() <= 10 ) return false;
     if (muonPtr->trackPtError() / muonPtr->trackPt() >= 0.2) return false;
-
-    if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-        if( muonPtr->ptRatio() <= 0.45 ) return false;
-    }
-
     return true;
 }
 
@@ -79,8 +74,8 @@ bool MuonSelector::isFOBase() const{
 bool MuonSelector::isFO2016PreVFP() const{
 
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-        double deepFlavorCut = slidingDeepFlavorThreshold( 0.015, 0.02, muonPtr->uncorrectedPt() );
-        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+	if( muonPtr->ptRatio() <= 0.45 ) return false;
+        if( muonPtr->closestJetDeepFlavor() >= 0.015 ) return false;
     }
     return true;
 }
@@ -89,8 +84,8 @@ bool MuonSelector::isFO2016PreVFP() const{
 bool MuonSelector::isFO2016PostVFP() const{
 
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-        double deepFlavorCut = slidingDeepFlavorThreshold( 0.015, 0.02, muonPtr->uncorrectedPt() );
-        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+        if( muonPtr->ptRatio() <= 0.45 ) return false;
+        if( muonPtr->closestJetDeepFlavor() >= 0.015 ) return false;
     }
     return true;
 }
@@ -99,8 +94,8 @@ bool MuonSelector::isFO2016PostVFP() const{
 bool MuonSelector::isFO2017() const{
     
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-        double deepFlavorCut = slidingDeepFlavorThreshold( 0.015, 0.025, muonPtr->uncorrectedPt() );
-        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+	if( muonPtr->ptRatio() <= 0.45 ) return false;
+        if( muonPtr->closestJetDeepFlavor() >= 0.02 ) return false;
     }
     return true;
 }
@@ -108,8 +103,8 @@ bool MuonSelector::isFO2017() const{
 
 bool MuonSelector::isFO2018() const{
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-        double deepFlavorCut = slidingDeepFlavorThreshold( 0.015, 0.025, muonPtr->uncorrectedPt() );
-        if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
+	if( muonPtr->ptRatio() <= 0.45 ) return false;
+        if( muonPtr->closestJetDeepFlavor() >= 0.02 ) return false;
     }
     return true;
 }

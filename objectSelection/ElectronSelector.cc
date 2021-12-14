@@ -61,19 +61,15 @@ bool ElectronSelector::isFOBase() const{
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( !electronPtr->passChargeConsistency() ) return false;
     if( !electronPtr->passConversionVeto() ) return false;
-
-    if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-        if( !electronPtr->isLoosePOGElectron() ) return false;
-        if( electronPtr->ptRatio() <= 0.45 ) return false;
-    }
-
     return true;
 }
 
 
 bool ElectronSelector::isFO2016PreVFP() const{
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-	if( electronPtr->closestJetDeepFlavor() >= bTagWP::tightDeepFlavor2016PreVFP() ) return false;
+	if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+	if( electronPtr->ptRatio() <= 0.55 ) return false;
+	if( electronPtr->closestJetDeepFlavor() >= 0.5 ) return false;
     }
     return true;
 }
@@ -81,7 +77,9 @@ bool ElectronSelector::isFO2016PreVFP() const{
 
 bool ElectronSelector::isFO2016PostVFP() const{
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-        if( electronPtr->closestJetDeepFlavor() >= bTagWP::tightDeepFlavor2016PostVFP() ) return false;
+	if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+        if( electronPtr->ptRatio() <= 0.55 ) return false;
+        if( electronPtr->closestJetDeepFlavor() >= 0.5 ) return false;
     }
     return true;
 }
@@ -89,7 +87,9 @@ bool ElectronSelector::isFO2016PostVFP() const{
 
 bool ElectronSelector::isFO2017() const{
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-	if( electronPtr->closestJetDeepFlavor() >= bTagWP::tightDeepFlavor2017() ) return false;
+	if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+        if( electronPtr->ptRatio() <= 0.55 ) return false;
+        if( electronPtr->closestJetDeepFlavor() >= 0.5 ) return false;
     }
     return true;
 }
@@ -97,7 +97,9 @@ bool ElectronSelector::isFO2017() const{
 
 bool ElectronSelector::isFO2018() const{
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-	if( electronPtr->closestJetDeepFlavor() >= bTagWP::tightDeepFlavor2018() ) return false;
+	if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+        if( electronPtr->ptRatio() <= 0.55 ) return false;
+        if( electronPtr->closestJetDeepFlavor() >= 0.5 ) return false;
     }
     return true;
 }
