@@ -23,47 +23,53 @@ else: inputfiles = ([f for f in os.listdir(os.getcwd())
 
 # loop over input files
 for f in inputfiles:
-    print('running on {}'.format(f))
+    print('now running on {}...'.format(f))
 
     # set output directory
     outdir = f.replace('.root','')
     if not os.path.exists(outdir): os.makedirs(outdir)
 
-    # set figure base name
-    figbasename = outdir.replace('closurePlots_MC_','')
+    # determine instance properties from filename
+    # (the filename is assumed to be of the following form: 
+    # closurePlots_MC_<process>_<year>_<flavor>.root)
+    instancename = outdir.replace('closurePlots_MC_','')
+    instanceparts = instancename.split('_')
+    process = instanceparts[0]
+    year = instanceparts[1]
+    flavor = 'all'
+    if len(instanceparts)>2: flavor = instanceparts[2]
+    print('this file is found to have the following properties:')
+    print('  - process: {}'.format(process))
+    print('  - year: {}'.format(year))
+    print('  - flavor: {}'.format(flavor))
 
-    # determine year
-    year = 'all'
-    if('2016' in f): year = '2016'
-    if('2017' in f): year = '2017'
-    if('2018' in f): year = '2018'
+    # determine luminosity value to display
     lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700}
     lumi = lumimap[year]
-
-    # determine type
-    simtype = None
-    if '_DY_' in outdir: simtype = 'DY'
-    elif '_TT_' in outdir: simtype = 'TT'
 
     histlist = ht.loadallhistograms(f)
 
     # get a list of variables
-    observedhists = ht.selecthistograms(histlist,mustcontainall=['observed'])[1]
+    observedhists = ht.selecthistograms(histlist, mustcontainall=['observed'])[1]
     names = [h.GetName() for h in observedhists]
     variables = []
     for name in names:
-	var = name.split('_observed')[0]
+	var = name.split(instancename)[0].strip('_')
 	if var not in variables: variables.append(var)
-	print('found following variables: '+str(variables))
+    print('found following variables: '+str(variables))
 
     # loop over variables
     for var in variables:
 	print('running on variable {}'.format(var))
 
 	# get the histograms
-	observedhists = ht.selecthistograms(histlist,mustcontainall=[var+'_','observed'])[1]
-	predictedhists = ht.selecthistograms(histlist,mustcontainall=[var+'_','predicted'],
-		        maynotcontainone=['heavy','light','other'])[1]
+	observedhists = ht.selecthistograms(histlist,
+			    mustcontainall=[var+'_',instancename,'observed'])[1]
+	predictedhists = ht.selecthistograms(histlist,
+			    mustcontainall=[var+'_',instancename,'predicted'],
+			    maynotcontainone=['heavy','light','other'])[1]
+	print('found {} histograms for observed'.format(len(observedhists)))
+	print('found {} histograms for predicted'.format(len(predictedhists)))
 	observedhist = observedhists[0].Clone()
 	for h in observedhists[1:]: observedhist.Add(h)
 	predictedsum = predictedhists[0].Clone()
@@ -78,8 +84,8 @@ for f in inputfiles:
 	xaxtitle = observedhist.GetXaxis().GetTitle()
 	yaxtitle = observedhist.GetYaxis().GetTitle()
 
-        for h in predictedhists: 
-	    process = h.GetName().split('_predicted_')[1].split('_')[0]
+	# set histogram titles
+        for h in predictedhists:
 	    h.SetTitle(process)
 	observedhist.SetTitle("MC Observed")
 
@@ -90,10 +96,10 @@ for f in inputfiles:
 	legendbox = [0.5,0.5,0.92,0.9]
 	extracmstext = 'Preliminary'
 	extrainfos = []
-	if simtype=='DY': extrainfos=['Drell-Yan simulation']
-	if simtype=='TT': extrainfos=['t#bar{t} simulation']
+	if process=='DY': extrainfos=['Drell-Yan simulation']
+	if process=='TT': extrainfos=['t#bar{t} simulation']
     
-	hp.plotdatavsmc( os.path.join(outdir,var+'_'+figbasename), observedhist, 
+	hp.plotdatavsmc( os.path.join(outdir,var+'_'+instancename), observedhist, 
 	        predictedhists, mcsysthist=predictedsyst,
 	        datalabel='MC Obs.', p2yaxtitle='#frac{MC Obs.}{Pred.}',
 	        colormap=colormap, labelmap=labelmap,
@@ -101,7 +107,7 @@ for f in inputfiles:
 	        p1legendncols=1,p1legendbox=legendbox,
 	        extracmstext=extracmstext,
 	        extrainfos=extrainfos)
-	hp.plotdatavsmc( os.path.join(outdir,var+'_'+figbasename+'_log'), observedhist, 
+	hp.plotdatavsmc( os.path.join(outdir,var+'_'+instancename+'_log'), observedhist, 
 	        predictedhists, mcsysthist=predictedsyst, 
 	        datalabel='MC Obs.', p2yaxtitle='#frac{MC Obs.}{Pred.}',
                 colormap=colormap, labelmap=labelmap,
