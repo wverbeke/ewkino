@@ -11,6 +11,9 @@ from copy import copy
 import ROOT
 from gridMCFakeRateMeasurement import get_conf
 
+
+### help functions for histogram divergence measures
+
 def histtoarray( hist ):
     ### convert a TH1D to a simple numpy array 
     # (ignoring uncertainties, outerflow and nonuniform bin widths)
@@ -54,15 +57,27 @@ def normchi2divergence( hist1, hist2 ):
     return chi2/ndof
 
 
+### other help functions
+
+def getcolorrange( mat, minquantile=0.25, maxquantile=0.75, minzero=False ):
+    ### get color range based on the values in mat (np array)
+    # the range is determined as (minquantile(mat), maxquantile(mat))
+    # if minzero is True, the minimum is set to 1e-12
+    minval = np.percentile(mat, 100*minquantile)
+    maxval = np.percentile(mat, 100*maxquantile)
+    if minzero: minval = 1e-12
+    return ( minval, maxval )
+
+
 if __name__=='__main__':
 
     # global settings
     testrun = False
     variable = 'leptonPtLeading'
-    divfunc = chi2divergence
-    colorbartitle = 'Chi2 divergence'
-    xdimtitle = 'ptRatio threshold'
-    ydimtitle = 'deepFlavor threshold'
+    divfunc = normchi2divergence
+    colorbartitle = 'Normalized $\chi^{2}$ divergence'
+    xdimtitle = 'lepton ptRatio threshold'
+    ydimtitle = 'lepton closest jet deepFlavor threshold'
     zdimtitle = 'electron MVA scenario'
     
     # get configuration
@@ -127,20 +142,18 @@ if __name__=='__main__':
 			    name = '{}_{}_{}'.format(year,flavor,process)
 			    divmaps[name][i,j,k] = div
 			    # printouts for testing
-			    print('--------')
-			    print(ptRatioCut)
-			    print(deepFlavorCut)
-			    print(extraCut)
-			    print(year)
-			    print(flavor)
-			    print(process)
-			    print(div)
+			    #print('--------')
+			    #print(ptRatioCut)
+			    #print(deepFlavorCut)
+			    #print(extraCut)
+			    #print(year)
+			    #print(flavor)
+			    #print(process)
+			    #print(div)
 
     ### make plots
 
     # initializations
-    vmin = 1e-12
-    vmax = 1000
     colormap = 'cool'
 
     for name,div in divmaps.items():
@@ -152,13 +165,15 @@ if __name__=='__main__':
 	    div2d[:,k*ny:(k+1)*ny] = div[:,:,k]
 	# determine aspect ratio and figure size
 	aspect_ratio = div2d.shape[1]/div2d.shape[0]
-	#figsize = (6,6*aspect_ratio) # figure too stretched
 	figsize = (8,12)
 	# initialize the figure
 	fig,ax = plt.subplots(figsize=figsize)
 	# make the color scale
-	if vmin is None: vmin = np.amin(div2d)
-	if vmax is None: vmax = np.amax(div2d)
+	# option 1: min/max values
+	#vmin = np.amin(div2d)
+	#vmax = np.amax(div2d)
+	# option 2: dedicated function
+	(vmin, vmax) = getcolorrange(div2d, minzero=True)
 	print('setting vmin to {}'.format(vmin))
 	print('setting vmax to {}'.format(vmax))
 	my_norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=False)
@@ -176,7 +191,13 @@ if __name__=='__main__':
 	# make a color bar
         cbar = fig.colorbar(cobject, ax=ax, fraction=0.035, pad=0.04)
 	cbar.set_ticks([])
-        cbar.set_label(colorbartitle, rotation=270, labelpad=15)
+        cbar.set_label(colorbartitle, rotation=270, labelpad=-25)
+	# add min and max labels
+	cbar.set_ticks([vmin,vmax])
+	vminlabel = '{:.2E}'.format(vmin)
+	vmaxlabel = '{:.0E}'.format(vmax)
+	if vmin==1e-12: vminlabel = '0'
+	cbar.set_ticklabels([vminlabel, vmaxlabel])
 	# write the bin values
         for i in range(nx):
             for j in range(ny*nz):
@@ -201,6 +222,19 @@ if __name__=='__main__':
 	    temp = ax.text( nx-0.6, k*ny, txt, horizontalalignment='right', 
 				verticalalignment='top', fontsize=10)
 	    temp.set_bbox(dict(facecolor='white', edgecolor='black', alpha=0.7))
+	# add the CMS preliminary text
+	temp = ax.text( -0.4, 0, 'CMS', 
+				horizontalalignment='left', 
+				verticalalignment='top',
+				fontsize=12, 
+				fontweight='bold' )
+	temp.set_bbox(dict(facecolor='white', edgecolor='black', alpha=0.7))
+	temp = ax.text( 0.1, 0, 'Preliminary', 
+				horizontalalignment='left',
+				verticalalignment='top',
+                                fontsize=12, 
+				style='italic' )
+        temp.set_bbox(dict(facecolor='white', edgecolor='black', alpha=0.7))
 	# make a title
 	ax.set_title('Closure for '+name.replace('_',' / '))
 	# save the figure

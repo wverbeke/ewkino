@@ -23,7 +23,7 @@ processes = ['TT','DY']
 # (pick any combination from 'DY' and 'TT')
 runmode = 'condor'
 # (pick from 'qsub', 'condor' or 'local')
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/fakerate/'
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate/'
 samplelistdirectory = os.path.abspath('sampleLists')
 # (see also below to set correct sample list name in loop!)
 
