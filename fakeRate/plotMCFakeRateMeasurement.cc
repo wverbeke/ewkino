@@ -38,6 +38,7 @@ int main( int argc, char* argv[] ){
     denominator->SetDirectory(gROOT);
     std::shared_ptr<TH2D> ratio(dynamic_cast<TH2D*>( numerator->Clone()));
     ratio->SetDirectory(gROOT);
+    
     // read heavyflavor histograms
     std::shared_ptr<TH1D> heavynumerator(dynamic_cast<TH1D*> (
             measurement_filePtr->Get(("fakeRate_numerator_heavyflavor_"+instanceName).c_str())));
@@ -47,6 +48,7 @@ int main( int argc, char* argv[] ){
     heavydenominator->SetDirectory(gROOT);
     std::shared_ptr<TH1D> heavyratio(dynamic_cast<TH1D*>( heavynumerator->Clone()));
     heavyratio->SetDirectory(gROOT);
+    
     // read lightflavor histograns
     std::shared_ptr<TH1D> lightnumerator(dynamic_cast<TH1D*> (
             measurement_filePtr->Get(("fakeRate_numerator_lightflavor_"+instanceName).c_str())));
@@ -65,6 +67,7 @@ int main( int argc, char* argv[] ){
     std::shared_ptr<TH1D> heavytolight(dynamic_cast<TH1D*>(heavyratio->Clone()));
     heavytolight->Divide(lightratio.get());
 
+    // printouts for testing
     /*std::cout<<"some example values:"<<std::endl;
     for(unsigned xbin=1; xbin<=5; ++xbin){
 	for(unsigned ybin=1; ybin<=3; ++ybin){
@@ -77,7 +80,10 @@ int main( int argc, char* argv[] ){
     
     // make the plot
     systemTools::makeDirectory("fakeRateMaps");
-    plot2DHistogram( ratio.get(), ( "fakeRateMaps/fakeRateMap_MC_" + instanceName + ".png").c_str() );
+    std::string figName = "fakeRateMaps/fakeRateMap_MC_" + instanceName;
+    std::string title = "Simulated fake rate map for " + year + " " + flavor + "s";
+    plot2DHistogram( ratio.get(), figName.c_str(), title.c_str(), "colztexte", 1.5 );
+    
     // for testing purposes: also plot the numerator and denominator separately
     /*gStyle->SetPaintTextFormat("5.3g"); // scientific notation of bin contents 
     plot2DHistogram( numerator.get(), ( "fakeRateMaps/fakeRateMap_MC_" + instanceName 
@@ -88,8 +94,8 @@ int main( int argc, char* argv[] ){
     std::cout << "denominator: " << denominator.get()->GetEntries() << std::endl;*/
 
     // write the corresponding histogram to a root file
-    TFile* writeFile = TFile::Open( ( "fakeRateMaps/fakeRateMap_MC_" + instanceName + ".root" ).c_str(),
-                                        "RECREATE" );
+    std::string fileName = "fakeRateMaps/fakeRateMap_MC_" + instanceName + ".root";
+    TFile* writeFile = TFile::Open( fileName.c_str(), "RECREATE" );
     ratio->Write( ("fakeRate_" + instanceName).c_str() );
     // also write the heavy and light fake rates and their ratio to the file
     lightratio->Write( ("fakeRate_lightflavor_"+instanceName).c_str() );

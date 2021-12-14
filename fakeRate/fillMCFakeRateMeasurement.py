@@ -18,7 +18,7 @@ flavours = ['electron','muon']
 # (pick any combination from 'electron' and 'muon')
 runmode = 'condor'
 # (pick from 'qsub', 'condor' or 'local')
-istestrun = True
+istestrun = False
 # (note that this will not overwrite runmode, 
 # only affects number of samples and number of events per sample)
 samplelistdirectory = os.path.abspath('sampleListsNew')
