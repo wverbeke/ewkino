@@ -28,7 +28,7 @@ samplelistdirectory = os.path.abspath('sampleLists')
 # (see also below to set correct sample list name in loop!)
 
 # check if executable exists
-if not os.path.exists('./closureTest_MC'):
+if not os.path.exists('./fillMCClosureTest'):
     print('### ERROR ###: executable does not seem to exist...')
     print('               run make -f makeClosureTest_MC first.')
     sys.exit()
