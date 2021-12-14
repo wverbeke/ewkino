@@ -23,7 +23,8 @@ def get_conf( testrun=False ):
 
     # define cut values
     ptRatioCuts = [0.35, 0.4, 0.45, 0.5, 0.55]
-    deepFlavorCuts = [0.015, 0.02, 0.025, 0.03, 0.05, 0.075, 0.1]
+    deepFlavorCuts = [0.015, 0.02, 0.025, 0.03, 0.05, 0.075, 0.1, 0.25, 0.5]
+    #deepFlavorCuts = [0.25,0.5]
     extraCuts = [0, 1, 2, 3]
     if testrun:
 	ptRatioCuts = [0.4]
@@ -105,11 +106,13 @@ if __name__=='__main__':
 			    script.write('cd {}\n'.format(cwd))
 			    for cmd in cmds: script.write(cmd+'\n')
 			if testrun: os.system('bash '+script_name)
-			elif runcondor: continue # work via single cluster submission instead
-			#    ct.submitCommandsAsCondorJob('cjob_gridMCFakeRateMeasurement',
-			#	cmds, cmssw_version='CMSSW_10_2_25')
+			elif runcondor: 
+			#    continue # work via single cluster submission instead
+			    ct.submitCommandsAsCondorJob('cjob_gridMCFakeRateMeasurement',
+				cmds, cmssw_version='CMSSW_10_2_25')
 			else: submitQsubJob(script_name)
 
     if( runcondor and not testrun ):
-	ct.submitCommandsAsCondorCluster('cjob_gridMCFakeRateMeasurement', condorclustercmds,
-                                        cmssw_version='CMSSW_10_2_25')
+	pass
+	#ct.submitCommandsAsCondorCluster('cjob_gridMCFakeRateMeasurement', condorclustercmds,
+        #                                cmssw_version='CMSSW_10_2_25')

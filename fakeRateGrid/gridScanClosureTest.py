@@ -57,9 +57,13 @@ def normchi2divergence( hist1, hist2 ):
 if __name__=='__main__':
 
     # global settings
-    testrun = True
+    testrun = False
     variable = 'leptonPtLeading'
     divfunc = chi2divergence
+    colorbartitle = 'Chi2 divergence'
+    xdimtitle = 'ptRatio threshold'
+    ydimtitle = 'deepFlavor threshold'
+    zdimtitle = 'electron MVA scenario'
     
     # get configuration
     conf = get_conf()
@@ -136,7 +140,7 @@ if __name__=='__main__':
 
     # initializations
     vmin = 1e-12
-    vmax = 100
+    vmax = 1000
     colormap = 'cool'
 
     for name,div in divmaps.items():
@@ -172,32 +176,33 @@ if __name__=='__main__':
 	# make a color bar
         cbar = fig.colorbar(cobject, ax=ax, fraction=0.035, pad=0.04)
 	cbar.set_ticks([])
-        cbar.set_label('Chi2 divergence', rotation=270, labelpad=15)
+        cbar.set_label(colorbartitle, rotation=270, labelpad=15)
+	# write the bin values
+        for i in range(nx):
+            for j in range(ny*nz):
+                if div2d[i,j] < 1e-12: continue
+                txt = '{:.2E}'.format(div2d[i,j])
+                ax.text(i, j, txt, horizontalalignment='center',
+                        verticalalignment='center', fontsize=8)
 	# set the tick marks and axis titles
 	xtickpos = np.linspace(0,len(ptRatioCuts)-1,num=len(ptRatioCuts))
 	xtickvalues = ptRatioCuts
 	ytickpos = np.linspace(0,nz*len(deepFlavorCuts)-1,num=nz*len(deepFlavorCuts))
         ytickvalues = nz*deepFlavorCuts
-	ax.set_xlabel('ptRatio threshold')
-	ax.set_ylabel('deepFlavor threshold')
+	ax.set_xlabel(xdimtitle)
+	ax.set_ylabel(ydimtitle)
 	ax.set_xticks(xtickpos)
 	ax.set_xticklabels(xtickvalues)
 	ax.set_yticks(ytickpos)
 	ax.set_yticklabels(ytickvalues)
 	# add the labels for the third dimension
 	for k in range(nz):
-	    txt = 'electron MVA scenario {}'.format(extraCuts[k])
+	    txt = zdimtitle+' {}'.format(extraCuts[k])
 	    temp = ax.text( nx-0.6, k*ny, txt, horizontalalignment='right', 
 				verticalalignment='top', fontsize=10)
 	    temp.set_bbox(dict(facecolor='white', edgecolor='black', alpha=0.7))
 	# make a title
 	ax.set_title('Closure for '+name.replace('_',' / '))
-	# write the bin values
-	for i in range(nx):
-	    for j in range(ny*nz):
-		if div2d[i,j] < 1e-12: continue
-		txt = '{:.2E}'.format(div2d[i,j])
-		ax.text(i, j, txt, horizontalalignment='center', verticalalignment='center', fontsize=8)
 	# save the figure
 	thisoutputfile = os.path.splitext(outputfile)[0]+'_{}.png'.format(name)
 	fig.savefig(thisoutputfile)

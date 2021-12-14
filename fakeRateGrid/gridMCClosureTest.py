@@ -20,7 +20,7 @@ if __name__=='__main__':
     # (number of events per file to process)
     runcondor = True
     # (submit on condor instead of qsub)
-    resubmit = False
+    resubmit = True
     # (only submit jobs for which no output root file is found)
 
     # check if all executables exist
@@ -92,7 +92,9 @@ if __name__=='__main__':
 			    elif runcondor: continue
 			    else: submitQsubJob(script_name)
 
-    #if( runcondor and not testrun ):
-    if( runcondor ):
+    if( runcondor and not testrun ):
+	print('Will submit {} jobs... Continue? (y/n)'.format(len(condorclustercmds)))
+	go = raw_input()
+	if not go=='y': sys.exit()
 	ct.submitCommandsAsCondorCluster('cjob_gridMCClosureTest', condorclustercmds,
 					cmssw_version='CMSSW_10_2_25')
