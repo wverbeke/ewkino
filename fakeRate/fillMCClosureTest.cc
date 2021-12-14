@@ -231,6 +231,7 @@ int main( int argc, char* argv[] ){
 						weight );
                 }
             }
+	    // printouts for testing
 	    /*std::cout<<"----- event ------"<<std::endl;
 	    for(const auto& leptonPtr : lightLeptons ){
 		std::cout<<*leptonPtr<<std::endl;
@@ -242,6 +243,7 @@ int main( int argc, char* argv[] ){
 	    std::cout<<"final event weight: "<<weight<<std::endl;*/
         }
     }
+    // printouts for testing
     /*std::cout<<"--- histogram ---"<<std::endl;
     for(int i=1; i<observedHists[0]->GetNbinsX()+1; ++i){
 	std::cout<<"bin: "<<i<<std::endl;
@@ -249,7 +251,38 @@ int main( int argc, char* argv[] ){
 	std::cout<<"predicted: "<<predictedHists[0]->GetBinContent(i)<<std::endl;
     }*/
 
-    //make plot output directory
+    // write file
+    std::string flavorInterpendix = (flavor=="")? "": "_"+flavor;
+    std::string fileName = "closurePlots_MC_" + process + "_" + year;
+    fileName += flavorInterpendix + ".root";
+    TFile* outputFilePtr = TFile::Open( fileName.c_str(), "RECREATE" );
+    outputFilePtr->cd();
+
+    for( std::vector< HistInfo >::size_type v = 0; v < histInfoVec.size(); ++v ){
+        TH1D* predicted = predictedHists[v].get();
+        TH1D* observed = observedHists[v].get();
+	std::string pName = histInfoVec[v].name() + "_" + process + "_" + year 
+	        + "_" + flavor + "_predicted";
+	std::string oName = histInfoVec[v].name() + "_" + process + "_" + year 
+	        + "_" + flavor + "_observed";
+	predicted->SetName( pName.c_str() );
+	observed->SetName( oName.c_str() );
+	predicted->Write();
+	observed->Write();
+    }
+
+    outputFilePtr->Close();
+    std::cerr << "###done###" << std::endl;
+    return 0;
+
+    // the part of the code below is deprecated.
+    // it creates a directory and makes the closure plots.
+    // however, the plotting functionality has been moved out of this script
+    // in order to allow quick aesthetic changes without having to rerun over the ntuples.
+    // also the C++ plotting functions have been replaced with more versatile Python equivalents.
+    // keept the code below however (in comments) for reference
+
+    /*//make plot output directory
     std::string outputDirectory_name = "closurePlots_MC_" + process + "_" + year; 
     if( flavor != "" ){
         outputDirectory_name += ( "_" + flavor );
@@ -286,5 +319,5 @@ int main( int argc, char* argv[] ){
     }
 
     std::cerr << "###done###" << std::endl;
-    return 0;
+    return 0;*/
 }
