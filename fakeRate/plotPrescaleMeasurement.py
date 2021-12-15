@@ -4,11 +4,15 @@
 
 import os
 import sys
+sys.path.append('../plotting/python')
+import histplotter as hp
+sys.path.append('../Tools/python')
+import histtools as ht
 
 years = ['2016','2017','2018']
 use_mT = True
 
-# check if executable exists
+'''# check if executable exists
 if not os.path.exists('./plotPrescaleMeasurement'):
     print('### ERROR ###: executable does not seem to exist...')
     print('               run make -f makePlotPrescaleMeasurement first.')
@@ -28,11 +32,14 @@ for year in years:
     cmd = 'hadd '+filename+' '
     cmd += os.path.join(subfolder,basename+'_sample*.root')
     print(cmd)
-    os.system(cmd)
+    os.system(cmd)'''
 
+# loop over years
 cwd = os.getcwd()
 for year in years:
-    # check file
+    
+    ### step 1: fit the prescale (calling C++ function)
+    # check if input file exists
     basename = 'prescaleMeasurement'
     if use_mT: basename += '_mT'
     else: basename += '_met'
@@ -41,5 +48,65 @@ for year in years:
     if not os.path.exists(filename):
         print('### ERROR ###: file '+filename+' not found, skipping it.')
         continue
+    # fit the prescales and store the scaled histograms
     command = './plotPrescaleMeasurement {} {}'.format(str(use_mT),year)
     os.system(command)
+
+    ### step 2: plot the resulting histograms
+    # check if the correct file was created
+    filename = 'prescaleMeasurementPlots_{}.root'.format(year)
+    if not os.path.exists(filename):
+	print('### ERROR ###: file '+filename+' not found, skipping it.')
+        continue
+    # create the output directory
+    outputdir = 'prescaleMeasurementPlots_{}_test'.format(year)
+    if not os.path.exists(outputdir):
+	os.makedirs(outputdir)
+    # read the histograms
+    histlist = ht.loadallhistograms(filename)
+    # get a list of triggers
+    triggers = []
+    for hist in histlist:
+	print(hist.GetName())
+	trigger = 'HLT'+hist.GetName().split('HLT',1)[1]
+	if trigger not in triggers: triggers.append(trigger)
+    # loop over triggers
+    for trigger in triggers:
+	# find data histogram
+	datahists = ht.selecthistograms(histlist, mustcontainall=[trigger,'data'])[1]
+	if len(datahists)!=1:
+	    raise Exception('ERROR: found {} data histograms'.format(len(datahists))
+			    +' while expecting 1.')
+	datahist = datahists[0]
+	# find prompt histograms (split per process)
+	prompthists = ht.selecthistograms(histlist, mustcontainall=[trigger,'_prompt'],
+					    maynotcontainone=['nonprompt','unc','total'])[1]
+        print('found {} prompt histograms'.format(len(prompthists)))
+	# find nonprompt histograms
+	nonprompthists = ht.selecthistograms(histlist, mustcontainall=[trigger,'_nonprompt'],
+					    maynotcontainone=['unc','total'])[1]
+        print('found {} nonprompt histograms'.format(len(nonprompthists)))
+	# find systematic uncertainty histogram
+	systunchists = ht.selecthistograms(histlist, mustcontainall=[trigger,'unc'])[1]
+        if len(systunchists)>1:
+            raise Exception('ERROR: found {} uncertainty histograms'.format(len(systunchists))
+                            +' while expecting 1.')
+        systunchist = systunchists[0]
+	
+	# plot settings
+	xaxtitle = datahist.GetXaxis().GetTitle()
+	yaxtitle = datahist.GetYaxis().GetTitle()
+	lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700}
+	lumi = lumimap[year]
+	extracmstext = 'Preliminary'
+	extrainfos = [trigger]
+
+	# make the plot
+	hp.plotdatavsmc( os.path.join(outputdir, trigger), datahist, 
+            prompthists, mcsysthist=systunchist,
+            datalabel='Data', p2yaxtitle='#frac{Data}{Pred.}',
+            #colormap=colormap, labelmap=labelmap,
+            xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,
+            #p1legendncols=1,p1legendbox=legendbox,
+            extracmstext=extracmstext,
+            extrainfos=extrainfos )
