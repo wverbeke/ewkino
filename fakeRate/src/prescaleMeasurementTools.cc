@@ -22,9 +22,12 @@ HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, const d
 
 // function for filling prescale histograms for a single sample
 void fillPrescaleMeasurementHistograms( const std::string& year,
-    const std::string& sampleDirectoryPath, const std::string& sampleListPath,
-    const unsigned sampleIndex, const std::vector< std::string >& triggerVector,
-    const bool useMT, const double metCut, double mtCut){
+	const std::string& sampleDirectoryPath, 
+	const std::string& sampleListPath,
+	const unsigned sampleIndex, 
+	const bool isTestRun,
+	const std::vector< std::string >& triggerVector,
+	const bool useMT, const double metCut, double mtCut ){
 
     progressTracker progress = progressTracker("fillPrescaleMeasurement_progress_"+year
                                 +"_sample_"+std::to_string(sampleIndex)+".txt");
@@ -72,12 +75,12 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     }
 
     // make reweighter
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/",
                                                         year, treeReader.sampleVector() );
     
-    //long unsigned numberOfEntries = 500000;
     long unsigned numberOfEntries = treeReader.numberOfEntries();
+    if( isTestRun ) numberOfEntries = 10000;
     std::cout<<"start event loop for "<<numberOfEntries<<" events"<<std::endl;
     for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
         if( entry%10000 == 0 ) progress.writeProgress( static_cast<double>(entry)/numberOfEntries );
@@ -97,7 +100,9 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
         if( !isData ) weight *= reweighter.totalWeight( event );
         else weight = 1;
 
+	// loop over triggers
         for( const auto& trigger : triggerVector ){
+	    // check if event passes trigger and if lepton is correct flavor
             if( !event.passTrigger( trigger ) ) continue;
             if( stringTools::stringContains( trigger, "Mu" ) ){
                     if( !lepton.isMuon() ) continue;
@@ -109,8 +114,11 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
                 errorm.append(" since it is neither a muon nor electron trigger.");
                 throw std::invalid_argument(errorm);
             }
+	    // check if lepton has correct pT for this trigger
             if( lepton.uncorrectedPt() <= leptonPtCutMap[trigger] ) continue;
+	    // check if jet passes trigger requirements
             if( !fakeRate::passTriggerJetSelection( event, trigger, jetPtCutMap ) ) continue;
+	    // fill correct histogram
             double valueToFill = ( useMT ? mT : event.metPt() );
             if( isData ){
                 data_map[ trigger ]->Fill( std::min( valueToFill, histInfo.maxBinCenter() ), weight );
@@ -125,6 +133,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
             }
         }
     }
+    // write output histograms to file
     progress.close();
     std::cout<<"finished event loop"<<std::endl;
     std::string outfilename("prescaleMeasurement_");
