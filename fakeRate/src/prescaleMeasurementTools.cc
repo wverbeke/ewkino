@@ -75,7 +75,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     }
 
     // make reweighter
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new FourTopsFakeRateReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/",
                                                         year, treeReader.sampleVector() );
     
