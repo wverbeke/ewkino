@@ -37,7 +37,8 @@ std::shared_ptr< Reweighter > makeLeptonReweighter( const std::string& year, con
 void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const std::string& year,
     const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,
     const std::vector< std::string >& triggerVector,
-    const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet);
+    const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet,
+    const bool isTestRun = false );
 
 void fillMCFakeRateMeasurementHistograms(const std::string& leptonFlavor, const std::string& year,
     const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,
