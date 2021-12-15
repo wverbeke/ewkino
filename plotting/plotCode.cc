@@ -112,10 +112,26 @@ Color_t bkgColorHNL(const std::string& bkgName){
 }
 
 
-//FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
+Color_t bkgColorFakeRate(const std::string bkgName){
+    // return colors for prescale/fake-rate measurement plots
+    // separate processes
+    if(bkgName=="WJets" || bkgName=="WJets_prompt") return kAzure + 1;
+    else if(bkgName=="TT" || bkgName=="TT_prompt") return kCyan + 1;
+    else if(bkgName=="DY" || bkgName=="DY_prompt") return kBlue + 1;
+    else if(bkgName=="VV" || bkgName=="VV_prompt") return kCyan - 7
+    else if(bkgName=="QCD" || bkgName=="QCD_nonprompt") return kRed -7;
+    else if(bkgName=="other" || bkgName=="other_nonprompt") return kRed + 1;
+    // grouped
+    else if(bkgName=="prompt") return kAzure + 1;
+    else if(bkgName=="nonprompt") return kMagenta - 7;
+    else return kBlack;    
+}
+
+
 Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
-    static const Color_t colors[9] = { kMagenta -7 , kBlue + 1, kRed - 7, kGreen - 7, kMagenta + 3, kAzure + 1, kOrange + 6, kCyan + 1,kBlue -3 };
+    static const Color_t colors[9] = { kMagenta -7 , kBlue + 1, kRed - 7, 
+		    kGreen - 7, kMagenta + 3, kAzure + 1, kOrange + 6, kCyan + 1,kBlue -3 };
     if(!reset){
         Color_t output = colors[counter];
         ++counter;
@@ -135,6 +151,8 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
         return bkgColorHNL(bkgName);
     } else if(analysis == "ewkinoDilep"){
         return bkgColorEWKDilept(bkgName);
+    } else if(analysis == "fakerate"){
+	return bkgColorFakeRate(bkgName);
     } else{
         return bkgColorGeneral();
     }
