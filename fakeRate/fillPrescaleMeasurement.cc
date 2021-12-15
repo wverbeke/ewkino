@@ -18,9 +18,10 @@ int main( int argc, char* argv[] ){
     std::cerr << "###starting###" << std::endl;
     // check number of command line arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-    if( !( argvStr.size() == 5 ) ){
-        std::cerr<<"found "<<argc - 1<<" command line args, while 4 are needed."<<std::endl;
-        std::cerr<<"usage: ./fillPrescaleMeasurement year sampleDirectory sampleList sampleIndex"<<std::endl;
+    if( !( argvStr.size() == 6 ) ){
+        std::cerr<<"found "<<argc - 1<<" command line args, while 5 are needed."<<std::endl;
+        std::cerr<<"usage: ./fillPrescaleMeasurement year sampleDirectory sampleList sampleIndex";
+	std::cerr<<" isTestRun"<<std::endl;
         return 1;
     }
 
@@ -29,6 +30,7 @@ int main( int argc, char* argv[] ){
     std::string& sampleDirectory = argvStr[2];
     std::string& sampleList = argvStr[3];
     const unsigned sampleIndex = std::stoi(argvStr[4]);
+    const bool isTestRun = (argvStr[5]=="true" || argvStr[5]=="True");
     
     // define and set configuration variables
     const double metLowerCut_prescaleMeasurement = 40;
@@ -54,6 +56,7 @@ int main( int argc, char* argv[] ){
     };
 
     fillPrescaleMeasurementHistograms(year, sampleDirectory, sampleList, sampleIndex, 
+					isTestRun,
 					triggerVectorMap[ year ], use_mT, 
 					metLowerCut_prescaleMeasurement, 
 					mTLowerCut_prescaleMeasurement );
