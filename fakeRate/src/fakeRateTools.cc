@@ -23,18 +23,18 @@ general help functions for fitTriggerPresacles_cut and produceFakeRateMap_cut
 ****************************************************************************/
  
 void fakeRate::checkFlavorString( const std::string& flavorString ){
+    // check if flavor is either "muon" or "electron"
     if( !( flavorString == "muon" || flavorString == "electron" ) ){
-        throw std::invalid_argument( "Flavor string is '" + flavorString + "' while it must be either 'muon' or 'electron'" );
+        throw std::invalid_argument( "Flavor string is '" + flavorString 
+		+ "' while it must be either 'muon' or 'electron'" );
     }
 }
 
-
 std::vector< std::string > fakeRate::listHistogramNamesInFile( TFile* filePtr ){
+    // return a list of names of histograms (in std::string format) in a file
     std::vector< std::string > histogramNameList;
     for( const auto& key : *filePtr->GetListOfKeys() ){
-        
         std::string keyName = key->GetName();
-
         //check if key corresponds to a histogram
         if( dynamic_cast< TH1* >( filePtr->Get( keyName.c_str() ) ) ){
             histogramNameList.push_back( keyName );
@@ -43,17 +43,14 @@ std::vector< std::string > fakeRate::listHistogramNamesInFile( TFile* filePtr ){
     return histogramNameList;
 }
 
-
 bool histIsPrompt( const std::string& histName ){
     return ( stringTools::stringContains( histName, "prompt" ) 
 	     && !stringTools::stringContains( histName, "nonprompt" ) );
 }
 
-
 bool histIsNonPrompt( const std::string& histName ){
     return ( stringTools::stringContains( histName, "nonprompt" ) );
 }
-
 
 bool histIsData( const std::string& histName ){
     return stringTools::stringContains( histName, "data" );
@@ -65,39 +62,35 @@ help functions for producePrescaleMap_cut
 ****************************************/
  
 std::string fakeRate::extractTriggerName( const std::string& histogramName ){
-
-    //assumes histogram names that end with the trigger name
+    // get the trigger name from a histogram name;
+    // assumes: 
+    // - histogram names ends with the trigger name
+    // - trigger name starts with "HLT"
     auto beginPos = histogramName.find( "HLT" );
     return histogramName.substr( beginPos );
 }
 
-
 std::vector< std::string > fakeRate::listTriggersWithHistogramInFile( TFile* filePtr ){
+    // get a list of triggers (in std::string format) present in histograms in a file
     std::set< std::string > triggerSet;
-
-    //loop over all the histograms
     std::vector< std::string > histogramNameVector = fakeRate::listHistogramNamesInFile( filePtr );
     for( const auto& name : histogramNameVector ){
-
-        //if the histogram contains a triggername, add the trigger name to the list
+        // if the histogram contains a triggername, add the trigger name to the list
         if( stringTools::stringContains( name, "HLT" ) ){
-
             triggerSet.insert( extractTriggerName( name ) );
         }
     }
     return std::vector< std::string >( triggerSet.cbegin(), triggerSet.cend() );
 }
 
-
 std::string fakeRate::extractYear( const std::string& histogramName ){
-    if( stringTools::stringContains( histogramName, "2016" ) ){
-        return "2016";
-    } else if( stringTools::stringContains( histogramName, "2017" ) ){
-        return "2017";
-    } else if( stringTools::stringContains( histogramName, "2018" ) ){
-        return "2018";
-    } else{
-        throw std::invalid_argument( "histogram name '" + histogramName + "' does not contain a year (2016, 2017 or 2018)" );
+    // get the year from a histogram name
+    if( stringTools::stringContains( histogramName, "2016" ) ) return "2016";
+    else if( stringTools::stringContains( histogramName, "2017" ) ) return "2017";
+    else if( stringTools::stringContains( histogramName, "2018" ) ) return "2018";
+    else{
+        throw std::invalid_argument( "histogram name '" + histogramName 
+		    + "' does not contain a valid year tag (2016, 2017 or 2018)" );
     }
 }
 
@@ -105,7 +98,8 @@ std::string fakeRate::extractYear( const std::string& histogramName ){
 function to fit prescales from a file containing prescale measurement  histograms
 ********************************************************************************/
 std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* filePtr, 
-					const double min, const double max, const bool doPlot ){
+					const double min, const double max, 
+					const bool doPlot, const bool doSave ){
     
     // make vectors of all available trigger names and histogram names in a file
     std::vector< std::string > triggerNames = listTriggersWithHistogramInFile( filePtr );
@@ -115,31 +109,43 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
     std::string year = extractYear( histogramNames.front() );
     for( const auto& histogram : histogramNames ){
         if( !stringTools::stringContains( histogram, year ) ){
-            throw std::invalid_argument( "histogram name '" + histogram + "' does not contain year '" + year + "'" );
+            throw std::invalid_argument( "histogram name '" + histogram 
+		    + "' does not contain year '" + year + "'" );
         }
     }
 
-    //initialize the prescale map    
+    // initialize the prescale map    
     std::map< std::string, Prescale > prescaleMap;
 
+    // loop over all triggers
     for( const auto& trigger : triggerNames ){
 	
-	//initialize map of process tags to prompt histograms and data histogram
+	// initialize map of process tags to prompt histograms and data histogram
 	std::map< std::string, std::shared_ptr< TH1D > > prompt_histograms;
-	std::vector< std::string > processtags;
+	std::map< std::string, std::shared_ptr< TH1D > > nonprompt_histograms;
+	std::vector< std::string > prompt_processtags;
+	std::vector< std::string > nonprompt_processtags;
 	std::shared_ptr< TH1D > prompt_total;
+	std::shared_ptr< TH1D > nonprompt_total;
 	std::shared_ptr< TH1D > data_histogram;
 
-	//set individual histograms
+	// set individual histograms
         for( const auto& histogram : histogramNames ){
             if( !stringTools::stringContains( histogram, trigger ) ) continue;
-            if( histIsNonPrompt( histogram ) ) continue;
-            if( histIsPrompt( histogram ) ){
-		//find process tag
+            if( histIsPrompt( histogram ) || histIsNonPrompt(histogram) ){
+		// find process tag
                 std::string tag = stringTools::split( histogram, "_" )[0];
-                processtags.push_back(tag);
-                prompt_histograms[tag] = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >( 
-					    filePtr->Get( histogram.c_str() ) ) );
+		// add the histogram to the correct map
+		if( histIsPrompt( histogram) ){
+		    prompt_processtags.push_back(tag);
+		    prompt_histograms[tag] = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >( 
+						filePtr->Get( histogram.c_str() ) ) );
+		}
+		else if( histIsNonPrompt(histogram) ){
+		    nonprompt_processtags.push_back(tag);
+		    nonprompt_histograms[tag] = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >(
+                                                filePtr->Get( histogram.c_str() ) ) );
+		}
             } else if( histIsData( histogram ) ){
                 data_histogram = std::shared_ptr< TH1D >( dynamic_cast< TH1D* >( 
 					    filePtr->Get( histogram.c_str() ) ) );
@@ -149,72 +155,123 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
             }
         }
     
-	//sum individual prompt contributions to total
+	// sum individual prompt contributions to total
 	prompt_total = std::shared_ptr< TH1D >( dynamic_cast<TH1D*> (
-                                prompt_histograms[processtags[0]]->Clone() ) );
-        for( auto it = std::next(processtags.begin()); it != processtags.end(); ++it){
+                                prompt_histograms[prompt_processtags[0]]->Clone() ) );
+        for( auto it = std::next(prompt_processtags.begin()); 
+		it != prompt_processtags.end(); ++it){
             std::string thistag = *it;
             prompt_total->Add( prompt_histograms[thistag].get() );
         }
 
-        //divide data by the prompt contribution and then fit it
-        //clone data histogram so the original can still be plotted later on
+	// sum individual nonprompt contributions to total
+	nonprompt_total = std::shared_ptr< TH1D >( dynamic_cast<TH1D*> (
+                                nonprompt_histograms[nonprompt_processtags[0]]->Clone() ) );
+        for( auto it = std::next(nonprompt_processtags.begin()); 
+		it != nonprompt_processtags.end(); ++it){
+            std::string thistag = *it;
+            nonprompt_total->Add( nonprompt_histograms[thistag].get() );
+        }
+
+        // divide data by the prompt contribution and then fit it
+        // clone data histogram so the original can still be plotted later on
 	std::shared_ptr< TH1D > ratio_histogram( dynamic_cast< TH1D* >( 
 				    data_histogram->Clone() ) );
         ratio_histogram->Divide( prompt_total.get() );
 	
-        //make fit to the data
+        // make fit to the data
         ConstantFit fitInfo( ratio_histogram, min, max );
 	
         
         prescaleMap[ trigger ] = Prescale( fitInfo );
 	std::cout << "prescale for " << trigger << ": " << prescaleMap[trigger].value() << std::endl;
 
-	if( doPlot ){
+	if( doPlot || doSave ){
+	    // further histogram processing before plotting or saving
 
-	    //plot the prescale measurements 
-	    //make plot directory if it does not already exist 
-	    std::string outputDirectory_name = "prescaleMeasurementPlots_" + year;
-	    systemTools::makeDirectory( outputDirectory_name );
-
-	    //make array for prompt histogram and scale it by the prescale 
-	    //first case where all histograms are added together
-	    TH1D* predictedHist[1] = { prompt_total.get() };
-	    predictedHist[0]->Scale( prescaleMap[ trigger ].value() );
-	    std::string predictedName[2] = {"data", "prompt"};
-	    //now case where different processes are kept apart
-	    TH1D* predictedHists[processtags.size()];
-	    std::string predictedNames[processtags.size()+1];
-	    predictedNames[0] = "data";
-	    for(unsigned int i=0; i<processtags.size(); ++i){
-		predictedHists[i] = prompt_histograms[processtags[i]].get();
-		predictedHists[i]->Scale( prescaleMap[trigger].value() );
-		predictedNames[i+1] = processtags[i];
+	    // scale all prompt and nonprompt histograms by the prescale
+	    for( auto it = prompt_processtags.begin(); it != prompt_processtags.end(); ++it){
+		prompt_histograms[*it]->Scale( prescaleMap[trigger].value() );
 	    }
+	    for( auto it = nonprompt_processtags.begin(); it != nonprompt_processtags.end(); ++it){
+                nonprompt_histograms[*it]->Scale( prescaleMap[trigger].value() );
+            }
+	    prompt_total->Scale( prescaleMap[trigger].value() );
+	    nonprompt_total->Scale( prescaleMap[trigger].value() );
 
-	    //vary prompt histogram within uncertainty on prescale measurement 
-	    TH1D* systUnc = dynamic_cast< TH1D* >( predictedHist[0]->Clone() );
-	    double prescaleFractionalUnc = fabs( prescaleMap[ trigger ].uncertaintySymmetric() 
-						 / prescaleMap[ trigger ].value() );
-	    for( int b = 1; b < systUnc->GetNbinsX() + 1; ++b ){
-		systUnc->SetBinContent( b , systUnc->GetBinContent(b) * prescaleFractionalUnc );
+	    // vary prompt histogram within uncertainty on prescale measurement 
+            std::shared_ptr< TH1D > systUnc( dynamic_cast< TH1D* >( prompt_total->Clone() ) );
+            double prescaleFractionalUnc = fabs( prescaleMap[ trigger ].uncertaintySymmetric() 
+                                                 / prescaleMap[ trigger ].value() );
+            for( int b = 1; b < systUnc->GetNbinsX() + 1; ++b ){
+                systUnc->SetBinContent( b , systUnc->GetBinContent(b) * prescaleFractionalUnc );
+            }
+
+	    // set correct names
+	    std::string promptName = prompt_total->GetName();
+	    promptName = "total" + promptName.substr( promptName.find("_prompt_") );
+	    prompt_total->SetName( promptName.c_str() );
+	    std::string nonpromptName = nonprompt_total->GetName();
+            nonpromptName = "total" + nonpromptName.substr( nonpromptName.find("_nonprompt_") );
+            nonprompt_total->SetName( nonpromptName.c_str() );
+	    std::string uncName = systUnc->GetName();
+	    uncName = "unc" + uncName.substr( uncName.find("_prompt_") );
+	    systUnc->SetName( uncName.c_str() );
+
+	    if( doPlot ){
+	    
+		// make array for prompt histograms
+		// first case where all histograms are added together
+		TH1D* predictedHist[1] = { prompt_total.get() };
+		std::string predictedName[2] = {"data", "prompt"};
+		// now case where different processes are kept apart
+		TH1D* predictedHists[prompt_processtags.size()];
+		std::string predictedNames[prompt_processtags.size()+1];
+		predictedNames[0] = "data";
+		for(unsigned int i=0; i<prompt_processtags.size(); ++i){
+		    predictedHists[i] = prompt_histograms[prompt_processtags[i]].get();
+		    predictedNames[i+1] = prompt_processtags[i];
+		}
+
+		// make plot directory if it does not already exist 
+		std::string outputDirectory_name = "prescaleMeasurementPlots_" + year;
+		systemTools::makeDirectory( outputDirectory_name );
+
+		// plot with all prompt histograms added together
+		plotDataVSMC( data_histogram.get(), predictedHist, predictedName, 1, 
+			    stringTools::formatDirectoryName( outputDirectory_name ) 
+			    + trigger + "_prescaleMeasurement_" + year + ".pdf", 
+			    "fakerate", false, false, "(13 TeV)", systUnc.get() ); 
+		// plot with processes kept apart
+		plotDataVSMC( data_histogram.get(), predictedHists, 
+			    predictedNames, prompt_processtags.size(), 
+			    stringTools::formatDirectoryName( outputDirectory_name ) 
+			    + trigger + "_prescaleMeasurement_" + year + "_split.pdf", 
+			    "fakerate", false, false, "(13 TeV)", systUnc.get() );		
 	    }
-
-	    //plot with all prompt histograms added together
-	    plotDataVSMC( data_histogram.get(), predictedHist, predictedName, 1, 
-			  stringTools::formatDirectoryName( outputDirectory_name ) 
-			  + trigger + "_prescaleMeasurement_" + year + ".pdf", 
-			  "fakerate", false, false, "(13 TeV)", systUnc ); 
-	    //plot with processes kept apart
-	    plotDataVSMC( data_histogram.get(), predictedHists, predictedNames, processtags.size(), 
-                          stringTools::formatDirectoryName( outputDirectory_name ) 
-                          + trigger + "_prescaleMeasurement_" + year + "_split.pdf", 
-                          "fakerate", false, false, "(13 TeV)", systUnc );
+	
+	    if( doSave ){
+		// store the resulting histograms 
+		// (e.g. in order to plot them later on with a different plotting function)
 		
+		std::string outputFileName = "prescaleMeasurementPlots_" + year + ".root";
+		TFile* outputFilePtr = TFile::Open( outputFileName.c_str(), "RECREATE" );
+		for( auto it = prompt_processtags.begin(); it != prompt_processtags.end(); ++it){
+		    prompt_histograms[*it]->Write();
+		}
+		for( auto it = nonprompt_processtags.begin(); it != nonprompt_processtags.end(); ++it){
+		    nonprompt_histograms[*it]->Write();
+		}
+		prompt_total->Write();
+		nonprompt_total->Write();
+		systUnc->Write();
+		outputFilePtr->Close();
+	    }
 	}
     }
     return prescaleMap;
 }
+
 
 /****************************************************
 help functions for produceFakeRateMap_cut (see below)

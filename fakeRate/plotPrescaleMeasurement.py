@@ -1,6 +1,7 @@
 ####################################################
 # a python looper for plotMCPrescaleMeasurement.cc #
 ####################################################
+
 import os
 import sys
 
@@ -42,4 +43,3 @@ for year in years:
         continue
     command = './plotPrescaleMeasurement {} {}'.format(str(use_mT),year)
     os.system(command)
-
