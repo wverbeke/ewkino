@@ -70,15 +70,15 @@ def drawbincontent(mchistlist,mchisterror,tag):
 	text.DrawLatex(xcoord, ycoord+0.3, '{:.2f}'.format(printvalue))
     return None
 
-def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
-	signals=None,
-	dostat=True,datalabel=None,labelmap=None,colormap=None,
-	xaxtitle=None,xaxinteger=False,
-	yaxtitle=None,yaxlog=False,yaxrange=None,
-	p2yaxtitle=None,p2yaxrange=None,
-	p1legendncols=None,p1legendbox=None,
-	extracmstext='',lumi=None,
-	extrainfos=[]):
+def plotdatavsmc(outfile, datahist, mchistlist,
+	mcsysthist=None, mcstathist=None, dostat=True, 
+	signals=None, datalabel=None, labelmap=None, colormap=None,
+	xaxtitle=None, xaxinteger=False,
+	yaxtitle=None, yaxlog=False, yaxrange=None,
+	p2yaxtitle=None, p2yaxrange=None,
+	p1legendncols=None, p1legendbox=None,
+	extracmstext='', lumi=None,
+	extrainfos=[], infosize=None):
     ### make a (stacked) simulation vs. data plot
     # arguments:
     # - outfile is the output file where the figure will be saved
@@ -103,9 +103,10 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     # - yaxlog is whether to make the y-axis log scale
     # - yaxrange: tuple of (min,max) for plotting range (default: automatic range)
     # - p2yaxtitle:  y-axis title of bottom pad (default: datalabel/Pred.)
-    # = p2yaxrange: tuple of (min,max) for plotting range of bottom pad (default: (0,2))
+    # - p2yaxrange: tuple of (min,max) for plotting range of bottom pad (default: (0,2))
     # - lumi is the luminosity value (float, in pb-1) that will be displayed
     # - extrainfos is a list of strings with extra info to display
+    # - infosize: font size of extra info
     
     pt.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -134,7 +135,8 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     # fonts and sizes:
     labelfont = 4; labelsize = 22
     axtitlefont = 4; axtitlesize = 27
-    infofont = 4; infosize = 20
+    infofont = 4
+    if infosize is None: infosize = 20
     # title offset
     ytitleoffset = 1.5
     # temporary modification for an annoying comment on one figure:

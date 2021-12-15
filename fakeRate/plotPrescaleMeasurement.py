@@ -4,15 +4,18 @@
 
 import os
 import sys
+import ROOT
 sys.path.append('../plotting/python')
 import histplotter as hp
 sys.path.append('../Tools/python')
 import histtools as ht
 
-years = ['2016','2017','2018']
+years = ['2016', '2017', '2018']
 use_mT = True
+plotmode = 'new'
+# (choose from 'old' (with older c++ plotting function) or 'new' (with newer python version))
 
-'''# check if executable exists
+# check if executable exists
 if not os.path.exists('./plotPrescaleMeasurement'):
     print('### ERROR ###: executable does not seem to exist...')
     print('               run make -f makePlotPrescaleMeasurement first.')
@@ -32,7 +35,7 @@ for year in years:
     cmd = 'hadd '+filename+' '
     cmd += os.path.join(subfolder,basename+'_sample*.root')
     print(cmd)
-    os.system(cmd)'''
+    os.system(cmd)
 
 # loop over years
 cwd = os.getcwd()
@@ -49,8 +52,11 @@ for year in years:
         print('### ERROR ###: file '+filename+' not found, skipping it.')
         continue
     # fit the prescales and store the scaled histograms
-    command = './plotPrescaleMeasurement {} {}'.format(str(use_mT),year)
+    doplot = (plotmode=='old')
+    dosave = True
+    command = './plotPrescaleMeasurement {} {} {} {}'.format(str(use_mT), year, doplot, dosave)
     os.system(command)
+    if plotmode!='new': continue
 
     ### step 2: plot the resulting histograms
     # check if the correct file was created
@@ -59,7 +65,7 @@ for year in years:
 	print('### ERROR ###: file '+filename+' not found, skipping it.')
         continue
     # create the output directory
-    outputdir = 'prescaleMeasurementPlots_{}_test'.format(year)
+    outputdir = 'prescaleMeasurementPlots_{}'.format(year)
     if not os.path.exists(outputdir):
 	os.makedirs(outputdir)
     # read the histograms
@@ -67,7 +73,6 @@ for year in years:
     # get a list of triggers
     triggers = []
     for hist in histlist:
-	print(hist.GetName())
 	trigger = 'HLT'+hist.GetName().split('HLT',1)[1]
 	if trigger not in triggers: triggers.append(trigger)
     # loop over triggers
@@ -100,13 +105,20 @@ for year in years:
 	lumi = lumimap[year]
 	extracmstext = 'Preliminary'
 	extrainfos = [trigger]
+	colormap = {}
+	colormap['WJets'] = ROOT.kAzure + 1
+	colormap['TT'] = ROOT.kCyan + 1
+	colormap['DY'] = ROOT.kBlue + 1
+	colormap['VV'] = ROOT.kCyan - 7
+	legendbox = [0.7,0.5,0.9,0.9]
 
 	# make the plot
 	hp.plotdatavsmc( os.path.join(outputdir, trigger), datahist, 
             prompthists, mcsysthist=systunchist,
             datalabel='Data', p2yaxtitle='#frac{Data}{Pred.}',
-            #colormap=colormap, labelmap=labelmap,
+            colormap=colormap, 
+	    #labelmap=labelmap,
             xaxtitle=xaxtitle,yaxtitle=yaxtitle,lumi=lumi,
-            #p1legendncols=1,p1legendbox=legendbox,
+            p1legendncols=1,p1legendbox=legendbox,
             extracmstext=extracmstext,
-            extrainfos=extrainfos )
+            extrainfos=extrainfos, infosize=15 )

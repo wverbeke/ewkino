@@ -225,6 +225,17 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
 	    uncName = "unc" + uncName.substr( uncName.find("_prompt_") );
 	    systUnc->SetName( uncName.c_str() );
 
+	    // set correct titles
+	    prompt_total->SetTitle("Prompt");
+	    nonprompt_total->SetTitle("Nonprompt");
+	    systUnc->SetTitle("Uncertainty");
+	    for( auto it = prompt_processtags.begin(); it != prompt_processtags.end(); ++it){
+                prompt_histograms[*it]->SetTitle( (*it).c_str() );
+            }
+            for( auto it = nonprompt_processtags.begin(); it != nonprompt_processtags.end(); ++it){
+                nonprompt_histograms[*it]->SetTitle( (*it).c_str() );
+            }
+
 	    if( doPlot ){
 	    
 		// make array for prompt histograms
