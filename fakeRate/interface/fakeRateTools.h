@@ -25,7 +25,7 @@ namespace fakeRate{
 
     std::map< std::string, Prescale > fitTriggerPrescales_cut( TFile* filePtr, 
 					const double min, const double max, 
-					const bool doPlot=true );
+					const bool doPlot=true, const bool doSave=true );
 
     std::map< std::string, Prescale > fitTriggerPrescales_shape( TFile* filePtr );
     //( this function seems to be not present in the source file? is it obsolete? )

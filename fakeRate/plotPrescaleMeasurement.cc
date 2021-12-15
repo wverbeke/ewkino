@@ -34,6 +34,6 @@ int main( int argc, char* argv[] ){
     file_name.append("_histograms_" + year + ".root");
     TFile* prescale_filePtr = TFile::Open( file_name.c_str() );
     prescaleMap = fakeRate::fitTriggerPrescales_cut( prescale_filePtr, mTLowerCut_prescaleFit,
-                    mTUpperCut_prescaleFit, true );
+                    mTUpperCut_prescaleFit, true, true );
     prescale_filePtr->Close();
 }
