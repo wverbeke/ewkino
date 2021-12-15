@@ -118,7 +118,7 @@ Color_t bkgColorFakeRate(const std::string bkgName){
     if(bkgName=="WJets" || bkgName=="WJets_prompt") return kAzure + 1;
     else if(bkgName=="TT" || bkgName=="TT_prompt") return kCyan + 1;
     else if(bkgName=="DY" || bkgName=="DY_prompt") return kBlue + 1;
-    else if(bkgName=="VV" || bkgName=="VV_prompt") return kCyan - 7
+    else if(bkgName=="VV" || bkgName=="VV_prompt") return kCyan - 7;
     else if(bkgName=="QCD" || bkgName=="QCD_nonprompt") return kRed -7;
     else if(bkgName=="other" || bkgName=="other_nonprompt") return kRed + 1;
     // grouped
