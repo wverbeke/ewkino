@@ -16,9 +16,9 @@ years = ['2016','2017','2018']
 # (choose any combination from '2016', '2017' and '2018')
 flavours = ['muon','electron']
 # (choose any combination from 'muon' and 'electron')
-runmode = 'local'
+runmode = 'condor'
 # (choose 'qsub', 'condor' or 'local')
-testrun = True
+testrun = False
 samplelistdirectory = os.path.abspath('sampleListsNew')
 # (see also below in loop to set the correct sample list name per flavour/year!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'

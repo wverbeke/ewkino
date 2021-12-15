@@ -157,7 +157,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     
     // initialize a reweighter
     std::cout<<"building reweighter"<<std::endl;
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new FourTopsFakeRateReweighterFactory() );
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, 
