@@ -338,7 +338,8 @@ def plotdatavsmc(outfile, datahist, mchistlist,
     tinfo.SetTextFont(10*infofont+3)
     tinfo.SetTextSize(infosize)
     for i,info in enumerate(extrainfos):
-	tinfo.DrawLatexNDC(infoleft,infotop-(i+1)*0.07,info)
+	vspace = 0.07*(float(infosize)/20)
+	tinfo.DrawLatexNDC(infoleft,infotop-(i+1)*vspace, info)
 
     ### make the lower part of the plot
     pad2.cd()

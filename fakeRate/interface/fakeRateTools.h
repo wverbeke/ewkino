@@ -31,9 +31,8 @@ namespace fakeRate{
     //( this function seems to be not present in the source file? is it obsolete? )
 
     std::shared_ptr< TH2D > produceFakeRateMap_cut( TFile* filePtr, 
-				const double maxValue, const bool doPlot=true );
-    
+				const double maxValue, 
+				const bool doPlot=true, const bool doSave=true );
 }
-
 
 #endif
