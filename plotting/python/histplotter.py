@@ -121,7 +121,7 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
 	clist = ([ROOT.kRed-7,ROOT.kOrange,ROOT.kCyan-7,ROOT.kYellow+1,ROOT.kBlue-10,
 		    ROOT.kBlue-6,ROOT.kTeal-5,ROOT.kMagenta-7])
 	colormap = {}
-	for i,hist in mchistlist:
+	for i,hist in enumerate(mchistlist):
 	    colormap[hist.GetTitle()] = clist[ i%len(clist) ]
     # y-axis title and range for bottom pad
     if p2yaxtitle is None: p2yaxtitle = datalabel+' / Pred.'

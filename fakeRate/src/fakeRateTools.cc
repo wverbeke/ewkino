@@ -117,6 +117,13 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
     // initialize the prescale map    
     std::map< std::string, Prescale > prescaleMap;
 
+    // initialize the output file
+    std::string outputFileName = "prescaleMeasurementPlots_" + year + ".root";
+    if( doSave ){
+        TFile* outputFilePtr = TFile::Open( outputFileName.c_str(), "RECREATE" );
+	outputFilePtr->Close();
+    }
+
     // loop over all triggers
     for( const auto& trigger : triggerNames ){
 	
@@ -254,8 +261,9 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
 		// store the resulting histograms 
 		// (e.g. in order to plot them later on with a different plotting function)
 		
-		std::string outputFileName = "prescaleMeasurementPlots_" + year + ".root";
-		TFile* outputFilePtr = TFile::Open( outputFileName.c_str(), "RECREATE" );
+		// open the file for adding content (it was already created above)
+		TFile* outputFilePtr = TFile::Open( outputFileName.c_str(), "UPDATE" );
+		// write all histograms
 		for( auto it = prompt_processtags.begin(); it != prompt_processtags.end(); ++it){
 		    prompt_histograms[*it]->Write();
 		}
@@ -265,6 +273,8 @@ std::map< std::string, Prescale > fakeRate::fitTriggerPrescales_cut( TFile* file
 		prompt_total->Write();
 		nonprompt_total->Write();
 		systUnc->Write();
+		data_histogram->Write();
+		// close the file
 		outputFilePtr->Close();
 	    }
 	}
