@@ -30,7 +30,8 @@ class Sample{
 
         std::string fileName() const { return _fileName; }
         std::string processName() const { return _processName; } 
-    
+	std::string filePath() const { return _directory+"/"+_fileName; }   
+ 
         //to prevent overlapping file names when re-using a sample in both the 2016 and 2017 data lists 
         std::string uniqueName() const { return _uniqueName; }
 
