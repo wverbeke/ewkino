@@ -10,7 +10,11 @@
 class ReweighterBTagHeavyFlavor : public ReweighterBTag {
 
     public:
-        ReweighterBTagHeavyFlavor(const std::string& weightDirectory, const std::string& sfFilePath, const std::string& workingPoint, const std::shared_ptr< TH2 >& efficiencyC, const std::shared_ptr< TH2 >& efficiencyB );
+        ReweighterBTagHeavyFlavor(  const std::string& weightDirectory, 
+				    const std::string& sfFilePath, 
+				    const std::string& workingPoint, 
+				    const std::shared_ptr< TH2 >& efficiencyC, 
+				    const std::shared_ptr< TH2 >& efficiencyB );
 
     private:
         std::shared_ptr< TH2 > bTagEfficiencyC;

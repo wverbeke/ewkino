@@ -15,6 +15,10 @@ The method implemented here corresponds to method "1a".
 Note that this is in principle not enough if the b-tag shape information is used,
 e.g. when using b-tagging scores in an MVA. 
 In those cases, the reweighterBTagShape class should be used instead.
+
+This class contains virtual methods (efficiencyMC and CSVValue) 
+so should not be directly instantiated!
+The classes reweighterBTagHeavyFlavor and reweighterBTagLightFlavor are derived from this one.
 */
 
 
