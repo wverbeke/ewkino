@@ -694,6 +694,9 @@ void plot2DHistogram( TH2D* hist, const std::string& outputFileName,
     c->Update();
     std::string outputPath = stringTools::fileNameWithoutExtension( outputFileName ) + ".pdf";
     c->SaveAs( outputPath.c_str() );
+    // also save as png
+    outputPath = stringTools::fileNameWithoutExtension( outputFileName ) + ".png";
+    c->SaveAs( outputPath.c_str() );
 
     // unlock
     plotMutex.unlock();

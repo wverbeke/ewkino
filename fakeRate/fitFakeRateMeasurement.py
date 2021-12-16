@@ -25,9 +25,9 @@ years = ['2016','2017','2018']
 flavours = ['electron','muon']
 # (choose any combination from 'muon' and 'electron')
 use_mT = True
-runmode = 'condor'
+runmode = 'local'
 # (choose from 'condor', 'qsub' or 'local')
-fitmethod = 'templatefit'
+fitmethod = 'subtraction'
 # (choose from 'subtraction', 'templatefit', or 'none')
 # (in case of 'none', the fake rate is not measured, but input plots are made if plotmode is 'new'!)
 doprefitplots = False
