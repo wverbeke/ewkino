@@ -412,4 +412,5 @@ if __name__=='__main__':
     f.Close()
     title = 'Fake rate map for {} {}s'.format(year, flavour)
     h2dp.plot2dhistogram( frmap, frmapfile.replace('.root','.pdf'), histtitle=title )
+    h2dp.plot2dhistogram( frmap, frmapfile.replace('.root','.png'), histtitle=title )
     sys.stderr.write('###done###\n')
