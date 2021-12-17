@@ -134,14 +134,21 @@ ReweighterBTagShape::ReweighterBTagShape(   const std::string& weightDirectory,
 
 
 /// initializer ///
-void ReweighterBTagShape::initialize( const std::vector<Sample>& samples ){
+void ReweighterBTagShape::initialize( const std::vector<Sample>& samples, 
+					long unsigned numberOfEntries ){
     // initialize the reweighter for a collection of samples, i.e. set the normalization factors
+    // input arguments:
+    // - samples: vector of Sample objects
+    // - numberOfEntries: maximum number of entries to take into account
+    //                    (default value of 0 = all events) should be used
     // note: it is not very clear at what point the normalization factors should be determined...
     //       in principle, after applying all selections except for b-tag selections,
     //       but that is very hard to implement at this level since it depends on the 
-    //       event selection for the specific use case.
-    //       one can either use this function (which does basically no event selection)
-    //       and assume this is "good enough", 
+    //       event selection for the specific use case. 
+    //       it is also not very clear how to weight the events correctly for this normalization
+    //       (all reweighting factors except for b-tag factors?);
+    //       one can either use this function (which does basically no event selection 
+    //	     and uses weight 1 for each entry) and assume this is "good enough", 
     //       OR, one has to manually calculate the sum of weights after appropriate selections,
     //       and then set the norm factors with setNormFactors (see below).
     std::cout << "initializing ReweighterBTagShape" << std::endl;
@@ -151,8 +158,9 @@ void ReweighterBTagShape::initialize( const std::vector<Sample>& samples ){
         std::string sampleName = sample.fileName();
         // calculate the sum of weights for this sample (per jet multiplicity)
         // and update the normalization factor
-        std::map<int, double> sumOfWeights = this->calcSumOfWeights( sample );
-        this->setNormFactors( sample, sumOfWeights );
+        std::map<int, double> averageOfWeights = this->calcAverageOfWeights( sample, 
+									     numberOfEntries );
+        this->setNormFactors( sample, averageOfWeights );
     }
     std::cout << "done initializing ReweighterBTagShape" << std::endl;
 }
@@ -197,7 +205,7 @@ void ReweighterBTagShape::setNormFactors( const Sample& sample,
     // set the normalization factors
     // input arguments:
     // - sample: a Sample object for which to set the normalization
-    // - normFactors: a map of jet multiplicity to sum-of-weights
+    // - normFactors: a map of jet multiplicity to averages-of-weights
     //                note: it is initialized to {0: 1.} in the constructor,
     //		      which implies the normalization factor will be 1 for each event.
     std::string sampleName = sample.fileName();
@@ -362,14 +370,16 @@ double ReweighterBTagShape::weightJecVar( const Event& event,
 
 /// help function for calculating normalization factors ///
 
-std::map< int, double > ReweighterBTagShape::calcSumOfWeights( const Sample& sample,
+std::map< int, double > ReweighterBTagShape::calcAverageOfWeights( const Sample& sample,
 					      long unsigned numberOfEntries ) const{
-    // calculate the sum of b-tag weights in a given sample
-    // the return type is a map of jet multiplicity to sum of weights
+    // calculate the average of b-tag weights in a given sample
+    // the return type is a map of jet multiplicity to average of weights
     // input arguments:
     // - sample: a Sample object
-    // - numberOfEntries: number of entries to consider for the sum of weights
+    // - numberOfEntries: number of entries to consider for the average of weights
     //   note: defaults to 0, in which case all entries in the file are used
+    // note: for the averaging, each entry in the input sample is counted as 1, 
+    //       regardless of lumi, cross-section, generator weight or other reweighting factors!
 
     // make a TreeReader
     std::string inputFilePath = sample.filePath();
@@ -378,7 +388,8 @@ std::map< int, double > ReweighterBTagShape::calcSumOfWeights( const Sample& sam
     treeReader.initSampleFromFile( inputFilePath );
 
     // initialize the output map
-    std::map< int, double > sumOfWeights;
+    std::map< int, double > averageOfWeights;
+    std::map< int, int > nEntries;
 
     // loop over events
     long unsigned availableEntries = treeReader.numberOfEntries();
@@ -397,8 +408,21 @@ std::map< int, double > ReweighterBTagShape::calcSumOfWeights( const Sample& sam
 	int njets = event.jetCollection().goodJetCollection().size();	
 
         // add it to the map
-	if(sumOfWeights.find(njets)==sumOfWeights.end()) sumOfWeights[njets] = btagreweight;
-	else sumOfWeights[njets] += btagreweight;
+	if(averageOfWeights.find(njets)==averageOfWeights.end()){ 
+	    averageOfWeights[njets] = btagreweight;
+	    nEntries[njets] = 1;
+	}
+	else{
+	    averageOfWeights[njets] += btagreweight;
+	    nEntries[njets] += 1;
+	}
     } 
-    return sumOfWeights;
+
+    // divide sum by number to get average
+    for( std::map<int,double>::iterator it = averageOfWeights.begin(); 
+	    it != averageOfWeights.end(); ++it){
+	averageOfWeights[it->first] = it->second / nEntries[it->first];
+    }
+
+    return averageOfWeights;
 }

@@ -23,7 +23,7 @@ class ReweighterBTagShape: public Reweighter{
 				const std::string& bTagAlgo,
                                 const std::vector<std::string>& variations,
                                 const std::vector<Sample>& samples);
-	void initialize( const std::vector<Sample>& samples );
+	void initialize( const std::vector<Sample>& samples, long unsigned numberOfEntries=0 );
 
 	bool hasVariation( const std::string& variation ) const;
 	bool hasSystematic( const std::string systematic ) const;
@@ -60,7 +60,7 @@ class ReweighterBTagShape: public Reweighter{
 
 	double weight( const Jet& jet, const std::string& variation ) const;
 	double weight( const Event& event, const std::string& variation ) const;
-	std::map< int, double > calcSumOfWeights( const Sample& sample,
+	std::map< int, double > calcAverageOfWeights( const Sample& sample,
 				    long unsigned numberOfEntries=0 ) const;
 };
 
