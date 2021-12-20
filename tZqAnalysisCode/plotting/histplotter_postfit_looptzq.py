@@ -22,11 +22,9 @@ def getlabel( tag ):
     if('signalsideband' in tag): extrainfos.append('Nonprompt enriched')
 
     if('signalregion' in tag and '_cat1_' in tag):
-        extrainfos.append(r'1 b jet,')
-	extrainfos.append(r'2-3 jets')
+        extrainfos.append(r'1 b jet, 2-3 jets')
     if('signalregion' in tag and '_cat2_' in tag):
-        extrainfos.append(r'1 b jet,')
-	extrainfos.append(r'#geq 4 jets')
+        extrainfos.append(r'1 b jet, #geq 4 jets')
     if('signalregion' in tag and '_cat3_' in tag):
         extrainfos.append(r'#geq 2 b jets')
     if('signalregion' in tag and '_cat123_' in tag):
@@ -40,7 +38,8 @@ def getlabel( tag ):
     if('signalregion' in tag and '_ch3_' in tag):
         extrainfos.append('channel mmm')
 
-    extrainfos.append('BDT score > 0.5')
+    #extrainfos.append('BDT score > 0.5')
+    extrainfos.append('Prefit')
 
     if len(extrainfos)==0: return None
     label = '\n'.join(extrainfos)
@@ -50,7 +49,7 @@ def getyaxrange( tag ):
     ### customize y axis range
     
     # default: automatic ranges
-    return None
+    #return None
 
     # for paper: fix ranges (equal pre- and postfit)
     if('signalregion' in tag and '_cat1_' in tag):
@@ -70,7 +69,7 @@ def getp2yaxrange( tag ):
     # for some plots in paper: smaller ranges
     #if('signalsideband' in tag): return (0.4, 1.599)
     #if('zgcontrolregion' in tag): return (0.601, 1.399)
-    return None
+    #return None
 
 def getextracmstext():
     ### customize whether or not to show 'Preliminary' or similar next to CMS logo
@@ -122,10 +121,10 @@ if __name__=='__main__':
     npfromdata = True
     regions = []
     #regions.append('all')
-    #regions.append('signalregion_cat1')
-    #regions.append('signalregion_cat2')
-    #regions.append('signalregion_cat3')
-    regions.append('signalregion_cat123')
+    regions.append('signalregion_cat1')
+    regions.append('signalregion_cat2')
+    regions.append('signalregion_cat3')
+    #regions.append('signalregion_cat123')
     #regions.append('wzcontrolregion')
     #regions.append('zzcontrolregion')
     #regions.append('zgcontrolregion')
@@ -237,5 +236,9 @@ if __name__=='__main__':
     if not (runqsub or runlocal):
         # need to escape double quotes by repeating them (not for running locally!)
         commands = [cmd.replace('"','""') for cmd in commands]
-        condortools.submitCommandsAsCondorCluster( 'cjob_histplotter_postfit', commands )
+	for command in commands:
+	    print(command)
+	    print('----------')
+	    ct.submitCommandAsCondorJob( 'cjob_histplotter_postfit', command,
+					    cmssw_version = 'CMSW_10_2_16_patch1' )
 

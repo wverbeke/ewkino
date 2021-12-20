@@ -194,7 +194,7 @@ for jobgroup in inputfiles:
         initializeJobScript(script)
         script.write('cd {}\n'.format(cwd))
         for c in commands: script.write(c+'\n')
-    #submitQsubJob(script_name, wall_time='48:00:00')
+    submitQsubJob(script_name, wall_time='48:00:00')
     # alternative: run locally
     #os.system('bash '+script_name)
-ct.submitCommandsAsCondorJobs('cjob_runsystematics',commandgroups)
+#ct.submitCommandsAsCondorJobs('cjob_runsystematics',commandgroups)

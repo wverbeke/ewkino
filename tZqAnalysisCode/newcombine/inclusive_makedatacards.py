@@ -65,7 +65,7 @@ if __name__=="__main__":
     #cnames.append({'region':'signalregion_cat3_ch3','var':'_eventBDT'})
     years = ['2016','2017','2018']
     # define what processes to consider as signal and whether to allow a ratio measurement
-    signals = ['tZq']
+    signals = ['ttZ']
     ratio = []
 
     # make a list of channel info dicts for easy looping

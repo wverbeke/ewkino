@@ -17,7 +17,7 @@ if __name__=="__main__":
         sys.exit()
     topdir = sys.argv[1]
     datacarddir = sys.argv[2]
-    runcondor = False
+    runcondor = True
 
     commands = []
     commands.append('python inclusive_makedatacards.py {} {}'.format(topdir,datacarddir))

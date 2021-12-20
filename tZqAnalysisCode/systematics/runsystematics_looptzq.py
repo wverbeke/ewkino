@@ -41,7 +41,7 @@ bdtcut = 0.5
 
 bdt_combine_mode = 'all' # choose from 'all', 'years', 'regions' or 'none'
 
-outputfolder = 'output_tzqidmedium0p4_rebintwovariables' # only top-level directory needed here
+outputfolder = 'output_tzqidmedium0p4_rescaledlumi_bdtcut0p5_rebinanothervariable' # only top-level directory needed here
 
 for year in years:
     for datatype in datatypes:

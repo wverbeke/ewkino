@@ -90,10 +90,6 @@ def subselect_systematics( systematics ):
     #         so keep single JEC variation but disable it where needed (see disable_default)
     removesystematics.append('JECGrouped.+')
     removesystematics.append('JECGrouped_Total')
-    #removesystematics.append('JECAll.+')
-    # note: still to add here which ones should be removed if using JECAll!
-    #       with new way of processing, only the correct ones make it up to this stage,
-    #       so no need for additional removing.
 
     # remove individual variations (if not done so before)
     removesystematics.append('qcdScalesShapeVar.+')
@@ -130,8 +126,12 @@ def disable_default( processinfo, year, region, npfromdata ):
 
     # disable some systematics for normed processes
     # (note: also check subselect_systematics!)
-    processinfo.disablesys( 'pdfNorm', (['tZq','WZ','ZZH',
-					'ttZ','nonprompt',
+    processinfo.disablesys( 'pdfNorm', ([
+					'tZq',
+					'WZ',
+					'ZZH',
+					'ttZ',
+					'nonprompt',
 					'Xgamma',
 					#'Xgamma_int','Xgamma_ext'
 					] ) )
@@ -188,13 +188,15 @@ def addnormsys_default( processinfo, year, region, npfromdata ):
     if npfromdata: processinfo.disablesys( trname, ['nonprompt'] )
     normsyslist.append(trname)
     # - add individual normalization uncertainties
-    uncs_norm = ({'WZ':1.1,'ZZH':1.1,'ttZ':1.15,'nonprompt':1.3,
+    uncs_norm = ({
+		    'WZ':1.1,
+		    'ZZH':1.1,
+		    'ttZ':1.15, # disable for ttZ measurement
+		    #'tZq': 1.15, # enable for ttZ measurement
+		    'nonprompt':1.3,
 		    'Xgamma':1.1,
 		    #'Xgamma_int':1.1,'Xgamma_ext':1.1
 		})
-    # (full norm unc for all controlled processes)
-    #uncs_norm = {'tbartZ':1.15,'Xgamma':1.1,'nonprompt':1.3}
-    # (alternative smaller set for when using rateparams for WZ and ZZ)
     for normp,mag in uncs_norm.items():
         nname = 'norm_'+normp
         nimpacts = {}

@@ -399,7 +399,8 @@ def plotdatavsmc(outfile,datahist,mchistlist,mcsysthist=None,mcstathist=None,
     # draw objects
     scerror.Draw("e2")
     if dostat: scstaterror.Draw("e2 same")
-    ratiograph.Draw("p e1 same")
+    #ratiograph.Draw("p e1 same")
+    ratiograph.Draw("p e0 same")
     if dostat: legend2.Draw("same")
     ROOT.gPad.RedrawAxis()
 

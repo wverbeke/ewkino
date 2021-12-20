@@ -159,7 +159,8 @@ if __name__=="__main__":
 						includestatonly=dostatonly, 
 						includedata=usedata )
 	    if( runcondor ):
-		ct.submitCommandsAsCondorJob( 'cjob_runcombine', commands )
+		ct.submitCommandsAsCondorJob( 'cjob_runcombine', commands,
+						cmssw_version = 'CMSSW_10_2_16_patch1' )
 	    else:
 		script_name = 'qsub_runcombine.sh'
 		with open( script_name, 'w' ) as script:

@@ -42,7 +42,7 @@ def initJobScript(name, cmssw_version='CMSSW_10_2_16_patch1'):
     with open(fname,'w') as script:
 	script.write('#!/bin/bash\n')
 	script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
-	script.write('cd {}/src\n'.format( cmssw_version ) )
+	script.write('cd /user/$USER/{}/src\n'.format( cmssw_version ) )
 	script.write('eval `scram runtime -sh`\n')
 	script.write('cd {}\n'.format( cwd ) )
     # make executable (seems to be needed from 19/02/2021 onwards)

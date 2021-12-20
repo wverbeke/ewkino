@@ -96,6 +96,7 @@ double getVarValue(const std::string varname, std::map<std::string,double> varma
     std::string modvarname = stringTools::removeOccurencesOf(varname,"fineBinned");
     modvarname = stringTools::removeOccurencesOf(modvarname,"coarseBinned");
     modvarname = stringTools::removeOccurencesOf(modvarname,"smallRange");
+    modvarname = stringTools::removeOccurencesOf(modvarname,"altBinned");
     // find this variable in the list of available variables
     std::map<std::string,double>::iterator it = varmap.find(modvarname);
     if(it == varmap.end()) return -9999; 
@@ -1336,9 +1337,9 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_deepFlavor_max",0.,1.,20));
     vars.push_back(std::make_tuple("_lT",0.,800.,20));
     vars.push_back(std::make_tuple("_MT",0.,200.,20));
-    vars.push_back(std::make_tuple("_coarseBinnedMT",0.,200.,4.));*/
+    vars.push_back(std::make_tuple("_coarseBinnedMT",0.,200.,4.));
     vars.push_back(std::make_tuple("_smallRangeMT", 0., 150., 15));
-    /*vars.push_back(std::make_tuple("_pTjj_max",0.,300.,20));
+    vars.push_back(std::make_tuple("_pTjj_max",0.,300.,20));
     vars.push_back(std::make_tuple("_dRlb_min",0.,3.15,20));
     vars.push_back(std::make_tuple("_dPhill_max",0.,3.15,20));
     vars.push_back(std::make_tuple("_HT",0.,800.,20));
@@ -1346,8 +1347,9 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_nBJets",-0.5,3.5,4));
     vars.push_back(std::make_tuple("_dRlWrecoil",0.,10.,20));
     vars.push_back(std::make_tuple("_dRlWbtagged",0.,7.,20));
-    vars.push_back(std::make_tuple("_M3l",0.,600.,20));
-    vars.push_back(std::make_tuple("_fineBinnedM3l",75.,105,20));
+    vars.push_back(std::make_tuple("_M3l",0.,600.,20));*/
+    vars.push_back(std::make_tuple("_altBinnedM3l", 100., 400., 20)); 
+    /*vars.push_back(std::make_tuple("_fineBinnedM3l",75.,105,20));
     vars.push_back(std::make_tuple("_abs_eta_max",0.,5.,20));
     vars.push_back(std::make_tuple("_eventBDT",-1,1,15));
     vars.push_back(std::make_tuple("_fineBinnedeventBDT",-1,1,1000));
@@ -1364,9 +1366,9 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_jetPtLeading",0.,100.,20));
     vars.push_back(std::make_tuple("_jetPtSubLeading",0.,100.,20));
     vars.push_back(std::make_tuple("_numberOfVertices",-0.5,70.5,71));
-    vars.push_back(std::make_tuple("_bestZMass",0.,150.,15));*/
+    vars.push_back(std::make_tuple("_bestZMass",0.,150.,15));
     vars.push_back(std::make_tuple("_lW_pt",10.,150.,14));
-    /*vars.push_back(std::make_tuple("_coarseBinnedlW_pt",0.,105.,4));
+    vars.push_back(std::make_tuple("_coarseBinnedlW_pt",0.,105.,4));
     vars.push_back(std::make_tuple("_Z_pt",0.,300.,15));
     vars.push_back(std::make_tuple("_coarseBinnedZ_pt",0.,275.,4));*/
 
@@ -1381,8 +1383,8 @@ int main( int argc, char* argv[] ){
 	if(LeptonSelector::leptonID()=="tzqtight") interpendix = "output_tzqtightid";
 	else if(LeptonSelector::leptonID()=="tzqmedium0p4") interpendix = "output_tzqmedium0p4id";
 	else if(LeptonSelector::leptonID()=="tth") interpendix = "output_tthid";
-	std::string frdir = "/user/llambrec/ewkino/AnalysisCode/fakerate/"+interpendix+"/fakeRateMaps";
-	//std::string frdir = "/user/llambrec/ewkino/AnalysisCode/fakerate/fakeRateMaps";
+	std::string frdir = "/user/llambrec/ewkino/tZqAnalysisCode/fakerate/";
+	frdir += interpendix+"/fakeRateMaps";
 	std::string frmap_muon_name = frdir+"/fakeRateMap_data_muon_"+year+"_mT.root";
 	std::string frmap_electron_name = frdir+"/fakeRateMap_data_electron_"+year+"_mT.root";
         frmap_muon = eventFlattening::readFRMap(frmap_muon_name,"muon",year);
