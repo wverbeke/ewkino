@@ -275,10 +275,11 @@ def get_variable_list( onlyselected=False, istest=False ):
 	    #{'name':'_nJets','title':r'Number of jets','unit':''},
 	    #{'name':'_nBJets','title':r'Number of b-tagged jets','unit':''},
 	    #{'name':'_fineBinnedM3l','title':r'm_{3l}','unit':'GeV'},
-	    {'name':'_eventBDT','title':r'Event classifier output score','unit':''},
+	    #{'name':'_eventBDT','title':r'Event classifier output score','unit':''},
 	    #{'name':'_nMuons','title':r'Number of muons in event','unit':''},
 	    #{'name':'_Z_pt','title':'Z boson p_{T}','unit':'GeV'},
 	    #{'name':'_lW_pt','title':'Lepton from W boson p_{T}','unit':'GeV'},
+	    {'name':'_altBinnedM3l', 'title':'m_{3l}', 'unit':'GeV'}
 	])
 	return variables
 	

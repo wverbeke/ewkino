@@ -38,8 +38,8 @@ def getlabel( tag ):
     if('signalregion' in tag and '_ch3_' in tag):
         extrainfos.append('channel mmm')
 
-    #extrainfos.append('BDT score > 0.5')
-    extrainfos.append('Prefit')
+    extrainfos.append('BDT score > 0.5')
+    #extrainfos.append('Prefit')
 
     if len(extrainfos)==0: return None
     label = '\n'.join(extrainfos)
@@ -121,10 +121,10 @@ if __name__=='__main__':
     npfromdata = True
     regions = []
     #regions.append('all')
-    regions.append('signalregion_cat1')
-    regions.append('signalregion_cat2')
-    regions.append('signalregion_cat3')
-    #regions.append('signalregion_cat123')
+    #regions.append('signalregion_cat1')
+    #regions.append('signalregion_cat2')
+    #regions.append('signalregion_cat3')
+    regions.append('signalregion_cat123')
     #regions.append('wzcontrolregion')
     #regions.append('zzcontrolregion')
     #regions.append('zgcontrolregion')
