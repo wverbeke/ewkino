@@ -104,6 +104,13 @@ def clipallhistograms(histfile,mustcontainall=[],clipboundary=0):
     os.system('mv '+tempfilename+' '+histfile)
 
 
+### setting errors to zero ###
+
+def seterrorzero(hist):
+    for i in range(0,hist.GetNbinsX()+2):
+        hist.SetBinError(i,0)
+
+
 ### finding minimum and maximum ###
 
 def getminmax(histlist):

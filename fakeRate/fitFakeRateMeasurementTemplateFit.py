@@ -65,10 +65,14 @@ def makedatacard(inputfile, datacardname, ftype, variable, year, flavour, pt, et
     # note: histograms are assumed to be named as follows:
     #	    process_ptype_ftype_var_year_flavour_pT_ptvalue_eta_etavalue
     #       where:
-    #       - process is a process tag (e.g. "DY" or "VV" or "data")
+    #       - process is a process tag, which must be "total_prompt", "total_nonprompt" or "data"
     #       - ptype is either "prompt" or "nonprompt" (absent for data!)
     #       - ftype is either "numerator" or "denominator"
     #       - var is usually "mT"
+
+    # global settings
+    prompt_norm_unc = None 
+    barlow_beeston_threshold = 1e12 
  
     # check if the given arguments correspond to valid histograms in the file
     channel = (str(ftype)+'_'+str(variable)+'_'+str(year)+'_'+str(flavour)
@@ -86,6 +90,7 @@ def makedatacard(inputfile, datacardname, ftype, variable, year, flavour, pt, et
 	    print('### WARNING ###: requested histogram {} seems not to be present in {}'
 		    .format(histname,inputfile))
 	    return -1
+
     # open (recreate) datacard file
     datacard = open(datacardname,'w')
     # write nchannels, nprocesses and nparameters
@@ -116,6 +121,7 @@ def makedatacard(inputfile, datacardname, ftype, variable, year, flavour, pt, et
 	columns.append([channel,p,str(pcounter),str(f.Get(histnames[p]).Integral())])
 	ptoid[p] = pcounter
 	pcounter += 1
+
     # add uncertainties
     rows = []
     # uncertainty on signal normalization (not needed but keep for reference)
@@ -126,7 +132,9 @@ def makedatacard(inputfile, datacardname, ftype, variable, year, flavour, pt, et
 	# in principle the uncertainty is large but this spoils the final uncertainty
 	# in the fake rate map
 	# and a smaller value is already sufficient to get decent fits in every bin
-	rows.append( makerow( 'norm_'+p,'lnN',ptoid,{p:1.1} ) )
+	if prompt_norm_unc is not None: 
+	    rows.append( makerow( 'norm_'+p,'lnN',ptoid,{p:prompt_norm_unc} ) )
+
     # add rows to columns
     for row in rows:
         for rowel,c in zip(row,columns):
@@ -142,8 +150,8 @@ def makedatacard(inputfile, datacardname, ftype, variable, year, flavour, pt, et
         if(row==3): datacard.write(getseparator())
     datacard.write(getseparator())
     # manage statistical uncertainties
-    threshold = 10
-    datacard.write(channel+' autoMCStats '+str(threshold))
+    if barlow_beeston_threshold is not None:
+	datacard.write(channel+' autoMCStats '+str(barlow_beeston_threshold))
     # close datacard
     datacard.close()
     f.Close()
@@ -268,7 +276,7 @@ if __name__=='__main__':
     print('start looping over pt and eta bins...')
     for ptbinnb,ptbin in enumerate(ptbins):
 	for etabinnb,etabin in enumerate(etabins):
-	    #if( ptbinnb!=0 or etabinnb!=0 ): continue # for testing on small number of bins
+	    #if( ptbinnb!=2 or etabinnb!=0 ): continue # for testing on small number of bins
 	    ptbinstr = str(ptbin).replace('.','p')
 	    etabinstr = str(etabin).replace('.','p')
 	    print('   bin pt {}, eta {}'.format(ptbinstr,etabinstr))

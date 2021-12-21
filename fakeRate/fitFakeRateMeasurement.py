@@ -22,12 +22,12 @@ import fakeRateMeasurementTools as frt
 
 years = ['2016','2017','2018']
 # (choose any combination from '2016', '2017' and '2018')
-flavours = ['electron','muon']
+flavours = ['muon','electron']
 # (choose any combination from 'muon' and 'electron')
 use_mT = True
-runmode = 'local'
+runmode = 'condor'
 # (choose from 'condor', 'qsub' or 'local')
-fitmethod = 'subtraction'
+fitmethod = 'templatefit'
 # (choose from 'subtraction', 'templatefit', or 'none')
 # (in case of 'none', the fake rate is not measured, but input plots are made if plotmode is 'new'!)
 doprefitplots = False
