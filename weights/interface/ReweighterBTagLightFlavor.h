@@ -5,7 +5,10 @@
 class ReweighterBTagLightFlavor : public ReweighterBTag {
 
     public:
-        ReweighterBTagLightFlavor(const std::string& weightDirectory, const std::string& sfFilePath, const std::string& workingPoint, const std::shared_ptr< TH2 >& efficiencyUDSG );
+        ReweighterBTagLightFlavor(  const std::string& weightDirectory, 
+				    const std::string& sfFilePath, 
+				    const std::string& workingPoint, 
+				    const std::shared_ptr< TH2 >& efficiencyUDSG );
 
 
     private:
