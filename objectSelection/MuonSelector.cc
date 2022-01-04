@@ -5,7 +5,7 @@
 
 
 double leptonMVACutMuon(){
-    return 0.65;
+    return 0.4;
 }
 
 
@@ -49,16 +49,16 @@ bool MuonSelector::isLoose2018() const{
 FO muon selection
 */
 
-//interpolation between loose and medium working point of deep flavor from 20 to 45 GeV in muon pT as defined in the ttH analysis
-double slidingDeepFlavorThreshold( const double looseWP, const double mediumWP, const double pt ){
-    static const double minPt = 20.;
-    static const double maxPt = 40.;
-    if( pt < minPt ){
-        return mediumWP;
-    } else if( pt > maxPt ){
-        return looseWP;
+//interpolation between two working points of deepFlavor between two pT values
+double muonSlidingDeepFlavorThreshold( const double lowPt, const double lowPtWP, 
+		    const double highPt, const double highPtWP,
+		    const double pt ){
+    if( pt < lowPt ){
+        return lowPtWP;
+    } else if( pt > highPt ){
+        return highPtWP;
     } else {
-        return ( mediumWP - ( mediumWP - looseWP ) / ( maxPt - minPt ) * ( pt - minPt ) );
+        return ( lowPtWP + ( highPtWP - lowPtWP ) / ( highPt - lowPt ) * ( pt - lowPt ) );
     }
 }
 
@@ -66,7 +66,6 @@ double slidingDeepFlavorThreshold( const double looseWP, const double mediumWP, 
 bool MuonSelector::isFOBase() const{
     if( !isLoose() ) return false;
     if( muonPtr->uncorrectedPt() <= 10 ) return false;
-    if (muonPtr->trackPtError() / muonPtr->trackPt() >= 0.2) return false;
     return true;
 }
 
@@ -74,8 +73,9 @@ bool MuonSelector::isFOBase() const{
 bool MuonSelector::isFO2016PreVFP() const{
 
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-	if( muonPtr->ptRatio() <= 0.45 ) return false;
-        if( muonPtr->closestJetDeepFlavor() >= 0.015 ) return false;
+	if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 20., 0.02, 40., 0.015, 
+	muonPtr->uncorrectedPt()) ) return false;
+        if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
 }
@@ -84,8 +84,9 @@ bool MuonSelector::isFO2016PreVFP() const{
 bool MuonSelector::isFO2016PostVFP() const{
 
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 20., 0.02, 40., 0.015, 
+	muonPtr->uncorrectedPt()) ) return false;
         if( muonPtr->ptRatio() <= 0.45 ) return false;
-        if( muonPtr->closestJetDeepFlavor() >= 0.015 ) return false;
     }
     return true;
 }
@@ -94,8 +95,9 @@ bool MuonSelector::isFO2016PostVFP() const{
 bool MuonSelector::isFO2017() const{
     
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-	if( muonPtr->ptRatio() <= 0.45 ) return false;
-        if( muonPtr->closestJetDeepFlavor() >= 0.02 ) return false;
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 20., 0.025, 40., 0.015, 
+                muonPtr->uncorrectedPt()) ) return false;
+        if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
 }
@@ -103,8 +105,9 @@ bool MuonSelector::isFO2017() const{
 
 bool MuonSelector::isFO2018() const{
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
-	if( muonPtr->ptRatio() <= 0.45 ) return false;
-        if( muonPtr->closestJetDeepFlavor() >= 0.02 ) return false;
+        if( muonPtr->closestJetDeepFlavor() > muonSlidingDeepFlavorThreshold( 20., 0.025, 40., 0.015, 
+                muonPtr->uncorrectedPt()) ) return false;
+        if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
 }
@@ -114,15 +117,12 @@ bool MuonSelector::isFORunTime( double ptRatioCut, double deepFlavorCut, int ext
     // function for FO optimization, use ONLY in MC fake rate grid search
     if( !isLoose() ) return false;
     if( muonPtr->uncorrectedPt() <= 10 ) return false;
-    if (muonPtr->trackPtError() / muonPtr->trackPt() >= 0.2) return false;
-
     if( muonPtr->leptonMVATOP() <= leptonMVACutMuon() ){
 	// dummy condition on extraCut to avoid compilation warnings
 	if( extraCut < -9999 ) return false;
         if( muonPtr->ptRatio() <= ptRatioCut ) return false;
 	if( muonPtr->closestJetDeepFlavor() >= deepFlavorCut ) return false;
     }
-
     return true;
 }
    
@@ -164,5 +164,5 @@ cone correction
 
 
 double MuonSelector::coneCorrection() const{
-    return ( 0.71 / muonPtr->ptRatio() );
+    return ( 0.67 / muonPtr->ptRatio() );
 }

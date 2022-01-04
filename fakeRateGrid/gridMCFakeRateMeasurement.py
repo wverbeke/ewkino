@@ -24,7 +24,6 @@ def get_conf( testrun=False ):
     # define cut values
     ptRatioCuts = [0.35, 0.4, 0.45, 0.5, 0.55]
     deepFlavorCuts = [0.015, 0.02, 0.025, 0.03, 0.05, 0.075, 0.1, 0.25, 0.5]
-    #deepFlavorCuts = [0.25,0.5]
     extraCuts = [0, 1, 2, 3]
     if testrun:
 	ptRatioCuts = [0.4]

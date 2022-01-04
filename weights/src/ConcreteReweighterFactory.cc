@@ -71,7 +71,7 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
 
     // make muon ID reweighter
     std::string muonSFFileName = stringTools::formatDirectoryName( weightDirectory )
-        + "weightFiles/leptonSF/muonTOPLeptonMVAMedium" + year + ".root";
+        + "weightFiles/leptonSF/muonTOPLeptonMVAMedium040" + year + ".root";
     TFile* muonSFFile = TFile::Open( (muonSFFileName).c_str() );
     // load the scalefactor histogram and set the errors to zero,
     // load the systematic errors and set the bin contents to one and errors relative,
@@ -111,7 +111,7 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
 
     // make electron ID Reweighter
     TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
-      + "weightFiles/leptonSF/electronTOPLeptonMVAMedium" + year + ".root" ).c_str() );
+      + "weightFiles/leptonSF/electronTOPLeptonMVAMedium040" + year + ".root" ).c_str() );
     // load the scalefactor histogram and set the errors to zero,
     // load the systematic errors and set the bin contents to one,
     // (note: the histogram syst contains the relative uncertainties as bin contents (?))

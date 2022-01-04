@@ -116,8 +116,8 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
     for( const auto& leptonPtr : event.lightLeptonCollection() ){
         if( leptonPtr->isFORunTime(ptRatioCut,deepFlavorCut, extraCut) && !leptonPtr->isTight() ){
 
-            double croppedPt = std::min( leptonPtr->pt(), 99. );
-	    //double croppedPt = std::min( leptonPtr->pt(), 44.9 );
+            //double croppedPt = std::min( leptonPtr->pt(), 99. );
+	    double croppedPt = std::min( leptonPtr->pt(), 44.9 );
 	    // (test, to be more consistent with fake rate application in data)
             double croppedAbsEta = std::min( leptonPtr->absEta(), (leptonPtr->isMuon() ? 2.4 : 2.5) );
 

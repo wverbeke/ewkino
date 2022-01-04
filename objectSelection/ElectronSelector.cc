@@ -13,7 +13,7 @@ loose electron selection
 
 
 double leptonMVACutElectron(){
-    return 0.6;
+    return 0.4;
 }
 
 
@@ -59,17 +59,22 @@ bool ElectronSelector::isFOBase() const{
     if( electronPtr->uncorrectedPt() <= 10 ) return false;
     if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
-    if( !electronPtr->passChargeConsistency() ) return false;
+    if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
+        if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
+    } else {
+        if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
+    }
     if( !electronPtr->passConversionVeto() ) return false;
+    if( !electronPtr->passChargeConsistency() ) return false;
     return true;
 }
 
 
 bool ElectronSelector::isFO2016PreVFP() const{
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-	if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
-	if( electronPtr->ptRatio() <= 0.55 ) return false;
-	if( electronPtr->closestJetDeepFlavor() >= 0.5 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false; 
     }
     return true;
 }
@@ -77,9 +82,9 @@ bool ElectronSelector::isFO2016PreVFP() const{
 
 bool ElectronSelector::isFO2016PostVFP() const{
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-	if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
-        if( electronPtr->ptRatio() <= 0.55 ) return false;
-        if( electronPtr->closestJetDeepFlavor() >= 0.5 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
 }
@@ -87,9 +92,9 @@ bool ElectronSelector::isFO2016PostVFP() const{
 
 bool ElectronSelector::isFO2017() const{
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-	if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
-        if( electronPtr->ptRatio() <= 0.55 ) return false;
-        if( electronPtr->closestJetDeepFlavor() >= 0.5 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
 }
@@ -97,9 +102,9 @@ bool ElectronSelector::isFO2017() const{
 
 bool ElectronSelector::isFO2018() const{
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
-	if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
-        if( electronPtr->ptRatio() <= 0.55 ) return false;
-        if( electronPtr->closestJetDeepFlavor() >= 0.5 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
 }
@@ -111,8 +116,13 @@ bool ElectronSelector::isFORunTime( double ptRatioCut, double deepFlavorCut, int
     if( electronPtr->uncorrectedPt() <= 10 ) return false;
     if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
-    if( !electronPtr->passChargeConsistency() ) return false;
+    if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
+        if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
+    } else {
+        if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
+    }
     if( !electronPtr->passConversionVeto() ) return false;
+    if( !electronPtr->passChargeConsistency() ) return false;
 
     if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
 	if( extraCut==1 && !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
@@ -162,5 +172,5 @@ cone correction
 */
 
 double ElectronSelector::coneCorrection() const{
-    return ( 0.71 / electronPtr->ptRatio() );
+    return ( 0.67 / electronPtr->ptRatio() );
 }
