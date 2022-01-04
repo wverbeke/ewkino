@@ -23,7 +23,10 @@ processes = ['TT','DY']
 # (pick any combination from 'DY' and 'TT')
 runmode = 'condor'
 # (pick from 'qsub', 'condor' or 'local')
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/trileptonskim/fakerate/'
+istestrun = False
+# (note that this will not overwrite runmode, 
+# only affects number of samples and number of events per sample)
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate/'
 samplelistdirectory = os.path.abspath('sampleLists')
 # (see also below to set correct sample list name in loop!)
 
@@ -43,9 +46,9 @@ for year in years:
 	    samplelist = os.path.join(samplelistdirectory,
                             'samples_closureTest_'+process+'_'+year+'.txt')
 	    # make the command
-	    command = './fillMCClosureTest {} {} {} {} {} {} {}'.format(
+	    command = './fillMCClosureTest {} {} {} {} {} {} {} {}'.format(
                             isMCFR,use_mt,process,year,flavour,
-                            sampledirectory,samplelist)
+                            sampledirectory,samplelist,istestrun)
 	    cmds.append(command)
 
 # loop over commands and submit jobs

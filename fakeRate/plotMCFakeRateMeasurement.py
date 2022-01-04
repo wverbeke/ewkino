@@ -7,7 +7,6 @@ import sys
 import ROOT
 sys.path.append('../plotting/python')
 import multihistplotter as mhp
-import singlehistplotter as shp
 
 # set global properties
 years = ['2016','2017','2018']
@@ -104,14 +103,3 @@ for year in years:
                                 xaxtitle=xaxtitle, yaxtitle=yaxtitle,
                                 logy=True, 
                                 drawoptions='hist e')
-
-	mhp.plotmultihistograms(histlist,
-                                figname=figname,
-                                dolegend=True, labellist=labellist,
-                                xaxtitle=xaxtitle, yaxtitle=yaxtitle,
-                                logy=True,
-                                drawoptions='hist e')
-
-
-	shp.plotsinglehistogram( histlist[0], 'test', xaxtitle=xaxtitle, yaxtitle=yaxtitle,
-				    drawoptions='hist e')
