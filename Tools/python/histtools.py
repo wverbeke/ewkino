@@ -109,7 +109,7 @@ def clipallhistograms(histfile,mustcontainall=[],clipboundary=0):
 def getminmax(histlist):
     # get suitable minimum and maximum values for plotting a hist collection (not stacked)
     totmax = 0.
-    totmin = 99.
+    totmin = 1e12
     for hist in histlist:
         for i in range(1,hist.GetNbinsX()+1):
             val = hist.GetBinContent(i)

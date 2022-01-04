@@ -159,56 +159,61 @@ def setTDRstyle():
 
 ############################################################
 
-def drawLumi(pad, extratext="Preliminary", 
-	lumitext="<lumi> fb^{-1} (13 TeV)",
-	cms_in_grid=True):
+def drawLumi(pad,
+	cmstext="CMS",
+	cmstext_size_factor=0.8, 
+	cmstext_offset=0.03,
+	extratext="Preliminary",
+        lumitext="<lumi> fb^{-1} (13 TeV)",
+	lumitext_size_factor=0.6,
+	lumitext_offset=0.01,
+	cms_in_grid=True,
+	rfrac=0.):
 
     pad.Update()
 
     # get margins for pad
-    lmargin = pad.GetLeftMargin()+0.03;
+    lmargin = pad.GetLeftMargin();
     tmargin = pad.GetTopMargin();
     rmargin = pad.GetRightMargin();
 
     # define text sizes and offsets relative to margin
-    CMSTextSize = tmargin*0.8;
-    lumiTextSize = tmargin*0.8;
+    CMSTextSize = tmargin*cmstext_size_factor;
+    lumiTextSize = tmargin*lumitext_size_factor;
 
-    CMSTextVerticalOffset = tmargin*0.2;
-    lumiTextVerticalOffset = tmargin*0.2;
-    
+    CMSTextVerticalOffset = cmstext_offset
+    lumiTextVerticalOffset = lumitext_offset
+
     pad.cd();
     # define latex text to draw on plot
-    #latex = ROOT.TLatex(lmargin,1+lumiTextVerticalOffset*tmargin,"CMS");
     latex = ROOT.TLatex()
     latex.SetNDC();
     latex.SetTextAngle(0);
-    latex.SetTextColor(ROOT.kBlack); 
+    latex.SetTextColor(ROOT.kBlack);
 
     latex.SetTextFont(61);
-    latex.SetTextAlign(11); 
+    latex.SetTextAlign(11);
     latex.SetTextSize(CMSTextSize);
     latex.SetText(0,0,'CMS')
     #cmsX = latex.GetXsize(); # does not seem to work properly
-    cmsX = CMSTextSize*2 # phenomenological alternative
+    cmsX = CMSTextSize*2*(1-rfrac) # phenomenological alternative
     # old style: cms label outside of frame:
-    if not cms_in_grid: latex.DrawLatex(lmargin, 1 - tmargin + CMSTextVerticalOffset, 'CMS');
+    if not cms_in_grid: latex.DrawLatex(lmargin+0.03, 1 - tmargin + CMSTextVerticalOffset,cmstext);
     # new style: cms label inside frame:
-    else: latex.DrawLatex( lmargin, 1-tmargin-CMSTextVerticalOffset-CMSTextSize, 'CMS')
+    else: latex.DrawLatex( lmargin+0.03, 1-tmargin-CMSTextVerticalOffset-CMSTextSize,cmstext)
 
     extraTextSize = CMSTextSize*0.8
     latex.SetTextFont(52);
     latex.SetTextSize(extraTextSize);
     latex.SetTextAlign(11);
-    nlines = 1+extratext.count('#splitline') # not yet generalized to all cases
-    if not cms_in_grid: latex.DrawLatex(lmargin + 1.2*cmsX, 
+    if not cms_in_grid: latex.DrawLatex(lmargin+0.03 + 1.2*cmsX,
                         1-tmargin+CMSTextVerticalOffset, extratext);
-    else: latex.DrawLatex(lmargin + cmsX, 
-        1-tmargin-CMSTextVerticalOffset-CMSTextSize-extraTextSize*0.8*(nlines-1), 
-        extratext);
+    else: latex.DrawLatex(lmargin+0.03 + 1.2*cmsX,
+            1-tmargin-CMSTextVerticalOffset-CMSTextSize, extratext);
 
     latex.SetTextFont(42);
     latex.SetTextAlign(31);
-    latex.SetTextSize(lumiTextSize);  
+    latex.SetTextSize(lumiTextSize);
     latex.DrawLatex(1-rmargin,1-tmargin+lumiTextVerticalOffset,lumitext);
-    return;
+    
+    return
