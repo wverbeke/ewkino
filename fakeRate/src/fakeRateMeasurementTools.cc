@@ -297,34 +297,48 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
 
     // initialize 1D histograms for light and heavy flavour fake rate separately
     // (can be a useful tool to check if they are approximately equal, but not used further)
+    // extension: split heavy flavour in b- and c-flavoured partons for more detailed diagnostics
     unsigned nbins = 10;
     double ptlow = 10.;
     double pthigh = 70.;
-    numerator_name = "fakeRate_numerator_heavyflavor_" + flavor + "_" + year;
-    std::shared_ptr< TH1D > heavynumeratorMap(
+    numerator_name = "fakeRate_numerator_bflavor_" + flavor + "_" + year;
+    std::shared_ptr< TH1D > bflavorNumerator(
         new TH1D(   numerator_name.c_str(), ( numerator_name+ "; p_{T} (GeV)").c_str(),
                     nbins, ptlow, pthigh)
     );
-    heavynumeratorMap->Sumw2();
-    denominator_name = "fakeRate_denominator_heavyflavor_" + flavor + "_" + year;
-    std::shared_ptr< TH1D > heavydenominatorMap(
+    bflavorNumerator->Sumw2();
+    denominator_name = "fakeRate_denominator_bflavor_" + flavor + "_" + year;
+    std::shared_ptr< TH1D > bflavorDenominator(
         new TH1D(   denominator_name.c_str(), denominator_name.c_str(),
                     nbins, ptlow, pthigh)
     );
-    heavydenominatorMap->Sumw2();
+    bflavorDenominator->Sumw2();
+
+    numerator_name = "fakeRate_numerator_cflavor_" + flavor + "_" + year;
+    std::shared_ptr< TH1D > cflavorNumerator(
+        new TH1D(   numerator_name.c_str(), ( numerator_name+ "; p_{T} (GeV)").c_str(),
+                    nbins, ptlow, pthigh)
+    );
+    cflavorNumerator->Sumw2();
+    denominator_name = "fakeRate_denominator_cflavor_" + flavor + "_" + year;
+    std::shared_ptr< TH1D > cflavorDenominator(
+        new TH1D(   denominator_name.c_str(), denominator_name.c_str(),
+                    nbins, ptlow, pthigh)
+    );
+    cflavorDenominator->Sumw2();
 
     numerator_name = "fakeRate_numerator_lightflavor_" + flavor + "_" + year;
-    std::shared_ptr< TH1D > lightnumeratorMap(
+    std::shared_ptr< TH1D > lightNumerator(
         new TH1D(   numerator_name.c_str(), ( numerator_name+ "; p_{T} (GeV)").c_str(),
                     nbins, ptlow, pthigh)
     );
-    lightnumeratorMap->Sumw2();
+    lightNumerator->Sumw2();
     denominator_name = "fakeRate_denominator_lightflavor_" + flavor + "_" + year;
-    std::shared_ptr< TH1D > lightdenominatorMap(
+    std::shared_ptr< TH1D > lightDenominator(
         new TH1D(   denominator_name.c_str(), denominator_name.c_str(),
                     nbins, ptlow, pthigh)
     );
-    lightdenominatorMap->Sumw2();
+    lightDenominator->Sumw2();
 
     // make TreeReader and set to correct sample
     std::cout<<"making TreeReader and setting to sample no. "<<sampleIndex<<"."<<std::endl;
@@ -387,16 +401,22 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
             histogram::fillValues(numeratorMap.get(), lepton.pt(), lepton.absEta(), weight );
         }
     
-	// fill heavy flavour 1D histograms
-	if(lepton.provenanceCompressed()==1 || lepton.provenanceCompressed()==2){
-	    heavydenominatorMap.get()->Fill(lepton.pt(), weight);
-	    if(lepton.isTight()) heavynumeratorMap.get()->Fill(lepton.pt(), weight);
+	// fill b-flavour 1D histograms
+	if(lepton.provenanceCompressed()==1){
+	    bflavorDenominator->Fill(lepton.pt(), weight);
+	    if(lepton.isTight()) bflavorNumerator->Fill(lepton.pt(), weight);
 	}
+
+	// fill c-flavour 1D histograms
+	if(lepton.provenanceCompressed()==2){
+            cflavorDenominator->Fill(lepton.pt(), weight);
+            if(lepton.isTight()) cflavorNumerator->Fill(lepton.pt(), weight);
+        }
 
 	// fill light flavour 1D histograms
 	else{
-	    lightdenominatorMap.get()->Fill(lepton.pt(), weight);
-            if(lepton.isTight()) lightnumeratorMap.get()->Fill(lepton.pt(), weight);
+	    lightDenominator->Fill(lepton.pt(), weight);
+            if(lepton.isTight()) lightNumerator->Fill(lepton.pt(), weight);
 	}
     }
 
@@ -409,10 +429,12 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
     numeratorMap->Write();
     denominatorMap->Write();
 
-    heavynumeratorMap->Write();
-    heavydenominatorMap->Write();
-    lightnumeratorMap->Write();
-    lightdenominatorMap->Write();
+    bflavorNumerator->Write();
+    bflavorDenominator->Write();
+    cflavorNumerator->Write();
+    cflavorDenominator->Write();
+    lightNumerator->Write();
+    lightDenominator->Write();
 
     histogram_file->Close();
     std::cout<<"finished function fillMCFakeRateMeasurementHistograms"<<std::endl;

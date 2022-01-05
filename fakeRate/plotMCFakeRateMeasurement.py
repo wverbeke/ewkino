@@ -49,11 +49,15 @@ for year in years:
 	# read additional 1D histograms
 	f = ROOT.TFile.Open(filename)
 	instancename = '{}_{}'.format(flavour,year)
-	heavy_denominator = f.Get('fakeRate_denominator_heavyflavor_{}'.format(instancename))
-	heavy_numerator = f.Get('fakeRate_numerator_heavyflavor_{}'.format(instancename))
+	bflavor_denominator = f.Get('fakeRate_denominator_bflavor_{}'.format(instancename))
+	bflavor_numerator = f.Get('fakeRate_numerator_bflavor_{}'.format(instancename))
+	cflavor_denominator = f.Get('fakeRate_denominator_cflavor_{}'.format(instancename))
+        cflavor_numerator = f.Get('fakeRate_numerator_cflavor_{}'.format(instancename))
 	light_denominator = f.Get('fakeRate_denominator_lightflavor_{}'.format(instancename))
 	light_numerator = f.Get('fakeRate_numerator_lightflavor_{}'.format(instancename))
-	for hist in [heavy_denominator,heavy_numerator,light_denominator,light_numerator]:
+	for hist in [bflavor_denominator,bflavor_numerator,
+		    cflavor_denominator,cflavor_numerator,
+		    light_denominator,light_numerator]:
 	    hist.SetDirectory(0)
 	# common settings for all plots
 	outputdir = 'fakeRatePlots'
@@ -62,9 +66,10 @@ for year in years:
 	yaxtitle = 'Number of {}s'.format(flavour)
 	xaxtitle = 'Lepton p_{T} (GeV)'
 	# make a plot of light and heavy fakes passing tight
-	histlist = [light_numerator,heavy_numerator]
+	histlist = [light_numerator,cflavor_numerator,bflavor_numerator]
 	labellist = ['Tight {}s with light origing'.format(flavour),
-			'Tight {}s with heavy origin'.format(flavour)]
+			'Tight {}s with c-hadron origin'.format(flavour),
+			'Tight {}s with b-hadron origin'.format(flavour)]
 	figname = 'fakeFlavour_numerator_{}_lin'.format(instancename)
 	figname = os.path.join(outputdir,figname)
 	mhp.plotmultihistograms(histlist, 
@@ -83,9 +88,10 @@ for year in years:
                                 logy=True, 
                                 drawoptions='hist e')
 	# make a plot of light and heavy fakes passing FO
-        histlist = [light_denominator,heavy_denominator]
+        histlist = [light_denominator,cflavor_denominator,bflavor_denominator]
         labellist = ['FO {}s with light origing'.format(flavour),
-                        'FO {}s with heavy origin'.format(flavour)]
+                        'FO {}s with c-flavor origin'.format(flavour),
+			'FO {}s with b-flavor origin'.format(flavour)]
         figname = 'fakeFlavour_denominator_{}_lin'.format(instancename)
         figname = os.path.join(outputdir,figname)
         mhp.plotmultihistograms(histlist,                         
