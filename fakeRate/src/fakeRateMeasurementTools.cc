@@ -408,7 +408,7 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
 	}
 
 	// fill c-flavour 1D histograms
-	if(lepton.provenanceCompressed()==2){
+	else if(lepton.provenanceCompressed()==2){
             cflavorDenominator->Fill(lepton.pt(), weight);
             if(lepton.isTight()) cflavorNumerator->Fill(lepton.pt(), weight);
         }
