@@ -29,8 +29,9 @@ std::vector< HistInfo > makeDistributionInfoDefault(){
 	HistInfo( "nBJets", "number of b-jets (medium deepFlavour)", 4, 0, 4 ),
 	HistInfo( "nVertex", "number of vertices", 10, 0, 70 ),
 
-	HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, 0, 4),
-	HistInfo( "nHeavyNonPrompt", "number of nonprompt with heavy origin", 4, 0, 4)
+	HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, 0, 4 ),
+	HistInfo( "nCFlavorNonPrompt", "number of nonprompt with c-hadron origin", 4, 0, 4 ),
+	HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, 0, 4 )
     };
     return histInfoVec;
 }
@@ -124,18 +125,19 @@ double fakeRateWeight( const Event& event, const std::shared_ptr< TH2D >& frMap_
     return weight;
 }
 
-std::pair<int,int> eventOriginFlavour( const Event& event ){
+std::tuple<int,int,int> eventOriginFlavour( const Event& event ){
     // retrieve flavour composition of nonprompt leptons
     unsigned nlight = 0;
-    unsigned nheavy = 0;
+    unsigned ncflavor = 0;
+    unsigned nbflavor = 0;
     for( auto& leptonPtr : event.lightLeptonCollection() ){
         if( !leptonPtr->isPrompt() ){
-	    if( leptonPtr->provenanceCompressed()==1 
-	    || leptonPtr->provenanceCompressed()==2) nheavy++;
+	    if( leptonPtr->provenanceCompressed()==1 ) nbflavor++;
+	    else if( leptonPtr->provenanceCompressed()==2 ) ncflavor++;
 	    else nlight++;
 	}
     }
-    return std::make_pair<int,int>(nlight,nheavy);
+    return std::make_tuple<int,int,int>(nlight,ncflavor,nbflavor);
 }
 
 int main( int argc, char* argv[] ){
@@ -210,7 +212,7 @@ int main( int argc, char* argv[] ){
 	    LightLeptonCollection lightLeptons = event.lightLeptonCollection();
 
             //compute plotting variables 
-	    std::pair<int,int> temp = eventOriginFlavour( event );
+	    std::tuple<int,int,int> temp = eventOriginFlavour( event );
             std::vector< double > variables = { 
 		lightLeptons[0].pt(), lightLeptons[1].pt(),
                 lightLeptons[0].absEta(), lightLeptons[1].absEta(),
@@ -221,8 +223,9 @@ int main( int argc, char* argv[] ){
                 static_cast< double >( event.numberOfJets() ),
                 static_cast< double >( event.numberOfMediumBTaggedJets() ),
                 static_cast< double >( event.numberOfVertices() ),
-		static_cast< double >( temp.first ),
-		static_cast< double >( temp.second )
+		static_cast< double >( std::get<0>(temp) ),
+		static_cast< double >( std::get<1>(temp) ),
+		static_cast< double >( std::get<2>(temp) )
             };
 
             // event is 'observed' if all leptons are tight 
