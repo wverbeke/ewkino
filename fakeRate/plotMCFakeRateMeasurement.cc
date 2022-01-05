@@ -38,8 +38,15 @@ int main( int argc, char* argv[] ){
     denominator->SetDirectory(gROOT);
     std::shared_ptr<TH2D> ratio(dynamic_cast<TH2D*>( numerator->Clone()));
     ratio->SetDirectory(gROOT);
-    
-    // read heavyflavor histograms
+
+    // take ratio
+    ratio->Divide(denominator.get());
+   
+    // following section is deprecated,
+    // the histograms are read and plotted in the python caller;
+    // furthermore, the naming of the histograms has changed so this will give segmentation violations;
+    // only kept in comments for reference
+    /*// read heavyflavor histograms
     std::shared_ptr<TH1D> heavynumerator(dynamic_cast<TH1D*> (
             measurement_filePtr->Get(("fakeRate_numerator_heavyflavor_"+instanceName).c_str())));
     heavynumerator->SetDirectory(gROOT);
@@ -61,11 +68,10 @@ int main( int argc, char* argv[] ){
     measurement_filePtr->Close();
 
     // take ratios
-    ratio->Divide(denominator.get());
     lightratio->Divide(lightdenominator.get());
     heavyratio->Divide(heavydenominator.get());
     std::shared_ptr<TH1D> heavytolight(dynamic_cast<TH1D*>(heavyratio->Clone()));
-    heavytolight->Divide(lightratio.get());
+    heavytolight->Divide(lightratio.get());*/
 
     // printouts for testing
     /*std::cout<<"some example values:"<<std::endl;
@@ -97,12 +103,14 @@ int main( int argc, char* argv[] ){
     std::string fileName = "fakeRateMaps/fakeRateMap_MC_" + instanceName + ".root";
     TFile* writeFile = TFile::Open( fileName.c_str(), "RECREATE" );
     ratio->Write( ("fakeRate_" + instanceName).c_str() );
+
     // also write the heavy and light fake rates and their ratio to the file
-    lightratio->Write( ("fakeRate_lightflavor_"+instanceName).c_str() );
+    // deprecated, see above
+    /*lightratio->Write( ("fakeRate_lightflavor_"+instanceName).c_str() );
     heavyratio->Write( ("fakeRate_heavyflavor_"+instanceName).c_str() );
-    heavytolight->Write( ("heavytolight"+instanceName).c_str() );
+    heavytolight->Write( ("heavytolight"+instanceName).c_str() ); */
+
     writeFile->Close();
 
     return 0;
 }
-
