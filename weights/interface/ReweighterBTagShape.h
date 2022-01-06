@@ -31,6 +31,8 @@ class ReweighterBTagShape: public Reweighter{
 
 	void setNormFactors( const Sample& sample, std::map<int,double> normFactors );
 	double getNormFactor( const Event&, const std::string& jecVariation="nominal" ) const;
+	std::map<std::string,std::map<int,double>> getNormFactors() const;
+	void printNormFactors() const;
 	
 	double weight( const Jet& jet ) const;
 	double weightUp( const Jet& jet, const std::string& systematic ) const;
