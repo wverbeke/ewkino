@@ -254,18 +254,32 @@ if __name__=='__main__':
     if(flavour=='muon'): etarange[-1]=2.4
 
     # make 2D maps to hold number of nonprompt leptons in num and denom
-    nummap = ROOT.TH2D( "fake-rate", "fake-rate; p_{T} (GeV); |#eta|", 
+    numyieldmap = ROOT.TH2D( "fake-rate", "fake-rate; p_{T} (GeV); |#eta|", 
 		len(ptrange)-1, array('f',ptrange), 
 		len(etarange)-1, array('f',etarange))
-    nummap.SetDirectory(0)
-    nummap.Sumw2()
-    denommap = ROOT.TH2D( "", "", 
+    numyieldmap.SetDirectory(0)
+    numyieldmap.Sumw2()
+    denomyieldmap = ROOT.TH2D( "", "", 
 		len(ptrange)-1, array('f',ptrange), 
 		len(etarange)-1, array('f',etarange))
-    denommap.SetDirectory(0)
-    denommap.Sumw2()
+    denomyieldmap.SetDirectory(0)
+    denomyieldmap.Sumw2()
     # group the nummap and denommap in a dict for easier access
-    npyieldmaps = {'denominator':denommap,'numerator':nummap}
+    npyieldmaps = {'denominator':denomyieldmap,'numerator':numyieldmap}
+
+    # make 2D maps to hold the measured signal strengths in num and denom
+    numrmap = ROOT.TH2D( "signal strength", "signal strength; p_{T} (GeV); |#eta|",
+                len(ptrange)-1, array('f',ptrange),
+                len(etarange)-1, array('f',etarange))
+    numrmap.SetDirectory(0)
+    numrmap.Sumw2()
+    denomrmap = ROOT.TH2D( "signal strength", "signal strength; p_{T} (GeV); |#eta|",
+                len(ptrange)-1, array('f',ptrange),
+                len(etarange)-1, array('f',etarange))
+    denomrmap.SetDirectory(0)
+    denomrmap.Sumw2()
+    # group the nummap and denommap in a dict for easier access
+    rmaps = {'denominator':denomrmap,'numerator':numrmap}
 
     # move to workingdir
     cwd = os.getcwd()
@@ -302,6 +316,16 @@ if __name__=='__main__':
 		for hist in nonprompthists: nonprompthist.Add( hist )
 		nonprompthist.SetName('total_nonprompt_'+thisbin)
 		nonprompthist.SetTitle('Nonprompt')
+
+		# temp for testing: set the errors to zero
+		#for i in range(0,prompthist.GetNbinsX()+2):
+		#    if prompthist.GetBinContent(i)>0:
+		#	error = prompthist.GetBinError(i) 
+		#	prompthist.SetBinError(i, error/100.)
+		#    if nonprompthist.GetBinContent(i)>0: 
+		#    	error = nonprompthist.GetBinError(i)
+		#    	nonprompthist.SetBinError(i, error/100.)
+
 		# make a prefit plot
                 xaxtitle = datahist.GetXaxis().GetTitle()
                 yaxtitle = datahist.GetYaxis().GetTitle()
@@ -396,23 +420,42 @@ if __name__=='__main__':
                             extrainfos=extrainfos, infosize=15 )
 		
 		### fill the yield maps ###
-		binindex = nummap.FindBin(ptbin+1e-6,etabin+1e-6)
+		binindex = numyieldmap.FindBin(ptbin+1e-6,etabin+1e-6)
 		# directly take integral of postfit distribution
 		# (but still use signal strength measurement for relative error)
 		postfitnp = postfitnonprompthist.Integral()
 		npyieldmaps[ftype].SetBinContent(binindex,postfitnp)
 		npyieldmaps[ftype].SetBinError(binindex,postfitnp*max(uperror,downerror)/r)
+		rmaps[ftype].SetBinContent(binindex, r)
+		rmaps[ftype].SetBinError(binindex, max(uperror,downerror))
 		# print results
                 print('initial amount of nonprompt leptons: {}'.format(prefitnp))
                 print('measured signal strength: {} + {} - {}'.format(r,uperror,downerror))
                 print('post-fit amount of nonprompt leptons: {}'.format(postfitnp))
 
+    # save and plot the signal strength maps
+    rmapfile = 'signalstrengths_'+instancename+'.root'
+    f = ROOT.TFile.Open(rmapfile,'recreate')
+    numrmap.Write("signalstrengths_numerator")
+    denomrmap.Write("signalstrengths_denominator")
+    f.Close()
+    title = 'Signal strengths for {} {}s numerator'.format(year, flavour)
+    h2dp.plot2dhistogram( numrmap, rmapfile.replace('.root','_numerator.pdf'), histtitle=title,
+			    drawoptions='col0ztexte', cmin=0.5, cmax=1.5 )
+    h2dp.plot2dhistogram( numrmap, rmapfile.replace('.root','_numerator.png'), histtitle=title,
+			    drawoptions='col0ztexte', cmin=0.5, cmax=1.5 )
+    title = 'Signal strengths for {} {}s denominator'.format(year, flavour)
+    h2dp.plot2dhistogram( denomrmap, rmapfile.replace('.root','_denominator.pdf'), histtitle=title,
+			    drawoptions='col0ztexte', cmin=0.5, cmax=1.5 )
+    h2dp.plot2dhistogram( denomrmap, rmapfile.replace('.root','_denominator.png'), histtitle=title,
+			    drawoptions='col0ztexte', cmin=0.5, cmax=1.5 )
+
     # move back to main directory
     os.chdir(cwd)
 
     ### make fake rate map
-    frmap = nummap.Clone()
-    frmap.Divide(denommap)
+    frmap = numyieldmap.Clone()
+    frmap.Divide(denomyieldmap)
     # save and plot fake rate map
     frmapfile = os.path.join(frmapdir,'fakeRateMap_data_'+instancename+'.root')
     f = ROOT.TFile.Open(frmapfile,'recreate')

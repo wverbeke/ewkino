@@ -95,7 +95,13 @@ def print2dhist( hist ):
 
 
 def plot2dhistogram(hist, outfilepath, histtitle='', logx=False, logy=False, 
-		    drawoptions='colztexte'):
+		    drawoptions='colztexte', cmin=None, cmax=None):
+    # options:
+    # - cmin and cmax: minimum and maximum values for the color scales
+    #   note: in default "colz" behaviour, bins above cmax are colored as cmax,
+    #         while bins below cmin are left blank.
+    #         they can be colored as cmin by using drawoption "col0z" instead of "colz",
+    #         but "col0ztexte" does not seem to write the bin contents for those bins...
 
     tools.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -119,6 +125,10 @@ def plot2dhistogram(hist, outfilepath, histtitle='', logx=False, logy=False,
     ymax = hist.GetYaxis().GetXmax()
     zmin = hist.GetMinimum()
     zmax = hist.GetMaximum()
+    if cmin is not None: zmin = cmin
+    if cmax is not None: zmax = cmax
+    hist.SetMinimum(zmin)
+    hist.SetMaximum(zmax)
 
     # create canvas
     c1 = ROOT.TCanvas("c1","c1")

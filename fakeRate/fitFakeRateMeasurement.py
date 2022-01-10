@@ -22,7 +22,7 @@ import fakeRateMeasurementTools as frt
 
 years = ['2016','2017','2018']
 # (choose any combination from '2016', '2017' and '2018')
-flavours = ['muon','electron']
+flavours = ['electron','muon']
 # (choose any combination from 'muon' and 'electron')
 use_mT = True
 runmode = 'condor'
