@@ -114,7 +114,7 @@ if __name__ == '__main__' :
     sample_output_directories = []
     for directory, subdirectory in zip( sample_directories, sample_sub_directories ):
 	sample_name = directory.rstrip( os.path.sep ).split( os.path.sep )[-1] 
-			+ '_' + yearIdentifierFromPath( subdirectory )
+	sample_name += '_' + yearIdentifierFromPath( subdirectory )
         output_directory = os.path.join( output_directory_base, 
 			    'ntuples_skimmed_{}_version_{}'.format( sample_name, version_name ) )
         if not os.path.exists( output_directory ):
