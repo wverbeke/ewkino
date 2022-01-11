@@ -17,9 +17,13 @@ class PhysicsObject{
     public:
         
         PhysicsObject() = default;
-        //PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy ):
-        //    vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ) {} 
-        PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy, const bool objectIs2016 = false, const bool objectIs2017 = false );
+        PhysicsObject( double transverseMomentum, double pseudoRapidity, 
+			double azimuthalAngle, double energy, 
+			const bool objectIs2016, 
+			const bool objectIs2016PreVFP, 
+			const bool objectIs2016PostVFP,
+			const bool objectIs2017,
+			const bool objectIs2018 );
 
         //define both copy and move constructors and assignment operators 
         PhysicsObject( const PhysicsObject& ) = default;
@@ -46,8 +50,10 @@ class PhysicsObject{
         PhysicsObject& operator-=( const PhysicsObject& );
 
         bool is2016() const{ return is2016Object; }
+	bool is2016PreVFP() const{ return is2016PreVFPObject; }
+	bool is2016PostVFP() const{ return is2016PostVFPObject; }
         bool is2017() const{ return is2017Object; }
-        bool is2018() const{ return !( is2016Object || is2017Object ); }
+        bool is2018() const{ return is2018Object; }
 
         virtual ~PhysicsObject() = default;
 
@@ -62,7 +68,10 @@ class PhysicsObject{
         LorentzVector vector; 
 
         bool is2016Object = false;
+	bool is2016PreVFPObject = false;
+	bool is2016PostVFPObject = false;
         bool is2017Object = false;
+	bool is2018Object = false;
 
         //virtual PhysicsObject* clone() const &{ return new PhysicsObject( *this ); } 
         //virtual PhysicsObject* clone() &&{ return new PhysicsObject( std::move( *this ) ); }
@@ -78,4 +87,4 @@ double mt( const PhysicsObject&, const PhysicsObject& );
 
 std::ostream& operator<<( std::ostream&, const PhysicsObject& );
 
-#endif 
+#endif

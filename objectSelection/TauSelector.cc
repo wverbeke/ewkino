@@ -18,6 +18,16 @@ bool TauSelector::isLoose2016() const{
 }
 
 
+bool TauSelector::isLoose2016PreVFP() const{
+    return true;
+}
+
+
+bool TauSelector::isLoose2016PostVFP() const{
+    return true;
+}
+
+
 bool TauSelector::isLoose2017() const{
     return true;
 }
@@ -39,6 +49,16 @@ bool TauSelector::isFOBase() const{
 
 
 bool TauSelector::isFO2016() const{
+    return true;
+}
+
+
+bool TauSelector::isFO2016PreVFP() const{
+    return true;
+}
+
+
+bool TauSelector::isFO2016PostVFP() const{
     return true;
 }
 
@@ -65,6 +85,16 @@ bool TauSelector::isTightBase() const{
 
 
 bool TauSelector::isTight2016() const{
+    return true;
+}
+
+
+bool TauSelector::isTight2016PreVFP() const{
+    return true;
+}
+
+
+bool TauSelector::isTight2016PostVFP() const{
     return true;
 }
 

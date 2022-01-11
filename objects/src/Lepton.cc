@@ -6,7 +6,13 @@
 
 
 Lepton::Lepton( const TreeReader& treeReader, const unsigned leptonIndex, LeptonSelector* leptonSelector ) :
-    PhysicsObject( treeReader._lPt[leptonIndex], treeReader._lEta[leptonIndex], treeReader._lPhi[leptonIndex], treeReader._lE[leptonIndex], treeReader.is2016(), treeReader.is2017() ),
+    PhysicsObject( treeReader._lPt[leptonIndex], treeReader._lEta[leptonIndex], 
+		    treeReader._lPhi[leptonIndex], treeReader._lE[leptonIndex], 
+		    treeReader.is2016(), 
+		    treeReader.is2016PreVFP(),
+		    treeReader.is2016PostVFP(),
+		    treeReader.is2017(),
+		    treeReader.is2018() ),
     _charge( treeReader._lCharge[leptonIndex] ),
     _dxy( treeReader._dxy[leptonIndex] ),
     _dz( treeReader._dz[leptonIndex] ), 
