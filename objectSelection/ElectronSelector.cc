@@ -166,6 +166,11 @@ bool ElectronSelector::isTight2016() const{
 }
 
 
+bool ElectronSelector::isTight2016PreVFP() const{
+    return true;
+}
+
+
 bool ElectronSelector::isTight2016PostVFP() const{
     return true;
 }
