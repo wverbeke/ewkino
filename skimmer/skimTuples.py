@@ -10,18 +10,22 @@ import sys
 from jobSubmission import submitQsubJob, initializeJobScript
 from fileListing import *
 
-# help functions 
+# help functions
+# note: these should be kept more or less synchronized with the ones in
+#       Tools/src/analysisTools.cc, to avoid mismatching naming conventions! 
 
 def is2017( sample_path ):
-    tags = ['MiniAOD2017', 'Run2017', 'Fall17',
-	    'Summer20UL17']
+    tags = ['MiniAOD2017', # pre-UL simulation 
+	    'Summer20UL17', # UL simulation
+	    'Run2017' ] # data
     for tag in tags: 
 	if tag in sample_path: return True
     return False
 
 def is2018( sample_path ):
-    tags = ['MiniAOD2018', 'Run2018', 'Autumn18',
-	    'Summer20UL17']
+    tags = ['MiniAOD2018', # pre-UL simulation
+	    'Summer20UL18', # UL simulation
+	    'Run2018' ] # data
     for tag in tags:
 	if tag in sample_path: return True
     return False
@@ -30,7 +34,8 @@ def is2016( sample_path ):
     # note: for simulation this is only true for files covering all of 2016 (legacy sim),
     #       ultra-legacy sim is split in 2016pre and 2016post;
     #       for data this is true if the era belongs to 2016 (both for legacy and ultra-legacy)
-    tags = ['MiniAOD2016', 'Run2016', 'Summer16']
+    tags = ['MiniAOD2016', # pre-UL simulation
+	    'Run2016' ] # data
     for tag in tags:
 	if tag in sample_path: return True
     return False
@@ -38,9 +43,9 @@ def is2016( sample_path ):
 def is2016pre( sample_path ):
     # note: for simulation this is only true for ultra-legacy files from 2016 preVFP;
     #       for data this is true if the era belongs to 2016 B, C, D, E or F 
-    #       (both for legacy and ultra-legacy)
-    tags = ['Run2016B', 'Run2016C', 'Run2016D', 'Run2016E', 'Run2016F',
-	    'Summer20UL16MiniAODAPV']
+    #       (both for legacy and ultra-legacy) but note that is2016 is also true in those cases! 
+    tags = ['Run2016B', 'Run2016C', 'Run2016D', 'Run2016E', 'Run2016F', # data
+	    'Summer20UL16MiniAODAPV'] # UL simulation
     for tag in tags:
 	if tag in sample_path: return True
     return False
@@ -48,9 +53,9 @@ def is2016pre( sample_path ):
 def is2016post( sample_path ):
     # note: for simulation this is only true for ultra-legacy files from 2016 postVFP
     #       for data this is true if the era belongs to 2016 G or H 
-    #       (both for legacy and ultra-legacy)
-    tags = ['Run2016G', 'Run2016H',
-            'Summer20UL16MiniAOD']
+    #       (both for legacy and ultra-legacy) but not that is2016 is also true in those cases!
+    tags = ['Run2016G', 'Run2016H', # data
+            'Summer20UL16MiniAOD'] # UL simulation
     # need to check 2016pre first since overlapping names for simulation
     if is2016pre( sample_path ): return False
     # now check tags
@@ -61,12 +66,16 @@ def is2016post( sample_path ):
 def yearIdentifierFromPath( sample_path ):
     # return a year identifier string based on a sample path
     # (used in naming output directories)
+    # note on 2016: for simulation, this will give Summer16 for pre-UL, 
+    #		    Summer16PreVFP for UL preVFP, and Summer16PostVFP for UL VFP.
+    #		    for data, this will give Summer16 for all eras for pre-UL and UL.
     if is2018( sample_path ): return 'Autumn18'
     elif is2017( sample_path ): return 'Fall17'
     elif is2016( sample_path ): return 'Summer16'
     elif is2016pre( sample_path ): return 'Summer16PreVFP'
     elif is2016post( sample_path ): return 'Summer16PostVFP'
-    else: raise Exception('ERROR: could not identify year from sample {}'.format(sample_path))
+    else: raise Exception('ERROR: could not identify year from sample {}.'.format(sample_path)
+		    +' Check the naming conventions in skimmer/skimTuples.py!')
 
 
 if __name__ == '__main__' :
