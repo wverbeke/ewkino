@@ -16,12 +16,17 @@ Jet::Jet( const TreeReader& treeReader, const unsigned jetIndex,
         treeReader._jetEta[jetIndex], 
         treeReader._jetPhi[jetIndex], 
         treeReader._jetE[jetIndex] * ( treeReader._jetSmearedPt[jetIndex] / treeReader._jetPt[jetIndex] ),
-        treeReader.is2016PreVFP(), 
-	treeReader.is2016PostVFP(),
-        treeReader.is2017() 
+        treeReader.is2016(),
+	treeReader.is2016PreVFP(),
+	treeReader.is2016PostVFP(), 
+        treeReader.is2017(),
+	treeReader.is2018()
     ),
-    _deepCSV( treeReader._jetDeepCsv_b[jetIndex] + treeReader._jetDeepCsv_bb[jetIndex] ),
-    _deepFlavor( treeReader._jetDeepFlavor_b[jetIndex] + treeReader._jetDeepFlavor_bb[jetIndex] + treeReader._jetDeepFlavor_lepb[jetIndex] ),
+    _deepCSV( treeReader._jetDeepCsv_b[jetIndex] 
+		+ treeReader._jetDeepCsv_bb[jetIndex] ),
+    _deepFlavor( treeReader._jetDeepFlavor_b[jetIndex] 
+		+ treeReader._jetDeepFlavor_bb[jetIndex] 
+		+ treeReader._jetDeepFlavor_lepb[jetIndex] ),
     _isTight( treeReader._jetIsTight[jetIndex] ),
     _isTightLeptonVeto( treeReader._jetIsTightLepVeto[jetIndex] ),
 

@@ -1,16 +1,32 @@
 #include "../interface/PhysicsObject.h"
 
+PhysicsObject::PhysicsObject( double transverseMomentum, double pseudoRapidity, 
+				double azimuthalAngle, double energy, 
+				const bool objectIs2016,
+				const bool objectIs2016PreVFP,
+				const bool objectIs2016PostVFP,
+				const bool objectIs2017,
+				const bool objectIs2018 ) :
+    vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) )
+{
+    // check if at least one era boolean is true
+    if( !(objectIs2016 || objectIs2016PreVFP || objectIs2016PostVFP 
+	|| objectIs2017 || objectIs2018) ){
+	std::string msg = "ERROR in PhysicsObject constructor: no valid data taking year was found.";
+	throw std::runtime_error( msg );
+    }
+    is2016Object = objectIs2016;
+    is2016PreVFPObject = objectIs2016PreVFP;
+    is2016PostVFPObject = objectIs2016PostVFP;
+    is2017Object = objectIs2017;
+    is2018Object = objectIs2018;
+}
 
-PhysicsObject::PhysicsObject( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energy, const bool objectIs2016PreVFP, const bool objectIs2016PostVFP, const bool objectIs2017 ) :
-    vector( LorentzVector( transverseMomentum, pseudoRapidity, azimuthalAngle, energy ) ),
-    is2016PreVFPObject( objectIs2016PreVFP ),
-    is2016PostVFPObject( objectIs2016PostVFP ),
-    is2017Object( objectIs2017 )
-    {}
 
-
-void PhysicsObject::setLorentzVector( double transverseMomentum, double pseudoRapidity, double azimuthalAngle, double energyValue ){
-    *this = PhysicsObject( transverseMomentum, pseudoRapidity, azimuthalAngle, energyValue, is2016PreVFPObject, is2016PostVFPObject, is2017Object );
+void PhysicsObject::setLorentzVector( double transverseMomentum, double pseudoRapidity, 
+					double azimuthalAngle, double energyValue ){
+    *this = PhysicsObject( transverseMomentum, pseudoRapidity, azimuthalAngle, energyValue, 
+		is2016Object, is2016PreVFPObject, is2016PostVFPObject, is2017Object, is2018Object );
 }
 
 

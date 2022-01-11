@@ -29,17 +29,13 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
     _xSec = ( xSecString == "" ? 0 : std::stod( xSecString ) );
 
     setIsData();
-    //auto is2017Or2018 = analysisTools::fileIs2017Or2018( _fileName );
+
+    // set the correct year for this sample
+    _is2016 = analysisTools::fileIs2016( _fileName );
     _is2016PreVFP = analysisTools::fileIs2016PreVFP( _fileName );
     _is2016PostVFP = analysisTools::fileIs2016PostVFP( _fileName );
     _is2017 = analysisTools::fileIs2017( _fileName );
-    _is2018 = analysisTools::fileIs2018( _fileName );
-    // printouts for testing
-    /*std::cout << "Sample year:" << std::endl;
-    std::cout << "_is2016PreVFP: " << _is2016PreVFP << std::endl;
-    std::cout << "_is2016PostVFP: " << _is2016PostVFP << std::endl;
-    std::cout << "_is2017: " << _is2017 << std::endl;
-    std::cout << "_is2018: " << _is2018 << std::endl;*/
+    _is2018 = analysisTools::fileIs2018( _fileName ); 
 
     //unique name is equal to fileName without file extension
     _uniqueName = stringTools::fileNameWithoutExtension( _fileName );
@@ -66,13 +62,28 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
 }
 
 
-Sample::Sample( const std::string& directory, const std::string& fileName, const bool is2017, const bool is2018, const bool isData, const std::string& processName, const double xSec, const bool isSMSignal, const bool isNewPhysicsSignal ) :
+Sample::Sample( const std::string& directory,
+		const std::string& fileName, 
+		const bool is2016,
+		const bool is2016PreVFP,
+		const bool is2016PostVFP,
+		const bool is2017, 
+		const bool is2018, 
+		const bool isData, 
+		const std::string& processName, 
+		const double xSec, 
+		const bool isSMSignal, 
+		const bool isNewPhysicsSignal ) :
+    // manual initialization of Sample
     _fileName( fileName ),
     _directory( directory ),
     _uniqueName( stringTools::formatDirectoryName( _directory ) + _fileName ),
     _processName( processName ),
     _xSec( xSec ),
     _isData( isData ),
+    _is2016( is2016 ),
+    _is2016PreVFP( is2016PreVFP ),
+    _is2016PostVFP( is2016PostVFP ),
     _is2017( is2017 ),
     _is2018( is2018 ),
     _isSMSignal( isSMSignal ),
@@ -80,10 +91,24 @@ Sample::Sample( const std::string& directory, const std::string& fileName, const
 {}
 
 
-Sample::Sample( const std::string& pathToFile, const bool is2017, const bool is2018, const bool isData, const std::string& processName, const double xSec, const bool isSMSignal, const bool isNewPhysicsSignal ) :
+Sample::Sample( const std::string& pathToFile, 
+		const bool is2016,
+                const bool is2016PreVFP,
+                const bool is2016PostVFP,		
+		const bool is2017, 
+		const bool is2018, 
+		const bool isData, 
+		const std::string& processName, 
+		const double xSec, 
+		const bool isSMSignal, 
+		const bool isNewPhysicsSignal ) :
+    // same as above but extract directory and filename automatically from given path
     _processName( processName ),
     _xSec( xSec ),
     _isData( isData ),
+    _is2016( is2016 ),
+    _is2016PreVFP( is2016PreVFP ),
+    _is2016PostVFP( is2016PostVFP ),
     _is2017( is2017 ),
     _is2018( is2018 ),
     _isSMSignal( isSMSignal ),
@@ -95,6 +120,15 @@ Sample::Sample( const std::string& pathToFile, const bool is2017, const bool is2
     _uniqueName = stringTools::formatDirectoryName( _directory ) + _fileName;
 }
 
+
+std::string Sample::year() const{
+    if( _is2016 ) return "2016";
+    if( _is2016PreVFP ) return "2016PreVFP";
+    if( _is2016PostVFP ) return "2016PostVFP";
+    if( _is2017 ) return "2017";
+    if( _is2018 ) return "2018";
+    throw std::runtime_error("ERROR in Sample::year: no valid year was set for this sample.");
+}
 
 
 //check whether line in the sample list txt file should be read to build a Sample
@@ -165,7 +199,9 @@ void Sample::setOptions( const std::string& optionString ){
         throw std::invalid_argument( "Error in sample construction: sample is both SM and BSM signal!" );
     }
     
-    //check if sample needs to be used in different era it was intended for (i.e. 2016 sample when comparing to 2017 or 2018 data, or vice-versa)
+    // check if sample needs to be used in different era it was intended for 
+    // (i.e. 2016 sample when comparing to 2017 or 2018 data, or vice-versa)
+    // note: not yet updated to UL samples, not recommended to be used in that case!
     bool flag2016 = stringTools::stringContains( optionString, "forceIs2016" );
     bool flag2017 = stringTools::stringContains( optionString, "forceIs2017" );
     bool flag2018 = stringTools::stringContains( optionString, "forceIs2018" );
@@ -198,10 +234,10 @@ std::shared_ptr<TFile> Sample::filePtr() const{
 //print Sample info
 std::ostream& operator<<( std::ostream& os, const Sample& sam ){
     os << sam._processName << "\t" << 
-        sam._fileName << "\t" << 
-        sam._xSec << "\t" << 
+	sam._fileName << "\t" << 
+	sam._xSec << "\t" << 
         ( sam._isData ? "data" : "MC" ) << "\t" << 
-        ( sam.is2016() ? "Summer16" : ( sam._is2017 ? "Fall17" : "Autumn18" ) ) << 
+        ( sam.year() ) << 
         ( sam._isSMSignal ? "\tSM signal" : "" ) << 
         ( sam._isNewPhysicsSignal ? "\tBSM signal" : "" );
     return os;

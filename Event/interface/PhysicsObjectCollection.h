@@ -119,7 +119,9 @@ template< typename ObjectType > typename PhysicsObjectCollection< ObjectType >::
 
 
 template< typename ObjectType > PhysicsObject PhysicsObjectCollection< ObjectType >::objectSum() const{
-    PhysicsObject totalSystem( 0, 0, 0, 0 );
+    PhysicsObject totalSystem( 0, 0, 0, 0, 
+	(*this)[0].is2016(), (*this)[0].is2016PreVFP(), (*this)[0].is2016PostVFP(), 
+	(*this)[0].is2017(), (*this)[0].is2018() );
     for( const auto& objectPtr : *this ){
         totalSystem += *objectPtr;
     }

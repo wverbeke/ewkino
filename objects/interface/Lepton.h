@@ -16,7 +16,8 @@ template< typename ObjectType > class PhysicsObjectCollection;
 
 class Lepton : public PhysicsObject {
     
-    //The leptonCollection class represents a collection of leptons. Its base (PhysicsObjectCollection<Lepton>) should be a friend to be able to use clone().
+    // note: the LeptonCollection class represents a collection of leptons. 
+    //       its base (PhysicsObjectCollection<Lepton>) should be a friend to be able to use clone().
     friend class PhysicsObjectCollection<Lepton>;
     
     public: 

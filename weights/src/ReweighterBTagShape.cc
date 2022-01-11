@@ -118,6 +118,9 @@ ReweighterBTagShape::ReweighterBTagShape(   const std::string& weightDirectory,
     std::string fitMethod = "iterativefit";
 
     // calibrate the reader
+    // note: this part can be commented out for quicker testing!
+    //	     in that case, make sure to also comment out the bTagSFReader->eval_auto_bounds call below
+    //	     and return a default value instead!
     std::cout << "reading requested scale factors from csv file..." << std::endl;
     bTagSFCalibration = std::shared_ptr< BTagCalibration >( 
 	new BTagCalibration( "", stringTools::formatDirectoryName(weightDirectory)+sfFilePath ) );
@@ -242,6 +245,19 @@ double ReweighterBTagShape::getNormFactor( const Event& event,
 	    + "ReweighterBTagShape got event for which no norm factor could be retrieved.");
 }
 
+std::map<std::string,std::map<int,double>> ReweighterBTagShape::getNormFactors() const{
+    return _normFactors;
+}
+
+void ReweighterBTagShape::printNormFactors() const{
+    for( auto el: _normFactors ){
+        std::cout << el.first << ": " << std::endl;
+        for( auto el2: el.second ){
+            std::cout << " - " << el2.first << " -> " << el2.second << std::endl;
+        }
+    }
+}
+
 
 /// member functions for weights ///
 
@@ -278,7 +294,7 @@ double ReweighterBTagShape::weight( const Jet& jet, const std::string& variation
     // this page recommends to use absolute value of eta, but BTagCalibrationStandalone.cc
     // seems to handle negative values of eta more correctly (only taking abs when needed)
     double scaleFactor = bTagSFReader->eval_auto_bounds( sys, jetFlavorEntry( jet ),
-					jet.eta(), jet.pt(), bTagScore );
+    					jet.eta(), jet.pt(), bTagScore );
     return scaleFactor;
 }
 

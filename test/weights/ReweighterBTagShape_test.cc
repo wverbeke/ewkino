@@ -7,38 +7,52 @@ Test script for b-tag shape reweighter
 #include "../../Event/interface/Event.h"
 #include "../../Tools/interface/Sample.h"
 #include "../../Tools/interface/HistInfo.h"
+#include "../../Tools/interface/stringTools.h"
 
 
 int main( int argc, char* argv[] ){
 
-    int nargs = 2;
+    int nargs = 3;
     if( argc != nargs+1 ){
         std::cerr << "### ERROR ###: ReweighterBTagShape_test.cc requires " << nargs;
 	std::cerr << " arguments to run:" << std::endl;
-        std::cerr << "- path to input file" << std::endl;
+	std::cerr << "- directory of input file(s)" << std::endl;
+        std::cerr << "- name of input file (.root) OR samplelist (.txt)" << std::endl;
 	std::cerr << "- number of events (use 0 for all events)" << std::endl;
         return -1;
     }
 
     // parse arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-    std::string& inputFilePath = argvStr[1];
-    long unsigned nEvents = std::stoul(argvStr[2]);
+    std::string& inputDirectory = argvStr[1];
+    std::string& sampleList = argvStr[2];
+    long unsigned nEvents = std::stoul(argvStr[3]);
 
     // read the input file
     TreeReader treeReader;
-    treeReader.initSampleFromFile( inputFilePath );
-    long unsigned numberOfEntries = treeReader.numberOfEntries();
-    if( nEvents==0 ) nEvents = numberOfEntries;
-    else nEvents = std::min(nEvents, numberOfEntries);
-    std::cout << "will use sample " << inputFilePath;
-    std::cout << " (contains " << numberOfEntries << " events";
-    std::cout << " of which " << nEvents << " will be used)" << std::endl;
+    std::vector<Sample> samples;
+    bool modeSampleList = false;
+    // case 1: single input file
+    if( stringTools::stringEndsWith(sampleList, ".root") ){
+	std::string inputFilePath = stringTools::formatDirectoryName(inputDirectory)+sampleList;
+	treeReader.initSampleFromFile( inputFilePath );
+	samples.push_back( treeReader.currentSample() );
+    }
+    // case 2: samplelist
+    else if( stringTools::stringEndsWith(sampleList, ".txt") ){
+	treeReader.readSamples( sampleList, inputDirectory );
+	samples = treeReader.sampleVector();
+	modeSampleList = true;
+    }
+    std::cout << "will use the following samples:" << std::endl;
+    for( Sample sample: samples ) std::cout << "- " << sample.fileName() << std::endl;
+
+    // initialize year from first sample
+    // note: in this simple test no check is done to assure all samples in the list are of same year!
+    if( modeSampleList ) treeReader.initSample();
     std::string year = "2016";
     if(treeReader.is2017()) year = "2017";
     if(treeReader.is2018()) year = "2018";
-    std::vector<Sample> thisSample;
-    thisSample.push_back( treeReader.currentSample() );
 
     // initialize some histograms
     HistInfo histInfo = HistInfo( "", "b-tag reweighting factor", 50, 0.5, 1.5 );
@@ -60,32 +74,40 @@ int main( int argc, char* argv[] ){
                                         "lfstats1","lfstats2","cferr1","cferr2" };
     // step 3: make the reweighter
     std::shared_ptr<ReweighterBTagShape> reweighterBTagShape = std::make_shared<ReweighterBTagShape>(
-	    weightDirectory, sfFilePath, flavor, bTagAlgo, variations, thisSample );
+	    weightDirectory, sfFilePath, flavor, bTagAlgo, variations, samples );
 
     // === loop over events and calculate: ===
     // - distribution of reweighting factors (to see if they are within reasonable bounds)
     // - average of reweighting factors per jet multiplicity bin (to check normalization later on)
     std::map< int, double > averageOfWeights;
     std::map< int, int > nEntries;
-    std::cout << "starting event loop for " << nEvents << " events..." << std::endl;
-    for( long unsigned entry = 0; entry < nEvents; ++entry ){
-	if(entry%10000 == 0) std::cout<<"processed: "<<entry<<" of "<<nEvents<<std::endl;
-        Event event = treeReader.buildEvent( entry );
-        // do basic jet cleaning
-        event.cleanJetsFromFOLeptons();
-        event.jetCollection().selectGoodJets();
-        // determine (nominal) b-tag reweighting and number of jets
-        double btagreweight = reweighterBTagShape->weight( event );
-        int njets = event.jetCollection().goodJetCollection().size();
-        // add it to the map
-        if(averageOfWeights.find(njets)==averageOfWeights.end()){
-            averageOfWeights[njets] = btagreweight;
-            nEntries[njets] = 1; }
-        else{
-            averageOfWeights[njets] += btagreweight;
-            nEntries[njets] += 1; }
-	// fill the histogram
-	bWeightDistPreNorm->Fill( btagreweight );
+    unsigned numberOfSamples = samples.size();
+    for( unsigned i = 0; i < numberOfSamples; ++i ){
+	std::cout<<"start processing sample n. "<<i+1<<" of "<<numberOfSamples<<std::endl;
+        if( modeSampleList ) treeReader.initSample( samples[i] );
+	long unsigned numberOfEntries = treeReader.numberOfEntries();
+	if( nEvents==0 ) nEvents = numberOfEntries;
+	else nEvents = std::min(nEvents, numberOfEntries);
+	std::cout << "starting event loop for " << nEvents << " events..." << std::endl;
+	for( long unsigned entry = 0; entry < nEvents; ++entry ){
+	    if(entry%10000 == 0) std::cout<<"processed: "<<entry<<" of "<<nEvents<<std::endl;
+	    Event event = treeReader.buildEvent( entry );
+	    // do basic jet cleaning
+	    event.cleanJetsFromFOLeptons();
+	    event.jetCollection().selectGoodJets();
+	    // determine (nominal) b-tag reweighting and number of jets
+	    double btagreweight = reweighterBTagShape->weight( event );
+	    int njets = event.jetCollection().goodJetCollection().size();
+	    // add it to the map
+	    if(averageOfWeights.find(njets)==averageOfWeights.end()){
+		averageOfWeights[njets] = btagreweight;
+		nEntries[njets] = 1; }
+	    else{
+		averageOfWeights[njets] += btagreweight;
+		nEntries[njets] += 1; }
+	    // fill the histogram
+	    bWeightDistPreNorm->Fill( btagreweight );
+	}
     }
     // divide sum by number to get average
     for( std::map<int,double>::iterator it = averageOfWeights.begin();
@@ -98,26 +120,39 @@ int main( int argc, char* argv[] ){
             it != averageOfWeights.end(); ++it){
         std::cout << "njets: " << it->first << "-> average: " << it->second << std::endl;
     }
+    std::cout << "norm factors of b-tag reweighter before initialization: " << std::endl;
+    reweighterBTagShape->printNormFactors();
 
-    // === do normalization and re-loop ===
-    reweighterBTagShape->initialize( thisSample, nEvents );
+    // === do normalization ===
+    reweighterBTagShape->initialize( samples, nEvents );
+    std::cout << "norm factors of b-tag reweighter after initialization: " << std::endl;
+    reweighterBTagShape->printNormFactors();
+
+    // === re-loop ===
     std::map< int, double > averageOfWeightsPostNorm;
-    std::cout << "starting event loop for " << nEvents << " events..." << std::endl;
-    for( long unsigned entry = 0; entry < nEvents; ++entry ){
-        Event event = treeReader.buildEvent( entry );
-        // do basic jet cleaning
-        event.cleanJetsFromFOLeptons();
-        event.jetCollection().selectGoodJets();
-        // determine (nominal) b-tag reweighting and number of jets
-        double btagreweight = reweighterBTagShape->weight( event );
-        int njets = event.jetCollection().goodJetCollection().size();
-        // add it to the map
-        if(averageOfWeightsPostNorm.find(njets)==averageOfWeightsPostNorm.end()){
-            averageOfWeightsPostNorm[njets] = btagreweight; }
-        else{
-            averageOfWeightsPostNorm[njets] += btagreweight; }
-	// fill the histogram
-        bWeightDistPostNorm->Fill( btagreweight );
+    for( unsigned i = 0; i < numberOfSamples; ++i ){
+        std::cout<<"start processing sample n. "<<i+1<<" of "<<numberOfSamples<<std::endl;
+        if(modeSampleList ) treeReader.initSample( samples[i] );
+        long unsigned numberOfEntries = treeReader.numberOfEntries();
+        if( nEvents==0 ) nEvents = numberOfEntries;
+        else nEvents = std::min(nEvents, numberOfEntries);
+	std::cout << "starting event loop for " << nEvents << " events..." << std::endl;
+	for( long unsigned entry = 0; entry < nEvents; ++entry ){
+	    Event event = treeReader.buildEvent( entry );
+	    // do basic jet cleaning
+	    event.cleanJetsFromFOLeptons();
+	    event.jetCollection().selectGoodJets();
+	    // determine (nominal) b-tag reweighting and number of jets
+	    double btagreweight = reweighterBTagShape->weight( event );
+	    int njets = event.jetCollection().goodJetCollection().size();
+	    // add it to the map
+	    if(averageOfWeightsPostNorm.find(njets)==averageOfWeightsPostNorm.end()){
+		averageOfWeightsPostNorm[njets] = btagreweight; }
+	    else{
+		averageOfWeightsPostNorm[njets] += btagreweight; }
+	    // fill the histogram
+	    bWeightDistPostNorm->Fill( btagreweight );
+	}
     }
     // divide sum by number to get average
     for( std::map<int,double>::iterator it = averageOfWeightsPostNorm.begin();

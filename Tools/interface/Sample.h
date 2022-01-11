@@ -24,15 +24,38 @@ class Sample{
         Sample( const std::string& line, const std::string& directory ); 
         Sample( std::istream&, const std::string& directory ); 
 
-        //initialize manually
-        Sample( const std::string& directory, const std::string& fileName, const bool is2017, const bool is2018, const bool isData, const std::string& processName = "", const double xSec = 1., const bool isSMSignal = false, const bool isNewPhysicsSignal = false );
-        Sample( const std::string& pathToFile, const bool is2017, const bool is2018, const bool isData, const std::string& processName = "", const double xSec = 1., const bool isSMSignal = false, const bool isNewPhysicsSignal = false );
+        // initialize manually
+        Sample( const std::string& directory, 
+		const std::string& fileName, 
+		const bool is2016,
+                const bool is2016PreVFP,
+                const bool is2016PostVFP,
+		const bool is2017, 
+		const bool is2018, 
+		const bool isData, 
+		const std::string& processName = "", 
+		const double xSec = 1., 
+		const bool isSMSignal = false, 
+		const bool isNewPhysicsSignal = false );
+        Sample( const std::string& pathToFile, 
+		const bool is2016,
+                const bool is2016PreVFP,
+                const bool is2016PostVFP,
+		const bool is2017, 
+		const bool is2018, 
+		const bool isData, 
+		const std::string& processName = "", 
+		const double xSec = 1., 
+		const bool isSMSignal = false, 
+		const bool isNewPhysicsSignal = false );
 
         std::string fileName() const { return _fileName; }
         std::string processName() const { return _processName; } 
-	std::string filePath() const { return _directory+"/"+_fileName; }   
+	std::string filePath() const { return _directory+"/"+_fileName; }
+	std::string year() const;
  
-        //to prevent overlapping file names when re-using a sample in both the 2016 and 2017 data lists 
+        // to prevent overlapping file names 
+	// (e.g. when re-using a sample in different sample lists)
         std::string uniqueName() const { return _uniqueName; }
 
         double xSec() const { return _xSec; }
@@ -40,9 +63,9 @@ class Sample{
         bool isData() const { return _isData; }
         bool isMC() const { return !_isData; }
 
-        bool is2016() const { return ( _is2016PreVFP || _is2016PostVFP ); }
-	bool is2016PreVFP() const { return _is2016PreVFP; }
-	bool is2016PostVFP() const { return _is2016PostVFP; }
+        bool is2016() const { return _is2016; }
+	bool is2016PreVFP() const{ return _is2016PreVFP; }
+	bool is2016PostVFP() const{ return _is2016PostVFP; }
         bool is2017() const { return _is2017; }
         bool is2018() const{ return _is2018; }
 
@@ -62,6 +85,7 @@ class Sample{
 
         double _xSec;
         bool _isData;
+	bool _is2016;
 	bool _is2016PreVFP;
 	bool _is2016PostVFP;
         bool _is2017;

@@ -29,8 +29,12 @@ bool ElectronSelector::isLooseBase() const{
 }
 
 
+bool ElectronSelector::isLoose2016() const{
+    return true;
+}
 
-bool ElectronSelector::isLoose2016PreVFP() const{ 
+
+bool ElectronSelector::isLoose2016PreVFP() const{
     return true;
 }
 
@@ -66,6 +70,16 @@ bool ElectronSelector::isFOBase() const{
     }
     if( !electronPtr->passConversionVeto() ) return false;
     if( !electronPtr->passChargeConsistency() ) return false;
+    return true;
+}
+
+
+bool ElectronSelector::isFO2016() const{
+    if( electronPtr->leptonMVATOP() <= leptonMVACutElectron() ){
+        if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
+    }
     return true;
 }
 
@@ -147,7 +161,7 @@ bool ElectronSelector::isTightBase() const{
 }
 
 
-bool ElectronSelector::isTight2016PreVFP() const{
+bool ElectronSelector::isTight2016() const{
     return true;
 }
 
