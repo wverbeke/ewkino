@@ -271,7 +271,10 @@ class TreeReader {
         //initialize the current sample directly from a root file
         //always reset triggers instead of rare case of combining primary datasets
 	// to prevent invalidating addresses set by setOutputTree
-        void initSampleFromFile( const std::string& pathToFile, 
+        void initSampleFromFile( const std::string& pathToFile,
+				 const bool is2016, 
+				 const bool is2016PreVFP, 
+				 const bool is2016PostVFP,
 				 const bool is2017, const bool is2018, 
 				 const bool resetTriggersAndFilters = true );
         void initSampleFromFile( const std::string& pathToFile, 
@@ -306,6 +309,8 @@ class TreeReader {
 
         //check which year the current sample belongs to
         bool is2016() const;
+	bool is2016PreVFP() const;
+	bool is2016PostVFP() const;
         bool is2017() const;
         bool is2018() const;
 
