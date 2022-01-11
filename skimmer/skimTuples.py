@@ -64,8 +64,8 @@ def yearIdentifierFromPath( sample_path ):
     if is2018( sample_path ): return 'Autumn18'
     elif is2017( sample_path ): return 'Fall17'
     elif is2016( sample_path ): return 'Summer16'
-    elif is2016pre( sample_path ): return 'Summer16pre'
-    elif is2016post( sample_path ): return 'Summer16post'
+    elif is2016pre( sample_path ): return 'Summer16PreVFP'
+    elif is2016post( sample_path ): return 'Summer16PostVFP'
     else: raise Exception('ERROR: could not identify year from sample {}'.format(sample_path))
 
 
