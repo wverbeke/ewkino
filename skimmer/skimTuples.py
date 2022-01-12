@@ -1,6 +1,10 @@
 ###################
 # skim all tuples #
 ###################
+# note: the main function has not been used / updated since some time
+#       (for example it is not updated to use condor instead of qsub),
+#       since skimTuplesFromList.py was used instead, 
+#       using a sample list instead of skimming all tuples in an input directory
 
 # import python library classes
 import os
