@@ -19,7 +19,7 @@ runmode = 'condor'
 testrun = False
 # (does not overwrite runmode, 
 # only changes number of samples and number of events per sample to small values)
-samplelistdirectory = os.path.abspath('sampleListsNew')
+samplelistdirectory = os.path.abspath('sampleListsPreUL')
 # (see also below to set correct sample list name in the loop!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate' 
 

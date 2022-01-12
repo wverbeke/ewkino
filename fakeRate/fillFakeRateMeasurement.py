@@ -19,7 +19,7 @@ flavours = ['muon','electron']
 runmode = 'local'
 # (choose 'qsub', 'condor' or 'local')
 testrun = True
-samplelistdirectory = os.path.abspath('sampleListsNew')
+samplelistdirectory = os.path.abspath('sampleListsPreUL')
 # (see also below in loop to set the correct sample list name per flavour/year!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'
 
