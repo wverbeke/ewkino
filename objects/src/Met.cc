@@ -3,7 +3,9 @@
 
 Met::Met( const TreeReader& treeReader,
 	    const bool readAllJECVariations, const bool readGroupedJECVariations ):
-    PhysicsObject( treeReader._met, 0., treeReader._metPhi, treeReader._met ),
+    PhysicsObject( treeReader._met, 0., treeReader._metPhi, treeReader._met,
+		    treeReader.is2016(), treeReader.is2016PreVFP(), treeReader.is2016PostVFP(),
+		    treeReader.is2017(), treeReader.is2018() ),
     _pt_JECDown( treeReader._met_JECDown ), 
     _phi_JECDown( treeReader._metPhi_JECDown ),
     _pt_JECUp( treeReader._met_JECUp ),

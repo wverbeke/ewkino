@@ -112,10 +112,26 @@ Color_t bkgColorHNL(const std::string& bkgName){
 }
 
 
-//FIND WAY TO RESET THE COUNTER AFTER EVERY PLOT SO THAT COLOR ORDERING IS CONSISTENT!!
+Color_t bkgColorFakeRate(const std::string bkgName){
+    // return colors for prescale/fake-rate measurement plots
+    // separate processes
+    if(bkgName=="WJets" || bkgName=="WJets_prompt") return kAzure + 1;
+    else if(bkgName=="TT" || bkgName=="TT_prompt") return kCyan + 1;
+    else if(bkgName=="DY" || bkgName=="DY_prompt") return kBlue + 1;
+    else if(bkgName=="VV" || bkgName=="VV_prompt") return kCyan - 7;
+    else if(bkgName=="QCD" || bkgName=="QCD_nonprompt") return kRed -7;
+    else if(bkgName=="other" || bkgName=="other_nonprompt") return kRed + 1;
+    // grouped
+    else if(bkgName=="prompt") return kAzure + 1;
+    else if(bkgName=="nonprompt") return kMagenta - 7;
+    else return kBlack;    
+}
+
+
 Color_t bkgColorGeneral(const bool reset = false){
     static unsigned counter = 0;
-    static const Color_t colors[9] = { kMagenta -7 , kBlue + 1, kRed - 7, kGreen - 7, kMagenta + 3, kAzure + 1, kOrange + 6, kCyan + 1,kBlue -3 };
+    static const Color_t colors[9] = { kMagenta -7 , kBlue + 1, kRed - 7, 
+		    kGreen - 7, kMagenta + 3, kAzure + 1, kOrange + 6, kCyan + 1,kBlue -3 };
     if(!reset){
         Color_t output = colors[counter];
         ++counter;
@@ -135,6 +151,8 @@ Color_t bkgColor(const std::string& bkgName, const std::string& analysis){
         return bkgColorHNL(bkgName);
     } else if(analysis == "ewkinoDilep"){
         return bkgColorEWKDilept(bkgName);
+    } else if(analysis == "fakerate"){
+	return bkgColorFakeRate(bkgName);
     } else{
         return bkgColorGeneral();
     }
@@ -629,30 +647,57 @@ void plotHistograms(std::vector<TH1D*>& histos, const std::string* names, const 
 }
 
 
-void plot2DHistogram( TH2D* hist, const std::string& outputFileName, const std::string& drawOption ){
+void plot2DHistogram( TH2D* hist, const std::string& outputFileName,
+			const std::string& title,
+			const std::string& drawOption,
+			double aspectRatio ){
     
-    //threading lock since root seems to misbehave when plotting multithreaded!
-    //is there a lockless solution for this? Try to find out!
+    // threading lock since root seems to misbehave when plotting multithreaded!
+    // is there a lockless solution for this? Try to find out!
     static std::mutex plotMutex;
-    //initializeTDRStyle();
-
+    initializeTDRStyle();
     plotMutex.lock();
-    static constexpr double width = 500;
-    static constexpr double height = 500;
-    std::shared_ptr< TCanvas > c = std::make_shared< TCanvas >( outputFileName.c_str(), outputFileName.c_str(), width, height );
+    
+    // initializations
+    static double width = 500*aspectRatio;
+    static double height = 500;
+    std::shared_ptr< TCanvas > c = std::make_shared< TCanvas >( 
+	outputFileName.c_str(), outputFileName.c_str(), width, height );
 
-    //set offset and label size 
-    hist->GetXaxis()->SetTitleOffset( 0.75 );
-	hist->GetXaxis()->SetTitleSize( 0.07 );
+    // set offset and label size
+    // (axis titles are taken from the histogram)
+    hist->GetXaxis()->SetTitleOffset( 1 );
+    hist->GetXaxis()->SetTitleSize( 0.05 );
     hist->GetYaxis()->SetTitleOffset( 1 );
-    hist->GetYaxis()->SetTitleSize( 0.07 );
+    hist->GetYaxis()->SetTitleSize( 0.05 );
 
+    // set margins
+    c->SetTopMargin(0.15);
+    c->SetBottomMargin(0.15);
+    c->SetLeftMargin(0.15);
+    c->SetRightMargin(0.2);
+
+    // draw the histogram
     hist->Draw( drawOption.c_str() );
 
-    //make sure that the pdf file extension is always added, and not double added in case it was given as an argument
+    // add the title
+    if( title.size()>0 ){
+	TLatex ttitle = TLatex();
+	ttitle.SetTextFont(42);
+	ttitle.SetTextSize(0.05);
+	ttitle.DrawLatexNDC( 0.15, 0.9, title.c_str() );
+    }
+
+    // save the figure 
+    // (make sure that the pdf file extension is always added, 
+    // and not double added in case it was given as an argument)
+    c->Update();
     std::string outputPath = stringTools::fileNameWithoutExtension( outputFileName ) + ".pdf";
     c->SaveAs( outputPath.c_str() );
+    // also save as png
+    outputPath = stringTools::fileNameWithoutExtension( outputFileName ) + ".png";
+    c->SaveAs( outputPath.c_str() );
 
+    // unlock
     plotMutex.unlock();
 }
-

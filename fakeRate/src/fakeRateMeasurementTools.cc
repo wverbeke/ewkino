@@ -70,16 +70,20 @@ void write2DHistogramMap( const RangedMap< RangedMap< std::shared_ptr< TH1D > > 
 void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const std::string& year, 
     const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,
     const std::vector< std::string >& triggerVector, 
-    const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet){ 
+    const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet,
+    const bool isTestRun ){ 
  
     std::cout<<"start function fillFakeRateMeasurementHistograms"<<std::endl;
 
     progressTracker progress = progressTracker("fillFakeRateMeasurement_progress_"+year+"_"
                                 +leptonFlavor+"_sample_"+std::to_string(sampleIndex)+".txt");
 
+    // initialize flavor and year
     fakeRate::checkFlavorString( leptonFlavor );
     bool isMuonMeasurement = ( leptonFlavor == "muon" );
     analysisTools::checkYearString( year );
+
+    // check if all triggers have a prescale defined
     for( const auto& trigger : triggerVector ){
         if( prescaleMap.find( trigger ) == prescaleMap.end() ){
 	    std::string errorm("Given vector of triggers contains triggers");
@@ -109,33 +113,35 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
         treeReader.initSample();
     }
 
-    unsigned numberOfMTBins = 16; 
-    HistInfo mtHistInfo( "mT", "m_{T}( GeV )", numberOfMTBins, 0., 160. );
-
-    std::cout<<"start building histogram maps"<<std::endl;
-
     // make histogram maps
+    std::cout<<"start building histogram maps"<<std::endl;
+    unsigned numberOfMTBins = 16;
+    HistInfo mtHistInfo( "mT", "m_{T}( GeV )", numberOfMTBins, 0., 160. );
     RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_numerator_map = build2DHistogramMap( 
 	ptBinBorders, etaBinBorders, mtHistInfo, 
-	treeReader.currentSamplePtr()->processName() + "_prompt_numerator_mT_" + year + "_" + leptonFlavor );
+	treeReader.currentSamplePtr()->processName() + "_prompt_numerator_mT_" 
+	+ year + "_" + leptonFlavor );
     RangedMap< RangedMap< std::shared_ptr< TH1D > > > prompt_denominator_map = build2DHistogramMap( 
 	ptBinBorders, etaBinBorders, mtHistInfo, 
-	treeReader.currentSamplePtr()->processName() + "_prompt_denominator_mT_" + year + "_" + leptonFlavor );
+	treeReader.currentSamplePtr()->processName() + "_prompt_denominator_mT_" 
+	+ year + "_" + leptonFlavor );
     RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_numerator_map = build2DHistogramMap( 
 	ptBinBorders, etaBinBorders, mtHistInfo, 
-	treeReader.currentSamplePtr()->processName() + "_nonprompt_numerator_mT_" + year + "_" + leptonFlavor );
+	treeReader.currentSamplePtr()->processName() + "_nonprompt_numerator_mT_" 
+	+ year + "_" + leptonFlavor );
     RangedMap< RangedMap< std::shared_ptr< TH1D > > > nonprompt_denominator_map = build2DHistogramMap( 
 	ptBinBorders, etaBinBorders, mtHistInfo, 
-	treeReader.currentSamplePtr()->processName() + "_nonprompt_denominator_mT_" + year + "_" + leptonFlavor );
+	treeReader.currentSamplePtr()->processName() + "_nonprompt_denominator_mT_" 
+	+ year + "_" + leptonFlavor );
     RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_numerator_map = build2DHistogramMap( 
 	ptBinBorders, etaBinBorders, mtHistInfo, "data_numerator_mT_" + year + "_" + leptonFlavor);
     RangedMap< RangedMap< std::shared_ptr< TH1D > > > data_denominator_map = build2DHistogramMap( 
 	ptBinBorders, etaBinBorders, mtHistInfo, "data_denominator_mT_" + year + "_" + leptonFlavor );
 
     
+    // do some pt-to-trigger matching
     RangedMap< std::string > leptonPtToTriggerMap = fakeRate::mapLeptonPtToTriggerName( 
 						    triggerVector, isMuonMeasurement );
-
     std::map< double, std::string > conePtLowerBoundMap;
     for( auto it = leptonPtToTriggerMap.cbegin(); it != leptonPtToTriggerMap.cend(); ++it ){
         double conePtBound;
@@ -147,42 +153,44 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
         conePtLowerBoundMap[ conePtBound ] = it->second;
     }
     RangedMap< std::string > conePtToTriggerMap( conePtLowerBoundMap );
-
     std::map<std::string,double> triggerToJetPtMap = fakeRate::mapTriggerToJetPtThreshold(triggerVector);
     
+    // initialize a reweighter
     std::cout<<"building reweighter"<<std::endl;
-    std::shared_ptr< ReweighterFactory >reweighterFactory( new EwkinoReweighterFactory() );
+    std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, 
 					thissample );
 
+    // loop over sample entries
     long unsigned numberOfEntries = treeReader.numberOfEntries();
+    if( isTestRun ) numberOfEntries = 10000;
     std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
     for(long unsigned entry=0; entry<numberOfEntries; ++entry){
-
 	if( entry%50000 == 0 ) progress.writeProgress( static_cast<double>(entry)/numberOfEntries );
 
 	Event event = treeReader.buildEvent( entry, true, false );
 
-	// apply MET filters (not included in passFakeRateEventSelection!)
+	// apply MET filters
 	if( !event.passMetFilters() ) continue; 
 
 	// apply event selection
 	if( !fakeRate::passFakeRateEventSelection( event, isMuonMeasurement, 
 		!isMuonMeasurement, false, true, 0.7, 30 ) ) continue;
-
         LightLepton& lepton = event.lightLepton( 0 );
-
 	if( lepton.pt() < 10 ) continue;
 
 	const double pTFix = 35.;
-        PhysicsObject leptonFix( pTFix, lepton.eta(), lepton.phi(), lepton.energy() );
+        PhysicsObject leptonFix( pTFix, lepton.eta(), lepton.phi(), lepton.energy(),
+				    lepton.is2016(), lepton.is2016PreVFP(), lepton.is2016PostVFP(),
+				    lepton.is2017(), lepton.is2018() );
         double mT = mt( leptonFix, event.met() );
 
 	if( mT >= maxMT ) continue;
         if( event.metPt() >= maxMet ) continue;
 
+	// check if event passes correct trigger and jet selection
 	std::string triggerToUse = conePtToTriggerMap[ lepton.pt() ];
         if( !event.passTrigger( triggerToUse ) ) continue;
 	if( !fakeRate::passTriggerJetSelection( event, triggerToUse, triggerToJetPtMap ) ) continue;
@@ -232,6 +240,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
         }
     }
 
+    // write output file
     progress.close();
     std::cout<<"finished event loop"<<std::endl;
     std::string file_name = "fakeRateMeasurement_data_" + leptonFlavor + "_" + year;
@@ -252,6 +261,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     histogram_file->Close();
     std::cout<<"finished function fillFakeRateMeasurementHistograms"<<std::endl;
 }  
+
 
 void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::string& year, 
 					    const std::string& sampleDirectory, 
@@ -292,34 +302,48 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
 
     // initialize 1D histograms for light and heavy flavour fake rate separately
     // (can be a useful tool to check if they are approximately equal, but not used further)
+    // extension: split heavy flavour in b- and c-flavoured partons for more detailed diagnostics
     unsigned nbins = 10;
     double ptlow = 10.;
     double pthigh = 70.;
-    numerator_name = "fakeRate_numerator_heavyflavor_" + flavor + "_" + year;
-    std::shared_ptr< TH1D > heavynumeratorMap(
+    numerator_name = "fakeRate_numerator_bflavor_" + flavor + "_" + year;
+    std::shared_ptr< TH1D > bflavorNumerator(
         new TH1D(   numerator_name.c_str(), ( numerator_name+ "; p_{T} (GeV)").c_str(),
                     nbins, ptlow, pthigh)
     );
-    heavynumeratorMap->Sumw2();
-    denominator_name = "fakeRate_denominator_heavyflavor_" + flavor + "_" + year;
-    std::shared_ptr< TH1D > heavydenominatorMap(
+    bflavorNumerator->Sumw2();
+    denominator_name = "fakeRate_denominator_bflavor_" + flavor + "_" + year;
+    std::shared_ptr< TH1D > bflavorDenominator(
         new TH1D(   denominator_name.c_str(), denominator_name.c_str(),
                     nbins, ptlow, pthigh)
     );
-    heavydenominatorMap->Sumw2();
+    bflavorDenominator->Sumw2();
+
+    numerator_name = "fakeRate_numerator_cflavor_" + flavor + "_" + year;
+    std::shared_ptr< TH1D > cflavorNumerator(
+        new TH1D(   numerator_name.c_str(), ( numerator_name+ "; p_{T} (GeV)").c_str(),
+                    nbins, ptlow, pthigh)
+    );
+    cflavorNumerator->Sumw2();
+    denominator_name = "fakeRate_denominator_cflavor_" + flavor + "_" + year;
+    std::shared_ptr< TH1D > cflavorDenominator(
+        new TH1D(   denominator_name.c_str(), denominator_name.c_str(),
+                    nbins, ptlow, pthigh)
+    );
+    cflavorDenominator->Sumw2();
 
     numerator_name = "fakeRate_numerator_lightflavor_" + flavor + "_" + year;
-    std::shared_ptr< TH1D > lightnumeratorMap(
+    std::shared_ptr< TH1D > lightNumerator(
         new TH1D(   numerator_name.c_str(), ( numerator_name+ "; p_{T} (GeV)").c_str(),
                     nbins, ptlow, pthigh)
     );
-    lightnumeratorMap->Sumw2();
+    lightNumerator->Sumw2();
     denominator_name = "fakeRate_denominator_lightflavor_" + flavor + "_" + year;
-    std::shared_ptr< TH1D > lightdenominatorMap(
+    std::shared_ptr< TH1D > lightDenominator(
         new TH1D(   denominator_name.c_str(), denominator_name.c_str(),
                     nbins, ptlow, pthigh)
     );
-    lightdenominatorMap->Sumw2();
+    lightDenominator->Sumw2();
 
     // make TreeReader and set to correct sample
     std::cout<<"making TreeReader and setting to sample no. "<<sampleIndex<<"."<<std::endl;
@@ -382,16 +406,22 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
             histogram::fillValues(numeratorMap.get(), lepton.pt(), lepton.absEta(), weight );
         }
     
-	// fill heavy flavour 1D histograms
-	if(lepton.provenanceCompressed()==1 || lepton.provenanceCompressed()==2){
-	    heavydenominatorMap.get()->Fill(lepton.pt(), weight);
-	    if(lepton.isTight()) heavynumeratorMap.get()->Fill(lepton.pt(), weight);
+	// fill b-flavour 1D histograms
+	if(lepton.provenanceCompressed()==1){
+	    bflavorDenominator->Fill(lepton.pt(), weight);
+	    if(lepton.isTight()) bflavorNumerator->Fill(lepton.pt(), weight);
 	}
+
+	// fill c-flavour 1D histograms
+	else if(lepton.provenanceCompressed()==2){
+            cflavorDenominator->Fill(lepton.pt(), weight);
+            if(lepton.isTight()) cflavorNumerator->Fill(lepton.pt(), weight);
+        }
 
 	// fill light flavour 1D histograms
 	else{
-	    lightdenominatorMap.get()->Fill(lepton.pt(), weight);
-            if(lepton.isTight()) lightnumeratorMap.get()->Fill(lepton.pt(), weight);
+	    lightDenominator->Fill(lepton.pt(), weight);
+            if(lepton.isTight()) lightNumerator->Fill(lepton.pt(), weight);
 	}
     }
 
@@ -404,10 +434,12 @@ void fillMCFakeRateMeasurementHistograms( const std::string& flavor, const std::
     numeratorMap->Write();
     denominatorMap->Write();
 
-    heavynumeratorMap->Write();
-    heavydenominatorMap->Write();
-    lightnumeratorMap->Write();
-    lightdenominatorMap->Write();
+    bflavorNumerator->Write();
+    bflavorDenominator->Write();
+    cflavorNumerator->Write();
+    cflavorDenominator->Write();
+    lightNumerator->Write();
+    lightDenominator->Write();
 
     histogram_file->Close();
     std::cout<<"finished function fillMCFakeRateMeasurementHistograms"<<std::endl;

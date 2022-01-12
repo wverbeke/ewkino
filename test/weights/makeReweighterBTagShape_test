@@ -1,13 +1,12 @@
-CC=g++ -Wall -Wextra -O3
+CC=g++ -Wall -Wextra 
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= fitFakeRateMeasurement.cc src/*.cc ../codeLibrary.o
+SOURCES= ReweighterBTagShape_test.cc ../../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=fitFakeRateMeasurement
+EXECUTABLE= ReweighterBTagShape_test
 
-all:
+all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
-
+	
 clean:
 	rm -rf *o $(EXECUTABLE)
-

@@ -1,5 +1,13 @@
+/*
+=== concrete b-tag reweighter definitions ===
+These classes derive from either ReweighterBTagHeavyFlavor or ReweighterBTagLightFlavor
+and implement the CSVValue method as either deepCSV() or deepFlavor().
+*/
+
+
 #ifndef ConcreteReweighterBTag_H
 #define ConcreteReweighterBTag_H
+
 
 #include "ReweighterBTagHeavyFlavor.h"
 #include "ReweighterBTagLightFlavor.h"

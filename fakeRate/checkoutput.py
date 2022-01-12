@@ -26,7 +26,12 @@ def check_content(filename,filetext,contentlist):
     if contains: return 1
     return 0
 
-files = [fname for fname in os.listdir(os.getcwd()) if '.sh.e' in fname]
+# find qsub error files
+qsubfiles = [fname for fname in os.listdir(os.getcwd()) if '.sh.e' in fname]
+# find condor error files
+condorfiles = [fname for fname in os.listdir(os.getcwd()) if '_err_' in fname]
+# merge both
+files = qsubfiles + condorfiles
 print('found '+str(len(files))+' error log files.')
 print('start scanning...')
 

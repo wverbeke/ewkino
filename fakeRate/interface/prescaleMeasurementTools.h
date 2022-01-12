@@ -34,5 +34,6 @@ HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut,
 void fillPrescaleMeasurementHistograms( const std::string& year,
     const std::string& sampleDirectoryPath,
     const std::string& sampleListPath, const unsigned sampleIndex,
+    const bool isTestRun,
     const std::vector< std::string >& triggerVector, const bool useMT = true,
     const double metCut = 0, double mtCut = 0);

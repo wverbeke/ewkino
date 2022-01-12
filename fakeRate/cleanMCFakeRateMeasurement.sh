@@ -7,5 +7,6 @@ rm closureTest_MC.sh*
 rm fakeRateMaps/*MC*
 rm fakeRateMeasurement_MC_*
 rm fillMCFakeRateMeasurement
-rm fillMCFakeRateMeasurement.sh*
+rm qjob_fillMCFakeRateMeasurement*
+rm cjob_fillMCFakeRateMeasurement*
 rm plotMCFakeRateMeasurement

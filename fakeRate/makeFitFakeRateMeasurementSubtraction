@@ -1,0 +1,13 @@
+CC=g++ -Wall -Wextra -O3
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= fitFakeRateMeasurementSubtraction.cc src/*.cc ../codeLibrary.o
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=fitFakeRateMeasurementSubtraction
+
+all:
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+
+clean:
+	rm -rf *o $(EXECUTABLE)
+
