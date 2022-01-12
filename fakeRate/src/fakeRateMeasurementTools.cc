@@ -182,7 +182,9 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 	if( lepton.pt() < 10 ) continue;
 
 	const double pTFix = 35.;
-        PhysicsObject leptonFix( pTFix, lepton.eta(), lepton.phi(), lepton.energy() );
+        PhysicsObject leptonFix( pTFix, lepton.eta(), lepton.phi(), lepton.energy(),
+				    lepton.is2016(), lepton.is2016PreVFP(), lepton.is2016PostVFP(),
+				    lepton.is2017(), lepton.is2018() );
         double mT = mt( leptonFix, event.met() );
 
 	if( mT >= maxMT ) continue;
