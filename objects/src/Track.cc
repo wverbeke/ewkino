@@ -8,7 +8,10 @@
 
 Track::Track( double pt, double eta, double phi, double p,
 		double x, double y, double z ):
-    PhysicsObject( pt, eta, phi, pt, p ), 
+    // note: all tracks are considered to be 2018 objects for now,
+    //       but the year is not used anywhere.
+    //       maybe change later if the year matters (e.g. for selections on tracks)
+    PhysicsObject( pt, eta, phi, p, false, false, false, false, true ), 
     _x( x ),
     _y( y ),
     _z( z )

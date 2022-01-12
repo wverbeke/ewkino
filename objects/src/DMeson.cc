@@ -15,8 +15,11 @@ DMeson::DMeson( const TreeReader& treeReader, const unsigned dIndex ):
         treeReader._DEta[dIndex], 
         treeReader._DPhi[dIndex], 
         treeReader._DE[dIndex], 
-        treeReader.is2016(), 
-        treeReader.is2017() 
+        treeReader.is2016(),
+	treeReader.is2016PreVFP(),
+	treeReader.is2016PostVFP(), 
+        treeReader.is2017(),
+	treeReader.is2018()
     ),
     _invMass( treeReader._DInvMass[dIndex] ),
     _type( treeReader._DType[dIndex] ),
