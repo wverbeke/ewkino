@@ -27,7 +27,7 @@ istestrun = False
 # (note that this will not overwrite runmode, 
 # only affects number of samples and number of events per sample)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate/'
-samplelistdirectory = os.path.abspath('sampleLists')
+samplelistdirectory = os.path.abspath('sampleListsPreUL')
 # (see also below to set correct sample list name in loop!)
 
 # check if executable exists
