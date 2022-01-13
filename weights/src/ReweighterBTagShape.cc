@@ -186,16 +186,30 @@ bool ReweighterBTagShape::hasSystematic( const std::string systematic ) const{
     return true;
 }
 
-bool ReweighterBTagShape::considerSystematic( const Jet& jet, const std::string& systematic ) const{
-    // check if a given systematic needs to be considered for a given jet
-    std::vector<std::string> forbidden_systematics;
+bool ReweighterBTagShape::considerVariation( const Jet& jet, 
+					      const std::string& variation ) const{
+    // check if a given variation needs to be considered for a given jet
+    // see the recommendations: some systematics should only be applied to b-jets and light jets,
+    //                          and others only to c-jets; 
+    //                          the jec variations should not be applied to c-jets.
+    std::vector<std::string> forbidden_variations;
     if( jet.hadronFlavor()==5 || jet.hadronFlavor()==0 ){
-	forbidden_systematics = {"cferr1", "cferr2"};
+	forbidden_variations = {"cferr1", "cferr2"};
     } else if( jet.hadronFlavor()==4 ){
-	forbidden_systematics = {"hf","lf","hfstats1","hfstats2","lfstats1","lfstats2"};
+	forbidden_variations = {"hf","lf","hfstats1","hfstats2","lfstats1","lfstats2",
+				"jes", "jesAbsoluteMPFBias", "jesAbsoluteScale", "jesAbsoluteStat",
+                                "jesRelativeBal", "jesRelativeFSR", "jesRelativeJEREC1",
+                                "jesRelativeJEREC2", "jesRelativeJERHF",
+                                "jesRelativePtBB", "jesRelativePtEC1", "jesRelativePtEC2",
+                                "jesRelativePtHF",
+                                "jesRelativeStatEC","jesRelativeStatFSR","jesRelativeStatHF",
+                                "jesPileUpDataMC", "jesPileUpPtBB", "jesPileUpPtEC1",
+                                "jesPileUpPtEC2", "jesPileUpPtHF", "jesPileUpPtRef",
+                                "jesFlavorQCD", "jesFragmentation", "jesSinglePionECAL",
+                                "jesSinglePionHCAL", "jesTimePtEta"};
     }
-    for( std::string sys: forbidden_systematics ){
-        if( systematic==sys || systematic=="up_"+sys || systematic=="down_"+sys ) return false;
+    for( std::string var: forbidden_variations ){
+        if( variation==var || variation=="up_"+var || variation=="down_"+var ) return false;
     }
     return true;
 }
@@ -271,7 +285,7 @@ double ReweighterBTagShape::weight( const Jet& jet, const std::string& variation
     
     std::string sys = variation;
     // check if variation is valid for this jet
-    if( !this->considerSystematic( jet, variation ) ) sys = "central";
+    if( !this->considerVariation( jet, variation ) ) sys = "central";
     // check if jet is of correct flavor for this reweighter
     if( jet.hadronFlavor()==5 || jet.hadronFlavor()==4 ){
 	if( !(_flavor=="heavy" || _flavor=="all") ) return 1;
@@ -295,6 +309,15 @@ double ReweighterBTagShape::weight( const Jet& jet, const std::string& variation
     // seems to handle negative values of eta more correctly (only taking abs when needed)
     double scaleFactor = bTagSFReader->eval_auto_bounds( sys, jetFlavorEntry( jet ),
     					jet.eta(), jet.pt(), bTagScore );
+    // printouts for testing
+    /*if( scaleFactor==0 ){
+	std::cout << "found scale factor 0 ..." << std::endl;
+	std::cout << "sys: " << sys << std::endl;
+	std::cout << "jet flavor: " << jetFlavorEntry(jet) << std::endl;
+	std::cout << "eta: " << jet.eta() << std::endl;
+	std::cout << "pt: " << jet.pt() << std::endl;
+	std::cout << "b tag score: " << bTagScore << std::endl;
+    }*/
     return scaleFactor;
 }
 

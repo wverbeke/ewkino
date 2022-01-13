@@ -55,9 +55,23 @@ int main( int argc, char* argv[] ){
     if(treeReader.is2018()) year = "2018";
 
     // initialize some histograms
-    HistInfo histInfo = HistInfo( "", "b-tag reweighting factor", 50, 0.5, 1.5 );
-    std::shared_ptr<TH1D> bWeightDistPreNorm = histInfo.makeHist( "bWeightDistPreNorm" );
-    std::shared_ptr<TH1D> bWeightDistPostNorm = histInfo.makeHist( "bWeightDistPostNorm" );
+    HistInfo histInfo = HistInfo( "", "b-tag reweighting factor", 50, -0.1, 2.1 );
+    // histograms of nominal weight before and after normalization
+    std::shared_ptr<TH1D> bWeightDistPreNorm = histInfo.makeHist( "bWeightDist_nominalPreNorm" );
+    std::shared_ptr<TH1D> bWeightDistPostNorm = histInfo.makeHist( "bWeightDist_nominalPostNorm" );
+    // histograms of varied weights
+    std::vector<std::string> variations = {"jes", "hf","lf","hfstats1","hfstats2",
+					    "lfstats1","lfstats2","cferr1","cferr2",
+					    "jesAbsoluteMPFBias", "jesAbsoluteScale", 
+					    "jesAbsoluteStat"};
+    std::map<std::string, std::shared_ptr<TH1D>> bWeightDistVariations;
+    for( std::string variation: variations ){
+	bWeightDistVariations[variation+"Up"] = histInfo.makeHist( "bWeightDist_"+variation+"Up" );
+	bWeightDistVariations[variation+"Down"] = histInfo.makeHist( "bWeightDist_"+variation+"Down" );
+    }
+    // histograms with JEC variation propagated
+    std::shared_ptr<TH1D> bWeightDistJECUp = histInfo.makeHist( "bWeightDist_JECUp" );
+    std::shared_ptr<TH1D> bWeightDistJECDown = histInfo.makeHist( "bWeightDist_JECDown" );
     
     // make the b-tag shape reweighter
     // step 1: set correct csv file
@@ -70,8 +84,6 @@ int main( int argc, char* argv[] ){
     // step 2: set other parameters
     std::string flavor = "all";
     std::string bTagAlgo = "deepFlavor";
-    std::vector<std::string> variations = {"jes","hf","lf","hfstats1","hfstats2",
-                                        "lfstats1","lfstats2","cferr1","cferr2" };
     // step 3: make the reweighter
     std::shared_ptr<ReweighterBTagShape> reweighterBTagShape = std::make_shared<ReweighterBTagShape>(
 	    weightDirectory, sfFilePath, flavor, bTagAlgo, variations, samples );
@@ -107,6 +119,14 @@ int main( int argc, char* argv[] ){
 		nEntries[njets] += 1; }
 	    // fill the histogram
 	    bWeightDistPreNorm->Fill( btagreweight );
+	    for( std::string variation: variations ){
+		bWeightDistVariations[variation+"Up"]->Fill( 
+		    reweighterBTagShape->weightUp( event, variation ) );
+		bWeightDistVariations[variation+"Down"]->Fill( 
+                    reweighterBTagShape->weightDown( event, variation ) );
+	    }
+	    bWeightDistJECUp->Fill( reweighterBTagShape->weightJecVar( event, "JECUp") );
+	    bWeightDistJECDown->Fill( reweighterBTagShape->weightJecVar( event, "JECDown") );
 	}
     }
     // divide sum by number to get average
@@ -171,5 +191,11 @@ int main( int argc, char* argv[] ){
     TFile* filePtr = TFile::Open( outputFileName.c_str(), "recreate" );
     bWeightDistPreNorm->Write();
     bWeightDistPostNorm->Write();
+    for( std::string variation: variations ){
+	bWeightDistVariations[variation+"Up"]->Write();
+	bWeightDistVariations[variation+"Down"]->Write();
+    }
+    bWeightDistJECUp->Write();
+    bWeightDistJECDown->Write();
     filePtr->Close();
 }

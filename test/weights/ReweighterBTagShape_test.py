@@ -18,5 +18,6 @@ if __name__=='__main__':
     if not os.path.exists(exe):
 	raise Exception('ERROR: executable does not exist.')
 
-    command = '{} {} {}'.format(exe, inputfile, nevents)
+    (inputdir,inputfile) = os.path.split(inputfile)
+    command = '{} {} {} {}'.format(exe, inputdir, inputfile, nevents)
     ct.submitCommandAsCondorJob( 'cjob_ReweighterBTagShape_test', command )

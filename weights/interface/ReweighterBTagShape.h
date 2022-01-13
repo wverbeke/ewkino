@@ -27,7 +27,7 @@ class ReweighterBTagShape: public Reweighter{
 
 	bool hasVariation( const std::string& variation ) const;
 	bool hasSystematic( const std::string systematic ) const;
-	bool considerSystematic( const Jet& jet, const std::string& systematic ) const;
+	bool considerVariation( const Jet& jet, const std::string& variation ) const;
 
 	void setNormFactors( const Sample& sample, std::map<int,double> normFactors );
 	double getNormFactor( const Event&, const std::string& jecVariation="nominal" ) const;
