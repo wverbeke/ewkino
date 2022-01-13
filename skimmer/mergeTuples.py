@@ -1,4 +1,3 @@
-
 #########################################
 # merge tuples into one file per sample #
 #########################################
@@ -28,37 +27,57 @@ def listSkimmedSampleDirectories( input_directory ):
         yield  sample
 
 
+def sampleNameIsData( sample_name ):
+    # check if a sample name is data (as opposed to simulation).
+    # it is checked whether the sample name starts with the name of a primary dataset.
+    tags = ['SingleElectron', 'SingleMuon', 'EGamma',
+	    'DoubleEG', 'DoubleMuon',
+	    'MuonEG',
+	    'JetHT', 'MET', 'HTMHT']
+    for tag in tags: 
+	if sample_name.startswith(tag): return True
+    return False
+
+
 def sampleName( directory_name ):
     # extract sample name
     # note: naming convention depends on skimTuples.py / skimTuplesFromList.py
+    # for simulation, the part between "ntuples_skimmed_" and "_version_" is used as sample name;
+    # for data, it is extended by an era identifier. 
     sample_name = directory_name.split( 'ntuples_skimmed_' )[-1]
-    sample_name = sample_name.split( '_version_' )[0] 
+    [sample_name, version] = sample_name.split( '_version_' )
+    # in case of simulation: return current sample name
+    if not sampleNameIsData(sample_name): return sample_name
+    # in case of data: append era identifier
+    idx = version.find('Run')
+    era = version[idx:idx+8]
+    sample_name = sample_name+'_'+era
     return sample_name
 
 
-def mergeCommand( sample_directory, output_directory ):
+def mergeCommand( sample_directory, output_file ):
     # make the merge command (i.e. simple hadd command)
     # input arguments:
     # - sample_directory: directory containing root files for one sample
     #                     (the files are assumed to be one level down)
-    # - output_directory: directory where the merged file will be put
+    # - output_file: path to the output root file
+    output_directory = os.path.dirname( output_file )
     if not os.path.exists( output_directory ):
         os.makedirs( output_directory )
-    output_path = os.path.join( output_directory, sampleName( sample_directory ) + '.root' )
-    mergeCommand = 'hadd {} {}'.format( output_path, '{}/*root'.format( sample_directory ) )
+    mergeCommand = 'hadd {} {}'.format( output_file, '{}/*root'.format( sample_directory ) )
     return mergeCommand 
 
 
-def mergeSample( sample_directory, output_directory, runmode='condor', rmunmerged=False ):
+def mergeSample( sample_directory, output_file, runmode='condor', rmunmerged=False ):
     # submit a merging job for one sample
     # input arguments:
     # - sample_directory: directory containing root files for one sample
     #                     (the files are assumed to be one level down)
-    # - output_directory: directory where the merged file will be put
+    # - output_file: path to the output root file
     # - runmode: either "condor", "qsub" or "local"
     # - rmunmerged: remove the unmerged sample directory
     cmds = []
-    cmds.append( mergeCommand( sample_directory, output_directory ) )
+    cmds.append( mergeCommand( sample_directory, output_file ) )
     if rmunmerged: cmds.append( 'rm -r {}'.format( sample_directory ) )
     if runmode=='local':
 	for cmd in cmds: os.system(cmd)
@@ -89,7 +108,24 @@ if __name__ == '__main__':
     runmode = 'condor'
     rmunmerged = False
 
-    # merge the samples
-    for sample in listSkimmedSampleDirectories( input_directory ):
-        mergeSample( os.path.join( input_directory, sample ), output_directory,
+    # define the samples to merge
+    inputdirs = []
+    outputfiles = []
+    for sample_directory in listSkimmedSampleDirectories( input_directory ):
+	inputdir = os.path.join( input_directory, sample_directory )
+	outputfile = os.path.join( output_directory, sampleName(sample_directory)+'.root' )
+	inputdirs.append( inputdir )
+	outputfiles.append( outputfile )
+
+    # print before continuing
+    print('found following tuples to merge:')
+    for inputdir, outputfile in zip(inputdirs, outputfiles):
+	print('{} --> {}'.format(inputdir,outputfile))
+    print('continue? (y/n)')
+    go = raw_input()
+    if go!='y': sys.exit()
+
+    # continue with the submission
+    for inputdir, outputfile in zip(inputdirs, outputfiles):
+        mergeSample( inputdir, outputfile,
 			runmode=runmode, rmunmerged=rmunmerged )
