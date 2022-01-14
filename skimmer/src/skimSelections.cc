@@ -33,14 +33,12 @@ bool passFourLeptonSkim( Event& event ){
 
 
 bool passFakeRateSkim( Event& event ){
-    event.selectLooseLeptons();
-    event.cleanElectronsFromLooseMuons();
-    event.cleanTausFromLooseLightLeptons();
-    if( event.numberOfLightLeptons() != 1 ) return false;
-
-    event.selectGoodJets();
-    event.cleanJetsFromLooseLeptons();
-    if( event.numberOfJets() < 1 ) return false;
+    // apply single lepton skim 
+    // + require passing at least one of a set of strongly prescaled triggers for data
+    if( !passLeptonicSkim( event, 1 ) ) return false;
+    if( event.isData() ){
+	if( !event.passTriggers_FR() ) return false;
+    }
     return true;
 }
 
