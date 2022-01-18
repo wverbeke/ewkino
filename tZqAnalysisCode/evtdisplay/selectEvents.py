@@ -9,9 +9,9 @@ import condorTools as ct # new condor alternative
 
 nargs = 4
 if len(sys.argv) != nargs+1:
-    print('### ERROR ###: runsystematics.py requires {} command-line arguments.'.format(nargs))
+    print('### ERROR ###: selectEvents.py requires {} command-line arguments.'.format(nargs))
     print('Normal usage from the command line:')
-    print('python runsystematics.py input_file output_file, bdt_cut, nentries')
+    print('python selectEvents.py input_file output_file, bdt_cut, nentries')
     sys.exit()
 
 # hard-coded arguments

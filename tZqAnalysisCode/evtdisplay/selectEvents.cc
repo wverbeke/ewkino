@@ -17,6 +17,14 @@
 #include "../eventselection/interface/eventFlattening.h"
 
 
+bool defaultsort(const std::tuple<long, long, long>& a,
+		 const std::tuple<long, long, long>& b){
+    if( std::get<0>(a)!=std::get<0>(b) ) return (std::get<0>(a)<std::get<0>(b));
+    else if( std::get<1>(a)!=std::get<1>(b) ) return (std::get<1>(a)<std::get<1>(b));
+    return (std::get<2>(a)<std::get<2>(b));
+}
+
+
 bool checkReadability(const std::string& pathToFile){
     // temporary function to perform error handling when file cannot be read.
     // maybe to be replaced by exception throwing
@@ -110,12 +118,15 @@ void selectEvents(const std::string& pathToFile,
 	evtIds.push_back(evtId);
     }
 
+    // sort the event list
+    std::sort(evtIds.begin(), evtIds.end(), defaultsort);
+
     // make output file
     std::ofstream outputFile;
     outputFile.open(outputFilePath);
     for( std::tuple<long,long,long> evtId: evtIds ){
-	outputFile << std::get<0>(evtId) << ",";
-	outputFile << std::get<1>(evtId) << ",";
+	outputFile << std::get<0>(evtId) << ":";
+	outputFile << std::get<1>(evtId) << ":";
 	outputFile << std::get<2>(evtId) << std::endl;
     }
     outputFile.close();
@@ -160,7 +171,7 @@ int main( int argc, char* argv[] ){
     double bdtCut = std::stof(argvStr[10]); // put very small, e.g. -99, if not needed
 
     // printouts useful for debugging:
-    std::cout << "running ./runsystematics with following settings:" << std::endl;
+    std::cout << "running ./selectEvents with following settings:" << std::endl;
     std::cout << "input_file_path: " << input_file_path << std::endl;
     std::cout << "output_file_path: " << output_file_path << std::endl;
     std::cout << "nentries: " << nentries << std::endl;
