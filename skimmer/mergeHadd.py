@@ -1,6 +1,9 @@
 ##########################################
 # a simple submiter for the hadd command #
 ##########################################
+# this script behaves just like the normal hadd command,
+# with same input and output, 
+# but wraps it in a condor job.
 
 import sys
 import os
