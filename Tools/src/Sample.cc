@@ -172,7 +172,9 @@ Sample::Sample( std::istream& is, const std::string& directory ){
 
 void Sample::setIsData(){
     _isData = false;
-    static std::vector<std::string> dataNames = { "data", "SingleMuon", "SingleElectron", "SingleMuon", "DoubleMuon", "DoubleEG", "EGamma", "JetHT", "MET" };
+    static std::vector<std::string> dataNames = { "data", 
+	"SingleMuon", "SingleElectron", "DoubleMuon", "DoubleEG", "EGamma", 
+	"MuonEG", "JetHT", "MET" };
     for( auto it = dataNames.cbegin(); it != dataNames.cend(); ++it ){
         if( _fileName.find( *it ) != std::string::npos ){
             _isData = true;
