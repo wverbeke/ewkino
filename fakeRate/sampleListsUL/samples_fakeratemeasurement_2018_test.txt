@@ -1,0 +1,6 @@
+# test version where only data is processed and it is split per PD
+data    data_combined_Autumn18.root
+data	SingleMuon_Autumn18_Run2018.root
+data	EGamma_Autumn18_Run2018.root
+data	DoubleMuon_Autumn18_Run2018.root
+data	MuonEG_Autumn18_Run2018.root
