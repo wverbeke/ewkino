@@ -75,7 +75,7 @@ namespace bTagWP{
         { "looseDeepFlavor2018", looseDeepFlavor2018},
         { "mediumDeepFlavor2016", mediumDeepFlavor2016},
 	{ "mediumDeepFlavor2016PreVFP", mediumDeepFlavor2016PreVFP},
-	{ "mediumDeepFlavor2016PreVFP", mediumDeepFlavor2016PreVFP},
+	{ "mediumDeepFlavor2016PostVFP", mediumDeepFlavor2016PostVFP},
         { "mediumDeepFlavor2017", mediumDeepFlavor2017},
         { "mediumDeepFlavor2018", mediumDeepFlavor2018},
         { "tightDeepFlavor2016", tightDeepFlavor2016},

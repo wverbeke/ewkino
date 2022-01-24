@@ -64,7 +64,7 @@ double bTagWP::getWP(const std::string tagger,
     if(it != btagwpmap.end()){ return btagwpmap[fname](); }
     else{
 	std::string msg = "ERROR in objectSelection/src/bTagWP.cc";
-	msg = " b-tag threshold to use not recognized ('"+fname<+"')";
-	throw std::runtime_error(msg);
+	msg += " b-tag threshold to use not recognized ('"+fname<+"')";
+	throw std::runtime_error( msg );
     }
 }
