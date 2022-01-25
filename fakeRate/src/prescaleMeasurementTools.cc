@@ -75,9 +75,13 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     }
 
     // make reweighter
+    // note: use 2016 reweighter for both 2016PreVFP and 2016PostVFP!
+    //       maybe extend later.
+    std::string reweighterYear = year;
+    if( year=="2016PreVFP" || year=="2016PostVFP" ){ reweighterYear = "2016"; }
     std::shared_ptr< ReweighterFactory >reweighterFactory( new FourTopsFakeRateReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/",
-                                                        year, treeReader.sampleVector() );
+                                                        reweighterYear, treeReader.sampleVector() );
     
     long unsigned numberOfEntries = treeReader.numberOfEntries();
     if( isTestRun ) numberOfEntries = 10000;
