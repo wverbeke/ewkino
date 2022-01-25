@@ -178,7 +178,6 @@ bool analysisTools::fileIs2017( const std::string& filePath ){
         || stringTools::stringContains( filePath, "Fall17" ) // tag given by skimmer
         || stringTools::stringEndsWith( filePath, "data_2017.root" )
         || stringTools::stringEndsWith( filePath, "combined_2017.root" )
-        || stringTools::stringEndsWith( filePath, "combined_2018.root" )
         || stringTools::stringContains( filePath, "_2017_v" )
         || stringTools::stringStartsWith( stringTools::fileNameFromPath( filePath ), "2017" )
     );
