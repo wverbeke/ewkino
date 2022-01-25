@@ -44,7 +44,8 @@ for f in inputfiles:
     print('  - flavor: {}'.format(flavor))
 
     # determine luminosity value to display
-    lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700}
+    lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700,
+		'2016PreVFP':19520, '2016PostVFP':16810 }
     lumi = lumimap[year]
 
     histlist = ht.loadallhistograms(f)
