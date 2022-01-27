@@ -85,12 +85,15 @@ std::vector< std::string > fakeRate::listTriggersWithHistogramInFile( TFile* fil
 
 std::string fakeRate::extractYear( const std::string& histogramName ){
     // get the year from a histogram name
-    if( stringTools::stringContains( histogramName, "2016" ) ) return "2016";
+    if( stringTools::stringContains( histogramName, "2016PreVFP" ) ) return "2016PreVFP";
+    else if( stringTools::stringContains( histogramName, "2016PostVFP" ) ) return "2016PostVFP";
+    else if( stringTools::stringContains( histogramName, "2016" ) ) return "2016";
     else if( stringTools::stringContains( histogramName, "2017" ) ) return "2017";
     else if( stringTools::stringContains( histogramName, "2018" ) ) return "2018";
     else{
         throw std::invalid_argument( "histogram name '" + histogramName 
-		    + "' does not contain a valid year tag (2016, 2017 or 2018)" );
+		    + "' does not contain a valid year tag"
+		    + " (2016PreVFP, 2016PostVFP, 2016, 2017 or 2018)" );
     }
 }
 
