@@ -80,6 +80,8 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     std::string reweighterYear = year;
     if( year=="2016PreVFP" || year=="2016PostVFP" ){ reweighterYear = "2016"; }
     std::shared_ptr< ReweighterFactory >reweighterFactory( new FourTopsFakeRateReweighterFactory() );
+    // for testing:
+    //std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/",
                                                         reweighterYear, treeReader.sampleVector() );
     
@@ -104,6 +106,16 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
         if( !isData ) weight *= reweighter.totalWeight( event );
         else weight = 1;
 
+	// temp: remove events with unphysical large weights
+        // issue with unknown cause observed in a small number of generator weights 
+        // in UL WJets samples
+        if( weight>1e4 ){
+            std::string msg = "WARNING: vetooing event with large weight.";
+            msg += " (weight is " + std::to_string(weight) + ")";
+            std::cerr << msg << std::endl;
+            continue;
+        }
+
 	// loop over triggers
         for( const auto& trigger : triggerVector ){
 	    // check if event passes trigger and if lepton is correct flavor
@@ -122,6 +134,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
             if( lepton.uncorrectedPt() <= leptonPtCutMap[trigger] ) continue;
 	    // check if jet passes trigger requirements
             if( !fakeRate::passTriggerJetSelection( event, trigger, jetPtCutMap ) ) continue;
+
 	    // fill correct histogram
             double valueToFill = ( useMT ? mT : event.metPt() );
             if( isData ){
