@@ -19,6 +19,7 @@ import histplotter as hp
 # import local tools
 sys.path.append('python')
 import fakeRateMeasurementTools as frt
+from merge2016 import merge2016
 
 years = ['2016','2017','2018']
 # (choose any combination from '2016', '2017' and '2018')
@@ -29,14 +30,16 @@ runmode = 'local'
 # (choose from 'condor', 'qsub' or 'local')
 fitmethod = 'subtraction'
 # (choose from 'subtraction', 'templatefit', or 'none')
-# (in case of 'none', the fake rate is not measured, but input plots are made if plotmode is 'new'!)
+# (in case of 'none', the fake rate is not measured, 
+# but input plots are made if doprefitplots is True!)
 doprefitplots = False
-# (set to True to create plots of input histograms before subtraction of template fit)
+# (set to True to create plots of input histograms before subtraction or template fit)
 
 # hadd files if needed
 # note that the subfiles are assumed to be in a folder named FakeRateMeasurementSubFiles
 # you may have to manually create that folder and move the subfiles in there
 for year in years:
+    if year=='2016Merged': continue # special case for later
     for flavour in flavours:
 	basename = 'fakeRateMeasurement_data_'+flavour+'_'+year
 	if use_mT: basename += '_mT'
@@ -49,6 +52,20 @@ for year in years:
 	cmd += os.path.join(subfolder,basename+'_sample*.root')
 	print(cmd)
 	os.system(cmd)
+if '2016Merged' in years: # special case: merge 2016PreVFP and 2016PostVFP
+    for flavour in flavours:
+	basename = 'fakeRateMeasurement_data_'+flavour+'_2016Merged'
+        if use_mT: basename += '_mT'
+        else: basename += '_met'
+        basename += '_histograms'
+        filename = basename + '.root'
+        if os.path.exists(filename): continue
+	prename = filename.replace('2016Merged','2016PreVFP')
+	postname = filename.replace('2016Merged','2016PostVFP')
+	if not (os.path.exists(prename) and os.path.exists(postname)):
+	    raise Exception('ERROR: the era 2016Merged was requested, but the files'
+				+' for 2016PreVFP and 2016PostVFP are not present.')
+	merge2016(prename, postname, outputfile=filename)
 
 # loop over years and flavours
 cwd = os.getcwd()
@@ -103,7 +120,9 @@ for year in years:
 			# other plot settings
 			xaxtitle = datahist.GetXaxis().GetTitle()
 			yaxtitle = datahist.GetYaxis().GetTitle()
-			lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700}
+			lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700,
+				    '2016PreVFP':19520, '2016PostVFP':16810,
+				    '2016Merged':36300 }
 			lumi = lumimap[year]
 			extracmstext = 'Preliminary'
 			extrainfos = []

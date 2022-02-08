@@ -297,7 +297,9 @@ if __name__=='__main__':
 		# make a prefit plot
                 xaxtitle = datahist.GetXaxis().GetTitle()
                 yaxtitle = datahist.GetYaxis().GetTitle()
-                lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700}
+                lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700,
+                            '2016PreVFP':19520, '2016PostVFP':16810, 
+                            '2016Merged':36300 }
                 lumi = lumimap[year]
                 extracmstext = 'Preliminary'
                 extrainfos = []
@@ -368,7 +370,9 @@ if __name__=='__main__':
 		# make the postfit plot
                 xaxtitle = datahist.GetXaxis().GetTitle()
                 yaxtitle = datahist.GetYaxis().GetTitle()
-                lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700}
+                lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700,
+                            '2016PreVFP':19520, '2016PostVFP':16810, 
+                            '2016Merged':36300 }
                 lumi = lumimap[year]
                 extracmstext = 'Preliminary'
                 extrainfos = []
