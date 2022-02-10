@@ -156,12 +156,18 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     std::map<std::string,double> triggerToJetPtMap = fakeRate::mapTriggerToJetPtThreshold(triggerVector);
     
     // initialize a reweighter
+    // note: use 2016 reweighter for both 2016PreVFP and 2016PostVFP!
+    //       maybe extend later.
     std::cout<<"building reweighter"<<std::endl;
+    std::string reweighterYear = year;
+    if( year=="2016PreVFP" || year=="2016PostVFP" ){ reweighterYear = "2016"; }
     std::shared_ptr< ReweighterFactory >reweighterFactory( new FourTopsFakeRateReweighterFactory() );
+    // for testing:
+    //std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
-    CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", year, 
-					thissample );
+    CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", 
+					reweighterYear, thissample );
 
     // loop over sample entries
     long unsigned numberOfEntries = treeReader.numberOfEntries();
@@ -192,11 +198,23 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 
 	// check if event passes correct trigger and jet selection
 	std::string triggerToUse = conePtToTriggerMap[ lepton.pt() ];
+
         if( !event.passTrigger( triggerToUse ) ) continue;
 	if( !fakeRate::passTriggerJetSelection( event, triggerToUse, triggerToJetPtMap ) ) continue;
 
 	// determine correct event weight
 	double weight = event.weight();
+	    
+	// temp: remove events with unphysical large weights
+        // issue with unknown cause observed in a small number of generator weights 
+        // in UL WJets samples
+        if( weight>1e4 ){
+            std::string msg = "WARNING: vetooing event with large weight.";
+            msg += " (weight is " + std::to_string(weight) + ")";
+            std::cerr << msg << std::endl;
+            continue;
+        }
+
         if( event.isMC() ){
             const Prescale& prescale = prescaleMap.find( triggerToUse )->second;
             weight *= prescale.value();
