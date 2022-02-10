@@ -12,15 +12,25 @@ import condorTools as ct
 
 if __name__=='__main__':
 
+    # read optional command line args
+    argscopy = sys.argv[:]
+    force = False
+    for arg in sys.argv:
+	if( arg=='-f' or arg=='--force' ): 
+	    force = True
+	    argscopy.remove(arg)
+	elif( arg[0]=='-' or arg[:2]=='--' ):
+	    raise Exception('ERROR: unrecognized optional argument: {}'.format(arg))
+
     # read command line args
-    if len(sys.argv)<4:
+    if len(argscopy)<4:
         print('ERROR: need at least three command line arguments:')
         print('- target file')
         print('- at least two files to merge')
         sys.exit()
 
-    targetfile = sys.argv[1]
-    inputfiles = sys.argv[2:]
+    targetfile = argscopy[1]
+    inputfiles = argscopy[2:]
     exe = 'hadd'
 
     # check if input files exist
@@ -37,9 +47,10 @@ if __name__=='__main__':
     print('will merge the following files using {}:'.format(exe))
     for f in inputfiles: print('- {}'.format(f))
     print('into the target file {}'.format(targetfile))
-    print('continue? (y/n)')
-    go = raw_input()
-    if go != 'y': sys.exit()
+    if not force:
+	print('continue? (y/n)')
+	go = raw_input()
+	if go != 'y': sys.exit()
 
     # make the command
     cmd = '{} {}'.format(exe,targetfile)

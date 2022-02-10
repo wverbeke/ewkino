@@ -77,6 +77,7 @@ if __name__=='__main__':
 
     # hard-coded arguments
     errortags = ['SysError','/var/torque/mom_priv/jobs']
+    errortags.append('###error###') # custom error tag for flagging
 
     files = []
     # find qsub error log files
