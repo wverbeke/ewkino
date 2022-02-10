@@ -313,6 +313,7 @@ class TreeReader {
 	bool is2016PostVFP() const;
         bool is2017() const;
         bool is2018() const;
+	std::string getYearString() const;
 
         //check whether the current sample is data or MC, and or signal
         bool isData() const;

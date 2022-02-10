@@ -297,6 +297,20 @@ bool TreeReader::is2018() const{
 }
 
 
+std::string TreeReader::getYearString() const{
+    if( is2016PreVFP() ) return "2016PreVFP";
+    else if( is2016PostVFP() ) return "2016PostVFP";
+    else if( is2016() ) return "2016";
+    else if( is2017() ) return "2017";
+    else if( is2018() ) return "2018";
+    else{
+	std::string msg = "ERROR in TreeReader::getYearString:";
+	msg += " no valid year string could be returned as all year checks failed.";
+	throw std::runtime_error(msg);
+    }
+}
+
+
 bool TreeReader::isSMSignal() const{
     checkCurrentSample();
     return _currentSamplePtr->isSMSignal();
