@@ -21,8 +21,12 @@ class Sample{
         Sample() = default;
 
         //initialize from an input text file
-        Sample( const std::string& line, const std::string& directory ); 
-        Sample( std::istream&, const std::string& directory ); 
+        Sample( const std::string& line, 
+		const std::string& directory, 
+		const std::string& year="" ); 
+        Sample( std::istream&,
+		const std::string& directory,
+		const std::string& year="" ); 
 
         // initialize manually
         Sample( const std::string& directory, 
@@ -96,6 +100,8 @@ class Sample{
 };
 
 //read a txt file containing a list of samples
-std::vector< Sample > readSampleList( const std::string& list, const std::string& directory );
+std::vector< Sample > readSampleList( const std::string& list, 
+				      const std::string& directory,
+				      bool useYearFromList = false );
         
 #endif

@@ -11,7 +11,13 @@
 #include "../interface/analysisTools.h"
 
 
-Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
+Sample::Sample( const std::string& line, 
+		const std::string& sampleDirectory,
+		const std::string& year ) :
+    // note: year can be an empty string, in which case the year is exctracted from the filename;
+    //       if year is not empty, it will override the filename extracted from the filename
+    //	     (use this in case the filename does not contain an unambiguous year string,
+    //        and the year needs to be extracted from e.g. the sample list)
     _directory( sampleDirectory)
 {
     /*
@@ -31,11 +37,19 @@ Sample::Sample( const std::string& line, const std::string& sampleDirectory ) :
     setIsData();
 
     // set the correct year for this sample
-    _is2016 = analysisTools::fileIs2016( _fileName );
-    _is2016PreVFP = analysisTools::fileIs2016PreVFP( _fileName );
-    _is2016PostVFP = analysisTools::fileIs2016PostVFP( _fileName );
-    _is2017 = analysisTools::fileIs2017( _fileName );
-    _is2018 = analysisTools::fileIs2018( _fileName ); 
+    if( year.size()==0 ){
+	_is2016 = analysisTools::fileIs2016( _fileName );
+	_is2016PreVFP = analysisTools::fileIs2016PreVFP( _fileName );
+	_is2016PostVFP = analysisTools::fileIs2016PostVFP( _fileName );
+	_is2017 = analysisTools::fileIs2017( _fileName );
+	_is2018 = analysisTools::fileIs2018( _fileName );
+    } else{
+	_is2016 = (year=="2016");
+        _is2016PreVFP = (year=="2016PreVFP");
+        _is2016PostVFP = (year=="2016PostVFP");
+        _is2017 = (year=="2017");
+        _is2018 = (year=="2018");
+    }
 
     //unique name is equal to fileName without file extension
     _uniqueName = stringTools::fileNameWithoutExtension( _fileName );
@@ -149,7 +163,9 @@ bool considerLine( const std::string& line ){
 }
 
 
-Sample::Sample( std::istream& is, const std::string& directory ){
+Sample::Sample( std::istream& is, 
+		const std::string& directory, 
+		const std::string& year ){
 
     //read sample info from txt file
     std::string line;
@@ -163,7 +179,7 @@ Sample::Sample( std::istream& is, const std::string& directory ){
             lineToConsider = considerLine( line );
             if( !lineToConsider ) continue;
 
-            *this = Sample( line, directory ); 
+            *this = Sample( line, directory, year ); 
         }
     } while( !lineToConsider );
 }
@@ -172,7 +188,7 @@ Sample::Sample( std::istream& is, const std::string& directory ){
 
 void Sample::setIsData(){
     _isData = false;
-    static std::vector<std::string> dataNames = { "data", 
+    static std::vector<std::string> dataNames = { "data", "Data", 
 	"SingleMuon", "SingleElectron", "DoubleMuon", "DoubleEG", "EGamma", 
 	"MuonEG", "JetHT", "MET" };
     for( auto it = dataNames.cbegin(); it != dataNames.cend(); ++it ){
@@ -247,24 +263,38 @@ std::ostream& operator<<( std::ostream& os, const Sample& sam ){
 
 
 //read a list of samples into a vector 
-std::vector< Sample > readSampleList( const std::string& listFile, const std::string& directory ){
+std::vector< Sample > readSampleList( const std::string& listFile, 
+				      const std::string& directory,
+				      bool useYearFromList ){
+    // note: if useYearFromList is False (default), the year is extracted per sample from its name;
+    //       if useYearFromList is True, the year is extracted from the sample list name
+    //	     and overrides the year extracted from the samples individually.
 
-    //check if input file exists 
+    // check if input file exists 
     if( !systemTools::fileExists( listFile ) ){
         throw std::invalid_argument( "Sample list '" + listFile + "' does not exist." );
     }
+    	
+    std::vector< Sample> sampleList;
     
-	
-	std::vector< Sample> sampleList;
+    // set year if required
+    std::string year = "";
+    if( useYearFromList ){
+	if( stringTools::stringContains(listFile,"2016PreVFP") ) year = "2016PreVFP";
+	else if( stringTools::stringContains(listFile,"2016PostVFP") ) year = "2016PostVFP";
+	else if( stringTools::stringContains(listFile,"2016") ) year = "2016";
+	else if( stringTools::stringContains(listFile,"2017") ) year = "2017";
+	else if( stringTools::stringContains(listFile,"2018") ) year = "2018";
+    }
 
-    //read sample info from txt file
+    // read sample info from txt file
     std::ifstream inFile(listFile);
     while( !inFile.eof() ){
-        sampleList.push_back( Sample( inFile, directory ) );
+        sampleList.push_back( Sample( inFile, directory, year ) );
     }
     sampleList.pop_back();
 
-    //close file after usage
+    // close file after usage
     inFile.close();
 
     return sampleList;

@@ -23,7 +23,7 @@ class TreeReader {
 
         //Constructor
         TreeReader() = default;
-        TreeReader( const std::string&, const std::string& ); 
+        TreeReader( const std::string&, const std::string&, bool useYearFromList=false ); 
 
         //Declare leaf types
 	// constants
@@ -266,7 +266,9 @@ class TreeReader {
         void readSamples2016(const std::string&, const std::string&);
         void readSamples2017(const std::string&, const std::string&);
         void readSamples2018(const std::string&, const std::string&);
-        void readSamples(const std::string& list, const std::string& directory);
+        void readSamples(const std::string& list, 
+			    const std::string& directory,
+			    bool useYearFromist = false);
 
         //initialize the current sample directly from a root file
         //always reset triggers instead of rare case of combining primary datasets
@@ -381,7 +383,8 @@ class TreeReader {
         void checkEraOrthogonality() const; //make sure no sample from the wrong era is being used (i.e. no 2016 sample in the list of 2017 samples) 
 
         //general function to read a list of samples
-        void readSamples(const std::string&, const std::string&, std::vector<Sample>&);
+        void readSamples(const std::string&, const std::string&, std::vector<Sample>&,
+			    bool useYearFromList = false);
 
         //initialize triggerMap
         void initializeTriggerMap( TTree* );

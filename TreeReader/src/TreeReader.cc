@@ -15,8 +15,10 @@
 
 // constructor //
 
-TreeReader::TreeReader( const std::string& sampleListFile, const std::string& sampleDirectory ){
-    readSamples( sampleListFile, sampleDirectory );
+TreeReader::TreeReader( const std::string& sampleListFile, 
+			const std::string& sampleDirectory,
+			bool useYearFromList ){
+    readSamples( sampleListFile, sampleDirectory, useYearFromList );
 }
 
 
@@ -24,13 +26,14 @@ TreeReader::TreeReader( const std::string& sampleListFile, const std::string& sa
 
 void TreeReader::readSamples( const std::string& list, 
 			      const std::string& directory, 
-			      std::vector<Sample>& sampleVector ){
+			      std::vector<Sample>& sampleVector,
+			      bool useYearFromList ){
 
     //clean current sample list 
     sampleVector.clear();
 
     //read list of samples from file
-    sampleVector = readSampleList(list, directory);
+    sampleVector = readSampleList(list, directory, useYearFromList);
 
     //print sample information
     for(auto& sample : sampleVector){
@@ -39,8 +42,10 @@ void TreeReader::readSamples( const std::string& list,
 }
 
 
-void TreeReader::readSamples( const std::string& list, const std::string& directory ){
-    readSamples( list, directory, this->samples );
+void TreeReader::readSamples( const std::string& list, 
+				const std::string& directory,
+				bool useYearFromList ){
+    readSamples( list, directory, this->samples, useYearFromList );
 }
 
 
