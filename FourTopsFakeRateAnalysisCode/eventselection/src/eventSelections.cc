@@ -195,7 +195,7 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
-    if(not passPhotonOverlapRemoval(event)) return false;
+    //if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -235,7 +235,7 @@ bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,4,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
-    if(not passPhotonOverlapRemoval(event)) return false;
+    //if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 4, true)) return false;
@@ -280,7 +280,7 @@ bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
-    if(not passPhotonOverlapRemoval(event)) return false;
+    //if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;

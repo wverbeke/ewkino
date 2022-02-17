@@ -14,6 +14,7 @@
 #include "../../TreeReader/interface/TreeReader.h"
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/HistInfo.h"
+#include "../../Tools/interface/Sample.h"
 #include "../../Event/interface/Event.h"
 #include "../../weights/interface/ConcreteReweighterFactory.h"
 #include "interface/eventSelections.h"
@@ -96,6 +97,7 @@ void fillHistograms(const std::string& inputDirectory,
 			const std::string& outputDirectory,
 			const std::string& eventselection,
 			const std::string& selection_type,
+			const std::string& variation,
 			const std::string& muonfrmap,
 			const std::string& electronfrmap,
 			const std::vector<std::tuple<std::string,double,double,int>> vars){
@@ -110,7 +112,34 @@ void fillHistograms(const std::string& inputDirectory,
     }
     std::string year = treeReader.getYearString();
     std::string inputFileName = treeReader.currentSample().fileName();
-    std::string processName = treeReader.currentSample().processName(); 
+    std::string processName = treeReader.currentSample().processName();
+    if( selection_type=="fakerate" ) processName = "nonprompt";
+
+    // TEMP: determine additional normalization factor 
+    // due to faulty hCounters in current samples
+    double hCounterFactor = 1;
+    if( treeReader.isMC() ){
+	std::string rfSampleList = "../normalization/hcounters_controlregions_" + year+".txt";
+	std::vector<Sample> rfSamples = readSampleList( rfSampleList, inputDirectory );
+	double trueHCounter = 0;
+	std::string refName = stringTools::removeOccurencesOf( 
+			    treeReader.currentSample().fileName(), ".root" );
+	for( Sample s: rfSamples ){
+	    if( s.fileName()==refName ){ trueHCounter = s.xSec(); }	
+	}
+	if( trueHCounter==0 ){
+	    std::string msg = "ERROR: found no matching sample for current sample";
+	    msg += " in hcounter normalization sample list";
+	    throw std::runtime_error(msg);
+	}
+	TH1D* hcounter = (TH1D*) treeReader.getFromCurrentFile("blackJackAndHookers/hCounter");
+	double falseHCounter = hcounter->GetBinContent(1);
+	hCounterFactor = falseHCounter / trueHCounter;
+	std::cout << "determined hCounter normalization factor: " << std::endl;
+	std::cout << " - true hCounter: " << trueHCounter << std::endl;
+	std::cout << " - faulty hCounter: " << falseHCounter << std::endl;
+	std::cout << " - normalization factor: " << hCounterFactor << std::endl;
+    }
 
     // make flat vector of variable names (often more convenient then argument structure)
     std::vector<std::string> variables;
@@ -140,7 +169,7 @@ void fillHistograms(const std::string& inputDirectory,
     // make output collection of histograms
     std::cout << "making output collection of histograms..." << std::endl;
     std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > histMap =
-        initHistMap(vars, processName);
+        initHistMap(vars, processName );
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
@@ -154,13 +183,14 @@ void fillHistograms(const std::string& inputDirectory,
 	// fill nominal histograms
 	bool passnominal = true;
         Event event = treeReader.buildEvent(entry,false,false,false,false);
-        if(!passES(event, eventselection, selection_type, "nominal")) passnominal = false;
+        if(!passES(event, eventselection, selection_type, variation)) passnominal = false;
 	if(passnominal){
 	    varmap = eventFlattening::eventToEntry(event, reweighter, selection_type, 
-					frmap_muon, frmap_electron, "nominal");
+					frmap_muon, frmap_electron, variation);
+	    double weight = varmap["_normweight"] * hCounterFactor;
 	    for(std::string variable : variables){
 		fillVarValue(histMap[processName][variable],
-			    getVarValue(variable,varmap), varmap["_normweight"]);
+			    getVarValue(variable,varmap), weight);
 	    }
 	}
     } // end loop over events
@@ -195,10 +225,10 @@ int main( int argc, char* argv[] ){
 
     std::cerr << "###starting###" << std::endl;
 
-    if( argc < 9 ){
+    if( argc < 10 ){
         std::cerr << "ERROR: event binning requires at different number of arguments to run...:";
         std::cerr << " input_directory, sample_list, sample_index, output_directory,";
-	std::cerr << " event_selection, selection_type,";
+	std::cerr << " event_selection, selection_type, variation,";
 	std::cerr << " muonfrmap, electronfrmap" << std::endl;
         return -1;
     }
@@ -211,34 +241,27 @@ int main( int argc, char* argv[] ){
     std::string& output_directory = argvStr[4];
     std::string& event_selection = argvStr[5];
     std::string& selection_type = argvStr[6];
-    std::string& muonfrmap = argvStr[7];
-    std::string& electronfrmap = argvStr[8];
+    std::string& variation = argvStr[7];
+    std::string& muonfrmap = argvStr[8];
+    std::string& electronfrmap = argvStr[9];
 
     // make structure for variables
     std::vector<std::tuple<std::string,double,double,int>> vars;
-    /*vars.push_back(std::make_tuple("_abs_eta_recoil",0.,5.,20));
     vars.push_back(std::make_tuple("_Mjj_max",0.,1200.,20));
     vars.push_back(std::make_tuple("_lW_asymmetry",-2.5,2.5,20));
     vars.push_back(std::make_tuple("_deepCSV_max",0.,1.,20));
     vars.push_back(std::make_tuple("_deepFlavor_max",0.,1.,20));
     vars.push_back(std::make_tuple("_lT",0.,800.,20));
     vars.push_back(std::make_tuple("_MT",0.,200.,20));
-    vars.push_back(std::make_tuple("_coarseBinnedMT",0.,200.,4.));
     vars.push_back(std::make_tuple("_smallRangeMT", 0., 150., 15));
     vars.push_back(std::make_tuple("_pTjj_max",0.,300.,20));
-    vars.push_back(std::make_tuple("_dRlb_min",0.,3.15,20));
     vars.push_back(std::make_tuple("_dPhill_max",0.,3.15,20));
     vars.push_back(std::make_tuple("_HT",0.,800.,20));
     vars.push_back(std::make_tuple("_nJets",-0.5,6.5,7));
     vars.push_back(std::make_tuple("_nBJets",-0.5,3.5,4));
-    vars.push_back(std::make_tuple("_dRlWrecoil",0.,10.,20));
-    vars.push_back(std::make_tuple("_dRlWbtagged",0.,7.,20));
-    vars.push_back(std::make_tuple("_M3l",0.,600.,20));*/
+    vars.push_back(std::make_tuple("_M3l",0.,600.,20));
     vars.push_back(std::make_tuple("_altBinnedM3l", 100., 400., 20)); 
-    /*vars.push_back(std::make_tuple("_fineBinnedM3l",75.,105,20));
-    vars.push_back(std::make_tuple("_abs_eta_max",0.,5.,20));
-    vars.push_back(std::make_tuple("_eventBDT",-1,1,15));
-    vars.push_back(std::make_tuple("_fineBinnedeventBDT",-1,1,1000));
+    vars.push_back(std::make_tuple("_fineBinnedM3l",75.,105,20));
     vars.push_back(std::make_tuple("_nMuons",-0.5,3.5,4));
     vars.push_back(std::make_tuple("_nElectrons",-0.5,3.5,4));
     vars.push_back(std::make_tuple("_yield",0.,1.,1));
@@ -253,10 +276,6 @@ int main( int argc, char* argv[] ){
     vars.push_back(std::make_tuple("_jetPtSubLeading",0.,100.,20));
     vars.push_back(std::make_tuple("_numberOfVertices",-0.5,70.5,71));
     vars.push_back(std::make_tuple("_bestZMass",0.,150.,15));
-    vars.push_back(std::make_tuple("_lW_pt",10.,150.,14));
-    vars.push_back(std::make_tuple("_coarseBinnedlW_pt",0.,105.,4));
-    vars.push_back(std::make_tuple("_Z_pt",0.,300.,15));
-    vars.push_back(std::make_tuple("_coarseBinnedZ_pt",0.,275.,4));*/
 
     // check variables
     std::map<std::string,double> emptymap = eventFlattening::initVarMap();
@@ -267,7 +286,7 @@ int main( int argc, char* argv[] ){
 
     // fill the histograms
     fillHistograms(input_directory, sample_list, sample_index, output_directory,
-				    event_selection, selection_type,
+				    event_selection, selection_type, variation,
 				    muonfrmap, electronfrmap, 
 				    vars);
     std::cerr << "###done###" << std::endl;
