@@ -21,7 +21,7 @@ sys.path.append('python')
 import fakeRateMeasurementTools as frt
 from merge2016 import merge2016
 
-years = ['2016','2017','2018']
+years = ['2016PreVFP','2016PostVFP','2016Merged','2017','2018']
 # (choose any combination from '2016', '2017' and '2018')
 flavours = ['electron','muon']
 # (choose any combination from 'muon' and 'electron')
@@ -177,6 +177,15 @@ for year in years:
 	    command = 'python fitFakeRateMeasurementTemplateFit.py {} {} {} {}'.format(
 			    var,flavour,year,frmapdir)
 	    cmds.append(command)
+	### method 3: template fits using simple chi2 fit
+	elif fitmethod=='chi2fit':
+	    # make fake rate map directory if it does not exist yet
+            frmapdir = 'fakeRateMaps'
+            if not os.path.exists(frmapdir): os.makedirs(frmapdir)
+            var = 'mT' if use_mT else 'met'
+            command = 'python fitFakeRateMeasurementChi2Fit.py {} {} {} {}'.format(
+                            var,flavour,year,frmapdir)
+            cmds.append(command)
 
 # end the program if no fit method was specified
 if( fitmethod is None or fitmethod=='none' ):
@@ -184,7 +193,7 @@ if( fitmethod is None or fitmethod=='none' ):
     sys.exit()
 
 # also end the program if the fit method was invalid
-if( fitmethod not in ['subtraction', 'templatefit'] ):
+if( fitmethod not in ['subtraction', 'templatefit','chi2fit'] ):
     print('ERROR: fit method was invalid, terminating.')
     sys.exit()
 
