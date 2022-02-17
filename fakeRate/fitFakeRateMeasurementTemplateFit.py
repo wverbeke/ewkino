@@ -290,7 +290,7 @@ if __name__=='__main__':
     print('start looping over pt and eta bins...')
     for ptbinnb,ptbin in enumerate(ptbins):
 	for etabinnb,etabin in enumerate(etabins):
-	    #if( ptbinnb!=2 or etabinnb!=0 ): continue # for testing on small number of bins
+	    #if( ptbinnb!=2 or etabinnb!=2 ): continue # for testing on small number of bins
 	    ptbinstr = str(ptbin).replace('.','p')
 	    etabinstr = str(etabin).replace('.','p')
 	    print('   bin pt {}, eta {}'.format(ptbinstr,etabinstr))
@@ -365,6 +365,7 @@ if __name__=='__main__':
 		# run combine
 		script_name = datacard.replace('.txt','.sh')
 		impactfig = '' # empty string means no impact plot will be made
+		#impactfig = datacard.replace('.txt','_impacts')
 		with open( script_name, 'w') as script:
 		    initializeJobScript( script, cmssw_version = 'CMSSW_10_2_16_patch1' )
 		    addcombinecommands(script, datacard, impactfig=impactfig)
