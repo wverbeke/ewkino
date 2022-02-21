@@ -501,7 +501,7 @@ CombinedReweighter Run2ULReweighterFactory::buildReweighter(
     // step 3: make the reweighter
     std::shared_ptr<ReweighterBTagShape> reweighterBTagShape = std::make_shared<ReweighterBTagShape>(
 	weightDirectory, sfFilePath, flavor, bTagAlgo, variations, samples );
-    //reweighterBTagShape->initialize(samples, 0);
+    reweighterBTagShape->initialize(samples, 0);
     combinedReweighter.addReweighter( "bTag_shape", reweighterBTagShape );
 
     // make pileup reweighter
