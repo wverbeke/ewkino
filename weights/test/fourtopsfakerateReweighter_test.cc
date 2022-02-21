@@ -102,7 +102,7 @@ int main( int argc, char* argv[] ){
     }
 
     // write histograms to output file
-    std::string outputFileName = "output_run2ulReweighter_test.root";
+    std::string outputFileName = "output_fourtopsfakerateReweighter_test.root";
     TFile* filePtr = TFile::Open( outputFileName.c_str(), "recreate" );
     nominalWeights->Write();
     filePtr->Close();
