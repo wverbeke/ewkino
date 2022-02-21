@@ -72,9 +72,41 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
     // reweighter to return
     CombinedReweighter combinedReweighter;
 
+    // electron reco reweighter
+    // pT below 20 GeV
+    std::string modifiedYear = stringTools::replace(year,"2016PreVFP","2016preVFP");
+    modifiedYear = stringTools::replace(modifiedYear,"2016PostVFP","2016postVFP");
+    TFile* eleRecoSFFile_pTBelow20 = TFile::Open( 
+	( stringTools::formatDirectoryName( weightDirectory ) 
+	+ "weightFilesUL/leptonSF/egammaEffi_ptBelow20.txt_EGM2D_UL" 
+	+ modifiedYear + ".root" ).c_str() );
+    std::shared_ptr< TH2 > electronRecoSFHist_pTBelow20( 
+	dynamic_cast< TH2* >( eleRecoSFFile_pTBelow20->Get( "EGamma_SF2D" ) ) );
+    electronRecoSFHist_pTBelow20->SetDirectory( gROOT );
+    eleRecoSFFile_pTBelow20->Close();
+    ElectronIDReweighter electronRecoReweighter_pTBelow20( electronRecoSFHist_pTBelow20, 
+	new LooseMaxPtSelector< 20 > );
+    combinedReweighter.addReweighter( "electronReco_pTBelow20", 
+	std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTBelow20 ) );
+
+    // electron reco reweighter
+    // pT above 20 GeV
+    TFile* eleRecoSFFile_pTAbove20 = TFile::Open( 
+	( stringTools::formatDirectoryName( weightDirectory ) 
+	+ "weightFilesUL/leptonSF/egammaEffi_ptAbove20.txt_EGM2D_UL" 
+	+ modifiedYear + ".root" ).c_str() );
+    std::shared_ptr< TH2 > electronRecoSFHist_pTAbove20( 
+	dynamic_cast< TH2* >( eleRecoSFFile_pTAbove20->Get( "EGamma_SF2D" ) ) );
+    electronRecoSFHist_pTAbove20->SetDirectory( gROOT );
+    eleRecoSFFile_pTAbove20->Close();
+    ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20, 
+	new LooseMinPtSelector< 20 > );
+    combinedReweighter.addReweighter( "electronReco_pTAbove20", 
+	std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTAbove20 ) );
+
     // make muon ID reweighter
     std::string muonSFFileName = stringTools::formatDirectoryName( weightDirectory )
-        + "weightFiles/leptonSF/muonTOPLeptonMVAMedium040" + year + ".root";
+        + "weightFilesUL/leptonSF/muonTOPLeptonMVAMedium040_" + year + ".root";
     TFile* muonSFFile = TFile::Open( (muonSFFileName).c_str() );
     // load the scalefactor histogram and set the errors to zero,
     // load the systematic errors and set the bin contents to one and errors relative,
@@ -113,8 +145,9 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
 	std::make_shared<ReweighterMuons>(muonReweighter_stat));
 
     // make electron ID Reweighter
-    TFile* eleSFFile = TFile::Open( ( stringTools::formatDirectoryName( weightDirectory ) 
-      + "weightFiles/leptonSF/electronTOPLeptonMVAMedium040" + year + ".root" ).c_str() );
+    std::string eleSFFileName = stringTools::formatDirectoryName( weightDirectory )
+      + "weightFilesUL/leptonSF/electronTOPLeptonMVAMedium040_" + year + ".root";
+    TFile* eleSFFile = TFile::Open( (eleSFFileName).c_str() );
     // load the scalefactor histogram and set the errors to zero,
     // load the systematic errors and set the bin contents to one,
     // (note: the histogram syst contains the relative uncertainties as bin contents (?))
@@ -150,56 +183,22 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
     combinedReweighter.addReweighter( "electronIDStat",
         std::make_shared<ReweighterElectronsID>(electronIDReweighter_stat) );
 
-    // make electron reconstruction Reweighter
-    if( year == "2016" || year == "2017" ){
-
-        // pT below 20 GeV
-        TFile* eleRecoSFFile_pTBelow20 = TFile::Open( ( 
-	    stringTools::formatDirectoryName( weightDirectory ) 
-	    + "weightFiles/leptonSF/egamma_recoEff_" + year + "_pTBelow20.root" ).c_str() );
-        std::shared_ptr< TH2 > electronRecoSFHist_pTBelow20( dynamic_cast< TH2* >( 
-	    eleRecoSFFile_pTBelow20->Get( "EGamma_SF2D" ) ) );
-        electronRecoSFHist_pTBelow20->SetDirectory( gROOT );
-        eleRecoSFFile_pTBelow20->Close();
-
-        ElectronIDReweighter electronRecoReweighter_pTBelow20( electronRecoSFHist_pTBelow20, 
-	    new LooseMaxPtSelector< 20 > );
-        combinedReweighter.addReweighter( "electronReco_pTBelow20", 
-	    std::make_shared<ReweighterElectronsID>( electronRecoReweighter_pTBelow20 ) );
-
-        // pT above 20 GeV
-        TFile* eleRecoSFFile_pTAbove20 = TFile::Open( ( 
-	    stringTools::formatDirectoryName( weightDirectory ) 
-	    + "weightFiles/leptonSF/egamma_recoEff_" + year + "_pTAbove20.root" ).c_str() );
-        std::shared_ptr< TH2 > electronRecoSFHist_pTAbove20( dynamic_cast< TH2* >( 
-	    eleRecoSFFile_pTAbove20->Get( "EGamma_SF2D" ) ) );
-        electronRecoSFHist_pTAbove20->SetDirectory( gROOT );
-        eleRecoSFFile_pTAbove20->Close();
-
-        ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20, 
-	    new LooseMinPtSelector< 20 > );
-        combinedReweighter.addReweighter( "electronReco_pTAbove20", 
-	    std::make_shared<ReweighterElectronsID>( electronRecoReweighter_pTAbove20 ) );
-
-    } else if( year == "2018" ){
-
-        // inclusive pT 
-        TFile* eleRecoSFFile = TFile::Open( ( 
-	    stringTools::formatDirectoryName( weightDirectory ) 
-	    + "weightFiles/leptonSF/egamma_recoEff_" + year + ".root" ).c_str() );
-        std::shared_ptr< TH2 > electronRecoSFHist ( dynamic_cast< TH2* >( 
-	    eleRecoSFFile->Get( "EGamma_SF2D" ) ) );
-        electronRecoSFHist->SetDirectory( gROOT );
-        eleRecoSFFile->Close();
-
-        ElectronIDReweighter electronRecoReweighter( electronRecoSFHist, new LooseSelector );
-        combinedReweighter.addReweighter( "electronReco", 
-	    std::make_shared<ReweighterElectronsID>( electronRecoReweighter ) );
-    }
-
     // make pileup reweighter
-    combinedReweighter.addReweighter( "pileup", 
-    std::make_shared<ReweighterPileup>( samples, weightDirectory ) );
+    std::string yearSuffix;
+    if( year == "2016PreVFP" ) { yearSuffix = "16PreVFP"; } 
+    else if( year == "2016PostVFP" ){ yearSuffix = "16PostVFP"; }
+    else if( year == "2017" ){ yearSuffix = "17"; } 
+    else if( year == "2018" ){ yearSuffix = "18"; }
+    else {
+        std::string msg = "ERROR in Run2ULReweighterFactory:";
+        msg += " could not make pileup reweighter for year '" + year + "'";
+        throw std::invalid_argument( msg );
+    }
+    std::string pileupWeightPath = stringTools::formatDirectoryName( weightDirectory )
+        + "weightFilesUL/pileupWeights/"
+        + "Collisions" + yearSuffix + "_UltraLegacy_goldenJSON.root";
+    combinedReweighter.addReweighter( "pileup",
+        std::make_shared< ReweighterPileup >( pileupWeightPath ) );
 
     // make prefire Reweighter
     combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
