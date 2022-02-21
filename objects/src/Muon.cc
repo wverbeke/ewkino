@@ -13,7 +13,16 @@ Muon::Muon( const TreeReader& treeReader, const unsigned leptonIndex ):
     _isLoosePOGMuon( treeReader._lPOGLoose[leptonIndex] ),
     _isMediumPOGMuon( treeReader._lPOGMedium[leptonIndex] ),
     _isTightPOGMuon( treeReader._lPOGTight[leptonIndex] )
-    {}
+{
+    // apply muon rochester energy correction -> use lPtCorr instead of lPt
+    setLorentzVector( treeReader._lPtCorr[ leptonIndex ], eta(), phi(),
+                      treeReader._lECorr[ leptonIndex ] );
+   
+    // make sure also non-cone-corrected pt is set to the corrected value
+    _uncorrectedPt = pt();
+    _uncorrectedE = energy();
+ 
+}
 
 
 Muon::Muon( const Muon& rhs ):
