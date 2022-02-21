@@ -25,4 +25,11 @@ class EwkinoReweighterFactory : public ReweighterFactory {
         virtual CombinedReweighter buildReweighter( const std::string&, const std::string&, const std::vector< Sample >& ) const override;
 };
 
+
+class Run2ULReweighterFactory : public ReweighterFactory {
+
+    public:
+        virtual CombinedReweighter buildReweighter( const std::string&, const std::string&, const std::vector< Sample >& ) const override;
+};
+
 #endif

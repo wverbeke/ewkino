@@ -35,11 +35,11 @@ Electron::Electron( const TreeReader& treeReader, const unsigned leptonIndex ):
     _e_ResDown( treeReader._lEResDown[leptonIndex] )
 {
     
-    //apply electron energy correction
+    // apply electron energy correction -> use lPtCorr instead of lPt
     setLorentzVector( treeReader._lPtCorr[ leptonIndex ], eta(), phi(), 
 		      treeReader._lECorr[ leptonIndex ] );
 
-    //make sure also non-cone-corrected pt is set to the corrected value
+    // make sure also non-cone-corrected pt is set to the corrected value
     _uncorrectedPt = pt();
     _uncorrectedE = energy();
 }

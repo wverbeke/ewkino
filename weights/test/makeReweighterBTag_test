@@ -1,0 +1,12 @@
+CC=g++ -Wall -Wextra 
+CFLAGS= -Wl,--no-as-needed
+LDFLAGS=`root-config --glibs --cflags`
+SOURCES= ReweighterBTag_test.cc ../../codeLibrary.o ../../weights/src/ReweighterBTag.cc ../../weights/bTagSFCode/BTagCalibrationStandalone.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE= ReweighterBTag_test
+
+all: 
+	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)
+	
+clean:
+	rm -rf *o $(EXECUTABLE)
