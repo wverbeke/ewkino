@@ -432,8 +432,12 @@ BTagCalibrationReader::BTagCalibrationReaderImpl::BTagCalibrationReaderImpl(
                                              const std::vector<std::string> & otherSysTypes):
   op_(op),
   sysType_(sysType),
-  tmpData_(3),
-  useAbsEta_(3, true)
+  // note: modification below
+  // the arrays tmpData and useAbsEta were initialized with length 3,
+  // dating from the pre-UL version that used jet flavor numbering 0 - 2.
+  // now jet flavors are numbered 0, 4, 5, so modified to length 6.
+  tmpData_(6),
+  useAbsEta_(6, true)
 {
   for (const std::string & ost : otherSysTypes) {
     if (otherSysTypeReaders_.count(ost)) {
