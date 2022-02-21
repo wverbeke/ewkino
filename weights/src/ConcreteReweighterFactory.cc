@@ -68,6 +68,8 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
 	    const std::vector< Sample >& samples ) const{
 
     analysisTools::checkYearString( year );
+    // dummy condition to avoid compilation warnings
+    if( samples.size()==0 ){ std::cout << "WARNING: no samples provided" << std::endl; }
 
     // reweighter to return
     CombinedReweighter combinedReweighter;
