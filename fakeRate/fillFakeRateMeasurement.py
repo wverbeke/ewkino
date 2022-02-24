@@ -12,16 +12,16 @@ sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
 
 # set global properties
-years = ['2016','2017','2018']
+years = ['2016PreVFP','2016PostVFP','2017','2018']
 # (choose any combination from '2016', '2017' and '2018')
 flavours = ['muon','electron']
 # (choose any combination from 'muon' and 'electron')
 runmode = 'condor'
 # (choose 'qsub', 'condor' or 'local')
 testrun = False
-samplelistdirectory = os.path.abspath('sampleListsPreUL')
+samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below in loop to set the correct sample list name per flavour/year!)
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
 
 # check if executable exists
 if not os.path.exists('./fillFakeRateMeasurement'):

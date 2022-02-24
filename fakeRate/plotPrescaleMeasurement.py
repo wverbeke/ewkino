@@ -10,7 +10,7 @@ import histplotter as hp
 sys.path.append('../Tools/python')
 import histtools as ht
 
-years = ['2016', '2017', '2018']
+years = ['2016PreVFP','2016PostVFP', '2017', '2018']
 use_mT = True
 plotmode = 'new'
 # (choose from 'old' (with older c++ plotting function) or 'new' (with newer python version))
