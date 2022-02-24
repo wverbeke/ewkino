@@ -7,29 +7,31 @@ import sys
 
 regions = []
 for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regions.append(r)
+for r in ['nonprompt_trilepton_noossf','nonprompt_trilepton_noz']: regions.append(r)
 
-years = ['2016PreVFP','2016PostVFP','2017','2018']
+years = ['2017']
 
 selection_types = []
-#selection_types.append('3tight')
+selection_types.append('3tight')
 selection_types.append('3prompt')
 selection_types.append('fakerate')
 
 variation = 'nominal'
 frdir = '../../fakeRate/fakeRateMaps' # put dummy path here if not using nonprompt from data
 
+samplelistdir= '../samplelists/copyfromliam'
+
 for year in years:
-	for region in regions:
-	    for stype in selection_types:
-		# case 1: Liam's trilepton skims
-		inputdir = '/pnfs/iihe/cms/store/user/lwezenbe/skimmedTuples/HNL/default/'
-		inputyear = year.replace('PreVFP','pre').replace('PostVFP','post')
-		inputdir += 'UL{}/Reco'.format(inputyear)
-		samplelist = '../samplelists/'
-		samplelist += 'samples_controlregions_{}.txt'.format(year)
-		outputdir = 'output_20220215_npfromdata'
-		outputdir = os.path.join(outputdir, year+'_'+region, stype)
-		cmd = 'python eventbinner.py '+inputdir+' '+samplelist+' '+outputdir
-		cmd += ' '+region+' '+stype+' '+variation+' '+frdir
-		print('executing '+cmd)
-		os.system(cmd)
+    # case 1: Liam's trilepton skims
+    inputdir = '/pnfs/iihe/cms/store/user/lwezenbe/skimmedTuples/HNL/default/'
+    inputyear = year.replace('PreVFP','pre').replace('PostVFP','post')
+    inputdir += 'UL{}/Reco'.format(inputyear)
+    samplelist = os.path.join(samplelistdir,'samples_{}.txt'.format(year))
+    outputdir = 'output_20220224'
+    outputdir = os.path.join(outputdir, year)
+    regionstr = '+'.join(regions)
+    stypestr = '+'.join(selection_types)
+    cmd = 'python eventbinner.py '+inputdir+' '+samplelist+' '+outputdir
+    cmd += ' '+regionstr+' '+stypestr+' '+variation+' '+frdir
+    print('executing '+cmd)
+    os.system(cmd)

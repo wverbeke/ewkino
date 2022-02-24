@@ -46,7 +46,9 @@ void fillVarValue(std::shared_ptr<TH1D> hist, const double varvalue, const doubl
 
 std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap(
 				const std::vector<std::tuple<std::string,double,double,int>>& vars,
-				const std::string processName ){
+				const std::string processName,
+				const std::vector<std::string> event_selections,
+				const std::vector<std::string> selection_types ){
     // map of process name to variable to histogram!
     
     // initialize the output histogram map
@@ -59,16 +61,17 @@ std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > initHistMap
 	double xhigh = std::get<2>(vars[i]);
 	int nbins = std::get<3>(vars[i]);
 	HistInfo histInfo( "", variable.c_str(), nbins, xlow, xhigh);
-	// parse the process name and variable name to form the histogram name
-	std::string name = processName+"_"+variable;
-	name = stringTools::removeOccurencesOf(name," ");
-	name = stringTools::removeOccurencesOf(name,"/");
-	name = stringTools::removeOccurencesOf(name,"#");
-	name = stringTools::removeOccurencesOf(name,"{");
-	name = stringTools::removeOccurencesOf(name,"}");
-	name = stringTools::removeOccurencesOf(name,"+");
-	histMap[processName][variable] = histInfo.makeHist( name+"_nominal" );
-	histMap[processName][variable]->SetTitle(processName.c_str());
+	// loop over event selections and selection types
+	for(std::string es: event_selections){
+	    for(std::string st: selection_types){
+		std::string instanceName = es+"_"+st;
+		std::string thisProcessName = processName;
+		if( st=="fakerate" ) thisProcessName = "nonprompt";
+		std::string name = thisProcessName+"_"+instanceName+"_"+variable;
+		histMap[instanceName][variable] = histInfo.makeHist( name );
+		histMap[instanceName][variable]->SetTitle(thisProcessName.c_str());
+	    }
+	}
     }
     return histMap;
 }
@@ -95,8 +98,8 @@ void fillHistograms(const std::string& inputDirectory,
 			const std::string& sampleList,
 			int sampleIndex,
 			const std::string& outputDirectory,
-			const std::string& eventselection,
-			const std::string& selection_type,
+			const std::vector<std::string> event_selections,
+			const std::vector<std::string> selection_types,
 			const std::string& variation,
 			const std::string& muonfrmap,
 			const std::string& electronfrmap,
@@ -109,17 +112,17 @@ void fillHistograms(const std::string& inputDirectory,
     treeReader.initSample();
     for(int idx=1; idx<=sampleIndex; ++idx){
         treeReader.initSample();
+	std::cout << treeReader.currentSamplePtr()->fileName() << std::endl;
     }
     std::string year = treeReader.getYearString();
     std::string inputFileName = treeReader.currentSample().fileName();
     std::string processName = treeReader.currentSample().processName();
-    if( selection_type=="fakerate" ) processName = "nonprompt";
 
     // TEMP: determine additional normalization factor 
     // due to faulty hCounters in current samples
     double hCounterFactor = 1;
     if( treeReader.isMC() ){
-	std::string rfSampleList = "../normalization/hcounters_controlregions_" + year+".txt";
+	std::string rfSampleList = "../normalization/hcounters_samples_" + year+".txt";
 	std::vector<Sample> rfSamples = readSampleList( rfSampleList, inputDirectory );
 	double trueHCounter = 0;
 	std::string refName = stringTools::removeOccurencesOf( 
@@ -151,16 +154,19 @@ void fillHistograms(const std::string& inputDirectory,
     // load fake rate maps if needed
     std::shared_ptr<TH2D> frmap_muon;
     std::shared_ptr<TH2D> frmap_electron;
-    if(selection_type=="fakerate"){
-        frmap_muon = eventFlattening::readFRMap(muonfrmap, "muon", year);
-        frmap_electron = eventFlattening::readFRMap(electronfrmap, "electron", year);
-        std::cout << "read fake rate maps" << std::endl;
+    for(std::string st: selection_types){
+	if(st=="fakerate"){
+	    frmap_muon = eventFlattening::readFRMap(muonfrmap, "muon", year);
+	    frmap_electron = eventFlattening::readFRMap(electronfrmap, "electron", year);
+	    std::cout << "read fake rate maps" << std::endl;
+	}
     }
     
     // make reweighter
     std::cout << "initializing Reweighter..." << std::endl;
     std::shared_ptr< ReweighterFactory> reweighterFactory;
-    reweighterFactory = std::shared_ptr<ReweighterFactory>( new EmptyReweighterFactory() );
+    reweighterFactory = std::shared_ptr<ReweighterFactory>( 
+	new FourTopsFakeRateReweighterFactory() );
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( 
@@ -169,7 +175,7 @@ void fillHistograms(const std::string& inputDirectory,
     // make output collection of histograms
     std::cout << "making output collection of histograms..." << std::endl;
     std::map< std::string,std::map< std::string,std::shared_ptr<TH1D>> > histMap =
-        initHistMap(vars, processName );
+        initHistMap(vars, processName, event_selections, selection_types );
 
     // do event loop
     long unsigned numberOfEntries = treeReader.numberOfEntries();
@@ -179,44 +185,68 @@ void fillHistograms(const std::string& inputDirectory,
 	
 	// initialize map of variables
 	std::map<std::string,double> varmap = eventFlattening::initVarMap();
+	Event event = treeReader.buildEvent(entry,false,false,false,false);
 
-	// fill nominal histograms
-	bool passnominal = true;
-        Event event = treeReader.buildEvent(entry,false,false,false,false);
-        if(!passES(event, eventselection, selection_type, variation)) passnominal = false;
-	if(passnominal){
-	    varmap = eventFlattening::eventToEntry(event, reweighter, selection_type, 
+	for(std::string es: event_selections){
+	    for(std::string st: selection_types){
+		std::string instanceName = es+"_"+st;
+	
+		// fill nominal histograms
+		bool passnominal = true;
+		if(!passES(event, es, st, variation)) passnominal = false;
+		if(passnominal){
+		    varmap = eventFlattening::eventToEntry(event, reweighter, st, 
 					frmap_muon, frmap_electron, variation);
-	    double weight = varmap["_normweight"] * hCounterFactor;
-	    for(std::string variable : variables){
-		fillVarValue(histMap[processName][variable],
-			    getVarValue(variable,varmap), weight);
-	    }
-	}
+	
+		    /*std::cout << "----" << std::endl;
+		    std::cout << varmap["_normweight"] << std::endl;
+		    std::cout << event.weight() << std::endl;
+		    std::cout << reweighter.totalWeight(event) << std::endl;
+		    std::cout << reweighter["muonID"]->weight(event) << std::endl;
+		    std::cout << reweighter["electronID"]->weight(event) << std::endl;
+		    std::cout << reweighter["electronReco_pTBelow20"]->weight(event) << std::endl;
+		    std::cout << reweighter["electronReco_pTAbove20"]->weight(event) << std::endl;
+		    std::cout << reweighter["prefire"]->weight(event) << std::endl;
+		    std::cout << reweighter["pileup"]->weight(event) << std::endl;*/
+	    
+		    double weight = varmap["_normweight"] * hCounterFactor;
+		    for(std::string variable : variables){
+			fillVarValue(histMap[instanceName][variable],
+				    getVarValue(variable,varmap), weight);
+		    }
+		}
+	    } // end loop over selection types
+	} // end loop over event selections
     } // end loop over events
 
     // make output ROOT file
     std::string outputFilePath = stringTools::formatDirectoryName( outputDirectory );
     outputFilePath += inputFileName;
     TFile* outputFilePtr = TFile::Open( outputFilePath.c_str() , "RECREATE" );
-    // loop over variables
-    for(std::string variable : variables){
-	// need to distinguish between normal histograms and finely binned ones
-	// the latter will be rebinned in a later stage
-	// to do this correctly, they must not be clipped
-	bool doClip = true;
-	if( stringTools::stringContains(variable,"fineBinned") ) doClip = false;
-	if( selection_type == "fakerate") doClip = false;
-	// first find nominal histogram for this variable
-	std::shared_ptr<TH1D> nominalhist = histMap[processName][variable];
-	// if nominal histogram is empty, fill with dummy value (needed for combine);
-	// also put all other histograms equal to the nominal one to avoid huge uncertainties
-	if( nominalhist->GetEntries()==0 ){
-	    nominalhist->SetBinContent(1,1e-6); 
+    // loop over event selections and selection types
+    for(std::string es: event_selections){
+	for(std::string st: selection_types){
+	    std::string instanceName = es+"_"+st;
+	    // loop over variables
+	    for(std::string variable : variables){
+		// need to distinguish between normal histograms and finely binned ones
+		// the latter will be rebinned in a later stage
+		// to do this correctly, they must not be clipped
+		bool doClip = true;
+		if( stringTools::stringContains(variable,"fineBinned") ) doClip = false;
+		if( st == "fakerate") doClip = false;
+		// first find nominal histogram for this variable
+		std::shared_ptr<TH1D> nominalhist = histMap[instanceName][variable];
+		// if nominal histogram is empty, fill with dummy value (needed for combine);
+		// also put all other histograms equal to the nominal one to avoid huge uncertainties
+		if( nominalhist->GetEntries()==0 ){
+		    nominalhist->SetBinContent(1,1e-6); 
+		}
+		// clip and write nominal histogram
+		if( doClip ) clipHistogram(nominalhist);
+		nominalhist->Write();
+	    }
 	}
-	// clip and write nominal histogram
-	if( doClip ) clipHistogram(nominalhist);
-	nominalhist->Write();
     }
     outputFilePtr->Close();
 }
@@ -240,7 +270,9 @@ int main( int argc, char* argv[] ){
     int sample_index = std::stoi(argvStr[3]);
     std::string& output_directory = argvStr[4];
     std::string& event_selection = argvStr[5];
+    std::vector<std::string> event_selections = stringTools::split(event_selection,"+");
     std::string& selection_type = argvStr[6];
+    std::vector<std::string> selection_types = stringTools::split(selection_type,"+");
     std::string& variation = argvStr[7];
     std::string& muonfrmap = argvStr[8];
     std::string& electronfrmap = argvStr[9];
@@ -286,7 +318,7 @@ int main( int argc, char* argv[] ){
 
     // fill the histograms
     fillHistograms(input_directory, sample_list, sample_index, output_directory,
-				    event_selection, selection_type, variation,
+				    event_selections, selection_types, variation,
 				    muonfrmap, electronfrmap, 
 				    vars);
     std::cerr << "###done###" << std::endl;

@@ -27,10 +27,10 @@ bool passES(Event& event, const std::string& eventselection,
 		{ "wzcontrolregion", pass_wzcontrolregion },
 		{ "zzcontrolregion", pass_zzcontrolregion },
 		{ "zgcontrolregion", pass_zgcontrolregion },
-		//{ "ttzcontrolregion", pass_ttzcontrolregion },
-		//{ "signalsideband_noossf", pass_signalsideband_noossf },
-		//{ "signalsideband_noz", pass_signalsideband_noz },
-		//{ "signalsideband", pass_signalsideband },
+		{ "nonprompt_trilepton_noossf", pass_nonprompt_trilepton_noossf },
+		{ "nonprompt_trilepton_noz", pass_nonprompt_trilepton_noz },
+		{ "nonprompt_trilepton", pass_nonprompt_trilepton },
+		{ "nonprompt_dilepton", pass_nonprompt_dilepton }
 	    };
     auto it = ESFunctionMap.find( eventselection );
     if( it == ESFunctionMap.cend() ){
@@ -82,12 +82,14 @@ bool passPhotonOverlapRemoval( const Event& event ){
     bool isInclusiveSample = false;
     std::string sampleName = event.sample().fileName();
     if( stringTools::stringContains( sampleName, "DYJetsToLL" ) 
-	|| stringTools::stringContains( sampleName, "TTTo" ) 
-	|| stringTools::stringContains( sampleName, "TTJets" ) ){
+	|| stringTools::stringContains( sampleName, "TTTo" )
+	|| stringTools::stringContains( sampleName, "TTJets" )
+	|| stringTools::stringContains( sampleName, "WJets" ) ){
         isInclusiveSample = true;
-    } else if( stringTools::stringContains( sampleName, "TTGamma" ) 
-	|| stringTools::stringContains( sampleName, "ZGToLLG" ) 
-	|| stringTools::stringContains( sampleName, "ZGTo2LG" )
+    } else if( stringTools::stringContains( sampleName, "ZGToLLG" ) 
+        || stringTools::stringContains( sampleName, "ZGTo2LG" )
+	|| stringTools::stringContains( sampleName, "TTGamma" )
+	|| stringTools::stringContains( sampleName, "TTGJets" ) 
 	|| stringTools::stringContains( sampleName, "WGToLNuG" ) ){
         isPhotonSample = true;
     }
@@ -103,11 +105,6 @@ bool passPhotonOverlapRemoval( const Event& event ){
     if( allLeptonsArePrompt(event) ){
 	// if all leptons are prompt -> use ZG sample
 	usePhotonSample = true;
-	// BUT potential problem in ZG samples with missing phase space (gen level photon cut)
-	// solved for 2016 by using LoosePtlPtg sample (? still checking)
-	// for 2017/2018, these samples have other problems, instead use DY for low pt part
-	//if(event.is2016()) usePhotonSample = true;
-	//else{}
     }
 
     if( isInclusiveSample ){
@@ -166,9 +163,31 @@ bool allLeptonsArePrompt( const Event& event ){
     return true;
 }
 
+// help functions for determining number of jets and b-jets //
+
+std::pair<int,int> nJetsNBJets(Event& event, const std::string& variation){
+    // determine the number of jets and b-jets
+    // return values:
+    // - std::pair of number of jets, number of b-tagged jets
+
+    int njets = 0;
+    int nbjets = 0;
+
+    // if variation = "all", only apply most general selection: 
+    if( variation=="all" ){
+	njets = event.jetCollection().numberOfGoodAnyVariationJets();
+        nbjets = event.jetCollection().maxNumberOfMediumBTaggedJetsAnyVariation();
+    }
+    // else, determine number of jets and b-jets in correct variation
+    else{
+	JetCollection jetc = event.getJetCollection(variation);
+	njets = jetc.size();
+	nbjets = jetc.numberOfMediumBTaggedJets();
+    } 
+    return std::make_pair(njets,nbjets);
+}
+
 // help function for lepton pair mass constraint //
-// here for reference, but not yet sure if need to use,
-// also not sure on what lepton collection (loose? fo? tight?)
 
 bool passMllMassVeto( const Event& event ){
     for( LeptonCollection::const_iterator l1It = event.leptonCollection().cbegin(); 
@@ -186,6 +205,10 @@ bool passMllMassVeto( const Event& event ){
 
 // dedicated functions to check if event passes certain conditions //
 
+// -----------------------
+// prompt control regions 
+//------------------------
+
 bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
 				const std::string& variation, const bool selectbjets){
     // very similar to signal region but b-jet veto and other specificities
@@ -195,7 +218,7 @@ bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
-    //if(not passPhotonOverlapRemoval(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -235,7 +258,7 @@ bool pass_zzcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,4,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
-    //if(not passPhotonOverlapRemoval(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 4, true)) return false;
@@ -280,7 +303,7 @@ bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
     if(not passAnyTrigger(event)) return false;
     if(!hasnFOLeptons(event,3,true)) return false;
     if(not passLeptonPtThresholds(event)) return false;
-    //if(not passPhotonOverlapRemoval(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
     // do lepton selection for different types of selections
     if(selectiontype=="3tight"){
         if(!hasnTightLeptons(event, 3, true)) return false;
@@ -294,6 +317,7 @@ bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
         if(!hasnTightLeptons(event, 2, false)) return false;
         if(hasnTightLeptons(event, 3, false)) return false;
     } else return false;
+    // mass constraints on OSSF pair and trilepton system
     if(!event.hasOSSFLightLeptonPair()) return false;
     if(fabs(event.leptonSystem().mass()-particle::mZ)>halfwindow) return false;
     bool pairZmass = false;
@@ -311,5 +335,146 @@ bool pass_zgcontrolregion(Event& event, const std::string& selectiontype,
     // dummy condition on variation to avoid warnings
     if(variation=="dummy") return true;
     if(selectbjets){}
+    return true;
+}
+
+// --------------------------
+// nonprompt control regions 
+// --------------------------
+
+bool pass_nonprompt_trilepton_noossf(
+	    Event& event, 
+	    const std::string& selectiontype, 
+	    const std::string& variation, 
+	    const bool selectbjets){
+    cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
+    if(not passAnyTrigger(event)) return false;
+    if(!hasnFOLeptons(event, 3, true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
+    // do lepton selection for different types of selections
+    if(selectiontype=="3tight"){
+        if(!hasnTightLeptons(event, 3, true)) return false;
+    } else if(selectiontype=="3prompt"){
+        if(!hasnTightLeptons(event, 3, true)) return false;
+        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
+    } else if(selectiontype=="fakerate"){
+        if(hasnTightLeptons(event, 3, false)) return false;
+        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
+    } else if(selectiontype=="2tight"){
+        if(!hasnTightLeptons(event, 2, false)) return false;
+        if(hasnTightLeptons(event, 3, false)) return false;
+    } else return false;
+    // inverted cut on OSSF:
+    if(event.hasOSSFLightLeptonPair()) return false;
+    // number of jets and b-jets 
+    std::pair<int,int> njetsnbjets = nJetsNBJets(event, variation);
+    if( njetsnbjets.second != 1 ) return false;
+    if( njetsnbjets.first < 2 ) return false;
+    if(variation=="dummy") return true; // dummy to avoid unused parameter warning
+    if(selectbjets){} // dummy to avoid unused parameter warning
+    return true;
+}
+
+bool pass_nonprompt_trilepton_noz(
+	    Event& event, 
+	    const std::string& selectiontype,
+	    const std::string& variation, 
+	    const bool selectbjets){
+    cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
+    if(not passAnyTrigger(event)) return false;
+    if(!hasnFOLeptons(event,3,true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
+    // do lepton selection for different types of selections
+    if(selectiontype=="3tight"){
+        if(!hasnTightLeptons(event, 3, true)) return false;
+    } else if(selectiontype=="3prompt"){
+        if(!hasnTightLeptons(event, 3, true)) return false;
+        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
+    } else if(selectiontype=="fakerate"){
+        if(hasnTightLeptons(event, 3, false)) return false;
+        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
+    } else if(selectiontype=="2tight"){
+        if(!hasnTightLeptons(event, 2, false)) return false;
+        if(hasnTightLeptons(event, 3, false)) return false;
+    } else return false;
+    // require presence of OSSF pair
+    if(!event.hasOSSFLightLeptonPair()) return false;
+    // impose mass constraints on lepton pairs
+    for( LeptonCollection::const_iterator l1It = event.leptonCollection().cbegin(); 
+	 l1It != event.leptonCollection().cend(); l1It++ ){
+	for( LeptonCollection::const_iterator l2It = l1It+1; 
+	     l2It != event.leptonCollection().cend(); l2It++ ){
+	    Lepton& lep1 = **l1It;
+	    Lepton& lep2 = **l2It;
+	    if(oppositeSignSameFlavor(lep1,lep2) && (lep1+lep2).mass() < 35.) return false;
+	}
+    }
+    // impose mass constraint on 3-lepton system in case of eee/mme channel
+    if(event.WLepton().isElectron()){
+	if(fabs(event.leptonSystem().mass()-particle::mZ)<halfwindow) return false;
+    }
+    // impose mass constraint on OSSF pair
+    if(event.hasZTollCandidate( halfwindow )) return false;
+    // number of jets and b-jets
+    std::pair<int,int> njetsnbjets = nJetsNBJets(event, variation);
+    if( njetsnbjets.second != 1 ) return false;
+    if( njetsnbjets.first < 2 ) return false;
+    if(variation=="dummy") return true; // dummy to avoid unused parameter warning
+    if(selectbjets){} // dummy to avoid unused parameter warning
+    return true;
+}
+
+bool pass_nonprompt_trilepton(
+	Event& event, 
+	const std::string& selectiontype,
+	const std::string& variation, 
+	const bool selectbjets){
+    bool pass_noossf = pass_nonprompt_trilepton_noossf(event, selectiontype, variation, selectbjets);
+    if( pass_noossf ) return true;
+    bool pass_noz = pass_nonprompt_trilepton_noz(event, selectiontype, variation, selectbjets);
+    if( pass_noz ) return true;
+    return false;
+}
+
+bool pass_nonprompt_dilepton(
+            Event& event,
+            const std::string& selectiontype,
+            const std::string& variation,
+            const bool selectbjets){
+    cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
+    if(not passAnyTrigger(event)) return false;
+    if(!hasnFOLeptons(event, 2, true)) return false;
+    event.sortLeptonsByPt();
+    if(event.leptonCollection()[0].pt() < 25.
+        || event.leptonCollection()[1].pt() < 15. ) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
+    // do lepton selection for different types of selections
+    if(selectiontype=="3tight"){
+        if(!hasnTightLeptons(event, 2, true)) return false;
+    } else if(selectiontype=="3prompt"){
+        if(!hasnTightLeptons(event, 2, true)) return false;
+        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
+    } else if(selectiontype=="fakerate"){
+        if(hasnTightLeptons(event, 2, false)) return false;
+        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
+    } else return false;
+    // leptons must be same sign
+    if(!event.leptonsAreSameSign()) return false;
+    // veto on low-mass resonances
+    if( (event.leptonCollection()[0]+event.leptonCollection()[1]).mass() < 35. ) return false;
+    // number of jets and b-jets 
+    std::pair<int,int> njetsnbjets = nJetsNBJets(event, variation);
+    if( njetsnbjets.second != 1 ) return false;
+    if( njetsnbjets.first < 2 ) return false;
+    if(variation=="dummy") return true; // dummy to avoid unused parameter warning
+    if(selectbjets){} // dummy to avoid unused parameter warning
     return true;
 }

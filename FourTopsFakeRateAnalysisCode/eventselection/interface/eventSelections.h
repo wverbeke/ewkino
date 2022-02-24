@@ -25,5 +25,13 @@ bool pass_zzcontrolregion(Event&, const std::string& selectiontype,
 			const std::string& variation, const bool selectbjets);
 bool pass_zgcontrolregion(Event&, const std::string& selectiontype, 
 			const std::string& variation, const bool selectbjets);
+bool pass_nonprompt_trilepton_noossf(Event&, const std::string& selectiontype,
+                        const std::string& variation, const bool selectbjets);
+bool pass_nonprompt_trilepton_noz(Event&, const std::string& selectiontype,
+                        const std::string& variation, const bool selectbjets);
+bool pass_nonprompt_trilepton(Event&, const std::string& selectiontype,
+                        const std::string& variation, const bool selectbjets);
+bool pass_nonprompt_dilepton(Event&, const std::string& selectiontype,
+                        const std::string& variation, const bool selectbjets);
 
 #endif

@@ -1,6 +1,8 @@
 #######################################
 # merge output files from eventbinner #
 #######################################
+# note: corresponds to old convention with one file per sample
+#       and per event selection and per selection type!
 
 import sys
 import os

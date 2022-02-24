@@ -55,8 +55,16 @@ if __name__=='__main__':
 	go=raw_input()
 	if not go=='y': sys.exit()
 	os.system('rm -r '+output_directory)
-    if event_selection not in (['wzcontrolregion','zzcontrolregion','zgcontrolregion']):
-	raise Exception('ERROR: event_selection not in list of recognized event selections')
+    event_selections = event_selection.split('+')
+    for es in event_selections:
+	if es not in (['wzcontrolregion','zzcontrolregion','zgcontrolregion',
+			'nonprompt_trilepton_noossf','nonprompt_trilepton_noz',
+			'nonprompt_trilepton','nonprompt_dilepton']):
+	    raise Exception('ERROR: event_selection not in list of recognized event selections')
+    selection_types = selection_type.split('+')
+    for st in selection_types:
+	if st not in ['3tight','3prompt','fakerate']:
+	    raise Exception('ERROR: selection_type not in list of recognized types')
     if variation not in ['nominal']:
 	raise Exception('ERROR: only nominal variation supported for now')
 
