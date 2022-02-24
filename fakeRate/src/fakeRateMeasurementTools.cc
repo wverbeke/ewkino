@@ -156,18 +156,14 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     std::map<std::string,double> triggerToJetPtMap = fakeRate::mapTriggerToJetPtThreshold(triggerVector);
     
     // initialize a reweighter
-    // note: use 2016 reweighter for both 2016PreVFP and 2016PostVFP!
-    //       maybe extend later.
     std::cout<<"building reweighter"<<std::endl;
-    std::string reweighterYear = year;
-    if( year=="2016PreVFP" || year=="2016PostVFP" ){ reweighterYear = "2016"; }
     std::shared_ptr< ReweighterFactory >reweighterFactory( new FourTopsFakeRateReweighterFactory() );
     // for testing:
     //std::shared_ptr< ReweighterFactory >reweighterFactory( new EmptyReweighterFactory() );
     std::vector<Sample> thissample;
     thissample.push_back(treeReader.currentSample());
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", 
-					reweighterYear, thissample );
+					year, thissample );
 
     // loop over sample entries
     long unsigned numberOfEntries = treeReader.numberOfEntries();

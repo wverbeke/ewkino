@@ -203,7 +203,8 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
         std::make_shared< ReweighterPileup >( pileupWeightPath ) );
 
     // make prefire Reweighter
-    combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
+    // temporarily disabled as the weights are not in skimmed ntuples, yielding weight 0...
+    //combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
 
     return combinedReweighter;
 }

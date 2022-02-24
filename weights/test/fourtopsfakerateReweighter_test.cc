@@ -23,13 +23,14 @@ Testing script for FourTopsFakeRateReweighter
 
 int main( int argc, char* argv[] ){
 
-    int nargs = 3;
+    int nargs = 4;
     if( argc != nargs+1 ){
         std::cerr << "### ERROR ###: fourtopsfakerateReweighter_test.cc requires " << nargs;
         std::cerr << " arguments to run:" << std::endl;
         std::cerr << "- directory of input file(s)" << std::endl;
         std::cerr << "- name of input file (.root) OR samplelist (.txt)" << std::endl;
         std::cerr << "- number of events (use 0 for all events)" << std::endl;
+	std::cerr << "- name of output file" << std::endl;
         return -1;
     }
 
@@ -38,6 +39,7 @@ int main( int argc, char* argv[] ){
     std::string& inputDirectory = argvStr[1];
     std::string& sampleList = argvStr[2];
     long unsigned nEvents = std::stoul(argvStr[3]);
+    std::string& outputFileName = argvStr[4];
 
     // read the input file
     TreeReader treeReader;
@@ -72,7 +74,13 @@ int main( int argc, char* argv[] ){
 
     // initialize some histograms
     HistInfo histInfo = HistInfo( "", "reweighting factor", 50, -0.1, 2.1 );
-    std::shared_ptr<TH1D> nominalWeights = histInfo.makeHist( "nominalWeights" );
+    std::shared_ptr<TH1D> totalWeights = histInfo.makeHist( "totalWeight" );
+    std::shared_ptr<TH1D> electronRecoWeightsLowPt = histInfo.makeHist("electronRecoWeightLowPt");
+    std::shared_ptr<TH1D> electronRecoWeightsHighPt = histInfo.makeHist("electronRecoWeightsHighPt");
+    std::shared_ptr<TH1D> muonIDWeights = histInfo.makeHist( "muonIDWeight" );
+    std::shared_ptr<TH1D> electronIDWeights = histInfo.makeHist( "electronIDWeight" );
+    std::shared_ptr<TH1D> prefireWeights = histInfo.makeHist( "prefireWeight" );
+    std::shared_ptr<TH1D> pileupWeights = histInfo.makeHist( "pileupWeight" );
 
     // loop over samples
     unsigned numberOfSamples = samples.size();
@@ -94,17 +102,34 @@ int main( int argc, char* argv[] ){
 	    // do some selection (optional)
 
 	    // determine the weight
-	    double weight = reweighter.totalWeight( event );
+	    double totalWeight = reweighter.totalWeight( event );
+	    double electronRecoWeightLowPt = reweighter["electronReco_pTBelow20"]->weight(event);
+	    double electronRecoWeightHighPt = reweighter["electronReco_pTAbove20"]->weight(event);
+	    double muonIDWeight = reweighter["muonID"]->weight(event);
+	    double electronIDWeight = reweighter["electronID"]->weight(event);
+	    double prefireWeight = reweighter["prefire"]->weight(event);
+	    double pileupWeight = reweighter["pileup"]->weight(event);
 
 	    // fill the histograms
-	    nominalWeights->Fill( weight );
+	    totalWeights->Fill( totalWeight );
+	    electronRecoWeightsLowPt->Fill( electronRecoWeightLowPt );
+            electronRecoWeightsHighPt->Fill( electronRecoWeightHighPt );
+            muonIDWeights->Fill( muonIDWeight );
+            electronIDWeights->Fill( electronIDWeight );
+            prefireWeights->Fill( prefireWeight );
+            pileupWeights->Fill( pileupWeight );
         }
     }
 
     // write histograms to output file
-    std::string outputFileName = "output_fourtopsfakerateReweighter_test.root";
     TFile* filePtr = TFile::Open( outputFileName.c_str(), "recreate" );
-    nominalWeights->Write();
+    totalWeights->Write();
+    electronRecoWeightsLowPt->Write();
+    electronRecoWeightsHighPt->Write();
+    muonIDWeights->Write();
+    electronIDWeights->Write();
+    prefireWeights->Write();
+    pileupWeights->Write();
     filePtr->Close();
     return 0;
 }
