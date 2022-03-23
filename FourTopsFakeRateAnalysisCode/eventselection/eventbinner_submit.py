@@ -6,10 +6,11 @@ import os
 import sys
 
 regions = []
-for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regions.append(r)
+#for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regions.append(r)
 for r in ['nonprompt_trilepton_noossf','nonprompt_trilepton_noz']: regions.append(r)
+for r in ['nonprompt_dilepton']: regions.append(r)
 
-years = ['2017']
+years = ['2016PreVFP','2016PostVFP','2017','2018']
 
 selection_types = []
 selection_types.append('3tight')
@@ -27,7 +28,7 @@ for year in years:
     inputyear = year.replace('PreVFP','pre').replace('PostVFP','post')
     inputdir += 'UL{}/Reco'.format(inputyear)
     samplelist = os.path.join(samplelistdir,'samples_{}.txt'.format(year))
-    outputdir = 'output_20220224'
+    outputdir = 'output_20220307_c'
     outputdir = os.path.join(outputdir, year)
     regionstr = '+'.join(regions)
     stypestr = '+'.join(selection_types)

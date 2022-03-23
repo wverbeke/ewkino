@@ -37,9 +37,17 @@ void scanFile( const std::string& pathToFile ){
         // optional: apply event selection
 
 	// find properties and do printouts
-	double weight = event.weight();
+	std::cout << "=== event ===" << std::endl;
+	
+	// print large weights
+	/*double weight = event.weight();
 	if( std::abs(weight)>1e4 ){
 	    std::cerr << "###error###: large weight: " << weight << std::endl;
+	}*/
+
+	// print promptness of leptons
+	for( const auto& leptonPtr : event.leptonCollection() ){
+	    std::cout << leptonPtr->isPrompt() << std::endl;
 	}
     }
 }

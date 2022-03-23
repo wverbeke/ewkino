@@ -46,14 +46,34 @@ variables = (
     {'name':'_bestZMass','title':r'Mass of OSSF pair','unit':'GeV'},
     )
 
+
+def getmcsysthist(mchistlist, npunc=0.3):
+    syshist = mchistlist[0].Clone()
+    syshist.Reset()
+    totmchist = mchistlist[0].Clone()
+    totmchist.Reset()
+    nphist = None
+    for hist in mchistlist:
+	totmchist.Add(hist)
+	syshist.Add(hist)
+	if hist.GetTitle()=="nonprompt": nphist = hist.Clone()
+    if nphist is None: return None
+    if nphist.GetBinContent(1)<1e-4: nphist.SetBinContent(1,0.)
+    syshist.Add(nphist,npunc)
+    syshist.Add(totmchist,-1)
+    return syshist
+
+
 if __name__=="__main__":
 
     inputfile = sys.argv[1]
     year = sys.argv[2]
-    outputdir = sys.argv[3]
+    region = sys.argv[3]
+    outputdir = sys.argv[4]
 
     # read all histograms
     histlist = ht.loadallhistograms(inputfile)
+    histlist = ht.selecthistograms(histlist,mustcontainall=[region])[1]
 
     # make output directory
     if not os.path.exists(outputdir): os.makedirs(outputdir)
@@ -80,10 +100,17 @@ if __name__=="__main__":
 	lumimap = {'all':137600, '2016':36300, '2017':41500, '2018':59700,
 		    '2016PreVFP':19520, '2016PostVFP':16810 }
 	lumi = lumimap[year]
+	extracmstext = 'Preliminary'
+	#extracmstext = 'StandsWithUkraine'
+	colormap = colors.getcolormap(style='default')
+	#colormap = colors.getcolormap(style='ukraine')
+	npunc = 0.3
+	simsysthist = getmcsysthist(simhists, npunc=npunc)
 
 	# make the plot
-	hp.plotdatavsmc(outfile, datahists[0], simhists, 
+	hp.plotdatavsmc(outfile, datahists[0], simhists,
+	    mcsysthist=simsysthist, 
 	    xaxtitle=xaxtitle,
 	    yaxtitle='Number of events',
-	    colormap=colors.getcolormap(style='default'),
-	    lumi=lumi, extracmstext='Preliminary' )
+	    colormap=colormap,
+	    lumi=lumi, extracmstext=extracmstext )

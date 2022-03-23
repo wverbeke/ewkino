@@ -81,6 +81,20 @@ if __name__=="__main__":
 	print('hCounter: {}'.format(hcounter))
 	sample['hcounter'] = hcounter
 
+    # merge hcounters for samples with same sample name (e.g. extensions)
+    samples_dict_new = []
+    snames = []
+    for sample in samples_dict:
+	sname = sample['sample_name']
+	hcounter = sample['hcounter']
+	if not sname in snames:
+	    snames.append(sname)
+	    samples_dict_new.append(sample)
+	else:
+	    idx = snames.index(sname)
+	    samples_dict_new[idx]['hcounter'] += hcounter
+    samples_dict = samples_dict_new
+
     # write result to file
     outputfile = os.path.splitext(outputfile)[0]+'.json'
     res = {}

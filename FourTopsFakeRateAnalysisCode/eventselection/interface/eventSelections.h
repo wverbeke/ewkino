@@ -19,6 +19,8 @@ bool hasnFOLeptons(Event&, int, bool select);
 bool hasnTightLeptons(Event&, int, bool select);
 bool allLeptonsArePrompt(const Event&);
 // pass functions
+bool pass_signalregion_trilepton(Event& event, const std::string& selectiontype,
+                                const std::string& variation, const bool selectbjets);
 bool pass_wzcontrolregion(Event&, const std::string& selectiontype, 
 			const std::string& variation, const bool selectbjets);
 bool pass_zzcontrolregion(Event&, const std::string& selectiontype, 

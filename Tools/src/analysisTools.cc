@@ -179,6 +179,7 @@ bool analysisTools::fileIs2017( const std::string& filePath ){
         || stringTools::stringEndsWith( filePath, "data_2017.root" )
         || stringTools::stringEndsWith( filePath, "combined_2017.root" )
         || stringTools::stringContains( filePath, "_2017_v" )
+	|| stringTools::stringContains( filePath, "UL2017" ) // temp for reading a file from Liam
         || stringTools::stringStartsWith( stringTools::fileNameFromPath( filePath ), "2017" )
     );
 }

@@ -208,7 +208,7 @@ def drawLumi(pad,
     latex.SetTextAlign(11);
     if not cms_in_grid: latex.DrawLatex(lmargin+0.03 + 1.2*cmsX,
                         1-tmargin+CMSTextVerticalOffset, extratext);
-    else: latex.DrawLatex(lmargin+0.03 + 1.2*cmsX,
+    else: latex.DrawLatex(lmargin+0.03 + 1.*cmsX,
             1-tmargin-CMSTextVerticalOffset-CMSTextSize, extratext);
 
     latex.SetTextFont(42);

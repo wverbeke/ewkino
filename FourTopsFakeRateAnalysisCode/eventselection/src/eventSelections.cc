@@ -23,7 +23,7 @@ bool passES(Event& event, const std::string& eventselection,
     static std::map< std::string, std::function< 
 	bool(Event&, const std::string&, const std::string&, const bool) > > 
 	    ESFunctionMap = {
-		//{ "signalregion", pass_signalregion },
+		{ "signalregion_trilepton", pass_signalregion_trilepton },
 		{ "wzcontrolregion", pass_wzcontrolregion },
 		{ "zzcontrolregion", pass_zzcontrolregion },
 		{ "zgcontrolregion", pass_zgcontrolregion },
@@ -84,7 +84,8 @@ bool passPhotonOverlapRemoval( const Event& event ){
     if( stringTools::stringContains( sampleName, "DYJetsToLL" ) 
 	|| stringTools::stringContains( sampleName, "TTTo" )
 	|| stringTools::stringContains( sampleName, "TTJets" )
-	|| stringTools::stringContains( sampleName, "WJets" ) ){
+	|| (stringTools::stringContains( sampleName, "WJets" )
+	    && !stringTools::stringContains( sampleName, "TTWJets")) ){
         isInclusiveSample = true;
     } else if( stringTools::stringContains( sampleName, "ZGToLLG" ) 
         || stringTools::stringContains( sampleName, "ZGTo2LG" )
@@ -205,13 +206,47 @@ bool passMllMassVeto( const Event& event ){
 
 // dedicated functions to check if event passes certain conditions //
 
+// ---------------------------------------------------
+// signal regions (supposed to be in sync with Niels)
+// ---------------------------------------------------
+
+bool pass_signalregion_trilepton(Event& event, const std::string& selectiontype,
+                                const std::string& variation, const bool selectbjets){
+    cleanLeptonsAndJets(event);
+    // apply trigger and pt thresholds
+    if(not event.passMetFilters()) return false;
+    if(not passAnyTrigger(event)) return false;
+    if(!hasnFOLeptons(event,3,true)) return false;
+    if(not passLeptonPtThresholds(event)) return false;
+    if(not passPhotonOverlapRemoval(event)) return false;
+    // do lepton selection for different types of selections
+    if(selectiontype=="3tight"){
+        if(!hasnTightLeptons(event, 3, true)) return false;
+    } else if(selectiontype=="3prompt"){
+        if(!hasnTightLeptons(event, 3, true)) return false;
+        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
+    } else if(selectiontype=="fakerate"){
+        if(hasnTightLeptons(event, 3, false)) return false;
+        if(event.isMC() and !allLeptonsArePrompt(event)) return false;
+    } else return false;
+    // HT cut
+    if( event.jetCollection().scalarPtSum()<300 ) return false;
+    // number of jets and b-jets
+    std::pair<int,int> njetsnbjets = nJetsNBJets(event, variation);
+    // to check with Niels: medium or loose working point for b-tagging?
+    if( njetsnbjets.second < 2 ) return false;
+    if( njetsnbjets.first < 4 ) return false;
+    if(variation=="dummy") return true; // dummy to avoid unused parameter warning
+    if(selectbjets){} // dummy to avoid unused parameter warning
+    return true; 
+}
+
 // -----------------------
 // prompt control regions 
 //------------------------
 
 bool pass_wzcontrolregion(Event& event, const std::string& selectiontype,
 				const std::string& variation, const bool selectbjets){
-    // very similar to signal region but b-jet veto and other specificities
     cleanLeptonsAndJets(event);
     // apply trigger and pt thresholds
     if(not event.passMetFilters()) return false;
@@ -371,7 +406,7 @@ bool pass_nonprompt_trilepton_noossf(
     if(event.hasOSSFLightLeptonPair()) return false;
     // number of jets and b-jets 
     std::pair<int,int> njetsnbjets = nJetsNBJets(event, variation);
-    if( njetsnbjets.second != 1 ) return false;
+    if( njetsnbjets.second < 1 ) return false;
     if( njetsnbjets.first < 2 ) return false;
     if(variation=="dummy") return true; // dummy to avoid unused parameter warning
     if(selectbjets){} // dummy to avoid unused parameter warning
@@ -423,7 +458,7 @@ bool pass_nonprompt_trilepton_noz(
     if(event.hasZTollCandidate( halfwindow )) return false;
     // number of jets and b-jets
     std::pair<int,int> njetsnbjets = nJetsNBJets(event, variation);
-    if( njetsnbjets.second != 1 ) return false;
+    if( njetsnbjets.second < 1 ) return false;
     if( njetsnbjets.first < 2 ) return false;
     if(variation=="dummy") return true; // dummy to avoid unused parameter warning
     if(selectbjets){} // dummy to avoid unused parameter warning
@@ -472,7 +507,7 @@ bool pass_nonprompt_dilepton(
     if( (event.leptonCollection()[0]+event.leptonCollection()[1]).mass() < 35. ) return false;
     // number of jets and b-jets 
     std::pair<int,int> njetsnbjets = nJetsNBJets(event, variation);
-    if( njetsnbjets.second != 1 ) return false;
+    if( njetsnbjets.second < 1 ) return false;
     if( njetsnbjets.first < 2 ) return false;
     if(variation=="dummy") return true; // dummy to avoid unused parameter warning
     if(selectbjets){} // dummy to avoid unused parameter warning

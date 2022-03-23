@@ -25,8 +25,14 @@ Jet ID selection
 
 bool JetSelector::isGoodBase() const{
     if( jetPtr->pt() < 25 ) return false;
-    if( fabs( jetPtr->eta() ) > 2.4 ) return false;
     if( !jetPtr->isTight() ) return false;
+    // default:
+    if( fabs( jetPtr->eta() ) > 2.4 ) return false;
+    // experimental to copy the tZq analysis
+    /*if( fabs( jetPtr->eta() ) > 5.0 ) return false;
+    if( fabs( jetPtr->eta() )>2.7 
+	&& fabs( jetPtr->eta() )<3.0
+	&& jetPtr->pt() < 60 ) return false;*/
     return true;
 }
 

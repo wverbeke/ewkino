@@ -6,6 +6,9 @@
 
 import sys
 import os
+import ROOT
+sys.path.append('../../Tools/python')
+import histtools as ht
 
 
 if __name__=='__main__':
@@ -36,10 +39,10 @@ if __name__=='__main__':
     
     # select and change name
     if npmode=='npfromsim':
-	histlist = ht.select_histograms(histlist, mustcontainall=['_3tight_'])[1]
+	histlist = ht.selecthistograms(histlist, mustcontainall=['_3tight_'])[1]
 	for hist in histlist: hist.SetName( hist.GetName().replace('_3tight_','_') )
     if npmode=='npfromdata':
-	histlist = ht.select_histograms(histlist, mustcontainone=['_3prompt_','_fakerate_'])[1]
+	histlist = ht.selecthistograms(histlist, mustcontainone=['_3prompt_','_fakerate_'])[1]
 	for hist in histlist: 
 	    hist.SetName( hist.GetName().replace('_3tight_','_').replace('_fakerate_','_') )
 

@@ -10,6 +10,8 @@ def convert_line(line, year=None, mode=None):
     ### convert a single line in a sample list
     # input args:
     # - line: a string represening a valid line in Liam-style sample list
+    # - year: data taking year, used for vetoing specific samples
+    # - mode: either 'skim' or 'noskim', for different formats of sample lists
     # returns:
     # a string representing the same line in ewkino-style sample list
     els = line.split(' ')
@@ -33,6 +35,8 @@ def convert_line(line, year=None, mode=None):
 	if( 'WGToLNuG_01J' in sname ): return ''
 	if( 'WW_TuneCP5_13TeV-pythia8' in sname ): return ''
 	if( 'WZ_TuneCP5_13TeV-pythia8' in sname ): return ''
+	if( 'WZG' in sname ): return ''
+	if( 'WWG' in sname ): return ''
     if( year=='2016PostVFP' ):
 	if( 'DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8' in sname ): return ''
 	if( 'ST_tW' in sname and 'inclusiveDecays' in sname ): return ''
@@ -41,6 +45,8 @@ def convert_line(line, year=None, mode=None):
 	if( 'WW_TuneCP5_13TeV-pythia8' in sname ): return ''
 	if( 'WZ_TuneCP5_13TeV-pythia8' in sname ): return ''
 	if( 'ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8' in sname ): return ''
+	if( 'WZG' in sname ): return ''
+        if( 'WWG' in sname ): return ''
     if( year=='2017' ):
 	if( 'ST_tW' in sname and 'inclusiveDecays' in sname ): return ''
 	if( 'TTGamma' in sname ): return ''
@@ -48,6 +54,8 @@ def convert_line(line, year=None, mode=None):
 	if( 'WW_TuneCP5_13TeV-pythia8' in sname ): return ''
 	if( 'WZ_TuneCP5_13TeV-pythia8' in sname ): return ''
 	if( 'ZZ_TuneCP5_13TeV-pythia8' in sname ): return ''
+	if( 'WZG' in sname ): return ''
+        if( 'WWG' in sname ): return ''
     if( year=='2018' ):
 	if( 'ST_tW' in sname and 'inclusiveDecays' in sname ): return ''
         if( 'TTGamma' in sname ): return ''
@@ -57,12 +65,17 @@ def convert_line(line, year=None, mode=None):
 	    or 'W3JetsToLNu' in sname
 	    or 'W4JetsToLNu' in sname ): return ''
 	if( 'WGToLNuG_01J' in sname ): return ''
-	if( 'WW_TuneCP5_13TeV-pythia8' in sname ): return ''
-        if( 'WZ_TuneCP5_13TeV-pythia8' in sname ): return ''
+	if( 'WWTo1L1Nu2Q' in sname ): return ''
+	if( 'WWTo2L2Nu' in sname ): return ''
+	if( 'WZTo1L1Nu2Q' in sname ): return ''
+	if( 'WZ_TuneCP5_13TeV-pythia8' in sname ): return ''
         if( 'ZZ_TuneCP5_13TeV-pythia8' in sname ): return ''
+	if( 'WZG' in sname ): return ''
+        if( 'WWG' in sname ): return ''
     # remove double-counting by faulty extentions
     lpname = els[0]
-    if( '-ext' in lpname): return ''
+    if( mode=='skim' ):
+	if( '-ext' in lpname): return ''
     # format the process name
     pname = els[2]
     if( 'DYJets' in sname ): pname = 'DY'
@@ -72,6 +85,9 @@ def convert_line(line, year=None, mode=None):
     if( pname=='ZH-H' ): pname = 'ZZH'
     if( pname=='Data' ): pname = 'data'
     if( pname=='triboson' ): pname = 'Triboson'
+    if( 'TTGJets' in sname ): pname = 'XG'
+    if( 'TTZTo' in sname ): pname = 'TTZ'
+    if( 'TTWJets' in sname ): pname = 'TTW'
     # format cross-section
     xsec = els[4]
     xsec = xsec.replace('\n','')
@@ -83,6 +99,12 @@ def convert_line(line, year=None, mode=None):
 	xsecparts = xsec.split('*')
 	xsec = 1
 	for xsecpart in xsecparts: xsec*=float(xsecpart)
+    # overwrite cross-section for some samples
+    if( 'TTZToLLNuNu' in sname ): xsec = 0.2814
+    if( 'WGToLNuG' in sname ): xsec = 489
+    if( 'WZTo3LNu' in sname ): xsec = 5.063
+    if( 'GluGluToContinToZZTo2' in sname ): xsec = 0.0067
+    if( 'GluGluToContinToZZTo4' in sname ): xsec = 0.00334
     # make the new line
     newline = '{} {} {}'.format(pname, sname, xsec)
     return newline

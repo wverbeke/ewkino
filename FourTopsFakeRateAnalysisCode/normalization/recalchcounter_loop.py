@@ -8,7 +8,7 @@ import os
 if __name__=='__main__':
 
     inputdir = sys.argv[1]
-    years = ['2016PreVFP','2016PostVFP','2017','2018']
+    years = ['2018']
 
     for year in years:
 	samplelist = '../samplelists/copyfromliam/samples_{}_noskim.txt'.format(year)
