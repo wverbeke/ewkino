@@ -6,7 +6,8 @@ import os
 import sys
 
 regions = []
-#for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regions.append(r)
+for r in ['signalregion_trilepton']: regions.append(r)
+for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regions.append(r)
 for r in ['nonprompt_trilepton_noossf','nonprompt_trilepton_noz']: regions.append(r)
 for r in ['nonprompt_dilepton']: regions.append(r)
 
@@ -28,7 +29,7 @@ for year in years:
     inputyear = year.replace('PreVFP','pre').replace('PostVFP','post')
     inputdir += 'UL{}/Reco'.format(inputyear)
     samplelist = os.path.join(samplelistdir,'samples_{}.txt'.format(year))
-    outputdir = 'output_20220307_c'
+    outputdir = 'output_20220407'
     outputdir = os.path.join(outputdir, year)
     regionstr = '+'.join(regions)
     stypestr = '+'.join(selection_types)

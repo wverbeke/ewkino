@@ -19,7 +19,7 @@ TTX TTGamma_Dilept_TuneCP5_13TeV-madgraph-pythia8.root 2.220374
 TTX TTGamma_SingleLept_TuneCP5_13TeV-madgraph-pythia8.root 7.5091712
 TTX TTGamma_Hadronic_TuneCP5_13TeV-madgraph-pythia8.root 6.1620948
 TTX TTTJ_TuneCP5_13TeV-madgraph-pythia8.root 0.0003974
-TTX TTTT_TuneCP5_13TeV-amcatnlo-pythia8.root 0.0091
+TTTT TTTT_TuneCP5_13TeV-amcatnlo-pythia8.root 0.0091
 TTX TTTW_TuneCP5_13TeV-madgraph-pythia8.root 0.0007314
 TTX TTWH_TuneCP5_13TeV-madgraph-pythia8.root 0.00114
 TTX TTWW_TuneCP5_13TeV-madgraph-pythia8.root 0.00698
@@ -33,9 +33,9 @@ TTW TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8.root 0.2043
 TTW TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8.root 0.4062
 TTX ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8.root 0.2151
 TTX ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8.root 0.2934
-TTX TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8.root 87.315
-TTX TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8.root 364.352
-TTX TTToHadronic_TuneCP5_13TeV-powheg-pythia8.root 380.095
+TT TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8.root 87.315
+TT TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8.root 364.352
+TT TTToHadronic_TuneCP5_13TeV-powheg-pythia8.root 380.095
 Other VBFHToWWTo2L2Nu_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8.root 0.0897
 ZZH VHToNonbb_M125_TuneCP5_13TeV-amcatnloFXFX_madspin_pythia8.root 0.9561
 XG WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8.root 489

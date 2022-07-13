@@ -41,7 +41,7 @@ bool passES(Event& event, const std::string& eventselection,
 
 // help functions for event cleaning //
 
-constexpr double halfwindow = 15;
+constexpr double halfwindow = 7.5;
 
 void cleanLeptonsAndJets(Event& event){
     // select leptons
@@ -229,6 +229,8 @@ bool pass_signalregion_trilepton(Event& event, const std::string& selectiontype,
         if(hasnTightLeptons(event, 3, false)) return false;
         if(event.isMC() and !allLeptonsArePrompt(event)) return false;
     } else return false;
+    // Z candidate veto
+    if( event.hasZTollCandidate(halfwindow) ) return false;
     // HT cut
     if( event.jetCollection().scalarPtSum()<300 ) return false;
     // number of jets and b-jets

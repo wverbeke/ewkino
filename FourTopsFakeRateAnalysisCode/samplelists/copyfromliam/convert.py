@@ -88,6 +88,8 @@ def convert_line(line, year=None, mode=None):
     if( 'TTGJets' in sname ): pname = 'XG'
     if( 'TTZTo' in sname ): pname = 'TTZ'
     if( 'TTWJets' in sname ): pname = 'TTW'
+    if( 'TTTo' in sname ): pname = 'TT'
+    if( 'TTTT' in sname ): pname = 'TTTT'
     # format cross-section
     xsec = els[4]
     xsec = xsec.replace('\n','')

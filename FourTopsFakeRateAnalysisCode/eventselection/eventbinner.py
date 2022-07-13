@@ -57,7 +57,8 @@ if __name__=='__main__':
 	os.system('rm -r '+output_directory)
     event_selections = event_selection.split('+')
     for es in event_selections:
-	if es not in (['wzcontrolregion','zzcontrolregion','zgcontrolregion',
+	if es not in ([ 'signalregion_trilepton',
+			'wzcontrolregion','zzcontrolregion','zgcontrolregion',
 			'nonprompt_trilepton_noossf','nonprompt_trilepton_noz',
 			'nonprompt_trilepton','nonprompt_dilepton']):
 	    raise Exception('ERROR: event_selection not in list of recognized event selections')
@@ -106,4 +107,4 @@ if __name__=='__main__':
 	commands.append(command)
 
     # submit the jobs
-    ct.submitCommandsAsCondorCluster('cjob_eventbinner',commands)
+    ct.submitCommandsAsCondorCluster('cjob_eventbinner', commands, cmssw_version='CMSSW_10_6_29')

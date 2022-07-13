@@ -70,6 +70,7 @@ if __name__=="__main__":
     year = sys.argv[2]
     region = sys.argv[3]
     outputdir = sys.argv[4]
+    doblind = sys.argv[5]
 
     # read all histograms
     histlist = ht.loadallhistograms(inputfile)
@@ -93,6 +94,14 @@ if __name__=="__main__":
 	if len(datahists)!=1:
 	    raise Exception('ERROR: expecting one data histogram'
 			    +' but found {}'.format(len(datahists)))
+	datahist = datahists[0]
+
+	# blind data histogram
+	if doblind:
+	    for i in range(0,datahist.GetNbinsX()+2):
+		datahist.SetBinContent(i, 0)
+		datahist.SetBinError(i, 0)
+
 	# set plot properties
 	xaxtitle = title
 	yaxtitle = 'Events'
@@ -108,7 +117,7 @@ if __name__=="__main__":
 	simsysthist = getmcsysthist(simhists, npunc=npunc)
 
 	# make the plot
-	hp.plotdatavsmc(outfile, datahists[0], simhists,
+	hp.plotdatavsmc(outfile, datahist, simhists,
 	    mcsysthist=simsysthist, 
 	    xaxtitle=xaxtitle,
 	    yaxtitle='Number of events',

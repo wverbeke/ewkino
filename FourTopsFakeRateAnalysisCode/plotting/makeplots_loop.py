@@ -11,9 +11,10 @@ inputdir = sys.argv[1]
 runmode = 'condor'
 
 regions = []
+for r in ['signalregion_trilepton']: regions.append(r)
 #for r in ['wzcontrolregion','zzcontrolregion','zgcontrolregion']: regions.append(r)
-for r in ['nonprompt_trilepton_noossf','nonprompt_trilepton_noz']: regions.append(r)
-for r in ['nonprompt_dilepton']: regions.append(r)
+#for r in ['nonprompt_trilepton_noossf','nonprompt_trilepton_noz']: regions.append(r)
+#for r in ['nonprompt_dilepton']: regions.append(r)
 
 years = ['2016PreVFP','2016PostVFP','2017','2018']
 
@@ -29,7 +30,10 @@ for year in years:
 	    continue
 	for region in regions:
 	    thisoutputdir = os.path.join(inputdir, subdir, 'plots', year+'_'+region+'_'+npmode)
+	    doblind = False
+	    if 'signalregion' in region: doblind = True
 	    cmd = 'python makeplots.py '+inputfile+' '+year+' '+region+' '+thisoutputdir
+	    cmd += ' '+str(doblind)
 	    if runmode=='local':
 		print('executing '+cmd)
 		os.system(cmd)
