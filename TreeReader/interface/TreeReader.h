@@ -34,6 +34,8 @@ class TreeReader {
         static const unsigned nL_max = 20;
         static const unsigned nJets_max = 100;
         static const unsigned gen_nL_max = 20;
+	static const unsigned nLheWeights_max = 148;
+	static const unsigned nPsWeights_max = 46;
 	// global event variables and weights
         ULong_t         _runNb;
         ULong_t         _lumiBlock;
@@ -44,9 +46,9 @@ class TreeReader {
         Float_t         _prefireWeightUp;
         Double_t        _weight;
         UInt_t          _nLheWeights;
-        Double_t        _lheWeight[148];
+        Double_t        _lheWeight[nLheWeights_max];
         UInt_t          _nPsWeights;
-        Double_t        _psWeight[14];
+        Double_t        _psWeight[nPsWeights_max];
         Float_t         _nTrueInt;
         Double_t        _lheHTIncoming;
 	// generator variables
@@ -122,6 +124,8 @@ class TreeReader {
         Double_t        _leptonMvaTTH[nL_max];
         Double_t        _leptonMvatZq[nL_max];
 	Double_t        _leptonMvaTOP[nL_max];
+	Double_t	_leptonMvaTOPUL[nL_max];
+	Double_t	_leptonMvaTOPv2UL[nL_max];
         Bool_t          _lPOGVeto[nL_max];   
         Bool_t          _lPOGLoose[nL_max];   
         Bool_t          _lPOGMedium[nL_max];   
@@ -479,6 +483,8 @@ class TreeReader {
         TBranch        *b__leptonMvaTTH;
         TBranch        *b__leptonMvatZq;
 	TBranch        *b__leptonMvaTOP;
+	TBranch	       *b__leptonMvaTOPUL;
+	TBranch        *b__leptonMvaTOPv2UL;
         TBranch        *b__lPOGVeto;   
         TBranch        *b__lPOGLoose;   
         TBranch        *b__lPOGMedium;   

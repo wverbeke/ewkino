@@ -1,3 +1,13 @@
+/*
+Quick file reading and printing
+*/
+
+// intended for testing and debugging.
+// usage: 
+// - modify the code below to execute and/or print whatever you want to test.
+// - make using "make -f makeScanner".
+// - run using "./scanner [path to input file]" or using the python submitter.
+
 //include c++ library classes 
 #include <string>
 #include <vector>
@@ -37,18 +47,10 @@ void scanFile( const std::string& pathToFile ){
         // optional: apply event selection
 
 	// find properties and do printouts
-	std::cout << "=== event ===" << std::endl;
-	
-	// print large weights
-	/*double weight = event.weight();
-	if( std::abs(weight)>1e4 ){
-	    std::cerr << "###error###: large weight: " << weight << std::endl;
-	}*/
-
-	// print promptness of leptons
-	for( const auto& leptonPtr : event.leptonCollection() ){
-	    std::cout << leptonPtr->isPrompt() << std::endl;
-	}
+	double weight = event.weight();
+	//if( std::abs(weight)>1e4 ){
+	//    std::cerr << "###error###: large weight: " << weight << std::endl;
+	//}
     }
 }
 
