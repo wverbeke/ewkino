@@ -18,14 +18,20 @@ GeneratorInfo::GeneratorInfo( const TreeReader& treeReader ) :
     _genMetPtr( new GenMet( treeReader ) )
 { 
     if( _numberOfLheWeights > maxNumberOfLheWeights ){
-        throw std::out_of_range( "_numberOfLheWeights is larger than 148, which is the maximum array size of _lheWeights." );
+	std::string message = "ERROR in GeneratorInfo::GeneratorInfo:";
+	message.append( " _numberOfLheWeights is larger than " + std::to_string(maxNumberOfLheWeights) );
+	message.append( " which is the maximum array size of _lheWeights." );
+        throw std::out_of_range( message );
     }
     for( unsigned i = 0; i < _numberOfLheWeights; ++i  ){
         _lheWeights[i] = treeReader._lheWeight[i];
     }
 
     if( _numberOfPsWeights > maxNumberOfPsWeights ){
-        throw std::out_of_range( "_numberOfPsWeights is larger than 14, which is the maximum array size of _psWeights." );
+	std::string message = "ERROR in GeneratorInfo::GeneratorInfo:";
+        message.append( " _numberOfPsWeights is larger than " + std::to_string(maxNumberOfPsWeights) );
+        message.append( " which is the maximum array size of _psWeights." );
+        throw std::out_of_range( message );
     }
     for( unsigned i = 0; i < _numberOfPsWeights; ++i ){
         _psWeights[i] = treeReader._psWeight[i];

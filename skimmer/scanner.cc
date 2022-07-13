@@ -1,3 +1,13 @@
+/*
+Quick file reading and printing
+*/
+
+// intended for testing and debugging.
+// usage: 
+// - modify the code below to execute and/or print whatever you want to test.
+// - make using "make -f makeScanner".
+// - run using "./scanner [path to input file]" or using the python submitter.
+
 //include c++ library classes 
 #include <string>
 #include <vector>
@@ -38,9 +48,9 @@ void scanFile( const std::string& pathToFile ){
 
 	// find properties and do printouts
 	double weight = event.weight();
-	if( std::abs(weight)>1e4 ){
-	    std::cerr << "###error###: large weight: " << weight << std::endl;
-	}
+	//if( std::abs(weight)>1e4 ){
+	//    std::cerr << "###error###: large weight: " << weight << std::endl;
+	//}
     }
 }
 

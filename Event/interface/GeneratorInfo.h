@@ -54,7 +54,7 @@ class GeneratorInfo{
         static constexpr unsigned maxNumberOfLheWeights = 148;
         unsigned _numberOfLheWeights;
         double _lheWeights[maxNumberOfLheWeights];
-        static constexpr unsigned maxNumberOfPsWeights = 14;
+        static constexpr unsigned maxNumberOfPsWeights = 46;
         unsigned _numberOfPsWeights;
         double _psWeights[maxNumberOfPsWeights];
         double _prefireWeight;

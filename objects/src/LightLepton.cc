@@ -17,7 +17,9 @@ LightLepton::LightLepton( const TreeReader& treeReader, const unsigned leptonInd
     _closestJetTrackMultiplicity( treeReader._selectedTrackMult[leptonIndex] ),
     _leptonMVAtZq( treeReader._leptonMvatZq[leptonIndex] ),
     _leptonMVAttH( treeReader._leptonMvaTTH[leptonIndex] ),
-    _leptonMVATOP( treeReader._leptonMvaTOP[leptonIndex] )
+    _leptonMVATOP( treeReader._leptonMvaTOP[leptonIndex] ),
+    _leptonMVATOPUL( treeReader._leptonMvaTOPUL[leptonIndex] ),
+    _leptonMVATOPv2UL( treeReader._leptonMvaTOPv2UL[leptonIndex] )
 {
 
     //catch nan deep CSV values 
@@ -53,7 +55,9 @@ LightLepton::LightLepton( const LightLepton& rhs, LeptonSelector* leptonSelector
     _closestJetTrackMultiplicity( rhs._closestJetTrackMultiplicity ),
     _leptonMVAtZq( rhs._leptonMVAtZq ),
     _leptonMVAttH( rhs._leptonMVAttH ),
-    _leptonMVATOP( rhs._leptonMVATOP)
+    _leptonMVATOP( rhs._leptonMVATOP ),
+    _leptonMVATOPUL( rhs._leptonMVATOPUL ),
+    _leptonMVATOPv2UL( rhs._leptonMVATOPv2UL )
     {}
 
 
@@ -70,12 +74,26 @@ LightLepton::LightLepton( LightLepton&& rhs, LeptonSelector* leptonSelector ):
     _closestJetTrackMultiplicity( rhs._closestJetTrackMultiplicity ),
     _leptonMVAtZq( rhs._leptonMVAtZq ),
     _leptonMVAttH( rhs._leptonMVAttH ),
-    _leptonMVATOP( rhs._leptonMVATOP)
+    _leptonMVATOP( rhs._leptonMVATOP ),
+    _leptonMVATOPv2UL( rhs._leptonMVATOPv2UL )
     {}
 
 
 std::ostream& LightLepton::print( std::ostream& os ) const{
     Lepton::print( os );
-    os << " relIso 0.3 = " << _relIso0p3 << " / relIso 0.4 = " << _relIso0p4 << " / miniIso = " << _miniIso << " / miniIsoCharged = " << _miniIsoCharged << " / ptRatio = " << _ptRatio << " / ptRel = " << _ptRel << " / closestJetDeepCSV = " << _closestJetDeepCSV << " / closestJetDeepFlavor = " << _closestJetDeepFlavor << " / closestJetTrackMultiplicity = " << _closestJetTrackMultiplicity << " / leptonMVAtZq = " << _leptonMVAtZq << " / leptonMVAttH = " << _leptonMVAttH << " / leptonMVATOP = " << _leptonMVATOP;
+    os << " relIso 0.3 = " << _relIso0p3; 
+    os << " / relIso 0.4 = " << _relIso0p4;
+    os << " / miniIso = " << _miniIso;
+    os << " / miniIsoCharged = " << _miniIsoCharged;
+    os << " / ptRatio = " << _ptRatio;
+    os << " / ptRel = " << _ptRel;
+    os << " / closestJetDeepCSV = " << _closestJetDeepCSV;
+    os << " / closestJetDeepFlavor = " << _closestJetDeepFlavor;
+    os << " / closestJetTrackMultiplicity = " << _closestJetTrackMultiplicity;
+    os << " / leptonMVAtZq = " << _leptonMVAtZq;
+    os << " / leptonMVAttH = " << _leptonMVAttH;
+    os << " / leptonMVATOP = " << _leptonMVATOP;
+    os << " / leptonMVATOPUL = " << _leptonMVATOPUL;
+    os << " / leptonMVATOPv2UL = " << _leptonMVATOPv2UL;
     return os;
 }
