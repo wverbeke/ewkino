@@ -18,27 +18,49 @@ class TauSelector : public LeptonSelector {
     private:
         const Tau* const tauPtr;
 
-        virtual bool isLooseBase() const override;
-        virtual bool isLoose2016() const override;
-	virtual bool isLoose2016PreVFP() const override;
-        virtual bool isLoose2016PostVFP() const override;
-        virtual bool isLoose2017() const override;
-        virtual bool isLoose2018() const override;
+        virtual bool isLooseBase_v1() const override;
+        virtual bool isLoose2016_v1() const override;
+	virtual bool isLoose2016PreVFP_v1() const override;
+        virtual bool isLoose2016PostVFP_v1() const override;
+        virtual bool isLoose2017_v1() const override;
+        virtual bool isLoose2018_v1() const override;
 
-        virtual bool isFOBase() const override;
-        virtual bool isFO2016() const override;
-	virtual bool isFO2016PreVFP() const override;
-        virtual bool isFO2016PostVFP() const override;
-        virtual bool isFO2017() const override;
-        virtual bool isFO2018() const override;
+	virtual bool isLooseBase_v2() const override;
+        virtual bool isLoose2016_v2() const override;
+        virtual bool isLoose2016PreVFP_v2() const override;
+        virtual bool isLoose2016PostVFP_v2() const override;
+        virtual bool isLoose2017_v2() const override;
+        virtual bool isLoose2018_v2() const override;
+
+        virtual bool isFOBase_v1() const override;
+        virtual bool isFO2016_v1() const override;
+	virtual bool isFO2016PreVFP_v1() const override;
+        virtual bool isFO2016PostVFP_v1() const override;
+        virtual bool isFO2017_v1() const override;
+        virtual bool isFO2018_v1() const override;
+
+	virtual bool isFOBase_v2() const override;
+        virtual bool isFO2016_v2() const override;
+        virtual bool isFO2016PreVFP_v2() const override;
+        virtual bool isFO2016PostVFP_v2() const override;
+        virtual bool isFO2017_v2() const override;
+        virtual bool isFO2018_v2() const override;
+
 	virtual bool isFORunTime(double,double,int) const override;
 
-        virtual bool isTightBase() const override;
-        virtual bool isTight2016() const override;
-	virtual bool isTight2016PreVFP() const override;
-        virtual bool isTight2016PostVFP() const override;
-        virtual bool isTight2017() const override;
-        virtual bool isTight2018() const override;
+        virtual bool isTightBase_v1() const override;
+        virtual bool isTight2016_v1() const override;
+	virtual bool isTight2016PreVFP_v1() const override;
+        virtual bool isTight2016PostVFP_v1() const override;
+        virtual bool isTight2017_v1() const override;
+        virtual bool isTight2018_v1() const override;
+
+	virtual bool isTightBase_v2() const override;
+        virtual bool isTight2016_v2() const override;
+        virtual bool isTight2016PreVFP_v2() const override;
+        virtual bool isTight2016PostVFP_v2() const override;
+        virtual bool isTight2017_v2() const override;
+        virtual bool isTight2018_v2() const override;
 
         virtual double coneCorrection() const override;
 

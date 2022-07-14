@@ -47,10 +47,9 @@ void scanFile( const std::string& pathToFile ){
         // optional: apply event selection
 
 	// find properties and do printouts
-	double weight = event.weight();
-	//if( std::abs(weight)>1e4 ){
-	//    std::cerr << "###error###: large weight: " << weight << std::endl;
-	//}
+	for(Lepton* lep: event.leptonCollection()){
+	    if(lep->isLooseBase_v1())
+	}
     }
 }
 
