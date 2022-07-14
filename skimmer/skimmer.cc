@@ -48,7 +48,7 @@ void skimFile( const std::string& pathToFile, const std::string& outputDirectory
     // make output tree
     std::shared_ptr< TTree > outputTreePtr( std::make_shared< TTree >( 
 	"blackJackAndHookersTree","blackJackAndHookersTree" ) );
-    treeReader.setOutputTree( outputTreePtr.get(), false, false, false );
+    treeReader.setOutputTree( outputTreePtr.get(), false, false, false, false );
 
     long unsigned nentries = treeReader.numberOfEntries();
     long unsigned npass = 0;
