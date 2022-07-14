@@ -10,3 +10,9 @@ codeLibrary.o
 # root files
 # (exceptions may exist, e.g. scalefactors, but should be added manually)
 **.root
+
+# output folders
+fakeRate/output_*
+fakeRateGrid/output_*
+FourTopsFakeRateAnalysisCode/eventselection/output_*
+FourTopsFakeRateAnalysisCode/normalization/hcounters_*
