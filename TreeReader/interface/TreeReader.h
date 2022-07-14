@@ -260,7 +260,10 @@ class TreeReader {
         //set up tree for reading and writing
         //always reset triggers instead of rare case of combining primary datasets!
         void initTree( const bool resetTriggersAndFilters = true);
-        void setOutputTree( TTree* );
+        void setOutputTree( TTree*, 
+			    bool includeJECSources = true, 
+			    bool includeJECGrouped = true, 
+			    bool includeTauInfo = true );
 
         //initialize the next sample
         void initSample();

@@ -753,7 +753,10 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
 }
 
 
-void TreeReader::setOutputTree( TTree* outputTree ){
+void TreeReader::setOutputTree( TTree* outputTree, 
+				bool includeJECSources, 
+				bool includeJECGrouped,
+				bool includeTauInfo ){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
@@ -833,34 +836,36 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     outputTree->Branch("_lPOGMedium",                   &_lPOGMedium,                   "_lPOGMedium[_nL]/O");
     outputTree->Branch("_lPOGTight",                    &_lPOGTight,                    "_lPOGTight[_nL]/O");
 
-    outputTree->Branch("_tauDecayMode",                 &_tauDecayMode,                 "_tauDecayMode[_nL]/i");
-    outputTree->Branch("_decayModeFinding",             &_decayModeFinding,             "_decayModeFinding[_nL]/O");
-    outputTree->Branch("_decayModeFindingNew",          &_decayModeFindingNew,          "_decayModeFindingNew[_nL]/O");
-    outputTree->Branch("_tauPOGVLoose2015",             &_tauPOGVLoose2015,             "_tauPOGVLoose2015[_nL]/O");
-    outputTree->Branch("_tauPOGLoose2015",              &_tauPOGLoose2015,              "_tauPOGLoose2015[_nL]/O");
-    outputTree->Branch("_tauPOGMedium2015",             &_tauPOGMedium2015,             "_tauPOGMedium2015[_nL]/O");
-    outputTree->Branch("_tauPOGTight2015",              &_tauPOGTight2015,              "_tauPOGTight2015[_nL]/O");
-    outputTree->Branch("_tauPOGVTight2015",             &_tauPOGVTight2015,             "_tauPOGVTight2015[_nL]/O");
-    outputTree->Branch("_tauVLooseMvaNew2015",          &_tauVLooseMvaNew2015,          "_tauVLooseMvaNew2015[_nL]/O");
-    outputTree->Branch("_tauLooseMvaNew2015",           &_tauLooseMvaNew2015,           "_tauLooseMvaNew2015[_nL]/O");
-    outputTree->Branch("_tauMediumMvaNew2015",          &_tauMediumMvaNew2015,          "_tauMediumMvaNew2015[_nL]/O");
-    outputTree->Branch("_tauTightMvaNew2015",           &_tauTightMvaNew2015,           "_tauTightMvaNew2015[_nL]/O");
-    outputTree->Branch("_tauVTightMvaNew2015",          &_tauVTightMvaNew2015,          "_tauVTightMvaNew2015[_nL]/O");
-    outputTree->Branch("_tauPOGVVLoose2017v2",          &_tauPOGVVLoose2017v2,          "_tauPOGVVLoose2017v2[_nL]/O");
-    outputTree->Branch("_tauPOGVTight2017v2",           &_tauPOGVTight2017v2,           "_tauPOGVTight2017v2[_nL]/O");
-    outputTree->Branch("_tauPOGVVTight2017v2",          &_tauPOGVVTight2017v2,          "_tauPOGVVTight2017v2[_nL]/O");
-    outputTree->Branch("_tauVLooseMvaNew2017v2",        &_tauVLooseMvaNew2017v2,        "_tauVLooseMvaNew2017v2[_nL]/O");
-    outputTree->Branch("_tauLooseMvaNew2017v2",         &_tauLooseMvaNew2017v2,         "_tauLooseMvaNew2017v2[_nL]/O");
-    outputTree->Branch("_tauMediumMvaNew2017v2",        &_tauMediumMvaNew2017v2,        "_tauMediumMvaNew2017v2[_nL]/O");
-    outputTree->Branch("_tauTightMvaNew2017v2",         &_tauTightMvaNew2017v2,         "_tauTightMvaNew2017v2[_nL]/O");
-    outputTree->Branch("_tauVTightMvaNew2017v2",        &_tauVTightMvaNew2017v2,        "_tauVTightMvaNew2017v2[_nL]/O");
-    outputTree->Branch("_tauMuonVetoLoose",             &_tauMuonVetoLoose,             "_tauMuonVetoLoose[_nL]/O");
-    outputTree->Branch("_tauMuonVetoTight",             &_tauMuonVetoTight,             "_tauMuonVetoTight[_nL]/O");
-    outputTree->Branch("_tauEleVetoVLoose",             &_tauEleVetoVLoose,             "_tauEleVetoVLoose[_nL]/O");
-    outputTree->Branch("_tauEleVetoLoose",              &_tauEleVetoLoose,              "_tauEleVetoLoose[_nL]/O");
-    outputTree->Branch("_tauEleVetoMedium",             &_tauEleVetoMedium,             "_tauEleVetoMedium[_nL]/O");
-    outputTree->Branch("_tauEleVetoTight",              &_tauEleVetoTight,              "_tauEleVetoTight[_nL]/O");
-    outputTree->Branch("_tauEleVetoVTight",             &_tauEleVetoVTight,             "_tauEleVetoVTight[_nL]/O"); 
+    if( includeTauInfo ){
+	outputTree->Branch("_tauDecayMode",                 &_tauDecayMode,                 "_tauDecayMode[_nL]/i");
+	outputTree->Branch("_decayModeFinding",             &_decayModeFinding,             "_decayModeFinding[_nL]/O");
+	outputTree->Branch("_decayModeFindingNew",          &_decayModeFindingNew,          "_decayModeFindingNew[_nL]/O");
+	outputTree->Branch("_tauPOGVLoose2015",             &_tauPOGVLoose2015,             "_tauPOGVLoose2015[_nL]/O");
+	outputTree->Branch("_tauPOGLoose2015",              &_tauPOGLoose2015,              "_tauPOGLoose2015[_nL]/O");
+	outputTree->Branch("_tauPOGMedium2015",             &_tauPOGMedium2015,             "_tauPOGMedium2015[_nL]/O");
+	outputTree->Branch("_tauPOGTight2015",              &_tauPOGTight2015,              "_tauPOGTight2015[_nL]/O");
+	outputTree->Branch("_tauPOGVTight2015",             &_tauPOGVTight2015,             "_tauPOGVTight2015[_nL]/O");
+	outputTree->Branch("_tauVLooseMvaNew2015",          &_tauVLooseMvaNew2015,          "_tauVLooseMvaNew2015[_nL]/O");
+	outputTree->Branch("_tauLooseMvaNew2015",           &_tauLooseMvaNew2015,           "_tauLooseMvaNew2015[_nL]/O");
+	outputTree->Branch("_tauMediumMvaNew2015",          &_tauMediumMvaNew2015,          "_tauMediumMvaNew2015[_nL]/O");
+	outputTree->Branch("_tauTightMvaNew2015",           &_tauTightMvaNew2015,           "_tauTightMvaNew2015[_nL]/O");
+	outputTree->Branch("_tauVTightMvaNew2015",          &_tauVTightMvaNew2015,          "_tauVTightMvaNew2015[_nL]/O");
+	outputTree->Branch("_tauPOGVVLoose2017v2",          &_tauPOGVVLoose2017v2,          "_tauPOGVVLoose2017v2[_nL]/O");
+	outputTree->Branch("_tauPOGVTight2017v2",           &_tauPOGVTight2017v2,           "_tauPOGVTight2017v2[_nL]/O");
+	outputTree->Branch("_tauPOGVVTight2017v2",          &_tauPOGVVTight2017v2,          "_tauPOGVVTight2017v2[_nL]/O");
+	outputTree->Branch("_tauVLooseMvaNew2017v2",        &_tauVLooseMvaNew2017v2,        "_tauVLooseMvaNew2017v2[_nL]/O");
+	outputTree->Branch("_tauLooseMvaNew2017v2",         &_tauLooseMvaNew2017v2,         "_tauLooseMvaNew2017v2[_nL]/O");
+	outputTree->Branch("_tauMediumMvaNew2017v2",        &_tauMediumMvaNew2017v2,        "_tauMediumMvaNew2017v2[_nL]/O");
+	outputTree->Branch("_tauTightMvaNew2017v2",         &_tauTightMvaNew2017v2,         "_tauTightMvaNew2017v2[_nL]/O");
+	outputTree->Branch("_tauVTightMvaNew2017v2",        &_tauVTightMvaNew2017v2,        "_tauVTightMvaNew2017v2[_nL]/O");
+	outputTree->Branch("_tauMuonVetoLoose",             &_tauMuonVetoLoose,             "_tauMuonVetoLoose[_nL]/O");
+	outputTree->Branch("_tauMuonVetoTight",             &_tauMuonVetoTight,             "_tauMuonVetoTight[_nL]/O");
+	outputTree->Branch("_tauEleVetoVLoose",             &_tauEleVetoVLoose,             "_tauEleVetoVLoose[_nL]/O");
+	outputTree->Branch("_tauEleVetoLoose",              &_tauEleVetoLoose,              "_tauEleVetoLoose[_nL]/O");
+	outputTree->Branch("_tauEleVetoMedium",             &_tauEleVetoMedium,             "_tauEleVetoMedium[_nL]/O");
+	outputTree->Branch("_tauEleVetoTight",              &_tauEleVetoTight,              "_tauEleVetoTight[_nL]/O");
+	outputTree->Branch("_tauEleVetoVTight",             &_tauEleVetoVTight,             "_tauEleVetoVTight[_nL]/O");
+    }
 
     outputTree->Branch("_relIso",                       &_relIso,                       "_relIso[_nLight]/D");
     outputTree->Branch("_relIso0p4",                    &_relIso0p4,                    "_relIso0p4[_nLight]/D");
@@ -962,22 +967,26 @@ void TreeReader::setOutputTree( TTree* outputTree ){
     setMapOutputBranches( outputTree, _MetFilterMap, "/O" );
 
     // write split JEC uncertainties to output tree
-    setMapOutputBranches( outputTree, _jetPt_JECSourcesUp, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetPt_JECSourcesDown, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetSmearedPt_JECSourcesUp, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetSmearedPt_JECSourcesDown, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetPt_JECGroupedUp, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetPt_JECGroupedDown, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetSmearedPt_JECGroupedUp, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _jetSmearedPt_JECGroupedDown, "[_nJets]/D" );
-    setMapOutputBranches( outputTree, _corrMETx_JECSourcesUp, "/D");
-    setMapOutputBranches( outputTree, _corrMETx_JECSourcesDown, "/D");
-    setMapOutputBranches( outputTree, _corrMETy_JECSourcesUp, "/D");
-    setMapOutputBranches( outputTree, _corrMETy_JECSourcesDown, "/D");
-    setMapOutputBranches( outputTree, _corrMETx_JECGroupedUp, "/D");
-    setMapOutputBranches( outputTree, _corrMETx_JECGroupedDown, "/D");
-    setMapOutputBranches( outputTree, _corrMETy_JECGroupedUp, "/D");
-    setMapOutputBranches( outputTree, _corrMETy_JECGroupedDown, "/D");
+    if( includeJECSources ){
+	setMapOutputBranches( outputTree, _jetPt_JECSourcesUp, "[_nJets]/D" );
+	setMapOutputBranches( outputTree, _jetPt_JECSourcesDown, "[_nJets]/D" );
+	setMapOutputBranches( outputTree, _jetSmearedPt_JECSourcesUp, "[_nJets]/D" );
+	setMapOutputBranches( outputTree, _jetSmearedPt_JECSourcesDown, "[_nJets]/D" );
+	setMapOutputBranches( outputTree, _corrMETx_JECSourcesUp, "/D");
+        setMapOutputBranches( outputTree, _corrMETx_JECSourcesDown, "/D");
+        setMapOutputBranches( outputTree, _corrMETy_JECSourcesUp, "/D");
+        setMapOutputBranches( outputTree, _corrMETy_JECSourcesDown, "/D");
+    }
+    if( includeJECGrouped ){
+	setMapOutputBranches( outputTree, _jetPt_JECGroupedUp, "[_nJets]/D" );
+	setMapOutputBranches( outputTree, _jetPt_JECGroupedDown, "[_nJets]/D" );
+	setMapOutputBranches( outputTree, _jetSmearedPt_JECGroupedUp, "[_nJets]/D" );
+	setMapOutputBranches( outputTree, _jetSmearedPt_JECGroupedDown, "[_nJets]/D" );
+	setMapOutputBranches( outputTree, _corrMETx_JECGroupedUp, "/D");
+	setMapOutputBranches( outputTree, _corrMETx_JECGroupedDown, "/D");
+	setMapOutputBranches( outputTree, _corrMETy_JECGroupedUp, "/D");
+	setMapOutputBranches( outputTree, _corrMETy_JECGroupedDown, "/D");
+    }
 }
 
 
