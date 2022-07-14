@@ -761,7 +761,8 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
 void TreeReader::setOutputTree( TTree* outputTree, 
 				bool includeJECSources, 
 				bool includeJECGrouped,
-				bool includeTauInfo ){
+				bool includeTauInfo,
+				bool includeGenParticles ){
     outputTree->Branch("_runNb",                        &_runNb,                        "_runNb/l");
     outputTree->Branch("_lumiBlock",                    &_lumiBlock,                    "_lumiBlock/l");
     outputTree->Branch("_eventNb",                      &_eventNb,                      "_eventNb/l");
@@ -939,17 +940,19 @@ void TreeReader::setOutputTree( TTree* outputTree,
         outputTree->Branch("_lProvenance",               &_lProvenance,               "_lProvenance[_nL]/i");
         outputTree->Branch("_lProvenanceCompressed",     &_lProvenanceCompressed,     "_lProvenanceCompressed[_nL]/i");
         outputTree->Branch("_lProvenanceConversion",     &_lProvenanceConversion,     "_lProvenanceConversion[_nL]/i");
-        outputTree->Branch("_gen_met",                   &_gen_met,                   "_gen_met/D");
-        outputTree->Branch("_gen_metPhi",                &_gen_metPhi,                "_gen_metPhi/D");
-        outputTree->Branch("_gen_nL",                    &_gen_nL,                    "_gen_nL/i");
-        outputTree->Branch("_gen_lPt",                   &_gen_lPt,                   "_gen_lPt[_gen_nL]/D");
-        outputTree->Branch("_gen_lEta",                  &_gen_lEta,                  "_gen_lEta[_gen_nL]/D");
-        outputTree->Branch("_gen_lPhi",                  &_gen_lPhi,                  "_gen_lPhi[_gen_nL]/D");
-        outputTree->Branch("_gen_lE",                    &_gen_lE,                    "_gen_lE[_gen_nL]/D");
-        outputTree->Branch("_gen_lFlavor",               &_gen_lFlavor,               "_gen_lFlavor[_gen_nL]/i");
-        outputTree->Branch("_gen_lCharge",               &_gen_lCharge,               "_gen_lCharge[_gen_nL]/I");
-        outputTree->Branch("_gen_lMomPdg",               &_gen_lMomPdg,               "_gen_lMomPdg[_gen_nL]/I");
-        outputTree->Branch("_gen_lIsPrompt",             &_gen_lIsPrompt,             "_gen_lIsPrompt[_gen_nL]/O");
+	if( includeGenParticles ){
+	    outputTree->Branch("_gen_met",                   &_gen_met,                   "_gen_met/D");
+	    outputTree->Branch("_gen_metPhi",                &_gen_metPhi,                "_gen_metPhi/D");
+	    outputTree->Branch("_gen_nL",                    &_gen_nL,                    "_gen_nL/i");
+	    outputTree->Branch("_gen_lPt",                   &_gen_lPt,                   "_gen_lPt[_gen_nL]/D");
+	    outputTree->Branch("_gen_lEta",                  &_gen_lEta,                  "_gen_lEta[_gen_nL]/D");
+	    outputTree->Branch("_gen_lPhi",                  &_gen_lPhi,                  "_gen_lPhi[_gen_nL]/D");
+	    outputTree->Branch("_gen_lE",                    &_gen_lE,                    "_gen_lE[_gen_nL]/D");
+	    outputTree->Branch("_gen_lFlavor",               &_gen_lFlavor,               "_gen_lFlavor[_gen_nL]/i");
+	    outputTree->Branch("_gen_lCharge",               &_gen_lCharge,               "_gen_lCharge[_gen_nL]/I");
+	    outputTree->Branch("_gen_lMomPdg",               &_gen_lMomPdg,               "_gen_lMomPdg[_gen_nL]/I");
+	    outputTree->Branch("_gen_lIsPrompt",             &_gen_lIsPrompt,             "_gen_lIsPrompt[_gen_nL]/O");
+	}
         outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/i");
         outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/i");
     } 
