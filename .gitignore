@@ -10,3 +10,6 @@ codeLibrary.o
 # root files
 # (exceptions may exist, e.g. scalefactors, but should be added manually)
 **.root
+
+# output folders
+fakeRate/output_*
