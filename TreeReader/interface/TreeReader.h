@@ -263,7 +263,8 @@ class TreeReader {
         void setOutputTree( TTree*, 
 			    bool includeJECSources = true, 
 			    bool includeJECGrouped = true, 
-			    bool includeTauInfo = true );
+			    bool includeTauInfo = true,
+			    bool includeGenParticles = true );
 
         //initialize the next sample
         void initSample();
