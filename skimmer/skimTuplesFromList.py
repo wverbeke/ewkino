@@ -14,10 +14,11 @@
 #             (overwrites ntuple version that may be present in the sample list!)
 # - optional: files per job
 # - optional: wall time per job
+# - optional: run mode (condor, qsub or local)
 
 import sys
 import os
-from fileListing import listSampleDirectories, listFiles, listParts
+from fileListing import listSampleDirectories, listSampleFiles, listParts
 from skimTuples import yearIdentifierFromPath
 from jobSubmission import initializeJobScript, submitQsubJob
 sys.path.append(os.path.abspath('../jobSubmission'))
@@ -28,16 +29,15 @@ from samplelisttools import readsamplelist
 # check number of command line args
 if len(sys.argv) < 5:
     print('### WARNING ###: too few command line arguments.')
-    print('Usage the following arguments:')
+    print('Use the following arguments:')
     print('  - input directory')
-    print('  - sample_list')
-    print('  - output_directory')
+    print('  - sample list')
+    print('  - output directory')
     print('  - skim condition')
-    print('  - version = ntuple version')
-    print('  - filesperjob = number of files per job')
-    print('  - walltime = maximum wall time')
-    print('  - runmode = run mode (condor, qsub or local)')
-    print('(named arguments are optional)')
+    print('  - version = ntuple version [optional]')
+    print('  - files per job = number of files per job [optional]')
+    print('  - walltime = maximum wall time [optional]')
+    print('  - runmode = run mode (condor, qsub or local) [optional]')
     sys.exit()
 
 # read required command line args
@@ -47,7 +47,7 @@ output_directory_base = os.path.abspath(sys.argv[3])
 skim_condition = sys.argv[4]
 
 # read optional command line args
-version_name = ''
+version_name = None
 files_per_job = 50
 wall_time = '24:00:00'
 runmode = 'condor'
@@ -60,6 +60,17 @@ if len(sys.argv)>5:
 	elif sysarg[0]=='runmode': runmode = sysarg[1]
         else: 
             raise Exception('ERROR: optional argument '+sysarg+' not recognized!')
+
+# print command line args for checking
+print('Running with the follwing options:')
+print('  - input directory: {}'.format(input_directory))
+print('  - sample list: {}'.format(sample_list))
+print('  - output directory: {}'.format(output_directory_base))
+print('  - skim condition: {}'.format(skim_condition))
+print('  - version: {}'.format(version_name))
+print('  - files per job: {}'.format(files_per_job))
+print('  - walltime: {}'.format(wall_time))
+print('  - runmode: {}'.format(runmode))
 
 # check if executable exists
 exe = './skimmer'
@@ -84,13 +95,15 @@ if skim_condition not in allowed_skim_conditions:
 # check if output directory is empty and ask permission to clean it
 if os.path.exists(output_directory_base):
     if not len(os.listdir(output_directory_base))==0:
-	print('WARNING: output directory not empty. Clean it? (y/n)')
+	print('WARNING: output directory {} not empty.'.format(output_directory_base)
+		+' Permission to clean it? (y/n)')
 	go = raw_input()
 	if not go=='y': sys.exit()
 	os.system('rm -r {}'.format(os.path.join(output_directory_base,'*')))
 else: os.makedirs(output_directory_base)
 
 # make a list of sample names to use
+print('Extracting sample names from the provided sample list...')
 samples_to_use = []
 useall = False
 samples_dict = readsamplelist(sample_list)
@@ -99,16 +112,18 @@ for sample in samples_dict:
 if(len(samples_to_use)==1 and samples_to_use[0]=='all'):
     useall = True
 
-print('extracted the following sample names from the sample list:')
-print(samples_to_use)
+# print sample names to use
+print('Extracted {} sample names from the sample list:'.format(len(samples_to_use)))
+for sample_to_use in samples_to_use: print('  - {}'.format(sample_to_use))
 
 # make a list of samples (the main directories) 
 # and an equally long list of subdirectories with the latest version of the ntuples 
 # (one for each main directory)
+print('Finding samples in provided input directory...')
 sample_directories = []
 sample_sub_directories = []
 # case 1: version name is given as fixed argument for all samples
-if version_name!='':
+if version_name is not None:
     for sample_directory, subdirectory in listSampleDirectories( input_directory, version_name ):
         # extra selection using samplelist:
         sample_name = sample_directory.rstrip( os.path.sep ).split( os.path.sep )[-1]
@@ -118,22 +133,37 @@ if version_name!='':
 # case 2: version name is extracted from the sample list
 else:
     for sample in samples_dict:
-        if os.path.exists(input_directory+'/'+sample['sample_name']+'/'+sample['version_name']):
-            sample_directories.append(input_directory+'/'+sample['sample_name'])
+	fullpath = os.path.join(input_directory, sample['sample_name'], sample['version_name'])
+        if os.path.exists(fullpath):
+            sample_directories.append(os.path.join(input_directory,sample['sample_name']))
             sample_sub_directories.append(sample['version_name'])
         else:
             print('WARNING: sample {} not found in input directory {}'.format(
-		    sample['sample_name']+'/'+sample['version_name'], input_directory))
+		    os.path.join(sample['sample_name'],sample['version_name']), input_directory))
             print('Continue without? (y/n)')
             go = raw_input()
             if not go=='y': sys.exit()
 
 # printouts for testing
-print('found {} valid sample directories.'.format(len(sample_directories)))
+print('Found {} valid sample directories:'.format(len(sample_directories)))
 for directory,subdirectory in zip(sample_directories,sample_sub_directories):
     print('  - {}/{}'.format(directory,subdirectory))
 
+# determine the number of files for each sample
+print('Finding number of files to process...')
+nfiles = []
+for sample_directory, sub_directory in zip(sample_directories, sample_sub_directories):
+    nfiles.append( len(list(listSampleFiles(os.path.join(sample_directory,sub_directory)))) )
+nfiles = sum(nfiles)
+njobs = max(1,int(nfiles/files_per_job))
+print('Found a total of {} files, which will result in approximately {} jobs.'.format(
+	nfiles,njobs))
+print('Continue with the submission? (y/n)')
+go = raw_input()
+if not go=='y': sys.exit()
+
 # make output directory for each sample
+print('Making output directories...')
 sample_output_directories = []
 for directory, subdirectory in zip(sample_directories, sample_sub_directories):
     sample_name = directory.rstrip( os.path.sep ).split( os.path.sep )[-1] 
@@ -145,33 +175,36 @@ for directory, subdirectory in zip(sample_directories, sample_sub_directories):
     sample_output_directories.append( output_directory )
 
 # loop over samples and submit skimming jobs
+print('Starting submission...')
 cwd = os.getcwd()
 itlist = zip(sample_directories, sample_sub_directories, sample_output_directories)
 for sample_directory, sub_directory, output_directory in itlist:
-    #identify locations of files to process for a given sample 
-    root_files = list( listFiles( os.path.join( sample_directory, sub_directory ), '.root' ) )
+    #find the files to process for this sample 
+    root_files = list( listSampleFiles( os.path.join( sample_directory, sub_directory ) ) )
     print('----------------------------')
-    print('processing the following sample:')
-    print(sample_directory)
-    print(sub_directory)
-    print('number of root files: {}'.format(len(root_files)))
+    print('Now processing the following sample:')
+    print('  {}'.format(sample_directory))
+    print('  {}'.format(sub_directory))
+    print('  Number of root files: {}'.format(len(root_files)))
     # split files in lists of files_per_job
     chunks = list(listParts( root_files, files_per_job ))
     for chunk in chunks:
+	# make the commands to execute for this chunk
 	commands = []
 	commands.append( 'cd {}'.format(cwd) )
 	for f in chunk:
 	    command = './skimmer {} {} {}'.format(f,output_directory,skim_condition)
 	    commands.append(command)
-        # old qsub way
-        script_name = 'qjob_skimTuplesFromList.sh'
-        with open( script_name, 'w') as script:
-            initializeJobScript( script )
-            for command in commands:
-                script.write( command+'\n' )
-        # submit job and catch errors 
-        if runmode=='qsub': submitQsubJob( script_name, wall_time )
-        # alternative: run locally (for testing and debugging)
-        if runmode=='local': os.system('bash '+script_name)
-	# new condor way
+        # submission via qsub or local
+	if( runmode=='qsub' or runmode=='local' ):
+	    script_name = 'qjob_skimTuplesFromList.sh'
+	    with open( script_name, 'w') as script:
+		initializeJobScript( script )
+		for command in commands:
+		    script.write( command+'\n' )
+	    # case of qsub 
+	    if runmode=='qsub': submitQsubJob( script_name, wall_time )
+	    # case of local (mainly intended for testing and debugging)
+	    if runmode=='local': os.system('bash '+script_name)
+	# submission via condor
 	if runmode=='condor': ct.submitCommandsAsCondorJob( 'cjob_skimTuplesFromList', commands )

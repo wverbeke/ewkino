@@ -43,6 +43,25 @@ def listFiles( input_directory, identifier ):
                 yield os.path.join( directory, f )
 
 
+def listSampleFiles( input_directory ):
+    # more specific version of listFiles, used to list all root files in a sample directory.
+    # the input directory should be the full path to a sample + version name!
+    # this function checks that only one sample is present in the provided input directory,
+    # i.e. that there is only one time stamp folder.
+    
+    # find time stamp folders (assumed to be one level below version name)
+    timestamps = os.listdir(input_directory)
+    if len(timestamps)!=1:
+	msg = 'ERROR in fileListing.listSampleFiles:'
+	msg += ' the sample in directory {}'.format(input_directory)
+	msg += ' contains {} time stamp folders, while 1 was expected.'.format(len(timestamps))
+	msg += ' please check.'
+	raise Exception(msg)
+    timestamp = timestamps[0]
+    # find all root files in this folder
+    return list(listFiles(os.path.join(input_directory,timestamp),'.root'))
+
+
 def listParts( input_list, chunk_size ):
     # split a list into lists of fixed size
     # note: the last list might be smaller than chunk_size,
