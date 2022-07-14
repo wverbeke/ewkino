@@ -29,7 +29,7 @@ def makeUnique(fname):
     print(' consider choosing more specific names, splitting in folders, etc.')
     sys.exit()
 
-def initJobScript(name, docmsenv=True, cmssw_version='CMSSW_10_2_16_patch1'):
+def initJobScript(name, docmsenv=True, cmssw_version='CMSSW_10_6_29'):
     ### initialize an executable bash script by setting correct cms env
     ### note: similar to ewkino/skimmer/jobSubmission.py/initializeJobScript
     ### but copied here to be more standalone
@@ -88,7 +88,7 @@ def submitCondorJob(jobDescription):
 
 def submitCommandAsCondorJob(name, command, stdout=None, stderr=None, log=None,
                         cpus=1, mem=1024, disk=10240, 
-			docmsenv=True, cmssw_version='CMSSW_10_2_16_patch1'):
+			docmsenv=True, cmssw_version='CMSSW_10_6_29'):
     ### submit a single command as a single job
     ### command is a string representing a single command (executable + args)
     submitCommandsAsCondorJobs(name, [[command]], stdout=stdout, stderr=stderr, log=log,
@@ -97,7 +97,7 @@ def submitCommandAsCondorJob(name, command, stdout=None, stderr=None, log=None,
 
 def submitCommandsAsCondorCluster(name, commands, stdout=None, stderr=None, log=None,
                         cpus=1, mem=1024, disk=10240,
-                        docmsenv=True, cmssw_version='CMSSW_10_2_16_patch1'):
+                        docmsenv=True, cmssw_version='CMSSW_10_6_29'):
     ### run several similar commands within a single cluster of jobs
     ### note: each command must have the same executable and number of args, only args can differ!
     ### note: commands can be a list of commands (-> a job will be submitted for each command)
@@ -132,7 +132,7 @@ def submitCommandsAsCondorCluster(name, commands, stdout=None, stderr=None, log=
 
 def submitCommandsAsCondorJob(name, commands, stdout=None, stderr=None, log=None,
                         cpus=1, mem=1024, disk=10240,
-                        docmsenv=True, cmssw_version='CMSSW_10_2_16_patch1'):
+                        docmsenv=True, cmssw_version='CMSSW_10_6_29'):
     ### submit a set of commands as a single job
     ### commands is a list of strings, each string represents a single command (executable + args)
     ### the commands can be anything and are not necessarily same executable or same number of args.
@@ -142,7 +142,7 @@ def submitCommandsAsCondorJob(name, commands, stdout=None, stderr=None, log=None
 
 def submitCommandsAsCondorJobs(name, commands, stdout=None, stderr=None, log=None,
 			cpus=1, mem=1024, disk=10240,
-			docmsenv=True, cmssw_version='CMSSW_10_2_16_patch1'):
+			docmsenv=True, cmssw_version='CMSSW_10_6_29'):
     ### submit multiple sets of commands as jobs (one job per set)
     ### commands is a list of lists of strings, each string represents a single command
     ### the commands can be anything and are not necessarily same executable or number of args.
