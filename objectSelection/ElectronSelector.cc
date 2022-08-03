@@ -9,11 +9,10 @@
 
 // define the MVA threshold value depending on the lepton ID
 double leptonMVACutElectron(){
-    // dummy implementation for now, 
-    // replace with correct ID's and thresholds later!
-    if(LeptonSelector::leptonID()=="v1") return 1.0;
-    else if(LeptonSelector::leptonID()=="v2") return 1.0;
-    else if(LeptonSelector::leptonID()=="v1||v2") return 1.0;
+    // see AN_2022_016!
+    // the working point here corresponds to Medium for both v1 and v2!
+    if(LeptonSelector::leptonID()=="v1") return 0.64;
+    else if(LeptonSelector::leptonID()=="v2") return 0.90;
     else return 1.0;
 }
 
@@ -22,18 +21,15 @@ double leptonMVACutElectron(){
 double leptonMVAValueElectron(const Electron* electronPtr){
     if(LeptonSelector::leptonID()=="v1") return electronPtr->leptonMVATOPUL();
     else if(LeptonSelector::leptonID()=="v2") return electronPtr->leptonMVATOPv2UL();
-    else if(LeptonSelector::leptonID()=="v1||v2") return 0.0;
     else return 0.0;
 }
 
 
 // define cone correction factor
 double leptonConeCorrectionFactorElectron(){
-    // dummy implementation for now,
-    // replace with correct ID's and values later!
+    // cone correction factor to be determined!
     if(LeptonSelector::leptonID()=="v1") return 0.0;
     else if(LeptonSelector::leptonID()=="v2") return 0.0;
-    else if(LeptonSelector::leptonID()=="v1||v2") return 0.0;
     else return 0.0;
 }
 
@@ -51,6 +47,9 @@ bool ElectronSelector::isLooseBase_v1() const{
     if( electronPtr->sip3d() >= 8 ) return false;
     if( electronPtr->numberOfMissingHits() >= 2 ) return false;
     if( electronPtr->miniIso() >= 0.4 ) return false;
+    // addition: remove transition region
+    if( std::abs(electronPtr->etaSuperCluster()) > 1.4442 
+	&& std::abs(electronPtr->etaSuperCluster()) < 1.566) return false;
     return true;
 }
 
@@ -87,6 +86,9 @@ bool ElectronSelector::isLooseBase_v2() const{
     if( electronPtr->absEta() >= 2.5 ) return false;
     if( electronPtr->sip3d() >= 15 ) return false;
     if( electronPtr->relIso0p4() >= 1.0 ) return false;
+    // addition: remove transition region
+    if( std::abs(electronPtr->etaSuperCluster()) > 1.4442 
+        && std::abs(electronPtr->etaSuperCluster()) < 1.566) return false;
     return true;
 }
 
@@ -124,21 +126,25 @@ FO electron selections
 bool ElectronSelector::isFOBase_v1() const{
     if( !isLoose() ) return false;
     if( electronPtr->uncorrectedPt() <= 10 ) return false;
-    if( electronPtr->hOverE() >= 0.1 ) return false;
+    // following cuts are needed (after discussing with Niels)  
+    if( !electronPtr->passConversionVeto() ) return false;
+    // disable ad-hoc cuts below
+    // maybe enable and update to current POG values if needed for good electron closure
+    /*if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
         if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
     } else {
         if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
     }
-    if( !electronPtr->passConversionVeto() ) return false;
-    if( !electronPtr->passChargeConsistency() ) return false;
+    if( !electronPtr->passChargeConsistency() ) return false;*/
     return true;
 }
 
 
 bool ElectronSelector::isFO2016_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// initial guess based on previous iteration!
         if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
@@ -149,6 +155,7 @@ bool ElectronSelector::isFO2016_v1() const{
 
 bool ElectronSelector::isFO2016PreVFP_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// initial guess based on previous iteration!
 	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false; 
@@ -159,6 +166,7 @@ bool ElectronSelector::isFO2016PreVFP_v1() const{
 
 bool ElectronSelector::isFO2016PostVFP_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// initial guess based on previous iteration!
 	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
@@ -169,6 +177,7 @@ bool ElectronSelector::isFO2016PostVFP_v1() const{
 
 bool ElectronSelector::isFO2017_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// initial guess based on previous iteration!
 	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
@@ -179,6 +188,7 @@ bool ElectronSelector::isFO2017_v1() const{
 
 bool ElectronSelector::isFO2018_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// initial guess based on previous iteration!
 	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
@@ -191,21 +201,26 @@ bool ElectronSelector::isFO2018_v1() const{
 bool ElectronSelector::isFOBase_v2() const{
     if( !isLoose() ) return false;
     if( electronPtr->uncorrectedPt() <= 10 ) return false;
-    if( electronPtr->hOverE() >= 0.1 ) return false;
+    // following cuts are needed (after discussing with Niels)
+    if( electronPtr->numberOfMissingHits() >= 2 ) return false;
+    if( !electronPtr->passConversionVeto() ) return false;
+    // disable ad-hoc cuts below
+    // maybe enable and update to current POG values if needed for good electron closure
+    /*if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
         if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
     } else {
         if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
     }
-    if( !electronPtr->passConversionVeto() ) return false;
-    if( !electronPtr->passChargeConsistency() ) return false;
+    if( !electronPtr->passChargeConsistency() ) return false;*/
     return true;
 }
 
 
 bool ElectronSelector::isFO2016_v2() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// to do
     }
     return true;
 }
@@ -213,6 +228,7 @@ bool ElectronSelector::isFO2016_v2() const{
 
 bool ElectronSelector::isFO2016PreVFP_v2() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// to do
     }
     return true;
 }
@@ -220,6 +236,7 @@ bool ElectronSelector::isFO2016PreVFP_v2() const{
 
 bool ElectronSelector::isFO2016PostVFP_v2() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// to do
     }
     return true;
 }
@@ -227,6 +244,7 @@ bool ElectronSelector::isFO2016PostVFP_v2() const{
 
 bool ElectronSelector::isFO2017_v2() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// to do
     }
     return true;
 }
@@ -234,6 +252,7 @@ bool ElectronSelector::isFO2017_v2() const{
 
 bool ElectronSelector::isFO2018_v2() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
+	// to do
     }
     return true;
 }
@@ -244,7 +263,12 @@ bool ElectronSelector::isFORunTime( double ptRatioCut, double deepFlavorCut, int
     // function for FO optimization, use ONLY in MC fake rate grid search!
     if( !isLoose() ) return false;
     if( electronPtr->uncorrectedPt() <= 10 ) return false;
-    if( electronPtr->hOverE() >= 0.1 ) return false;
+    // following cuts are needed (after discussing with Niels)
+    if( electronPtr->numberOfMissingHits() >= 2 ) return false;
+    if( !electronPtr->passConversionVeto() ) return false;    
+    // disable ad-hoc cuts below
+    // maybe enable and update to current POG values if needed for good electron closure
+    /*if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
         if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
@@ -252,7 +276,7 @@ bool ElectronSelector::isFORunTime( double ptRatioCut, double deepFlavorCut, int
         if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
     }
     if( !electronPtr->passConversionVeto() ) return false;
-    if( !electronPtr->passChargeConsistency() ) return false;
+    if( !electronPtr->passChargeConsistency() ) return false;*/
 
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
 	if( extraCut==1 && !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
