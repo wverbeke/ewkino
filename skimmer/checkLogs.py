@@ -19,7 +19,7 @@ def check_start_done(filename):
     # count number of starting tags
     nstarted = filetext.count('###starting###')
     if(nstarted==0):
-        print('### WARNING: file '+fname+' contains no valid starting tag.')
+        print('### WARNING: file '+filename+' contains no valid starting tag.')
         print('             does the process write the correct tags to the error files?')
         return 1
 
