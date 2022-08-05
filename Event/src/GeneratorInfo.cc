@@ -19,9 +19,10 @@ GeneratorInfo::GeneratorInfo( const TreeReader& treeReader ) :
 { 
     if( _numberOfLheWeights > maxNumberOfLheWeights ){
 	std::string message = "ERROR in GeneratorInfo::GeneratorInfo:";
-	message.append( " _numberOfLheWeights is larger than " + std::to_string(maxNumberOfLheWeights) );
-	message.append( " which is the maximum array size of _lheWeights." );
-        throw std::out_of_range( message );
+	message.append( " _numberOfLheWeights is " + std::to_string(_numberOfLheWeights) );
+	message.append( " which is larger than " + std::to_string(maxNumberOfLheWeights) );
+	message.append( " (the maximum array size of _lheWeights)." );
+	throw std::out_of_range( message );
     }
     for( unsigned i = 0; i < _numberOfLheWeights; ++i  ){
         _lheWeights[i] = treeReader._lheWeight[i];
@@ -29,9 +30,10 @@ GeneratorInfo::GeneratorInfo( const TreeReader& treeReader ) :
 
     if( _numberOfPsWeights > maxNumberOfPsWeights ){
 	std::string message = "ERROR in GeneratorInfo::GeneratorInfo:";
-        message.append( " _numberOfPsWeights is larger than " + std::to_string(maxNumberOfPsWeights) );
-        message.append( " which is the maximum array size of _psWeights." );
-        throw std::out_of_range( message );
+	message.append( " _numberOfPsWeights is " + std::to_string(_numberOfPsWeights) );
+	message.append( " which is larger than " + std::to_string(maxNumberOfPsWeights) );
+	message.append( " (the maximum array size of _psWeights)." );
+	throw std::out_of_range( message );
     }
     for( unsigned i = 0; i < _numberOfPsWeights; ++i ){
         _psWeights[i] = treeReader._psWeight[i];

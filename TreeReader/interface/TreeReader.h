@@ -44,6 +44,7 @@ class TreeReader {
         Float_t         _prefireWeight;
         Float_t         _prefireWeightDown;
         Float_t         _prefireWeightUp;
+	// generator info
         Double_t        _weight;
         UInt_t          _nLheWeights;
         Double_t        _lheWeight[nLheWeights_max];
@@ -51,7 +52,9 @@ class TreeReader {
         Double_t        _psWeight[nPsWeights_max];
         Float_t         _nTrueInt;
         Double_t        _lheHTIncoming;
-	// generator variables
+	UInt_t          _ttgEventType;
+        UInt_t          _zgEventType;
+	// gen particles
         Double_t        _gen_met;
         Double_t        _gen_metPhi;
         UInt_t          _gen_nL;
@@ -63,8 +66,6 @@ class TreeReader {
         Int_t           _gen_lCharge[gen_nL_max];   
         Int_t           _gen_lMomPdg[gen_nL_max];   
         Bool_t          _gen_lIsPrompt[gen_nL_max];   
-        UInt_t          _ttgEventType;
-        UInt_t          _zgEventType;
 	// triggers and filters
         Bool_t          _passTrigger_e;
         Bool_t          _passTrigger_ee;
@@ -130,36 +131,6 @@ class TreeReader {
         Bool_t          _lPOGLoose[nL_max];   
         Bool_t          _lPOGMedium[nL_max];   
         Bool_t          _lPOGTight[nL_max];   
-
-        UInt_t          _tauDecayMode[nL_max];
-        Bool_t          _decayModeFinding[nL_max];
-        Bool_t          _decayModeFindingNew[nL_max];   
-        Bool_t          _tauMuonVetoLoose[nL_max];
-        Bool_t          _tauMuonVetoTight[nL_max];
-        Bool_t          _tauEleVetoVLoose[nL_max];
-        Bool_t          _tauEleVetoLoose[nL_max];
-        Bool_t          _tauEleVetoMedium[nL_max];
-        Bool_t          _tauEleVetoTight[nL_max];
-        Bool_t          _tauEleVetoVTight[nL_max];
-	Bool_t 		_tauPOGVLoose2015[nL_max];
-	Bool_t		_tauPOGLoose2015[nL_max];
-	Bool_t		_tauPOGMedium2015[nL_max];
-	Bool_t		_tauPOGTight2015[nL_max];
-	Bool_t		_tauPOGVTight2015[nL_max];
-	Bool_t		_tauVLooseMvaNew2015[nL_max];
-	Bool_t		_tauLooseMvaNew2015[nL_max];
-	Bool_t		_tauMediumMvaNew2015[nL_max];
-	Bool_t		_tauTightMvaNew2015[nL_max];
-	Bool_t		_tauVTightMvaNew2015[nL_max];
-	Bool_t		_tauPOGVVLoose2017v2[nL_max];
-	Bool_t		_tauPOGVTight2017v2[nL_max];
-	Bool_t		_tauPOGVVTight2017v2[nL_max];
-	Bool_t		_tauVLooseMvaNew2017v2[nL_max];
-	Bool_t		_tauLooseMvaNew2017v2[nL_max];
-	Bool_t		_tauMediumMvaNew2017v2[nL_max];
-	Bool_t		_tauTightMvaNew2017v2[nL_max];
-	Bool_t		_tauVTightMvaNew2017v2[nL_max];
-
         Double_t        _relIso[nL_max];   
         Double_t        _relIso0p4[nL_max];
         Double_t        _relIso0p4MuDeltaBeta[nL_max];
@@ -246,6 +217,35 @@ class TreeReader {
         std::map< std::string, Double_t > _corrMETy_JECGroupedUp;
         std::map< std::string, Double_t > _corrMETy_JECSourcesDown;
         std::map< std::string, Double_t > _corrMETy_JECSourcesUp;
+	// variables related to taus
+	UInt_t          _tauDecayMode[nL_max];
+        Bool_t          _decayModeFinding[nL_max];
+        Bool_t          _decayModeFindingNew[nL_max];
+        Bool_t          _tauMuonVetoLoose[nL_max];
+        Bool_t          _tauMuonVetoTight[nL_max];
+        Bool_t          _tauEleVetoVLoose[nL_max];
+        Bool_t          _tauEleVetoLoose[nL_max];
+        Bool_t          _tauEleVetoMedium[nL_max];
+        Bool_t          _tauEleVetoTight[nL_max];
+        Bool_t          _tauEleVetoVTight[nL_max];
+        Bool_t          _tauPOGVLoose2015[nL_max];
+        Bool_t          _tauPOGLoose2015[nL_max];
+        Bool_t          _tauPOGMedium2015[nL_max];
+        Bool_t          _tauPOGTight2015[nL_max];
+        Bool_t          _tauPOGVTight2015[nL_max];
+        Bool_t          _tauVLooseMvaNew2015[nL_max];
+        Bool_t          _tauLooseMvaNew2015[nL_max];
+        Bool_t          _tauMediumMvaNew2015[nL_max];
+        Bool_t          _tauTightMvaNew2015[nL_max];
+        Bool_t          _tauVTightMvaNew2015[nL_max];
+        Bool_t          _tauPOGVVLoose2017v2[nL_max];
+        Bool_t          _tauPOGVTight2017v2[nL_max];
+        Bool_t          _tauPOGVVTight2017v2[nL_max];
+        Bool_t          _tauVLooseMvaNew2017v2[nL_max];
+        Bool_t          _tauLooseMvaNew2017v2[nL_max];
+        Bool_t          _tauMediumMvaNew2017v2[nL_max];
+        Bool_t          _tauTightMvaNew2017v2[nL_max];
+        Bool_t          _tauVTightMvaNew2017v2[nL_max];
 	// analysis specific variables: ewkino
         Double_t        _mChi1;
         Double_t        _mChi2;
@@ -264,6 +264,7 @@ class TreeReader {
 			    bool includeJECSources = true, 
 			    bool includeJECGrouped = true, 
 			    bool includeTauInfo = true,
+			    bool includeGeneratorInfo = true,
 			    bool includeGenParticles = true );
 
         //initialize the next sample
@@ -305,8 +306,10 @@ class TreeReader {
 			    const bool readAllJECVariations = false, 
                             const bool readGroupedJECVariations = false );
 
-        //check whether generator info is present in current tree
-        bool containsGeneratorInfo() const;
+        //check whether specific info is present in current tree
+        bool containsTauInfo() const;
+	bool containsGeneratorInfo() const;
+	bool containsGenParticles() const;
 
         //check whether SUSY mass info is present in the current sample
 	// ( this is the case for SUSY signal scans )

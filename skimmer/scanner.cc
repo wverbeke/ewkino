@@ -41,7 +41,14 @@ void scanFile( const std::string& pathToFile ){
     long unsigned nentries = treeReader.numberOfEntries();
     for( long unsigned entry = 0; entry < nentries; ++entry ){
 
-        // build event
+	// do printouts directly on TreeReader
+	treeReader.GetEntry(entry);
+	std::cout << "event" << std::endl;
+	std::cout << treeReader._nLheWeights << std::endl;
+	std::cout << treeReader._nPsWeights << std::endl;
+	std::cout << treeReader._nL << std::endl;
+
+        /* // build event
         Event event = treeReader.buildEvent( entry, false, false, false, false );
 
         // optional: apply event selection
@@ -50,7 +57,7 @@ void scanFile( const std::string& pathToFile ){
 	double weight = event.weight();
 	//if( std::abs(weight)>1e4 ){
 	//    std::cerr << "###error###: large weight: " << weight << std::endl;
-	//}
+	//} */
     }
 }
 
