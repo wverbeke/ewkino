@@ -1,17 +1,29 @@
 #ifndef fakeRateTools_H
 #define fakeRateTools_H
 
+
 //include c++ library classes 
 #include <string>
 #include <vector>
 #include <map>
+#include <stdexcept>
+#include <iostream>
+#include <set>
+#include <algorithm>
 
 //include ROOT classes 
 #include "TFile.h"
 #include "TH2D.h"
+#include "TH1.h"
+#include "TROOT.h"
 
 //include other parts of framework
-#include "Prescale.h"
+#include "../../Tools/interface/stringTools.h"
+#include "../../Tools/interface/systemTools.h"
+#include "../../Tools/interface/analysisTools.h"
+#include "../../Tools/interface/ConstantFit.h"
+#include "../../Tools/interface/Prescale.h"
+#include "../../plotting/plotCode.h"
 
 
 namespace fakeRate{

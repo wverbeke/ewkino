@@ -9,6 +9,8 @@ It can either be initialized from the result of a simple root fit, or a txt file
 //include c++ library classes
 #include <string>
 
+//include other parts of framework
+#include "ConstantFit.h"
 
 class ConstantFit;
 
