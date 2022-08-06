@@ -37,7 +37,7 @@ loose muon selection
 
 // loose definition for leptonMVA UL v1
 bool MuonSelector::isLooseBase_v1() const{
-    if( muonPtr->uncorrectedPt() <= 5 ) return false;
+    if( muonPtr->uncorrectedPt() <= 10 ) return false;
     if( muonPtr->absEta() >= 2.4 ) return false; 
     if( fabs( muonPtr->dxy() ) >= 0.05 ) return false;
     if( fabs( muonPtr->dz() ) >= 0.1 ) return false;
@@ -129,7 +129,6 @@ double muonSlidingDeepFlavorThreshold( const double lowPt, const double lowPtWP,
 // FO definition for leptonMVA UL v1
 bool MuonSelector::isFOBase_v1() const{
     if( !isLoose() ) return false;
-    if( muonPtr->uncorrectedPt() <= 10 ) return false;
     return true;
 }
 

@@ -40,14 +40,13 @@ Loose electron selections
 
 // loose definition for leptonMVA UL v1
 bool ElectronSelector::isLooseBase_v1() const{
-    if( electronPtr->uncorrectedPt() < 7 ) return false;
+    if( electronPtr->uncorrectedPt() < 10 ) return false;
     if( electronPtr->absEta() >= 2.5 ) return false;
     if( fabs( electronPtr->dxy() ) >= 0.05 ) return false;
     if( fabs( electronPtr->dz() ) >= 0.1 ) return false;
     if( electronPtr->sip3d() >= 8 ) return false;
     if( electronPtr->numberOfMissingHits() >= 2 ) return false;
     if( electronPtr->miniIso() >= 0.4 ) return false;
-    // addition: remove transition region
     if( std::abs(electronPtr->etaSuperCluster()) > 1.4442 
 	&& std::abs(electronPtr->etaSuperCluster()) < 1.566) return false;
     return true;
@@ -86,7 +85,6 @@ bool ElectronSelector::isLooseBase_v2() const{
     if( electronPtr->absEta() >= 2.5 ) return false;
     if( electronPtr->sip3d() >= 15 ) return false;
     if( electronPtr->relIso0p4() >= 1.0 ) return false;
-    // addition: remove transition region
     if( std::abs(electronPtr->etaSuperCluster()) > 1.4442 
         && std::abs(electronPtr->etaSuperCluster()) < 1.566) return false;
     return true;
@@ -124,13 +122,11 @@ FO electron selections
 
 // FO definition for leptonMVA UL v1
 bool ElectronSelector::isFOBase_v1() const{
+    // note: not yet fully decided, will depend on Niels' findings which cuts are needed!
+    //       do not tune FO ID yet as the tight ID might change still.
     if( !isLoose() ) return false;
-    if( electronPtr->uncorrectedPt() <= 10 ) return false;
-    // following cuts are needed (after discussing with Niels)  
-    if( !electronPtr->passConversionVeto() ) return false;
-    // disable ad-hoc cuts below
-    // maybe enable and update to current POG values if needed for good electron closure
-    /*if( electronPtr->hOverE() >= 0.1 ) return false;
+    /*if( !electronPtr->passConversionVeto() ) return false;
+    if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
         if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
@@ -199,14 +195,13 @@ bool ElectronSelector::isFO2018_v1() const{
 
 // FO definition for leptonMVA UL v2
 bool ElectronSelector::isFOBase_v2() const{
+    // note: not yet fully decided, will depend on Niels' findings which cuts are needed!
+    //       do not tune FO ID yet as the tight ID might change still.
     if( !isLoose() ) return false;
     if( electronPtr->uncorrectedPt() <= 10 ) return false;
-    // following cuts are needed (after discussing with Niels)
-    if( electronPtr->numberOfMissingHits() >= 2 ) return false;
+    /*if( electronPtr->numberOfMissingHits() >= 2 ) return false;
     if( !electronPtr->passConversionVeto() ) return false;
-    // disable ad-hoc cuts below
-    // maybe enable and update to current POG values if needed for good electron closure
-    /*if( electronPtr->hOverE() >= 0.1 ) return false;
+    if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
         if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
@@ -263,12 +258,9 @@ bool ElectronSelector::isFORunTime( double ptRatioCut, double deepFlavorCut, int
     // function for FO optimization, use ONLY in MC fake rate grid search!
     if( !isLoose() ) return false;
     if( electronPtr->uncorrectedPt() <= 10 ) return false;
-    // following cuts are needed (after discussing with Niels)
-    if( electronPtr->numberOfMissingHits() >= 2 ) return false;
+    /*if( electronPtr->numberOfMissingHits() >= 2 ) return false;
     if( !electronPtr->passConversionVeto() ) return false;    
-    // disable ad-hoc cuts below
-    // maybe enable and update to current POG values if needed for good electron closure
-    /*if( electronPtr->hOverE() >= 0.1 ) return false;
+    if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
         if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;

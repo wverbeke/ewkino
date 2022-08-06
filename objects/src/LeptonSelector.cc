@@ -2,7 +2,7 @@
 
 // define lepton ID
 std::string LeptonSelector::leptonID(){
-   return "v1||v2";
+   return "v1";
 }
 
 
