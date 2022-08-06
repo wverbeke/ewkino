@@ -75,6 +75,7 @@ LightLepton::LightLepton( LightLepton&& rhs, LeptonSelector* leptonSelector ):
     _leptonMVAtZq( rhs._leptonMVAtZq ),
     _leptonMVAttH( rhs._leptonMVAttH ),
     _leptonMVATOP( rhs._leptonMVATOP ),
+    _leptonMVATOPUL( rhs._leptonMVATOPUL ),
     _leptonMVATOPv2UL( rhs._leptonMVATOPv2UL )
     {}
 
