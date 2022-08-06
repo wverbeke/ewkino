@@ -1,23 +1,5 @@
 #include "../interface/fakeRateTools.h"
 
-
-//include c++ library classes 
-#include <stdexcept>
-#include <iostream>
-#include <set>
-#include <algorithm>
-
-//include ROOT classes 
-#include "TH1.h"
-#include "TROOT.h"
-
-//include other parts of framework
-#include "../../Tools/interface/stringTools.h"
-#include "../../Tools/interface/systemTools.h"
-#include "../../Tools/interface/analysisTools.h"
-#include "../../Tools/interface/ConstantFit.h"
-#include "../../plotting/plotCode.h"
-
 /****************************************************************************
 general help functions for fitTriggerPresacles_cut and produceFakeRateMap_cut
 ****************************************************************************/

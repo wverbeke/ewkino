@@ -1,9 +1,9 @@
 CC=g++ -Wall -Wextra -O3
 CFLAGS= -Wl,--no-as-needed
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= plotMagicFactor.cc ../codeLibrary.o
+SOURCES= fillConeCorrectionFactor.cc src/fakeRateTools.cc ../codeLibrary.o
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=plotMagicFactor
+EXECUTABLE=fillConeCorrectionFactor
 
 all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)

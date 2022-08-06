@@ -41,6 +41,7 @@
 #include "Tools/src/histogramTools.cc"
 #include "Tools/src/SusyScan.cc"
 #include "Tools/src/ConstantFit.cc"
+#include "Tools/src/Prescale.cc"
 #include "Tools/src/SampleCrossSections.cc"
 #include "Tools/src/QuantileBinner.cc"
 #include "Tools/src/mt2.cc"
