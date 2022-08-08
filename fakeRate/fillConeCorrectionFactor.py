@@ -17,7 +17,7 @@ flavours = ['electron','muon']
 # (choose lepton flavours to include)
 leptonMVAs = ['leptonMVATOPUL']
 # (pick a lepton MVA identifier, see below for allowed values)
-mvathresholds = [0.9,0.9] 
+mvathresholds = [0.64,0.64] 
 # (tight thresholds; order and length must correspond to flavours)
 years = ['2016PreVFP','2016PostVFP','2017','2018']
 # (choose the data taking years to include)

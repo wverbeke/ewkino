@@ -8,7 +8,7 @@ flavours = ['electron','muon']
 # (see fillConeCorrectionFactor.cc)
 leptonMVAs = ['leptonMVATOPUL']
 # (see fillConeCorrectionFactor.cc)
-mvathresholds = [0.9,0.9]
+mvathresholds = [0.64,0.64]
 # (see fillConeCorrectionFactor.cc)
 years = ['2016PreVFP','2016PostVFP','2017','2018','all'] 
 # (put 'all' here for combining all years)
