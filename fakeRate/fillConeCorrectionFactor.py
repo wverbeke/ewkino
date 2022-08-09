@@ -30,18 +30,18 @@ runmode = 'condor'
 # (choose from 'local', 'qsub' or 'condor')
 mvadict = ({'leptonMVATOPUL':
 		{ 
-		    #'electron':
-		    # 	{ 
-		    #	  'VLoose': 0.20,
-		    #	  'Loose': 0.41,
-		    #	  'Medium': 0.64,
-		    #	  'Tight': 0.81 
-		    #	},
+		    'electron':
+		     	{ 
+		    	  'VLoose': 0.20,
+		    	  'Loose': 0.41,
+		    	  'Medium': 0.64,
+		    	  'Tight': 0.81 
+		    	},
 		    'muon':
 			{ 
-			  #'VLoose': 0.20, 
-			  #'Loose': 0.41,
-			  #'Medium': 0.64,
+			  'VLoose': 0.20, 
+			  'Loose': 0.41,
+			  'Medium': 0.64,
 			  'Tight': 0.81 
 			} 
 		}

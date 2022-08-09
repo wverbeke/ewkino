@@ -85,8 +85,8 @@ void determineConeCorrectionFactor(
     }
 
     // loop over events in sample
-    //long unsigned nentries = treeReader.numberOfEntries();
-    long unsigned nentries = 50000; // for testing
+    long unsigned nentries = treeReader.numberOfEntries();
+    //long unsigned nentries = 50000; // for testing
     std::cout << "starting event loop for " << nentries << " events." << std::endl;
     for( long unsigned entry = 0; entry < nentries; ++entry ){
         Event event = treeReader.buildEvent( entry );

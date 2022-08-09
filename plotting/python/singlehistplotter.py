@@ -16,7 +16,8 @@ def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None,
 	        leftmargin=None, rightmargin=None,
 	        xaxlabelfont=None, xaxlabelsize=None,
 	        writebincontent=False, bincontentfont=None, 
-	        bincontentsize=None, bincontentfmt=None ):
+	        bincontentsize=None, bincontentfmt=None,
+		extrainfos=[], infosize=None, infoleft=None, infotop=None ):
     ### drawing a single histogram
     # - label: string for the legend entry for this histogram.
     #	note: if label is 'auto', the implicit title of the TH1 will be used.
@@ -25,6 +26,10 @@ def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None,
     #       "E" for error bars
     #       "X0" to suppress horizontal error bars
     #       see https://root.cern/doc/master/classTHistPainter.html for a full list of options
+    # - extrainfos is a list of strings with extra info to display
+    # - infosize: font size of extra info
+    # - infoleft: left border of extra info text (default leftmargin + 0.05)
+    # - infotop: top border of extra info text (default 1 - topmargin - 0.1)
 
     pt.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -52,6 +57,8 @@ def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None,
     if bincontentfont is None: bincontentfont = 4
     if bincontentsize is None: bincontentsize = 12
     if bincontentfmt is None: bincontentfmt = '{:.3f}'
+    infofont = 4
+    if infosize is None: infosize = 20
     # margins
     if leftmargin is None: leftmargin = 0.15
     if rightmargin is None: rightmargin = 0.05
@@ -61,6 +68,9 @@ def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None,
     pad1.SetLeftMargin(leftmargin)
     pad1.SetRightMargin(rightmargin)
     pad1.SetTopMargin(topmargin)
+    # extra info box parameters
+    if infoleft is None: infoleft = leftmargin+0.05
+    if infotop is None: infotop = 1-topmargin-0.1
     # legendbox
     pentryheight = 0.05
     plegendbox = ([leftmargin+0.3,1-topmargin-pentryheight,
@@ -127,6 +137,14 @@ def plotsinglehistogram(hist, figname, title=None, xaxtitle=None, yaxtitle=None,
     pt.drawLumi(pad1, extratext=extralumitext, lumitext=lumitext)
     if label is not None: leg.Draw("same")
     if title is not None: ttitle.DrawLatexNDC(titlebox[0],titlebox[1],title)
+
+    # draw extra info
+    tinfo = ROOT.TLatex()
+    tinfo.SetTextFont(10*infofont+3)
+    tinfo.SetTextSize(infosize)
+    for i,info in enumerate(extrainfos):
+        vspace = 0.07*(float(infosize)/20)
+        tinfo.DrawLatexNDC(infoleft,infotop-(i+1)*vspace, info)
 
     # write bin contents
     if writebincontent:
