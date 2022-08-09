@@ -15,8 +15,9 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
 	    colorlist=None,
 	    logy=False, ymaxlinfactor=1.8, yminlogfactor=0.2, ymaxlogfactor=100,
 	    drawoptions='', 
-	    lumitext='', extralumitext = '',
-	    doratio=False, ratiorange=None, ylims=None, yminzero=False):
+	    lumitext='', extracmstext = '',
+	    doratio=False, ratiorange=None, ylims=None, yminzero=False,
+	    extrainfos=[], infosize=None, infoleft=None, infotop=None ):
     ### plot multiple overlaying histograms (e.g. for shape comparison)
     # note: the ratio plot will show ratios w.r.t. the first histogram in the list!
     # arguments:
@@ -32,10 +33,14 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     # - yminlogfactor and ymaxlogfactor: same as above but for log scale
     # - drawoptions: string passed to TH1.Draw
     #   see https://root.cern/doc/master/classTHistPainter.html for a full list of options
-    # - lumitext and extralumitext: luminosity value and extra text
+    # - lumitext and extracmstext: luminosity value and extra text
     # - ratiorange: a tuple of (ylow,yhigh) for the ratio pad, default (0,2)
     # - ylims: a tuple of (ylow,yhigh) for the upper pad
     # - yminzero: whether to clip minimum y to zero.
+    # - extrainfos is a list of strings with extra info to display
+    # - infosize: font size of extra info
+    # - infoleft: left border of extra info text (default leftmargin + 0.05)
+    # - infotop: top border of extra info text (default 1 - topmargin - 0.1)
 
     pt.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -59,8 +64,9 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     # fonts and sizes:
     labelfont = 4; labelsize = 22
     axtitlefont = 4; axtitlesize = 26
-    infofont = 4; infosize = 26
-    legendfont = 4; 
+    infofont = 4
+    if infosize is None: infosize = 20
+    legendfont = 4
     # margins and title offsets
     ytitleoffset = 1.5
     p1topmargin = 0.05
@@ -81,6 +87,9 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     if nentries>3: pentryheight = pentryheight*0.8
     plegendbox = ([leftmargin+0.3,1-p1topmargin-0.03-pentryheight*nentries,
                     1-rightmargin-0.03,1-p1topmargin-0.03])
+    # extra info box parameters
+    if infoleft is None: infoleft = leftmargin+0.05
+    if infotop is None: infotop = 1-p1topmargin-0.1
 
     ### normalization and style operations on histograms
     scale = 1
@@ -196,7 +205,15 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     ROOT.gPad.RedrawAxis()
 
     # draw header
-    pt.drawLumi(pad1, extratext=extralumitext, lumitext=lumitext, rfrac=rfrac)
+    pt.drawLumi(pad1, extratext=extracmstext, lumitext=lumitext, rfrac=rfrac)
+
+    # draw extra info
+    tinfo = ROOT.TLatex()
+    tinfo.SetTextFont(10*infofont+3)
+    tinfo.SetTextSize(infosize)
+    for i,info in enumerate(extrainfos):
+        vspace = 0.07*(float(infosize)/20)
+        tinfo.DrawLatexNDC(infoleft,infotop-(i+1)*vspace, info)
 
     if not doratio: 
 	# return or save the plot

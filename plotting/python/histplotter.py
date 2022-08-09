@@ -78,7 +78,7 @@ def plotdatavsmc(outfile, datahist, mchistlist,
 	p2yaxtitle=None, p2yaxrange=None,
 	p1legendncols=None, p1legendbox=None,
 	extracmstext='', lumi=None,
-	extrainfos=[], infosize=None):
+	extrainfos=[], infosize=None, infoleft=None, infotop=None):
     ### make a (stacked) simulation vs. data plot
     # arguments:
     # - outfile is the output file where the figure will be saved
@@ -107,6 +107,8 @@ def plotdatavsmc(outfile, datahist, mchistlist,
     # - lumi is the luminosity value (float, in pb-1) that will be displayed
     # - extrainfos is a list of strings with extra info to display
     # - infosize: font size of extra info
+    # - infoleft: left border of extra info text (default leftmargin + 0.05)
+    # - infotop: top border of extra info text (default 1 - p1topmargin - 0.1)
     
     pt.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -153,8 +155,8 @@ def plotdatavsmc(outfile, datahist, mchistlist,
 	p1legendncols = 2
     p2legendbox = [leftmargin+0.03,0.84,1-rightmargin-0.03,0.97]
     # extra info box parameters
-    infoleft = leftmargin+0.05
-    infotop = 1-p1topmargin-0.1
+    if infoleft is None: infoleft = leftmargin+0.05
+    if infotop is None: infotop = 1-p1topmargin-0.1
     # marker properties for data
     markerstyle = 20
     markercolor = 1
