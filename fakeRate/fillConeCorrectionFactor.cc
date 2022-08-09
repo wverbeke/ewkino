@@ -28,12 +28,14 @@ This is what the cone correction factor attempts to address.
 void determineConeCorrectionFactor( 
 	const std::string& leptonFlavor, 
 	const std::string& year, 
-	const std::string& leptonMVA, 
-	const double mvaThreshold, 
+	const std::string& leptonMVA,
+	const std::string& wpName, 
+	const double wpThreshold, 
 	const std::string& sampleDirectory, 
 	const std::string& sampleList,
 	const unsigned sampleIndex ){
-    // determine the 'cone correction factor' for a given lepton flavor, lepton MVA and threshold.
+    // determine the 'cone correction factor' for a given lepton flavor, 
+    // lepton MVA and threshold.
     // leptonMVA is an string to identifiy which MVA to use,
     // see below for allowed values!
 
@@ -52,12 +54,16 @@ void determineConeCorrectionFactor(
     }
 
     // initialize histograms
-    const unsigned numberOfBins = 80;
+    const float lowerBound = -1;
+    const float upperBound = 1;
+    const unsigned numberOfBins = 200;
     std::shared_ptr< TH1D > pTWeightedLeptonMVAHistogram = std::make_shared< TH1D >( 
-	"pTLeptonMVA", "pTLeptonMVA;lepton MVA;Average p_{T}^{cone} (GeV)", numberOfBins, -1, 1 );
+	"pTLeptonMVA", "pTLeptonMVA;lepton MVA;Average p_{T}^{cone} (GeV)", 
+	numberOfBins, lowerBound, upperBound );
     pTWeightedLeptonMVAHistogram->Sumw2();
     std::shared_ptr< TH1D > leptonMVAHistogram = std::make_shared< TH1D >( 
-	"leptonMVA", "leptonMVA;lepton MVA;Events", numberOfBins, -1, 1 );
+	"leptonMVA", "leptonMVA;lepton MVA;Events", 
+	numberOfBins, lowerBound, upperBound );
     leptonMVAHistogram->Sumw2();
 
     // make tree reader and set to correct sample
@@ -79,8 +85,8 @@ void determineConeCorrectionFactor(
     }
 
     // loop over events in sample
-    long unsigned nentries = treeReader.numberOfEntries();
-    //long unsigned nentries = 10000; // for testing
+    //long unsigned nentries = treeReader.numberOfEntries();
+    long unsigned nentries = 50000; // for testing
     std::cout << "starting event loop for " << nentries << " events." << std::endl;
     for( long unsigned entry = 0; entry < nentries; ++entry ){
         Event event = treeReader.buildEvent( entry );
@@ -105,7 +111,7 @@ void determineConeCorrectionFactor(
 			    (leptonMVA=="leptonMVATOP") ? leptonPtr->leptonMVATOP() :
 			    (leptonMVA=="leptonMVATOPUL") ? leptonPtr->leptonMVATOPUL() :
 			    (leptonMVA=="leptonMVATOPv2UL") ? leptonPtr->leptonMVATOPv2UL() : 0.0;
-            if( mvaVal <= mvaThreshold ){
+            if( mvaVal <= wpThreshold ){
                 ptVal /= leptonPtr->ptRatio();
             }
 
@@ -117,7 +123,7 @@ void determineConeCorrectionFactor(
     }
     std::cout<<"finished event loop"<<std::endl;
 
-    std::string fileName = "coneCorrectionFactor_" + leptonMVA + "_" + leptonFlavor + "_" + year;
+    std::string fileName = "coneCorrectionFactor_" + leptonMVA + "_" + wpName + "_" + leptonFlavor + "_" + year;
     fileName.append("_histograms_sample_"+std::to_string(sampleIndex)+".root");
     TFile* histogramFile = TFile::Open( fileName.c_str(), "RECREATE" );
 
@@ -133,12 +139,13 @@ int main( int argc, char* argv[] ){
 
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
 
-    if( argc != 8 ){
-        std::cerr << argc - 1 << " command line arguments given, while 7 are expected." << std::endl;
+    if( argc != 9 ){
+        std::cerr << argc - 1 << " command line arguments given, while 8 are expected." << std::endl;
         std::cerr << "  - lepton flavor" << std::endl;
 	std::cerr << "  - data taking year" << std::endl;
 	std::cerr << "  - lepton MVA identifier" << std::endl;
-	std::cerr << "  - numerical MVA threshold" << std::endl;
+	std::cerr << "  - working point name" << std::endl;
+	std::cerr << "  - numerical working point threshold" << std::endl;
 	std::cerr << "  - sample directory" << std::endl;
 	std::cerr << "  - sample list" << std::endl; 
 	std::cerr << "  - sample index" << std::endl;
@@ -148,11 +155,12 @@ int main( int argc, char* argv[] ){
     std::string leptonFlavor = argvStr[1];
     std::string year = argvStr[2];
     std::string leptonMVA = argvStr[3];
-    double mvaThreshold = std::stod( argvStr[4] );
-    std::string sampleDirectory = argvStr[5];
-    std::string sampleList = argvStr[6];
-    int sampleIndex = std::stoi( argvStr[7] );
-    determineConeCorrectionFactor( leptonFlavor, year, leptonMVA, mvaThreshold,
+    std::string wpName = argvStr[4];
+    double wpThreshold = std::stod( argvStr[5] );
+    std::string sampleDirectory = argvStr[6];
+    std::string sampleList = argvStr[7];
+    int sampleIndex = std::stoi( argvStr[8] );
+    determineConeCorrectionFactor( leptonFlavor, year, leptonMVA, wpName, wpThreshold,
                                    sampleDirectory, sampleList, sampleIndex );
 
     std::cerr << "###done###" << std::endl;
