@@ -11,7 +11,7 @@
 double leptonMVACutElectron(){
     // see AN_2022_016!
     // the working point here corresponds to Medium for both v1 and v2!
-    if(LeptonSelector::leptonID()=="v1") return 0.64;
+    if(LeptonSelector::leptonID()=="v1") return 0.81;
     else if(LeptonSelector::leptonID()=="v2") return 0.90;
     else return 1.0;
 }
@@ -125,15 +125,15 @@ bool ElectronSelector::isFOBase_v1() const{
     // note: not yet fully decided, will depend on Niels' findings which cuts are needed!
     //       do not tune FO ID yet as the tight ID might change still.
     if( !isLoose() ) return false;
-    /*if( !electronPtr->passConversionVeto() ) return false;
-    if( electronPtr->hOverE() >= 0.1 ) return false;
+    if( !electronPtr->passConversionVeto() ) return false;
+    if( !electronPtr->passChargeConsistency() ) return false;
+    /*if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
         if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
     } else {
         if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
-    }
-    if( !electronPtr->passChargeConsistency() ) return false;*/
+    }*/
     return true;
 }
 
@@ -258,17 +258,16 @@ bool ElectronSelector::isFORunTime( double ptRatioCut, double deepFlavorCut, int
     // function for FO optimization, use ONLY in MC fake rate grid search!
     if( !isLoose() ) return false;
     if( electronPtr->uncorrectedPt() <= 10 ) return false;
-    /*if( electronPtr->numberOfMissingHits() >= 2 ) return false;
+    if( electronPtr->numberOfMissingHits() >= 2 ) return false;
     if( !electronPtr->passConversionVeto() ) return false;    
-    if( electronPtr->hOverE() >= 0.1 ) return false;
+    if( !electronPtr->passChargeConsistency() ) return false;
+    /*if( electronPtr->hOverE() >= 0.1 ) return false;
     if( electronPtr->inverseEMinusInverseP() <= -0.04 ) return false;
     if( std::abs(electronPtr->etaSuperCluster()) <= 1.479 ){
         if( electronPtr->sigmaIEtaEta() >= 0.011 ) return false;
     } else {
         if( electronPtr->sigmaIEtaEta() >= 0.030 ) return false;
-    }
-    if( !electronPtr->passConversionVeto() ) return false;
-    if( !electronPtr->passChargeConsistency() ) return false;*/
+    }*/
 
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
 	if( extraCut==1 && !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
