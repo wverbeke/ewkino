@@ -4,8 +4,8 @@ The script fills 2D histograms of lepton pT vs mother parton pT at gen level,
 both for the uncorrected and cone-corrected lepton pT.
 The idea is that the cone-corrected pT is shown to be a good proxy for the mother parton pT.
 See Fig. 10 of AN-2018-100.
-Note: not yet clear what variable to use for the gen level pT...
-      currently a dummy value is used to test the code only!
+Note: not yet clear what variable to use for the mother parton pT...
+      the current variable is only a first attempt and not guaranteed to be correct!
 */
 
 
@@ -71,8 +71,8 @@ void fillConeCorrectionCorrelationHistograms(
     }
 
     // loop over events in sample
-    //long unsigned nentries = treeReader.numberOfEntries();
-    long unsigned nentries = 50000; // for testing
+    long unsigned nentries = treeReader.numberOfEntries();
+    //long unsigned nentries = 1000; // for testing
     std::cout << "starting event loop for " << nentries << " events." << std::endl;
     for( long unsigned entry = 0; entry < nentries; ++entry ){
         Event event = treeReader.buildEvent( entry );
@@ -93,10 +93,16 @@ void fillConeCorrectionCorrelationHistograms(
             // apply cone-correction to leptons failing the MVA cut 
             double uncorrectedPt = leptonPtr->uncorrectedPt();
 	    double correctedPt = uncorrectedPt / leptonPtr->ptRatio();
-            double genPt = 0.8*correctedPt+0.2*uncorrectedPt; // to fill with correct variable
+            double genPt = leptonPtr->momPt();
+
+	    // printouts for testing
+	    /*std::cout << "lepton" << std::endl;
+	    std::cout << genPt << std::endl;
+	    std::cout << uncorrectedPt << std::endl;
+	    std::cout << correctedPt << std::endl;*/
 
 	    // fill histograms
-	    double weight = (event.weight()>0.) ? 1 : -1;
+	    double weight = (event.weight()<0.) ? -1 : 1;
             uncorrectedPtCorr->Fill( genPt, uncorrectedPt , weight );
             correctedPtCorr->Fill( genPt, correctedPt , weight );
 	}

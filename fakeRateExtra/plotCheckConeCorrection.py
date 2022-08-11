@@ -1,6 +1,6 @@
-###################################################
-# a python looper for plotConeCorrectionFactor.cc #
-###################################################
+#########################################################
+# merge and plot the results of fillCheckConeCorrection #
+#########################################################
 
 import os
 import sys
@@ -11,14 +11,21 @@ sys.path.append('../plotting/python')
 import hist2dplotter as h2p
 import plottools as pt
 
+
 # global settings
 flavours = ['muon']
-years = ['2018']
+# (choose lepton flavours; use "emu" for adding electrons and muons together)
+years = ['2017']
+# (choose data taking years; use "allyears" for adding all years together)
 
 
 def rescale(hist):
     ### little helper function to rescale a 2D histogram to maximum bin content 1
     maxbincontent = hist.GetMaximum()
+    if( maxbincontent<1e-12 ):
+	print('WARNING: cannot rescale histogram'
+		+' as its maximum bin content is {}'.format(maxbincontent))
+	return
     hist.Scale(1./maxbincontent)
 
 def multi_contour_plot(histlist, outfilepath, outfmts=['.png'],
@@ -172,8 +179,10 @@ if __name__=='__main__':
 	    print('file {} not yet found, doing hadd...'.format(filename))
 	    # define source files
 	    haddyears = year
-	    if year=='all': haddyears = '*'
-	    haddsource = 'coneCorrectionCheck_'+flavour+'_'+haddyears+'_histograms_sample*.root'
+	    if year=='allyears': haddyears = '*'
+	    haddflavours = flavour
+	    if flavour=='emu': haddflavours = '*'
+	    haddsource = 'coneCorrectionCheck_'+haddflavours+'_'+haddyears+'_histograms_sample*.root'
 	    # check if source files exist
 	    if len(glob.glob(haddsource))==0:
 		print('required source files for {} do not exist, skipping...'.format(filename))
