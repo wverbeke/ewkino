@@ -54,6 +54,7 @@ class TreeReader {
         Double_t        _lheHTIncoming;
 	UInt_t          _ttgEventType;
         UInt_t          _zgEventType;
+	Double_t	_lMomPt[nL_max];
 	// gen particles
         Double_t        _gen_met;
         Double_t        _gen_metPhi;
@@ -309,6 +310,7 @@ class TreeReader {
                             const bool readGroupedJECVariations = false );
 
         //check whether specific info is present in current tree
+	bool hasBranchWithName( const std::string& ) const;
         bool containsTauInfo() const;
 	bool containsGeneratorInfo() const;
 	bool containsGenParticles() const;
@@ -420,6 +422,7 @@ class TreeReader {
         TBranch        *b__lheWeight;   
         TBranch        *b__nTrueInt;   
         TBranch        *b__lheHTIncoming;
+	TBranch	       *b__lMomPt;
         TBranch        *b__gen_met;   
         TBranch        *b__gen_metPhi;   
         TBranch        *b__gen_nL;   

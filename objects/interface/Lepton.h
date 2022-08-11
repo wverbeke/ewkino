@@ -43,6 +43,7 @@ class Lepton : public PhysicsObject {
         int matchPdgId() const;
         int matchCharge() const;
         int momPdgId() const;
+	double momPt() const;
         unsigned provenance() const;
         unsigned provenanceCompressed() const;
         unsigned provenanceConversion() const;

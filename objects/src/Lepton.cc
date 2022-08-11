@@ -153,6 +153,16 @@ int Lepton::momPdgId() const{
 }
 
 
+double Lepton::momPt() const{
+    if( checkGeneratorInfo() ){
+	return generatorInfo->momPt();
+    }
+    else{
+	return 0;
+    }
+}
+
+
 int Lepton::matchPdgId() const{
     if( checkGeneratorInfo() ){
         return generatorInfo->matchPdgId();

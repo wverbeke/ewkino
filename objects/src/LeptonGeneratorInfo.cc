@@ -7,5 +7,9 @@ LeptonGeneratorInfo::LeptonGeneratorInfo( const TreeReader& treeReader, const un
     _momPdgId( treeReader._lMomPdgId[leptonIndex] ),
     _provenance( treeReader._lProvenance[leptonIndex] ), 
     _provenanceCompressed( treeReader._lProvenanceCompressed[leptonIndex] ),
-    _provenanceConversion( treeReader._lProvenanceConversion[leptonIndex] ) 
-    {}
+    _provenanceConversion( treeReader._lProvenanceConversion[leptonIndex] )
+{
+    if( treeReader.hasBranchWithName( "_lMomPt" ) ){
+	_momPt = treeReader._lMomPt[leptonIndex];
+    }
+}

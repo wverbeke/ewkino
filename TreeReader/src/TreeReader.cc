@@ -225,6 +225,11 @@ bool treeHasBranchWithName( TTree* treePtr, const std::string& nameToFind ){
 }
 
 
+bool TreeReader::hasBranchWithName( const std::string& nameToFind ) const{
+    return treeHasBranchWithName( _currentTreePtr, nameToFind );
+}
+
+
 bool TreeReader::containsTauInfo() const{
     return treeHasBranchWithName( _currentTreePtr, "_tau_" );
 }
@@ -713,6 +718,10 @@ void TreeReader::initTree( const bool resetTriggersAndFilters ){
         _currentTreePtr->SetBranchAddress("_lProvenanceConversion", _lProvenanceConversion, &b__lProvenanceConversion);
         _currentTreePtr->SetBranchAddress("_ttgEventType", &_ttgEventType, &b__ttgEventType);
         _currentTreePtr->SetBranchAddress("_zgEventType", &_zgEventType, &b__zgEventType);
+	// new variable present only in some custom ttbar ntuples
+	if( treeHasBranchWithName( _currentTreePtr, "_lMomPt" ) ){
+	    _currentTreePtr->SetBranchAddress("_lMomPt", &_lMomPt, &b__lMomPt);
+	}
     }
 
     if( containsGenParticles() ){
@@ -982,6 +991,10 @@ void TreeReader::setOutputTree( TTree* outputTree,
 	    outputTree->Branch("_lProvenanceConversion",     &_lProvenanceConversion,     "_lProvenanceConversion[_nL]/i");
 	    outputTree->Branch("_ttgEventType",              &_ttgEventType,              "_ttgEventType/i");
 	    outputTree->Branch("_zgEventType",               &_zgEventType,               "_zgEventType/i");
+	    // new variable present only in some custom ttbar ntuples
+	    if( treeHasBranchWithName( _currentTreePtr, "_lMomPt" ) ){
+		outputTree->Branch("_lMomPt", &_lMomPt, "_lMomPt[_nL]/D");
+	    }
 	}
     }
 

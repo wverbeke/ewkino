@@ -20,11 +20,13 @@ class LeptonGeneratorInfo{
         unsigned provenance() const{ return _provenance; }
         unsigned provenanceCompressed() const{ return _provenanceCompressed; }
         unsigned provenanceConversion() const{ return _provenanceConversion; }
+	double momPt() const{ return _momPt; }
 
     private:
         bool _isPrompt;
         int _matchPdgId, _matchCharge, _momPdgId;
         unsigned _provenance, _provenanceCompressed, _provenanceConversion;
+	double _momPt = 0;
 
 }; 
 #endif 
