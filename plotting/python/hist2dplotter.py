@@ -7,7 +7,7 @@ import sys
 import numpy as np
 import json
 import os
-import plottools as tools
+import plottools as pt
 from array import array
 
 def swapaxes( hist ):
@@ -94,8 +94,11 @@ def print2dhist( hist ):
             print('error: '+str(error))
 
 
-def plot2dhistogram(hist, outfilepath, histtitle='', logx=False, logy=False, 
-		    drawoptions='colztexte', cmin=None, cmax=None):
+def plot2dhistogram(hist, outfilepath, outfmts=['.png'],
+		    histtitle='', logx=False, logy=False, 
+		    drawoptions='colztexte', cmin=None, cmax=None,
+		    docmstext=False, cms_in_grid=True, 
+		    cmstext_size_factor=0.3, extracmstext='', lumitext=''):
     # options:
     # - cmin and cmax: minimum and maximum values for the color scales
     #   note: in default "colz" behaviour, bins above cmax are colored as cmax,
@@ -103,7 +106,7 @@ def plot2dhistogram(hist, outfilepath, histtitle='', logx=False, logy=False,
     #         they can be colored as cmin by using drawoption "col0z" instead of "colz",
     #         but "col0ztexte" does not seem to write the bin contents for those bins...
 
-    tools.setTDRstyle()
+    pt.setTDRstyle()
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
     
     # set global properties
@@ -168,7 +171,12 @@ def plot2dhistogram(hist, outfilepath, histtitle='', logx=False, logy=False,
     # draw
     hist.Draw( drawoptions )
     ttitle.DrawLatexNDC(leftmargin,0.9,histtitle)
+    if docmstext: pt.drawLumi(c1, extratext=extracmstext, 
+				cmstext_size_factor=cmstext_size_factor,
+				cms_in_grid=cms_in_grid,
+				lumitext=lumitext)
 
     # save the plot
     c1.Update()
-    c1.SaveAs(outfilepath)
+    outfilepath = os.path.splitext(outfilepath)[0]
+    for outfmt in outfmts: c1.SaveAs(outfilepath+outfmt)
