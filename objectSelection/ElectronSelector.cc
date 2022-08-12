@@ -10,9 +10,9 @@
 // define the MVA threshold value depending on the lepton ID
 double leptonMVACutElectron(){
     // see AN_2022_016!
-    // the working point here corresponds to Medium for both v1 and v2!
+    // the working point here corresponds to Tight for both v1 and v2!
     if(LeptonSelector::leptonID()=="v1") return 0.81;
-    else if(LeptonSelector::leptonID()=="v2") return 0.90;
+    else if(LeptonSelector::leptonID()=="v2") return 0.94;
     else return 1.0;
 }
 
@@ -27,8 +27,8 @@ double leptonMVAValueElectron(const Electron* electronPtr){
 
 // define cone correction factor
 double leptonConeCorrectionFactorElectron(){
-    // cone correction factor to be determined!
-    if(LeptonSelector::leptonID()=="v1") return 0.0;
+    // cone correction factor for v2 still to be determined!
+    if(LeptonSelector::leptonID()=="v1") return 0.72;
     else if(LeptonSelector::leptonID()=="v2") return 0.0;
     else return 0.0;
 }

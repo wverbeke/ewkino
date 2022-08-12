@@ -24,8 +24,8 @@ double leptonMVAValueMuon(const Muon* muonPtr){
 
 // define cone correction factor
 double leptonConeCorrectionFactorMuon(){
-    // cone correction factor to be determined!
-    if(LeptonSelector::leptonID()=="v1") return 0.0;
+    // cone correction factor for v2 to be determined!
+    if(LeptonSelector::leptonID()=="v1") return 0.66;
     else if(LeptonSelector::leptonID()=="v2") return 0.0;
     else return 0.0;
 }
