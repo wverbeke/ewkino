@@ -1,0 +1,7 @@
+TT TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17_part1.root
+TT TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17_part2.root
+TT TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17_part3.root
+TT TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17_part4.root
+TT TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17_part5.root
+TT TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17_part6.root
+TT TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17_part7.root
