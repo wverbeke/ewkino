@@ -95,10 +95,12 @@ def print2dhist( hist ):
 
 
 def plot2dhistogram(hist, outfilepath, outfmts=['.png'],
-		    histtitle='', logx=False, logy=False, 
+		    histtitle=None, logx=False, logy=False, 
 		    drawoptions='colztexte', cmin=None, cmax=None,
 		    docmstext=False, cms_in_grid=True, 
-		    cmstext_size_factor=0.3, extracmstext='', lumitext=''):
+		    cmstext_size_factor=0.3, extracmstext='', lumitext='',
+		    topmargin=None, bottommargin=None, leftmargin=None, rightmargin=None,
+		    extrainfos=[], infosize=None, infoleft=None, infotop=None ):
     # options:
     # - cmin and cmax: minimum and maximum values for the color scales
     #   note: in default "colz" behaviour, bins above cmax are colored as cmax,
@@ -114,14 +116,16 @@ def plot2dhistogram(hist, outfilepath, outfmts=['.png'],
     cwidth = 700 # width of canvas
     titlefont = 4; titlesize = 22
     axtitlefont = 4; axtitlesize = 22
+    infofont = 4
+    if infosize is None: infosize = 15
     # title offset
     ytitleoffset = 1.5
     xtitleoffset = 1.5
     # margins:
-    topmargin = 0.15
-    bottommargin = 0.15
-    leftmargin = 0.15
-    rightmargin = 0.15
+    if topmargin is None: topmargin = 0.15
+    if bottommargin is None: bottommargin = 0.15
+    if leftmargin is None: leftmargin = 0.15
+    if rightmargin is None: rightmargin = 0.15
     xmin = hist.GetXaxis().GetXmin()
     xmax = hist.GetXaxis().GetXmax()
     ymin = hist.GetYaxis().GetXmin()
@@ -132,6 +136,9 @@ def plot2dhistogram(hist, outfilepath, outfmts=['.png'],
     if cmax is not None: zmax = cmax
     hist.SetMinimum(zmin)
     hist.SetMaximum(zmax)
+    # extra info box parameters
+    if infoleft is None: infoleft = leftmargin+0.05
+    if infotop is None: infotop = 1-topmargin-0.1 
 
     # create canvas
     c1 = ROOT.TCanvas("c1","c1")
@@ -170,11 +177,19 @@ def plot2dhistogram(hist, outfilepath, outfmts=['.png'],
 
     # draw
     hist.Draw( drawoptions )
-    ttitle.DrawLatexNDC(leftmargin,0.9,histtitle)
+    if histtitle is not None: ttitle.DrawLatexNDC(leftmargin,0.9,histtitle)
     if docmstext: pt.drawLumi(c1, extratext=extracmstext, 
 				cmstext_size_factor=cmstext_size_factor,
 				cms_in_grid=cms_in_grid,
 				lumitext=lumitext)
+
+    # draw extra info
+    tinfo = ROOT.TLatex()
+    tinfo.SetTextFont(10*infofont+3)
+    tinfo.SetTextSize(infosize)
+    for i,info in enumerate(extrainfos):
+        vspace = 0.07*(float(infosize)/20)
+        tinfo.DrawLatexNDC(infoleft,infotop-(i+1)*vspace, info)
 
     # save the plot
     c1.Update()
