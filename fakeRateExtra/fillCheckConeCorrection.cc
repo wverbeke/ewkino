@@ -43,14 +43,22 @@ void fillConeCorrectionCorrelationHistograms(
     const float lowerPt = 10;
     const float upperPt = 100;
     const unsigned numberOfBins = 45;
-    std::shared_ptr< TH2D > uncorrectedPtCorr = std::make_shared< TH2D >( 
-	"uncorrectedPtCorr", "uncorrectedPtCorr;Parton p_{T} (GeV);Uncorrected RECO p_{T} (GeV)",
+    std::shared_ptr< TH2D > uncorrectedPtCorrPrompt = std::make_shared< TH2D >( 
+	"uncorrectedPtCorrPrompt", "uncorrectedPtCorrPrompt;Parton p_{T} (GeV);Uncorrected RECO p_{T} (GeV)",
 	numberOfBins, lowerPt, upperPt, numberOfBins, lowerPt, upperPt );
-    uncorrectedPtCorr->Sumw2();
-    std::shared_ptr< TH2D > correctedPtCorr = std::make_shared< TH2D >( 
-	"correctedPtCorr", "correctedPtCorr;Parton p_{T} (GeV);Cone-corrected RECO p_{T} (GeV)", 
+    uncorrectedPtCorrPrompt->Sumw2();
+    std::shared_ptr< TH2D > uncorrectedPtCorrNonPrompt = std::make_shared< TH2D >(
+        "uncorrectedPtCorrNonPrompt", "uncorrectedPtCorrNonPrompt;Parton p_{T} (GeV);Uncorrected RECO p_{T} (GeV)",
+        numberOfBins, lowerPt, upperPt, numberOfBins, lowerPt, upperPt );
+    uncorrectedPtCorrNonPrompt->Sumw2();
+    std::shared_ptr< TH2D > correctedPtCorrPrompt = std::make_shared< TH2D >( 
+	"correctedPtCorrPrompt", "correctedPtCorrPrompt;Parton p_{T} (GeV);Cone-corrected RECO p_{T} (GeV)", 
 	numberOfBins, lowerPt, upperPt, numberOfBins, lowerPt, upperPt );
-    correctedPtCorr->Sumw2();
+    correctedPtCorrPrompt->Sumw2();
+    std::shared_ptr< TH2D > correctedPtCorrNonPrompt = std::make_shared< TH2D >(   
+        "correctedPtCorrNonPrompt", "correctedPtCorrNonPrompt;Parton p_{T} (GeV);Cone-corrected RECO p_{T} (GeV)",
+        numberOfBins, lowerPt, upperPt, numberOfBins, lowerPt, upperPt );
+    correctedPtCorrNonPrompt->Sumw2();
 
     // make tree reader and set to correct sample
     std::cout << "creating TreeReader and setting to sample no. " << sampleIndex << std::endl;
@@ -72,7 +80,8 @@ void fillConeCorrectionCorrelationHistograms(
 
     // loop over events in sample
     long unsigned nentries = treeReader.numberOfEntries();
-    //long unsigned nentries = 1000; // for testing
+    //long unsigned limit = 1000000;
+    //nentries = std::min(nentries, limit); // for testing
     std::cout << "starting event loop for " << nentries << " events." << std::endl;
     for( long unsigned entry = 0; entry < nentries; ++entry ){
         Event event = treeReader.buildEvent( entry );
@@ -90,7 +99,7 @@ void fillConeCorrectionCorrelationHistograms(
             // apply baseline pT cut 
             if( leptonPtr->uncorrectedPt() <= 10 ) continue;
 
-            // apply cone-correction to leptons failing the MVA cut 
+            // calculate the different pT variables 
             double uncorrectedPt = leptonPtr->uncorrectedPt();
 	    double correctedPt = uncorrectedPt / leptonPtr->ptRatio();
             double genPt = leptonPtr->momPt();
@@ -103,8 +112,13 @@ void fillConeCorrectionCorrelationHistograms(
 
 	    // fill histograms
 	    double weight = (event.weight()<0.) ? -1 : 1;
-            uncorrectedPtCorr->Fill( genPt, uncorrectedPt , weight );
-            correctedPtCorr->Fill( genPt, correctedPt , weight );
+	    if( leptonPtr->isPrompt() ){
+		uncorrectedPtCorrPrompt->Fill( genPt, uncorrectedPt , weight );
+		correctedPtCorrPrompt->Fill( genPt, correctedPt , weight );
+	    } else{
+		uncorrectedPtCorrNonPrompt->Fill( genPt, uncorrectedPt , weight );
+                correctedPtCorrNonPrompt->Fill( genPt, correctedPt , weight );
+	    }
 	}
     }
     std::cout<<"finished event loop"<<std::endl;
@@ -113,8 +127,10 @@ void fillConeCorrectionCorrelationHistograms(
     fileName.append("_histograms_sample_"+std::to_string(sampleIndex)+".root");
     TFile* histogramFile = TFile::Open( fileName.c_str(), "RECREATE" );
 
-    uncorrectedPtCorr->Write();
-    correctedPtCorr->Write();
+    uncorrectedPtCorrPrompt->Write();
+    correctedPtCorrPrompt->Write();
+    uncorrectedPtCorrNonPrompt->Write();
+    correctedPtCorrNonPrompt->Write();
 
     histogramFile->Close();
 }

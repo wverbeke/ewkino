@@ -67,7 +67,5 @@ for year in years:
 		  +' flavour "{}",'.format(flavour)
 		  +' sample {}/{}'.format(i+1,samplecounter))
 
-# submit using condor
-if runmode=='condor':
-    ct.submitCommandsAsCondorCluster('cjob_fillCheckConeCorrection', commands,
+ct.submitCommandsAsCondorCluster('cjob_fillCheckConeCorrection', commands,
                                      docmsenv=True, cmssw_version='~/CMSSW_10_6_29')
