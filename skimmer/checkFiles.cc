@@ -41,6 +41,7 @@ int main( int argc, char* argv[] ){
     // loop over files
     int nfiles = files.size();
     int nerror = 0;
+    std::cout << "checking " << nfiles << " files..." << std::endl;
     for( std::string f: files ){
 	bool fileIsReadable = checkReadability(f);
 	if( !fileIsReadable ){
