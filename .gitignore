@@ -11,9 +11,14 @@ codeLibrary.o
 # (exceptions may exist, e.g. scalefactors, but should be added manually)
 **.root
 
-# output folders
+# some output folders
 fakeRate/output_*
+fakeRateExtra/output_*
+sampleXSec/output_*
 
 # output files
 **/cjob_*
 **/qjob_*
+
+# some sample lists
+sampleXSec/sampleLists
