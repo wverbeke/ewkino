@@ -32,6 +32,10 @@ def read_daslist(daslist, verbose=False):
 		    +' will skip this line.')
 	    continue
 	dasnames.append(line)
+    if verbose:
+	print('found following DAS samples:')
+	for dasname in dasnames:
+	    print('  - {}'.format(dasname))
     return dasnames
 
 
@@ -84,15 +88,29 @@ if __name__=='__main__':
 
     # read the sample names
     dasnames = read_daslist(daslist)
+
+    # find files to process for all samples
+    # (this cannot be done inside the job it seems,
+    #  probably the DAS client is not installed on the worker nodes.)
+    dasfiles = []
+    print('finding files for all samples...')
+    for dasname in dasnames:
+	thisdasfiles = xsec.dasgoclient_find_dataset_files(dasname, verbose=False)
+	if nfiles<len(thisdasfiles):
+	    thisdasfiles = thisdasfiles[:nfiles]
+	print('files for sample {}:'.format(dasname))
+	for dasfile in thisdasfiles: print('  - {}'.format(dasfile))
+	dasfiles.append(thisdasfiles)
     
     # loop over samples
     cmds = []
-    for dasname in dasnames:
+    for dasname,thisdasfiles in zip(dasnames,dasfiles):
+	# format input files
+	fls = ','.join(thisdasfiles)
 	# make the command
 	cmd = 'python sampleXSecFromDas.py'
 	cmd += ' --xsecana {}'.format(xsecana)
-	cmd += ' --dasname {}'.format(dasname)
-	cmd += ' --nfiles {}'.format(nfiles)
+	cmd += ' --dasfiles {}'.format(fls)
 	cmd += ' --nevents {}'.format(nevents)
 	if proxy is not None: cmd += ' --proxy {}'.format(proxy)
 	if outfile is not None: cmd += ' --outfile {}'.format(outfile)

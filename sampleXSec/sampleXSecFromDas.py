@@ -103,8 +103,17 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description=infostr)
     parser.add_argument('--xsecana', required=True,
 			help='Path to the GenXSecAnalyzer script.')
-    parser.add_argument('--dasname', required=True,
-			help='Name of the sample on DAS.')
+    parser.add_argument('--dasname', default=None,
+			help='Name of the sample on DAS.'
+			     +' Note that you should specify either --dasname or --dasfiles'
+			     +' (but not both).')
+    parser.add_argument('--dasfiles', default=None,
+			help='Comma separated list of input files in DAS format.'
+			     +' Mostly for usage by calling from another script.'
+			     +' All files provided this way should belong to the same sample!'
+			     +' Note that you should specify either --dasname or --dasfiles'
+                             +' (but not both) and that --nfiles will be ignored'
+			     +' if you specify the --dasfiles option.')
     parser.add_argument('--nfiles', type=int, default=1,
 			help='Number of files of this sample to run on (default: 1)')
     parser.add_argument('--nevents', type=int, default=-1,
@@ -122,6 +131,7 @@ if __name__=='__main__':
     args = parser.parse_args()
     xsecana = os.path.abspath(args.xsecana)
     dasname = args.dasname
+    dasfiles = args.dasfiles
     nfiles = args.nfiles
     nevents = args.nevents
     proxy = None if args.proxy is None else os.path.abspath(args.proxy)
@@ -135,13 +145,28 @@ if __name__=='__main__':
     # export proxy
     if proxy is not None: export_proxy( proxy )
 
-    # make a list of all available input files
-    dasfiles = dasgoclient_find_dataset_files(dasname, verbose=True)
+    # check dasname and dasfiles arguments
+    if( dasname is None and dasfiles is None ):
+	raise Exception('ERROR: you should specify either --dasname or --dasfiles.')
+    if( dasname is not None and dasfiles is not None ):
+	raise Exception('ERROR: you cannot specify both --dasname and --dasfiles.')
+    
+    # handle the case where the dataset is specified
+    # (i.e. files should be obtained from DAS client)
+    if( dasname is not None ):
+	# make a list of all available input files
+	dasfiles = dasgoclient_find_dataset_files(dasname, verbose=True)
+	# select input files
+	if nfiles<len(dasfiles):
+	    print('selecting the first {} files from the list above.'.format(nfiles))
+	    dasfiles = dasfiles[:nfiles]
+	# define sample name
+	samplename = dasname.strip('/').split('/')[0]
 
-    # select input files
-    if nfiles<len(dasfiles):
-	print('selecting the first {} files from the list above.'.format(nfiles))
-	dasfiles = dasfiles[:nfiles]
+    # handle the case where the files are specified directly
+    else:
+	dasfiles = dasfiles.split(',')
+	samplename = dasfiles[0].strip('/').split('/')[3]
 
     # set cmsenv
     set_cmsenv_from_path(xsecana, verbose=True)
@@ -162,8 +187,7 @@ if __name__=='__main__':
 
     # write to file
     if outfile is not None:
-	sample_name = dasname.strip('/').split('/')[0]
-	infostr = sample_name+'\n'
+	infostr = samplename+'\n'
 	for key in sorted(res.keys()):
 	    infostr += '  {} {} {} {}\n'.format(key, res[key]['xsec'], 
 			res[key]['unc'], res[key]['unit'])
