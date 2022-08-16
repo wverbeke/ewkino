@@ -11,21 +11,37 @@ import condorTools as ct
 from gridMCFakeRateMeasurement import get_conf
 
 
+# How to use?
+# - Check that the get_conf function in gridMCFakeRateMeasurement.py
+#   is correctly configured.
+# - Modify the main settings at the top of the __main__ section below,
+#   according to your preferences.
+# - Go to runMCClosureTest.py and set the sample list directory
+#   and sample directory correctly.
+#   These have to be hard-coded for now since condor seems to allow 10 args max.
+#   Note that the sample lists are assumed to be named 
+#   "samples_closuretest_<process>_<year>.txt".
+# - Other prerequisites:
+#   - Make sure to have compiled the executable runMCClosureTest
+# - When all this is done, run "python gridMCClosureTest.py".
+#   It is recommended to do a few test runs first to make sure no errors appear.
+
+
 if __name__=='__main__':
 
     # global settings
     testrun = False
     # (run a single working point and a small number of events locally)
-    nevents = -1
+    nevents = 50000000
     # (number of events per file to process)
-    runcondor = True
-    # (submit on condor instead of qsub)
-    resubmit = True
+    runmode = 'condor'
+    # (choose from "condor" or "qsub")
+    resubmit = False
     # (only submit jobs for which no output root file is found)
 
     # check if all executables exist
     exes = []
-    exes.append('closureTest_MC')
+    exes.append('runMCClosureTest')
     for exe in exes:
 	if not os.path.exists(exe):
 	    raise Exception('ERROR: exe {} does not exist.'.format(exe))
@@ -39,8 +55,19 @@ if __name__=='__main__':
     extraCuts = conf['extraCuts']
     processes = ['TT','DY']
 
+    # check number of jobs that will be submitted
+    njobs = len(years)*len(flavors)
+    njobs *= len(ptRatioCuts)*len(deepFlavorCuts)
+    njobs *= len(extraCuts)
+    njobs *= len(processes)
+    print('the current grid configuration will result in {} jobs...'.format(njobs))
+    print('coninue? (y/n)')
+    go = raw_input()
+    if not go=='y': sys.exit()
+
     # loop over cut values
-    condorclustercmds = []
+    cmds = []
+    cwd = os.getcwd()
     for ptRatioCut in ptRatioCuts:
 	for deepFlavorCut in deepFlavorCuts:
 	    for extraCut in extraCuts:
@@ -63,38 +90,27 @@ if __name__=='__main__':
 			    expout = 'closurePlots_MC_{}_{}_{}.root'.format(process,year,flavor)
 			    if( resubmit and expout in os.listdir(wdirname) ): continue
 			    # make the closureTest_MC command
-			    closurecmd = 'python closureTest_MC.py'
-			    closurecmd += ' {}'.format(wdirname)
-			    closurecmd += ' {}'.format(year)
-			    closurecmd += ' {}'.format(flavor)
-			    closurecmd += ' {}'.format(process)
-			    closurecmd += ' {}'.format(ptRatioCut)
-			    closurecmd += ' {}'.format(deepFlavorCut)
-			    closurecmd += ' {}'.format(extraCut)
-			    closurecmd += ' runlocal'
-			    closurecmd += ' nevents={}'.format(nevents)
-			    if testrun: closurecmd += ' testrun'
-			    # add all commands to a list
-			    cmds = []
-			    cmds.append(closurecmd)
-			    condorclustercmds.append(closurecmd)
-			    # (only works if only one command per job!)
+			    cmd = 'python runMCClosureTest.py'
+			    cmd += ' {}'.format(wdirname)
+			    cmd += ' {}'.format(year)
+			    cmd += ' {}'.format(flavor)
+			    cmd += ' {}'.format(process)
+			    cmd += ' {}'.format(ptRatioCut)
+			    cmd += ' {}'.format(deepFlavorCut)
+			    cmd += ' {}'.format(extraCut)
+			    cmd += ' nevents={}'.format(nevents)
+			    if testrun: cmd += ' testrun'
+			    cmds.append(cmd)
 			    # submit as a job
-			    cwd = os.getcwd()
-			    script_name = 'qjob_gridMCClosureTest.sh'
-			    with open(script_name,'w') as script:
-				initializeJobScript(script)
-				script.write('cd {}\n'.format(cwd))
-				for cmd in cmds: script.write(cmd+'\n')
-			    if testrun: 
-				#os.system('bash '+script_name)
-				continue
-			    elif runcondor: continue
-			    else: submitQsubJob(script_name)
+			    if( runmode=='qsub' or runmode=='local'):
+				script_name = 'qjob_gridMCClosureTest.sh'
+				with open(script_name,'w') as script:
+				    initializeJobScript(script, cmssw_version='CMSSW_10_6_29')
+				    script.write('cd {}\n'.format(cwd))
+				    script.write(cmd+'\n')
+				if runmode=='local': os.system('bash '+script_name)
+				if runmode=='qsub': submitQsubJob(script_name)
 
-    if( runcondor and not testrun ):
-	print('Will submit {} jobs... Continue? (y/n)'.format(len(condorclustercmds)))
-	go = raw_input()
-	if not go=='y': sys.exit()
-	ct.submitCommandsAsCondorCluster('cjob_gridMCClosureTest', condorclustercmds,
-					cmssw_version='CMSSW_10_2_25')
+    if( runmode=='condor' ):
+        ct.submitCommandsAsCondorCluster('cjob_gridMCClosureTest', cmds,
+                                        cmssw_version='CMSSW_10_6_29')

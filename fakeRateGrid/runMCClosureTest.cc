@@ -5,7 +5,6 @@
 #include "../TreeReader/interface/TreeReader.h"
 #include "../Event/interface/Event.h"
 #include "../Tools/interface/HistInfo.h"
-#include "interface/fakeRateTools.h"
 #include "../plotting/plotCode.h"
 #include "../plotting/tdrStyle.h"
 #include "../Tools/interface/systemTools.h"
@@ -302,6 +301,10 @@ int main( int argc, char* argv[] ){
         std::string header;
         if( year == "2016" ){
             header = "35.9 fb^{-1}";
+	} else if( year == "2016PreVFP" ){
+	    header = "19.5 fb^{-1}";
+	} else if( year == "2016PostVFP" ){
+	    header = "16.8 fb^{-1}";
         } else if( year == "2017" ){
             header = "41.5 fb^{-1}";
         } else{

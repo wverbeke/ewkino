@@ -19,7 +19,7 @@ if __name__=='__main__':
     
     # check if they contain all required fake rate maps
     flavors = ['electron','muon']
-    years = ['2016','2017','2018']
+    years = ['2016PreVFP','2016PostVFP','2017','2018']
     dtypes = ['MC']
     print('checking content...')
     for frdir in frdirs:

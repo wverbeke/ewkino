@@ -15,15 +15,14 @@
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Tools/interface/systemTools.h"
-#include "fakeRateSelection.h"
-#include "fakeRateTools.h"
+#include "../../fakeRate/interface/fakeRateTools.h"
 #include "../../plotting/tdrStyle.h"
 #include "../../plotting/plotCode.h"
 #include "../../weights/interface/ConcreteReweighterFactory.h"
 #include "../../weights/interface/ConcreteLeptonReweighter.h"
 #include "../../weights/interface/ConcreteReweighterLeptons.h"
 #include "../../weights/interface/ConcreteSelection.h"
-#include "progressTracker.h"
+#include "fakeRateSelection.h"
 
 void fillMCFakeRateMeasurementHistograms(const std::string& leptonFlavor, const std::string& year,
     const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,
