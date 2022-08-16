@@ -13,3 +13,7 @@ codeLibrary.o
 
 # output folders
 fakeRate/output_*
+
+# output files
+**/cjob_*
+**/qjob_*
