@@ -79,6 +79,7 @@ if __name__=='__main__':
     xdimtitle = 'lepton ptRatio threshold'
     ydimtitle = 'lepton closest jet deepFlavor threshold'
     zdimtitle = 'electron MVA scenario'
+    normalize = True
     
     # get configuration
     conf = get_conf()
@@ -137,6 +138,11 @@ if __name__=='__main__':
 			    oname = '{}_{}_{}_{}_observed'.format(variable,process,year,flavor)
 			    predicted = f.Get(pname)
 			    observed = f.Get(oname)
+			    # normalize the histograms
+			    if normalize:
+				scale = 1./observed.Integral()
+				observed.Scale(scale)
+				predicted.Scale(scale)
 			    # do similariy check
 			    div = divfunc( predicted, observed )
 			    name = '{}_{}_{}'.format(year,flavor,process)

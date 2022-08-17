@@ -18,7 +18,7 @@ if __name__=='__main__':
     
     # check if they contain all required closure test files
     flavors = ['electron','muon']
-    years = ['2016','2017','2018']
+    years = ['2016PreVFP','2016PostVFP','2017','2018']
     processes = ['DY','TT']
     print('checking content...')
     for ctdir in ctdirs:
