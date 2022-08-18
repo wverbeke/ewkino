@@ -9,8 +9,9 @@ import sys
 import os
 import time
 import datetime
-sys.path.append('../')
+sys.path.append('../../jobSubmission')
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 
 def some_task():
@@ -30,7 +31,7 @@ if __name__=='__main__':
     if nargs==1:
 	cmd = 'python submitCondorTestJob.py local'
 	ct.submitCommandAsCondorJob('cjob_submitCondorTestJob', cmd,
-	    cmssw_version='/user/llambrec/CMSSW_10_6_29')
+	    cmssw_version=CMSSW_VERSION)
     elif nargs==2:
 	if sys.argv[1]=='local':
 	    some_task()
