@@ -1,9 +1,9 @@
 CC=g++ -Wall -Wextra -O3
 CFLAGS= -Wl,--no-as-needed,-lpthread
 LDFLAGS=`root-config --glibs --cflags`
-SOURCES= chargeFlipMeasurement_MC.cc ../codeLibrary.o src/chargeFlipSelection.cc
+SOURCES= fillMCChargeFlipMeasurement.cc ../codeLibrary.o src/chargeFlipSelection.cc
 OBJECTS=$(SOURCES:.cc=.o)
-EXECUTABLE=chargeFlipMeasurement_MC
+EXECUTABLE=fillMCChargeFlipMeasurement
 
 all: 
 	$(CC) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $(EXECUTABLE)

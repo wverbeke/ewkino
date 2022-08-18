@@ -79,7 +79,8 @@ if __name__=='__main__':
     errortags = ([  'SysError',
 		    '/var/torque/mom_priv/jobs',
 		    'R__unzip: error',
-		    'hadd exiting due to error in' ])
+		    'hadd exiting due to error in',
+		    'Bus error' ])
     errortags.append('###error###') # custom error tag for flagging
 
     files = []

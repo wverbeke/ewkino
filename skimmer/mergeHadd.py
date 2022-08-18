@@ -9,6 +9,7 @@ import sys
 import os
 sys.path.append('../jobSubmission')
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 if __name__=='__main__':
 
@@ -57,4 +58,5 @@ if __name__=='__main__':
     for f in inputfiles: cmd += ' {}'.format(f)
 
     # submit the command
-    ct.submitCommandAsCondorJob( 'cjob_mergeHadd', cmd )
+    ct.submitCommandAsCondorJob( 'cjob_mergeHadd', cmd,
+				 cmssw_version=CMSSW_VERSION )

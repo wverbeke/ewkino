@@ -10,6 +10,7 @@ from jobSubmission import submitQsubJob, initializeJobScript
 # import submission tools for condor
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 # set global properties
 isMCFR = True
@@ -64,4 +65,4 @@ if( runmode=='qsub' or runmode=='local' ):
 
 elif( runmode=='condor' ):
     ct.submitCommandsAsCondorCluster('cjob_fillMCClosureTest', cmds,
-                                    docmsenv=True, cmssw_version='CMSSW_10_2_25') 
+                                     cmssw_version=CMSSW_VERSION) 

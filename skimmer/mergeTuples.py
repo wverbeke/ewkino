@@ -16,6 +16,7 @@ from jobSubmission import submitQsubJob, initializeJobScript
 from fileListing import walkLimitedDepth, listSampleDirectories
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 
 # help functions
@@ -88,7 +89,8 @@ def mergeSample( sample_directory, output_file, runmode='condor', rmunmerged=Fal
 	    for cmd in cmds: script.write( cmd )
 	submitQsubJob( script_name )
     elif runmode=='condor':
-	ct.submitCommandsAsCondorJob( 'cjob_mergeTuples', cmds )
+	ct.submitCommandsAsCondorJob( 'cjob_mergeTuples', cmds,
+				      cmssw_version=CMSSW_VERSION )
 
 if __name__ == '__main__':
 

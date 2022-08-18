@@ -13,6 +13,7 @@ import os
 # import job submission tools for condor
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 flavours = ['electron','muon']
 # (choose lepton flavours to include)
@@ -68,4 +69,4 @@ for year in years:
 		  +' sample {}/{}'.format(i+1,samplecounter))
 
 ct.submitCommandsAsCondorCluster('cjob_fillCheckConeCorrection', commands,
-                                     docmsenv=True, cmssw_version='~/CMSSW_10_6_29')
+                                 cmssw_version=CMSSW_VERSION)
