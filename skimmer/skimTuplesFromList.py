@@ -23,6 +23,7 @@ from skimTuples import yearIdentifierFromPath
 from jobSubmission import initializeJobScript, submitQsubJob
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 sys.path.append(os.path.abspath('../Tools/python'))
 from samplelisttools import readsamplelist
 
@@ -207,4 +208,5 @@ for sample_directory, sub_directory, output_directory in itlist:
 	    # case of local (mainly intended for testing and debugging)
 	    if runmode=='local': os.system('bash '+script_name)
 	# submission via condor
-	if runmode=='condor': ct.submitCommandsAsCondorJob( 'cjob_skimTuplesFromList', commands )
+	if runmode=='condor': ct.submitCommandsAsCondorJob( 'cjob_skimTuplesFromList', commands,
+				    cmssw_version=CMSSW_VERSION )

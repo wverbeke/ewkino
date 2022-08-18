@@ -24,6 +24,7 @@ from jobSubmission import submitQsubJob, initializeJobScript
 # import job submission tools for condor
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 # set global properties
 runmode = 'condor'
@@ -130,4 +131,4 @@ for year in years:
 # submit using condor
 if runmode=='condor':
     ct.submitCommandsAsCondorCluster('cjob_fillConeCorrectionFactor', commands,
-                                     docmsenv=True, cmssw_version='~/CMSSW_10_6_29')
+                                     cmssw_version=CMSSW_VERSION)

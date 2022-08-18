@@ -11,6 +11,7 @@ import sys
 import argparse
 sys.path.append('../jobSubmission')
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 import sampleXSecFromDas as xsec
 
 
@@ -121,4 +122,5 @@ if __name__=='__main__':
 	for cmd in cmds: os.system(cmd)
     if( runmode=='condor' ):
 	ct.submitCommandsAsCondorJob('cjob_sampleXSecFromDasList',
-				     cmds, proxy=proxy)
+				     cmds, cmssw_version=CMSSW_VERSION,
+				     proxy=proxy)

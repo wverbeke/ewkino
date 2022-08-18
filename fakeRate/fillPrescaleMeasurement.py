@@ -10,6 +10,7 @@ from jobSubmission import submitQsubJob, initializeJobScript
 # import job submission tools for condor
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 # set global properties
 years = ['2016','2017','2018']
@@ -61,4 +62,4 @@ if( runmode=='qsub' or runmode=='local' ):
 
 if( runmode=='condor' ):
     ct.submitCommandsAsCondorCluster('cjob_fillPrescaleMeasurement', cmds,
-                                    docmsenv=True, cmssw_version='CMSSW_10_2_25')
+                                     cmssw_version=CMSSW_VERSION)

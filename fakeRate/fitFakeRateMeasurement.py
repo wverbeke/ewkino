@@ -11,6 +11,7 @@ from jobSubmission import submitQsubJob, initializeJobScript
 # import job submission tools for condor
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 # import python tools
 sys.path.append('../Tools/python')
 import histtools as ht
@@ -209,4 +210,4 @@ if( runmode=='qsub' or runmode=='local' ):
 
 if( runmode=='condor' ):
     ct.submitCommandsAsCondorCluster('cjob_fitFakeRateMeasurement', cmds,
-                                        docmsenv=True, cmssw_version='CMSSW_10_2_25')
+                                     cmssw_version=CMSSW_VERSION)

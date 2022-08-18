@@ -7,6 +7,7 @@ import os
 from fileListing import listParts
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 if __name__=="__main__":
 
@@ -43,4 +44,6 @@ if __name__=="__main__":
         if runmode=='local':
 	    for cmd in commands: os.system(cmd)
         # or submit condor job
-        if runmode=='condor': ct.submitCommandsAsCondorJob( 'cjob_scanner', commands )
+        if runmode=='condor': 
+	    ct.submitCommandsAsCondorJob( 'cjob_scanner', commands,
+					  cmssw_version=CMSSW_VERSION )
