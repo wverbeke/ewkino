@@ -8,7 +8,15 @@ import sys
 inputs = []
 outputs = []
 
-topdir = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL_test'
+topdir = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
+
+# 2016PreVFP combined
+outputs.append(os.path.join(topdir,'2016PreVFP_data','data_combined_Summer16PreVFP.root'))
+inputs.append(os.path.join(topdir,'2016PreVFP_data','*_Summer16_Run2016PreVFP.root'))
+
+# 2016PostVFP combined
+outputs.append(os.path.join(topdir,'2016PostVFP_data','data_combined_Summer16PostVFP.root'))
+inputs.append(os.path.join(topdir,'2016PostVFP_data','*_Summer16_Run2016PostVFP.root'))
 
 # 2017 combined
 outputs.append(os.path.join(topdir,'2017_data','data_combined_Fall17.root'))
