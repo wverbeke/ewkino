@@ -45,7 +45,7 @@ if __name__=='__main__':
     for efile in efiles:
 	ofile = efile.replace('_err_', '_out_')
 	with open(ofile,'r') as f:
-	   firstline = f.readline()
+	   firstline = f.readlines()[1]
 	sfile = firstline.replace('skimming ', '').strip(' \n')
 	sfiles.append(sfile)
 
@@ -55,7 +55,7 @@ if __name__=='__main__':
     firstskimfiles = []
     for shfile in shfiles:
 	with open(shfile,'r') as f:
-	    firstline = f.readlines()[6]
+	    firstline = f.readlines()[7]
 	skimfile = firstline.split(' ')[1].strip(' \n')
 	firstskimfiles.append(skimfile)
 
