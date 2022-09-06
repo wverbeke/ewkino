@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath('../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 
 
 # How to use?
@@ -46,10 +47,10 @@ def get_conf( testrun=False ):
     # define cut values
     ptRatioCuts = [0.35, 0.4, 0.45, 0.5, 0.55]
     deepFlavorCuts = [0.015, 0.02, 0.025, 0.03, 0.05, 0.075, 0.1, 0.25, 0.5]
-    extraCuts = [0, 1, 2, 3]
+    #extraCuts = [0, 1, 2, 3]
     #ptRatioCuts = [0.5]
     #deepFlavorCuts = [0.5]
-    #extraCuts = [1]
+    extraCuts = [1]
     if testrun:
 	ptRatioCuts = [0.4]
 	deepFlavorCuts = [0.02]
@@ -140,4 +141,4 @@ if __name__=='__main__':
 
     if( runmode=='condor' ):
 	ct.submitCommandsAsCondorCluster('cjob_gridMCFakeRateMeasurement', cmds,
-                                        cmssw_version='CMSSW_10_6_29')
+                                        cmssw_version=CMSSW_VERSION)

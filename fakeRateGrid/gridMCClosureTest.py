@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath('../skimmer'))
 from jobSubmission import submitQsubJob, initializeJobScript
 sys.path.append(os.path.abspath('../jobSubmission'))
 import condorTools as ct
+from jobSettings import CMSSW_VERSION
 from gridMCFakeRateMeasurement import get_conf
 
 
@@ -32,11 +33,11 @@ if __name__=='__main__':
     # global settings
     testrun = False
     # (run a single working point and a small number of events locally)
-    nevents = 50000000
+    nevents = 5000000
     # (number of events per file to process)
     runmode = 'condor'
     # (choose from "condor" or "qsub")
-    resubmit = False
+    resubmit = True
     # (only submit jobs for which no output root file is found)
 
     # check if all executables exist
@@ -113,4 +114,4 @@ if __name__=='__main__':
 
     if( runmode=='condor' ):
         ct.submitCommandsAsCondorCluster('cjob_gridMCClosureTest', cmds,
-                                        cmssw_version='CMSSW_10_6_29')
+                                        cmssw_version=CMSSW_VERSION)
