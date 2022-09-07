@@ -20,8 +20,8 @@ for arg in sys.argv[1:]:
     if arg=='testrun': testrun = True
 
 # set global properties
-years = ['2016','2017','2018']
-# (pick any combination from '2016', '2017' and '2018')
+years = ['2016PreVFP', '2016PostVFP', '2017', '2018']
+# (pick any combination from '2016PreVFP', '2016PostVFP', '2017' and '2018')
 flavours = ['electron','muon']
 # (pick any combination from 'electron' and 'muon')
 runmode = 'condor'
@@ -29,9 +29,9 @@ runmode = 'condor'
 istestrun = False
 # (note that this will not overwrite runmode, 
 # only affects number of samples and number of events per sample)
-samplelistdirectory = os.path.abspath('sampleListsPreUL')
+samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below in loop to set the correct sample list name per flavour/year!)
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
 
 # check if executable exists
 if not os.path.exists('./fillMCFakeRateMeasurement'):
@@ -67,7 +67,7 @@ if( runmode=='qsub' or runmode=='local' ):
     for cmd in cmds:
         script_name = 'qjob_fillMCFakeRateMeasurement.sh'
         with open(script_name,'w') as script:
-            initializeJobScript(script)
+            initializeJobScript(script, cmssw_version=CMSSW_VERSION)
             script.write('cd {}\n'.format(cwd))
             script.write(cmd+'\n')
 	if runmode=='qsub': submitQsubJob(script_name)

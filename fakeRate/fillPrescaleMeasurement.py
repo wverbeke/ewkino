@@ -14,15 +14,15 @@ from jobSettings import CMSSW_VERSION
 
 # set global properties
 years = ['2016PreVFP','2016PostVFP','2017','2018']
-# (choose any combination from '2016', '2017' and '2018')
-runmode = 'condor'
+# (choose any combination from '2016PreVFP', '2016PostVFP', '2017' and '2018')
+runmode = 'local'
 # (choose from 'condor', 'qsub' or 'local')
-testrun = False
+testrun = True
 # (does not overwrite runmode, 
 # only changes number of samples and number of events per sample to small values)
 samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below to set correct sample list name in the loop!)
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL' 
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
 
 # check if executable exists
 if not os.path.exists('./fillPrescaleMeasurement'):
@@ -54,7 +54,7 @@ if( runmode=='qsub' or runmode=='local' ):
     for cmd in cmds:
 	script_name = 'qjob_fillPrescaleMeasurement.sh'
 	with open(script_name,'w') as script:
-	    initializeJobScript(script)
+	    initializeJobScript(script, cmssw_version=CMSSW_VERSION)
 	    script.write('cd {}\n'.format(cwd))
 	    script.write(cmd+'\n')
 	if runmode=='qsub': submitQsubJob(script_name)

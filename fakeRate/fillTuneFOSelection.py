@@ -1,6 +1,11 @@
 #################################################
 # a python submitter for fillTuneFOSelection.cc #
 #################################################
+
+# Note: not yet used since a long time, 
+#       probably needs updates if needed again...
+#       (e.g. condor instead of qsub job system)
+
 import sys
 import os
 # in order to import local functions: append location to sys.path

@@ -73,14 +73,22 @@ if __name__=='__main__':
     # loop over all error log files found above
     # and find those corresponding to unfinished/failed jobs
     errorfiles = []
+    nerrortag = 0
+    nunfinished = 0
     for elfile in elfiles:
         if jobCheck.check_start_done(elfile,
 		starting_tag = args.starting_tag,
 		done_tag = args.done_tag,
-		ntarget = args.ntags): errorfiles.append(elfile)
+		ntarget = args.ntags): 
+	    errorfiles.append(elfile)
+	    nunfinished += 1
+	elif jobCheck.check_error_content(elfile):
+	    errorfiles.append(elfile)
+	    nerrortag += 1
     nerrorfiles = len(errorfiles)
-    print('found {} error log files'.format(nerrorfiles)
-	    +' corresponding to unfinished jobs.')
+    print('found {} error log files'.format(nunfinished)
+	    +' corresponding to unfinished jobs and {}'.format(nerrortag)
+	    +' corresponding to known error content.')
 
     # handle case of no failures
     if( nerrorfiles==0 ):
@@ -93,7 +101,7 @@ if __name__=='__main__':
     # get corresponding job ids
     jobids = []
     for errorfile in errorfiles:
-	jobid = errorfile.split('_')[3]
+	jobid = os.path.basename(errorfile).split('_')[3]
 	try:
 	    jobidtest = int(jobid)
 	    jobids.append(jobid)

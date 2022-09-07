@@ -39,16 +39,16 @@ def submitQsubJob( script_name, wall_time = '24:00:00', num_threads = 1, high_me
             return first_line.split('.')[0]
 
 
-def initializeJobScript( script, cmssw_version = 'CMSSW_10_2_20' ):
+def initializeJobScript( script, cmssw_version=None ):
 
    	#TO DO : make code to extract CMSSW directory in a general way
     #this is already available in DeepLearning repository, submodule would be a good solution 
-    script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
-    script.write('cd ~/{}/src\n'.format( cmssw_version ) )
-    script.write('eval `scram runtime -sh`\n')
     working_directory = os.path.abspath( os.getcwd() )
+    script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
+    if cmssw_version is not None:
+	script.write('cd {}\n'.format( os.path.join(cmssw_version,'src') ) )
+	script.write('eval `scram runtime -sh`\n')
     script.write('cd {}\n'.format( working_directory ) )
-
 
 
 def runCommandAsJob( command, script_name, wall_time = '24:00:00', num_threads = 1, high_memory = False, cmssw_version = 'CMSSW_10_2_20' ):

@@ -122,7 +122,7 @@ for year in years:
 		    if( runmode=='local' or runmode=='qsub' ):
 			script_name = 'qjob_fillConeCorrectionFactor.sh'
 			with open(script_name,'w') as script:
-			    initializeJobScript(script, cmssw_version='CMSSW_10_6_29')
+			    initializeJobScript(script, cmssw_version=CMSSW_VERSION)
 			    script.write('cd {}\n'.format(cwd))
 			    script.write(command+'\n')
 			if runmode=='qsub': submitQsubJob(script_name)

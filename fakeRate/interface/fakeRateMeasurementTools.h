@@ -15,16 +15,16 @@
 #include "../../Tools/interface/stringTools.h"
 #include "../../Tools/interface/analysisTools.h"
 #include "../../Tools/interface/systemTools.h"
-#include "../../fakeRate/interface/fakeRateSelection.h"
-#include "../../fakeRate/interface/fakeRateTools.h"
-#include "../../fakeRate/interface/Prescale.h"
+#include "../../Tools/interface/Prescale.h"
+#include "fakeRateSelection.h"
+#include "fakeRateTools.h"
+#include "progressTracker.h"
 #include "../../plotting/tdrStyle.h"
 #include "../../plotting/plotCode.h"
 #include "../../weights/interface/ConcreteReweighterFactory.h"
 #include "../../weights/interface/ConcreteLeptonReweighter.h"
 #include "../../weights/interface/ConcreteReweighterLeptons.h"
 #include "../../weights/interface/ConcreteSelection.h"
-#include "progressTracker.h"
 
 RangedMap< RangedMap< std::shared_ptr< TH1D > > > build2DHistogramMap( 
     const std::vector< double >& ptBinBorders, const std::vector< double >& etaBinBorders, 

@@ -37,12 +37,12 @@ def submitQsubJob( script_name, wall_time = '24:00:00', num_threads = 1, high_me
             return first_line.split('.')[0]
 
 
-def initializeJobScript( script, docmsenv=True, cmssw_version = 'CMSSW_10_2_16_patch1' ):
+def initializeJobScript( script, cmssw_version=None ):
     ### initialize a job script
     working_directory = os.path.abspath( os.getcwd() )
     script.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
-    if docmsenv:
-	script.write('cd ~/{0}/src\n'.format( cmssw_version ) )
+    if cmssw_version is not None:
+	script.write('cd {}\n'.format( os.path.join(cmssw_version,'src') ) )
 	script.write('eval `scram runtime -sh`\n')
     script.write('cd {0}\n'.format( working_directory ) )
 

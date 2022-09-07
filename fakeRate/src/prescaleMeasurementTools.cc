@@ -55,6 +55,13 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
         treeReader.initSample();
     }
     const bool isData = treeReader.isData();
+    
+    // printouts for testing
+    /*std::cout << treeReader.is2016() << std::endl;
+    std::cout << treeReader.is2016PreVFP() << std::endl;
+    std::cout << treeReader.is2016PostVFP() << std::endl;
+    std::cout << treeReader.is2017() << std::endl;
+    std::cout << treeReader.is2018() << std::endl;*/
 
     // make histograms for this sample
     std::map< std::string, std::shared_ptr< TH1D > > prompt_map;
