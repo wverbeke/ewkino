@@ -60,7 +60,7 @@ if( runmode=='qsub' or runmode=='local' ):
     for cmd in cmds:
         script_name = 'qjob_fillMCFakeRateMeasurement.sh'
         with open(script_name,'w') as script:
-            initializeJobScript(script)
+            initializeJobScript(script, cmssw_version=CMSSW_VERSION)
             script.write('cd {}\n'.format(cwd))
             script.write(cmd+'\n')
 	if runmode=='qsub': submitQsubJob(script_name)
