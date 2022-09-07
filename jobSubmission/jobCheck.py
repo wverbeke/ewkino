@@ -75,7 +75,7 @@ def check_start_done( filename,
     return 1
 
 
-def check_error_content(filename, contentlist, verbose=True):
+def check_error_content(filename, contentlist='default', verbose=True):
     ### check for known error messages in a file.
     # returns 0 if none of the elements of contentlist is present in the file;
     # returns 1 otherwise.
@@ -84,6 +84,15 @@ def check_error_content(filename, contentlist, verbose=True):
     f = open(filename)
     filetext = f.read()
     f.close()
+
+    # hard-coded default error content
+    if( isinstance(contentlist,str) and contentlist=='default' ):
+	contentlist = ([    'SysError',
+                           '/var/torque/mom_priv/jobs',
+                           'R__unzip: error',
+                           'hadd exiting due to error in',
+                           'Bus error' ])
+	contentlist.append('###error###') # custom error tag for targeted flagging
 
     # check if the file content contains provided error tags
     contains = []
@@ -94,7 +103,7 @@ def check_error_content(filename, contentlist, verbose=True):
     if verbose:
 	msg = 'WARNING in jobCheck.py: found issue in file {}:\n'.format(filename)
 	for idx in contains:
-	    msg += '   found sequence {}\n'.format(contentlist[i])
+	    msg += '   found sequence {}\n'.format(contentlist[idx])
 	print(msg)
     return 1
 
@@ -125,14 +134,6 @@ if __name__=='__main__':
     # some more parsing
     if args.ntags is not None: args.ntags = int(args.ntags)
 
-    # hard-coded arguments
-    errortags = ([  'SysError',
-		    '/var/torque/mom_priv/jobs',
-		    'R__unzip: error',
-		    'hadd exiting due to error in',
-		    'Bus error' ])
-    errortags.append('###error###') # custom error tag for targeted flagging
-
     # find files
     print('finding files...')
     condorpattern = os.path.join(args.dir,'*_err_*')
@@ -155,7 +156,7 @@ if __name__=='__main__':
 		done_tag = args.done_tag,
 		ntarget = args.ntags)
 	if not args.noerrors: 
-	    error_content = check_error_content(fname, errortags)
+	    error_content = check_error_content(fname)
 	if(error_start_done + error_content > 0): nerror += 1
 
     # print results

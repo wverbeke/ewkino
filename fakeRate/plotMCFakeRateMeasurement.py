@@ -9,7 +9,7 @@ sys.path.append('../plotting/python')
 import multihistplotter as mhp
 
 # set global properties
-years = ['2016','2017','2018']
+years = ['2016PreVFP','2016PostVFP','2017','2018']
 flavours = ['muon','electron']
 plotflavourpt = True
 # (set to True to make extra plots of lepton pt, split for light and heavy fakes)
@@ -27,7 +27,7 @@ for year in years:
     for flavour in flavours:
 	filename = 'fakeRateMeasurement_MC_'+flavour+'_'+year+'_histograms.root'
 	if os.path.exists(filename): continue
-	subfolder = 'MCFakeRateMeasurementSubFiles'
+	subfolder = '.'
 	cmd = 'hadd '+filename+' '+subfolder
 	cmd += '/fakeRateMeasurement_MC_'+flavour+'_'+year+'_histograms_sample*.root'
 	#print(cmd)

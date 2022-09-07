@@ -13,8 +13,8 @@ import condorTools as ct
 from jobSettings import CMSSW_VERSION
 
 # set global properties
-years = ['2016','2017','2018']
-# (pick any combination from '2016', '2017' and '2018')
+years = ['2016PreVFP', '2016PostVFP', '2017', '2018']
+# (pick any combination from '2016PreVFP', '2016PostVFP', '2017' and '2018')
 flavours = ['electron','muon']
 # (pick any combination from 'electron' and 'muon')
 runmode = 'condor'
@@ -22,9 +22,9 @@ runmode = 'condor'
 istestrun = False
 # (note that this will not overwrite runmode, 
 # only affects number of samples and number of events per sample)
-samplelistdirectory = os.path.abspath('sampleListsPreUL')
+samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below in loop to set the correct sample list name per flavour/year!)
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
 
 # check if executable exists
 if not os.path.exists('./fillMCFakeRateMeasurement'):

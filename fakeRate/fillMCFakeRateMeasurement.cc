@@ -14,8 +14,9 @@ int main( int argc, char* argv[] ){
     std::cerr << "###starting###" << std::endl;
     // check command line arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-    if( !( argvStr.size() == 7 ) ){
-        std::cerr<<"found "<<argc - 1<<" command line args, while 5 are needed."<<std::endl;
+    int nargs = 6;
+    if( !( argvStr.size() == nargs+1 ) ){
+        std::cerr<<"found "<<argc - 1<<" command line args, while "<<nargs<<" are needed."<<std::endl;
         std::cerr<<"usage: ./fillMCFakeRateMeasurement flavour year";
 	std::cerr<<" sampleDirectory sampleList sampleIndex isTestRun"<<std::endl;
         return 1;
