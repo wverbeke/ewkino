@@ -140,9 +140,8 @@ bool ElectronSelector::isFOBase_v1() const{
 
 bool ElectronSelector::isFO2016_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
-	// initial guess based on previous iteration!
-        if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
-        if( electronPtr->ptRatio() < 0.5 ) return false;
+        if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+        if( electronPtr->ptRatio() < 0.4 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
@@ -151,8 +150,7 @@ bool ElectronSelector::isFO2016_v1() const{
 
 bool ElectronSelector::isFO2016PreVFP_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
-	// initial guess based on previous iteration!
-	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false; 
     }
@@ -162,8 +160,7 @@ bool ElectronSelector::isFO2016PreVFP_v1() const{
 
 bool ElectronSelector::isFO2016PostVFP_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
-	// initial guess based on previous iteration!
-	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
         if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
@@ -173,9 +170,8 @@ bool ElectronSelector::isFO2016PostVFP_v1() const{
 
 bool ElectronSelector::isFO2017_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
-	// initial guess based on previous iteration!
-	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
-        if( electronPtr->ptRatio() < 0.5 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+        if( electronPtr->ptRatio() < 0.4 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
@@ -184,9 +180,8 @@ bool ElectronSelector::isFO2017_v1() const{
 
 bool ElectronSelector::isFO2018_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
-	// initial guess based on previous iteration!
-	if( electronPtr->closestJetDeepFlavor() > 0.5 ) return false;
-        if( electronPtr->ptRatio() < 0.5 ) return false;
+	if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
+        if( electronPtr->ptRatio() < 0.4 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
