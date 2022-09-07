@@ -23,12 +23,13 @@ Testing script for Run2ULReweighter
 
 int main( int argc, char* argv[] ){
 
-    int nargs = 3;
+    int nargs = 4;
     if( argc != nargs+1 ){
         std::cerr << "### ERROR ###: run2ulReweighter_test.cc requires " << nargs;
         std::cerr << " arguments to run:" << std::endl;
         std::cerr << "- directory of input file(s)" << std::endl;
         std::cerr << "- name of input file (.root) OR samplelist (.txt)" << std::endl;
+	std::cerr << "- name of output file" << std::endl;
         std::cerr << "- number of events (use 0 for all events)" << std::endl;
         return -1;
     }
@@ -37,7 +38,8 @@ int main( int argc, char* argv[] ){
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
     std::string& inputDirectory = argvStr[1];
     std::string& sampleList = argvStr[2];
-    long unsigned nEvents = std::stoul(argvStr[3]);
+    std::string& outputFileName = argvStr[3];
+    long unsigned nEvents = std::stoul(argvStr[4]);
 
     // read the input file
     TreeReader treeReader;
@@ -72,7 +74,15 @@ int main( int argc, char* argv[] ){
 
     // initialize some histograms
     HistInfo histInfo = HistInfo( "", "reweighting factor", 50, -0.1, 2.1 );
-    std::shared_ptr<TH1D> nominalWeights = histInfo.makeHist( "nominalWeights" );
+    std::shared_ptr<TH1D> weightNom = histInfo.makeHist( "weightNominal" );
+    std::shared_ptr<TH1D> electronWeightNom = histInfo.makeHist( "electronWeightNom" );
+    std::shared_ptr<TH1D> electronWeightStatUp = histInfo.makeHist( "electronWeightStatUp" );
+    std::shared_ptr<TH1D> electronWeightSystUp = histInfo.makeHist( "electronWeightSystUp" );
+    std::shared_ptr<TH1D> muonWeightNom = histInfo.makeHist( "muonWeightNom" );
+    std::shared_ptr<TH1D> muonWeightStatUp = histInfo.makeHist( "muonWeightStatUp" );
+    std::shared_ptr<TH1D> muonWeightSystUp = histInfo.makeHist( "muonWeightSystUp" );
+    std::shared_ptr<TH1D> pileupWeightNom = histInfo.makeHist( "pileupWeightNom" );
+    std::shared_ptr<TH1D> pileupWeightUp = histInfo.makeHist( "pileupWeightUp" );
 
     // loop over samples
     unsigned numberOfSamples = samples.size();
@@ -97,14 +107,33 @@ int main( int argc, char* argv[] ){
 	    double weight = reweighter.totalWeight( event );
 
 	    // fill the histograms
-	    nominalWeights->Fill( weight );
+	    weightNom->Fill( weight );
+	    electronWeightNom->Fill( reweighter["electronID"]->weight(event) );
+	    electronWeightStatUp->Fill( reweighter["electronID"]->weight(event)
+					*reweighter["electronIDStat"]->weightUp(event) );
+	    electronWeightSystUp->Fill( reweighter["electronID"]->weight(event)
+					*reweighter["electronIDSyst"]->weightUp(event) );
+	    muonWeightNom->Fill( reweighter["electronID"]->weight(event) );
+            muonWeightStatUp->Fill( reweighter["muonID"]->weight(event)
+                                        *reweighter["muonIDStat"]->weightUp(event) );
+            muonWeightSystUp->Fill( reweighter["muonID"]->weight(event)
+                                        *reweighter["muonIDSyst"]->weightUp(event) );
+	    pileupWeightNom->Fill( reweighter["pileup"]->weight(event) );
+	    pileupWeightUp->Fill( reweighter["pileup"]->weightUp(event) );
         }
     }
 
     // write histograms to output file
-    std::string outputFileName = "output_run2ulReweighter_test.root";
     TFile* filePtr = TFile::Open( outputFileName.c_str(), "recreate" );
-    nominalWeights->Write();
+    weightNom->Write();
+    electronWeightNom->Write();
+    electronWeightStatUp->Write();
+    electronWeightSystUp->Write();
+    muonWeightNom->Write();
+    muonWeightStatUp->Write();
+    muonWeightSystUp->Write();
+    pileupWeightNom->Write();
+    pileupWeightUp->Write();
     filePtr->Close();
     return 0;
 }
