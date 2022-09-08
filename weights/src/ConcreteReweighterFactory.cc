@@ -76,85 +76,84 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
 
     // electron reco reweighter
     // pT below 20 GeV
-    std::string modifiedYear = stringTools::replace(year,"2016PreVFP","2016preVFP");
-    modifiedYear = stringTools::replace(modifiedYear,"2016PostVFP","2016postVFP");
-    TFile* eleRecoSFFile_pTBelow20 = TFile::Open( 
-	( stringTools::formatDirectoryName( weightDirectory ) 
-	+ "weightFilesUL/leptonSF/egammaEffi_ptBelow20.txt_EGM2D_UL" 
-	+ modifiedYear + ".root" ).c_str() );
-    std::shared_ptr< TH2 > electronRecoSFHist_pTBelow20( 
-	dynamic_cast< TH2* >( eleRecoSFFile_pTBelow20->Get( "EGamma_SF2D" ) ) );
+    TFile* eleRecoSFFile_pTBelow20 = TFile::Open(
+        ( stringTools::formatDirectoryName( weightDirectory )
+        + "weightFilesUL/leptonSF/electronRECO_SF_" + year + "_ptBelow20.root" ).c_str() );
+    std::shared_ptr< TH2 > electronRecoSFHist_pTBelow20(
+        dynamic_cast< TH2* >( eleRecoSFFile_pTBelow20->Get( "EGamma_SF2D" ) ) );
     electronRecoSFHist_pTBelow20->SetDirectory( gROOT );
     eleRecoSFFile_pTBelow20->Close();
-    ElectronIDReweighter electronRecoReweighter_pTBelow20( electronRecoSFHist_pTBelow20, 
-	new LooseMaxPtSelector< 20 > );
-    combinedReweighter.addReweighter( "electronReco_pTBelow20", 
-	std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTBelow20 ) );
+    ElectronIDReweighter electronRecoReweighter_pTBelow20( electronRecoSFHist_pTBelow20,
+        new LooseMaxPtSelector< 20 > );
+    combinedReweighter.addReweighter( "electronReco_pTBelow20",
+        std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTBelow20 ) );
 
     // electron reco reweighter
     // pT above 20 GeV
-    TFile* eleRecoSFFile_pTAbove20 = TFile::Open( 
-	( stringTools::formatDirectoryName( weightDirectory ) 
-	+ "weightFilesUL/leptonSF/egammaEffi_ptAbove20.txt_EGM2D_UL" 
-	+ modifiedYear + ".root" ).c_str() );
-    std::shared_ptr< TH2 > electronRecoSFHist_pTAbove20( 
-	dynamic_cast< TH2* >( eleRecoSFFile_pTAbove20->Get( "EGamma_SF2D" ) ) );
+    TFile* eleRecoSFFile_pTAbove20 = TFile::Open(
+        ( stringTools::formatDirectoryName( weightDirectory )
+        + "weightFilesUL/leptonSF/electronRECO_SF_" + year + "_ptAbove20.root" ).c_str() );
+    std::shared_ptr< TH2 > electronRecoSFHist_pTAbove20(
+        dynamic_cast< TH2* >( eleRecoSFFile_pTAbove20->Get( "EGamma_SF2D" ) ) );
     electronRecoSFHist_pTAbove20->SetDirectory( gROOT );
     eleRecoSFFile_pTAbove20->Close();
-    ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20, 
-	new LooseMinPtSelector< 20 > );
-    combinedReweighter.addReweighter( "electronReco_pTAbove20", 
-	std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTAbove20 ) );
+    ElectronIDReweighter electronRecoReweighter_pTAbove20( electronRecoSFHist_pTAbove20,
+        new LooseMinPtSelector< 20 > );
+    combinedReweighter.addReweighter( "electronReco_pTAbove20",
+        std::make_shared< ReweighterElectronsID >( electronRecoReweighter_pTAbove20 ) );
 
     // make muon ID reweighter
     std::string muonSFFileName = stringTools::formatDirectoryName( weightDirectory )
-        + "weightFilesUL/leptonSF/muonTOPLeptonMVAMedium040_" + year + ".root";
+        + "weightFilesUL/leptonSF/leptonMVAUL_SF_muons_Medium_"+year+".root";
     TFile* muonSFFile = TFile::Open( (muonSFFileName).c_str() );
     // load the scalefactor histogram and set the errors to zero,
-    // load the systematic errors and set the bin contents to one and errors relative,
-    // (note: the histogram SFTotSys contains the relative uncertainties as bin contents!)
+    // load the systematic errors and set the bin contents to one and errors relative
+    // (note: the histogram _combined_syst contains the absolute uncertainties as bin contents!),
     // load the statistical errors and set the bin contents to one and the errors relative
-    // (note: the histogram SFTotStat contains the relative uncertainties as bin contents!)
-    std::shared_ptr< TH2 > muonSFHist_nom( dynamic_cast< TH2* >( 
-    muonSFFile->Get( "SF" ) ) );
+    // (note: the histogram _stat contains the absolute uncertainties as bin errors!).
+    std::shared_ptr< TH2 > muonSFHist_nom( dynamic_cast< TH2* >(
+        muonSFFile->Get( "NUM_LeptonMvaMedium_DEN_TrackerMuons_abseta_pt" ) ) );
     muonSFHist_nom->SetDirectory( gROOT );
-    std::shared_ptr< TH2 > muonSFHist_syst( dynamic_cast< TH2* >( 
-        muonSFFile->Get( "SFTotSys" ) ) );
+    std::shared_ptr< TH2 > muonSFHist_syst( dynamic_cast< TH2* >(
+        muonSFFile->Get( "NUM_LeptonMvaMedium_DEN_TrackerMuons_abseta_pt_combined_syst" ) ) );
     muonSFHist_syst->SetDirectory( gROOT );
-    std::shared_ptr< TH2 > muonSFHist_stat( dynamic_cast< TH2* >( 
-        muonSFFile->Get( "SFTotStat" ) ) );
+    std::shared_ptr< TH2 > muonSFHist_stat( dynamic_cast< TH2* >(
+        muonSFFile->Get( "NUM_LeptonMvaMedium_DEN_TrackerMuons_abseta_pt_stat" ) ) );
     muonSFHist_stat->SetDirectory( gROOT );
     muonSFFile->Close();
     for(int i = 0; i <= muonSFHist_nom->GetNbinsX()+1; ++i){
         for(int j = 0; j <= muonSFHist_nom->GetNbinsY()+1; ++j){
             // process values
             muonSFHist_nom->SetBinError(i,j,0.);
-            muonSFHist_syst->SetBinError(i,j,muonSFHist_syst->GetBinContent(i,j));
+            muonSFHist_syst->SetBinError(i,j,
+                muonSFHist_syst->GetBinContent(i,j)/muonSFHist_nom->GetBinContent(i,j));
             muonSFHist_syst->SetBinContent(i,j,1.);
-            muonSFHist_stat->SetBinError(i,j,muonSFHist_stat->GetBinContent(i,j));
+            muonSFHist_stat->SetBinError(i,j,
+                muonSFHist_stat->GetBinError(i,j)/muonSFHist_nom->GetBinContent(i,j));
             muonSFHist_stat->SetBinContent(i,j,1.);
         }
     }
 
     MuonReweighter muonReweighter_nom( muonSFHist_nom, new TightSelector );
-    combinedReweighter.addReweighter("muonID", 
-	std::make_shared<ReweighterMuons>(muonReweighter_nom));
+    combinedReweighter.addReweighter("muonID",
+        std::make_shared<ReweighterMuons>(muonReweighter_nom));
     MuonReweighter muonReweighter_syst( muonSFHist_syst, new TightSelector );
     combinedReweighter.addReweighter("muonIDSyst",
-	std::make_shared<ReweighterMuons>(muonReweighter_syst));
+        std::make_shared<ReweighterMuons>(muonReweighter_syst));
     MuonReweighter muonReweighter_stat( muonSFHist_stat, new TightSelector );
     combinedReweighter.addReweighter("muonIDStat",
-	std::make_shared<ReweighterMuons>(muonReweighter_stat));
+        std::make_shared<ReweighterMuons>(muonReweighter_stat));
+    muonSFFile->Close();
 
-    // make electron ID Reweighter
+    // make electron ID reweighter
     std::string eleSFFileName = stringTools::formatDirectoryName( weightDirectory )
-      + "weightFilesUL/leptonSF/electronTOPLeptonMVAMedium040_" + year + ".root";
+      + "weightFilesUL/leptonSF/leptonMVAUL_SF_electrons_Tight_"+year+".root";
     TFile* eleSFFile = TFile::Open( (eleSFFileName).c_str() );
     // load the scalefactor histogram and set the errors to zero,
-    // load the systematic errors and set the bin contents to one,
-    // (note: the histogram syst contains the relative uncertainties as bin contents (?))
-    // load the statistical errors and set the bin contents to one
-    // (note: the histogram stat contains the relative uncertainties as bin contents (?))
+    // load the systematic errors and set the bin contents to one and errors relative
+    // (note: the histogram syst contains the absolute uncertainties as bin contents!),
+    // load the statistical errors and set the bin contents to one and errors relative
+    // (note: the histogram stat contains the absolute uncertainties as bin contents!).
     std::shared_ptr< TH2 > electronSFHist_nom( dynamic_cast< TH2* >
     ( eleSFFile->Get( "EGamma_SF2D" ) ) );
     electronSFHist_nom->SetDirectory( gROOT );
@@ -164,47 +163,40 @@ CombinedReweighter FourTopsFakeRateReweighterFactory::buildReweighter(
     std::shared_ptr< TH2 > electronSFHist_stat( dynamic_cast< TH2* >
         ( eleSFFile->Get( "stat" ) ) );
     electronSFHist_stat->SetDirectory( gROOT );
-    eleSFFile->Close();
     for(int i = 0; i <= electronSFHist_nom->GetNbinsX()+1; ++i){
         for(int j = 0; j <= electronSFHist_nom->GetNbinsY()+1; ++j){
             electronSFHist_nom->SetBinError(i,j,0.);
-            electronSFHist_syst->SetBinError(i,j,electronSFHist_syst->GetBinContent(i,j));
+            electronSFHist_syst->SetBinError(i,j,
+                electronSFHist_syst->GetBinContent(i,j)/electronSFHist_nom->GetBinContent(i,j));
             electronSFHist_syst->SetBinContent(i,j,1.);
-            electronSFHist_stat->SetBinError(i,j,electronSFHist_stat->GetBinContent(i,j));
+            electronSFHist_stat->SetBinError(i,j,
+                electronSFHist_stat->GetBinContent(i,j)/electronSFHist_nom->GetBinContent(i,j));
             electronSFHist_stat->SetBinContent(i,j,1.);
         }
     }
 
     ElectronIDReweighter electronIDReweighter_nom( electronSFHist_nom, new TightSelector );
     combinedReweighter.addReweighter( "electronID",
-	std::make_shared<ReweighterElectronsID>(electronIDReweighter_nom) );
+        std::make_shared<ReweighterElectronsID>(electronIDReweighter_nom) );
     ElectronIDReweighter electronIDReweighter_syst( electronSFHist_syst, new TightSelector );
     combinedReweighter.addReweighter( "electronIDSyst",
         std::make_shared<ReweighterElectronsID>(electronIDReweighter_syst) );
     ElectronIDReweighter electronIDReweighter_stat( electronSFHist_stat, new TightSelector );
     combinedReweighter.addReweighter( "electronIDStat",
         std::make_shared<ReweighterElectronsID>(electronIDReweighter_stat) );
+    eleSFFile->Close();
 
     // make pileup reweighter
-    std::string yearSuffix;
-    if( year == "2016PreVFP" ) { yearSuffix = "16PreVFP"; } 
-    else if( year == "2016PostVFP" ){ yearSuffix = "16PostVFP"; }
-    else if( year == "2017" ){ yearSuffix = "17"; } 
-    else if( year == "2018" ){ yearSuffix = "18"; }
-    else {
-        std::string msg = "ERROR in Run2ULReweighterFactory:";
-        msg += " could not make pileup reweighter for year '" + year + "'";
-        throw std::invalid_argument( msg );
-    }
     std::string pileupWeightPath = stringTools::formatDirectoryName( weightDirectory )
-        + "weightFilesUL/pileupWeights/"
-        + "Collisions" + yearSuffix + "_UltraLegacy_goldenJSON.root";
+            + "weightFilesUL/pileupWeights/"
+            + "Collisions" + year + "_UltraLegacy_goldenJSON.root";
     combinedReweighter.addReweighter( "pileup",
         std::make_shared< ReweighterPileup >( pileupWeightPath ) );
 
-    // make prefire Reweighter
-    // temporarily disabled as the weights are not in skimmed ntuples, yielding weight 0...
-    //combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
+    std::cout << "checkpoint 5" << std::endl;
+
+    // make prefire reweighter
+    combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
 
     return combinedReweighter;
 }
