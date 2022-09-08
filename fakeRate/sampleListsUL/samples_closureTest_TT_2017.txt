@@ -1,2 +1,2 @@
-TT          TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_Fall17_part1.root                87.31
-TT          TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17_part1.root         364.35
+TT          TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_Fall17.root	            87.31
+TT          TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_Fall17.root       364.35
