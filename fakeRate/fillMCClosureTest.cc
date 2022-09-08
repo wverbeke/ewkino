@@ -238,16 +238,6 @@ int main( int argc, char* argv[] ){
             if( !passClosureTestEventSelection( event, onlyMuonFakes, onlyElectronFakes ) ) continue;
 	    LightLeptonCollection lightLeptons = event.lightLeptonCollection();
 
-	    // fill variables
-            double mll = 0, mtW = 0;
-            if( event.hasOSSFLightLeptonPair() ){
-                mll = event.bestZBosonCandidateMass();
-                mtW = event.mtW();
-            } else{
-                mll = ( lightLeptons[0] + lightLeptons[1] ).mass();
-                mtW = mt( lightLeptons[2], event.met() );
-            }
-            
 	    // compute plotting variables 
 	    std::tuple<int,int,int> temp = eventOriginFlavour( event );
             std::vector< double > variables = { 

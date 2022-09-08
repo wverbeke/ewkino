@@ -17,10 +17,10 @@ isMCFR = True
 use_mt = False
 years = ['2016PreVFP','2016PostVFP','2017','2018']
 # (pick any combination from '2016PreVFP', '2016PostVFP', '2017' and '2018')
-flavours = ['muon','electron','both'] 
+flavours = ['muon'] 
 # (pick any combination from 'muon', 'electron' and any string 
 # different from 'muon' or 'electron' (perform closure test inclusive in lepton flavour))
-processes = ['TT','DY']
+processes = ['DY']
 # (pick any combination from 'DY' and 'TT')
 runmode = 'condor'
 # (pick from 'qsub', 'condor' or 'local')
