@@ -10,7 +10,7 @@ import histplotter as hp
 sys.path.append('../Tools/python')
 import histtools as ht
 
-years = ['2016', '2017', '2018']
+years = ['2016PreVFP', '2016PostVFP', '2017', '2018']
 use_mT = True
 plotmode = 'new'
 # (choose from 'old' (with older c++ plotting function) or 'new' (with newer python version))
@@ -22,8 +22,6 @@ if not os.path.exists('./plotPrescaleMeasurement'):
     sys.exit()
 
 # hadd files if needed
-# note that the subfiles are assumed to be in a folder named PrescaleMeasurementSubFiles
-# you may have to manually create that folder and move the subfiles in there
 for year in years:
     basename = 'prescaleMeasurement'
     if use_mT: basename += '_mT'
@@ -31,7 +29,7 @@ for year in years:
     basename += '_histograms_'+year
     filename = basename + '.root'
     if os.path.exists(filename): continue
-    subfolder = 'PrescaleMeasurementSubFiles'
+    subfolder = '.'
     cmd = 'hadd '+filename+' '
     cmd += os.path.join(subfolder,basename+'_sample*.root')
     print(cmd)
