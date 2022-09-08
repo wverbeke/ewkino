@@ -21,11 +21,13 @@ HistInfo makeVarHistInfo( const unsigned numberOfBins, const double cut, const d
 }
 
 // function for filling prescale histograms for a single sample
-void fillPrescaleMeasurementHistograms( const std::string& year,
+void fillPrescaleMeasurementHistograms( 
+	const std::string& year,
 	const std::string& sampleDirectoryPath, 
 	const std::string& sampleListPath,
 	const unsigned sampleIndex, 
 	const bool isTestRun,
+	const unsigned long nEvents,
 	const std::vector< std::string >& triggerVector,
 	const bool useMT, const double metCut, double mtCut ){
 
@@ -88,8 +90,24 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/",
                                                         year, treeReader.sampleVector() );
     
+    // set number of entries
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    if( isTestRun ) numberOfEntries = 10000;
+    double nEventsReweight = 1.;
+    if( isTestRun ){
+	// loop over a smaller number of entries for testing and debugging
+	unsigned long nLimit = 10000;
+	std::cout << "limiting number of entries because of test run setting" << std::endl;
+	numberOfEntries = std::min(nLimit, numberOfEntries);
+    }
+    if( nEvents!=0 && nEvents<numberOfEntries && !isData ){
+	// loop over a smaller number of entries if samples are impractically large
+	std::cout << "limiting number of entries to " << nEvents << std::endl;
+	nEventsReweight = (double)numberOfEntries/nEvents;
+	std::cout << "(with corresponding reweighting factor " << nEventsReweight << ")" << std::endl;
+	numberOfEntries = nEvents;
+    }
+
+    // do event loop
     std::cout<<"start event loop for "<<numberOfEntries<<" events"<<std::endl;
     for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
         if( entry%10000 == 0 ) progress.writeProgress( static_cast<double>(entry)/numberOfEntries );
@@ -105,7 +123,7 @@ void fillPrescaleMeasurementHistograms( const std::string& year,
         if( mT > maxBin ) continue;
 
         // determine event weight
-        double weight = event.weight();
+        double weight = event.weight()*nEventsReweight;
         if( !isData ) weight *= reweighter.totalWeight( event );
         else weight = 1;
 

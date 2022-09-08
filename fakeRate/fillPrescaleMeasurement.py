@@ -17,12 +17,19 @@ years = ['2016PreVFP','2016PostVFP','2017','2018']
 # (choose any combination from '2016PreVFP', '2016PostVFP', '2017' and '2018')
 runmode = 'local'
 # (choose from 'condor', 'qsub' or 'local')
-testrun = True
+testrun = False
 # (does not overwrite runmode, 
 # only changes number of samples and number of events per sample to small values)
 samplelistdirectory = os.path.abspath('sampleListsUL')
+# directory where the sample lists are
 # (see also below to set correct sample list name in the loop!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
+# directory where the samples are
+nevents = 1000
+# number of events to process
+# (use 0 for all events)
+# (note: a reweighting factor ntotal/nevents will be applied to each used event)
+# (note: ignored for data, only applicable to simulation)
 
 # check if executable exists
 if not os.path.exists('./fillPrescaleMeasurement'):
@@ -45,8 +52,9 @@ for year in years:
     # loop over samples
     for i in range(nsamples):
 	if( testrun and i!=0 ): continue
-	command = './fillPrescaleMeasurement {} {} {} {} {}'.format(
-                        year, sampledirectory, samplelist, i, testrun)
+	if i!=1: continue
+	command = './fillPrescaleMeasurement {} {} {} {} {} {}'.format(
+                        year, sampledirectory, samplelist, i, testrun, nevents)
 	cmds.append(command)
 
 # loop over commands and submit jobs
