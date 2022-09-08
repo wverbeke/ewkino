@@ -18,10 +18,16 @@ int main( int argc, char* argv[] ){
     std::cerr << "###starting###" << std::endl;
     // check number of command line arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-    if( !( argvStr.size() == 6 ) ){
-        std::cerr<<"found "<<argc - 1<<" command line args, while 5 are needed."<<std::endl;
-        std::cerr<<"usage: ./fillPrescaleMeasurement year sampleDirectory sampleList sampleIndex";
-	std::cerr<<" isTestRun"<<std::endl;
+    unsigned nargs = 6;
+    if( !( argvStr.size() == nargs+1 ) ){
+        std::cerr << "found " << argc-1 << " command line args,";
+	std::cerr << " while " << nargs << " are needed:" << std::endl;
+        std::cerr << "- year" << std::endl;
+	std::cerr << "- sampleDirectory" << std::endl;
+	std::cerr << "- sampleList" << std::endl;
+	std::cerr << "- sampleIndex" << std::endl;
+	std::cerr << "- isTestRun" << std::endl;
+	std::cerr << "- nEvents" << std::endl;
         return 1;
     }
 
@@ -31,6 +37,7 @@ int main( int argc, char* argv[] ){
     std::string& sampleList = argvStr[3];
     const unsigned sampleIndex = std::stoi(argvStr[4]);
     const bool isTestRun = (argvStr[5]=="true" || argvStr[5]=="True");
+    const unsigned long nEvents = std::stoul(argvStr[6]);
     
     // define and set configuration variables
     const double metLowerCut_prescaleMeasurement = 40;
@@ -66,7 +73,7 @@ int main( int argc, char* argv[] ){
     };
 
     fillPrescaleMeasurementHistograms(year, sampleDirectory, sampleList, sampleIndex, 
-					isTestRun,
+					isTestRun, nEvents,
 					triggerVectorMap[ year ], use_mT, 
 					metLowerCut_prescaleMeasurement, 
 					mTLowerCut_prescaleMeasurement );
