@@ -71,7 +71,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     const std::string& sampleDirectory, const std::string& sampleList, const unsigned sampleIndex,
     const std::vector< std::string >& triggerVector, 
     const std::map< std::string, Prescale >& prescaleMap, double maxMT, double maxMet,
-    const bool isTestRun ){ 
+    const bool isTestRun, const unsigned long nEvents ){ 
  
     std::cout<<"start function fillFakeRateMeasurementHistograms"<<std::endl;
 
@@ -112,6 +112,7 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     for(unsigned idx=1; idx<=sampleIndex; ++idx){
         treeReader.initSample();
     }
+    const bool isData = treeReader.isData();
 
     // make histogram maps
     std::cout<<"start building histogram maps"<<std::endl;
@@ -165,9 +166,24 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
     CombinedReweighter reweighter = reweighterFactory->buildReweighter( "../weights/", 
 					year, thissample );
 
-    // loop over sample entries
+    // set number of entries
     long unsigned numberOfEntries = treeReader.numberOfEntries();
-    if( isTestRun ) numberOfEntries = 10000;
+    double nEventsReweight = 1.;
+    if( isTestRun ){
+        // loop over a smaller number of entries for testing and debugging
+        unsigned long nLimit = 10000;
+        std::cout << "limiting number of entries because of test run setting" << std::endl;
+        numberOfEntries = std::min(nLimit, numberOfEntries);
+    }
+    if( nEvents!=0 && nEvents<numberOfEntries && !isData ){
+        // loop over a smaller number of entries if samples are impractically large
+        std::cout << "limiting number of entries to " << nEvents << std::endl;
+        nEventsReweight = (double)numberOfEntries/nEvents;
+        std::cout << "(with corresponding reweighting factor " << nEventsReweight << ")" << std::endl;
+        numberOfEntries = nEvents;
+    }
+
+    // do event loop
     std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
     for(long unsigned entry=0; entry<numberOfEntries; ++entry){
 	if( entry%50000 == 0 ) progress.writeProgress( static_cast<double>(entry)/numberOfEntries );
@@ -204,14 +220,16 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 	// temp: remove events with unphysical large weights
         // issue with unknown cause observed in a small number of generator weights 
         // in UL WJets samples
-        if( weight>1e4 ){
+        /*if( weight>1e4 ){
             std::string msg = "WARNING: vetooing event with large weight.";
             msg += " (weight is " + std::to_string(weight) + ")";
             std::cerr << msg << std::endl;
             continue;
-        }
+        }*/
 
-        if( event.isMC() ){
+	weight *= nEventsReweight;
+        
+	if( event.isMC() ){
             const Prescale& prescale = prescaleMap.find( triggerToUse )->second;
             weight *= prescale.value();
             weight *= reweighter.totalWeight( event );

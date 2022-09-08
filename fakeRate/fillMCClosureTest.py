@@ -15,8 +15,8 @@ from jobSettings import CMSSW_VERSION
 # set global properties
 isMCFR = True
 use_mt = False
-years = ['2016','2017','2018']
-# (pick any combination from '2016', '2017' and '2018')
+years = ['2016PreVFP','2016PostVFP','2017','2018']
+# (pick any combination from '2016PreVFP', '2016PostVFP', '2017' and '2018')
 flavours = ['muon','electron','both'] 
 # (pick any combination from 'muon', 'electron' and any string 
 # different from 'muon' or 'electron' (perform closure test inclusive in lepton flavour))
@@ -27,9 +27,14 @@ runmode = 'condor'
 istestrun = False
 # (note that this will not overwrite runmode, 
 # only affects number of samples and number of events per sample)
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate/'
-samplelistdirectory = os.path.abspath('sampleListsPreUL')
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL/'
+samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below to set correct sample list name in loop!)
+nevents = 0
+# number of events to process
+# (use 0 for all events)
+# (note: a reweighting factor ntotal/nevents will be applied to each used event)
+# (note: ignored for data, only applicable to simulation)
 
 # check if executable exists
 if not os.path.exists('./fillMCClosureTest'):
@@ -47,9 +52,9 @@ for year in years:
 	    samplelist = os.path.join(samplelistdirectory,
                             'samples_closureTest_'+process+'_'+year+'.txt')
 	    # make the command
-	    command = './fillMCClosureTest {} {} {} {} {} {} {} {}'.format(
+	    command = './fillMCClosureTest {} {} {} {} {} {} {} {} {}'.format(
                             isMCFR,use_mt,process,year,flavour,
-                            sampledirectory,samplelist,istestrun)
+                            sampledirectory,samplelist,istestrun,nevents)
 	    cmds.append(command)
 
 # loop over commands and submit jobs

@@ -16,10 +16,17 @@ int main( int argc, char* argv[] ){
 
     // check command line arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-    if( !( argvStr.size() == 7 ) ){
-        std::cerr<<"found "<<argc - 1<<" command line args, while 6 are needed."<<std::endl;
-        std::cerr<<"usage: ./fillFakeRateMeasurement flavour year";
-	std::cerr<<" sampleDirectory sampleList sampleIndex isTestRun"<<std::endl;
+    unsigned nargs = 7;
+    if( !( argvStr.size() == nargs+1 ) ){
+        std::cerr << "found " << argc-1 << " command line args,";
+	std::cerr << " while " << nargs << " are needed." << std::endl;
+        std::cerr << "- flavour" << std::endl;
+	std::cerr << "- year" << std::endl;
+	std::cerr << "- sampleDirectory" << std::endl;
+	std::cerr << "- sampleList" << std::endl;
+	std::cerr << "- sampleIndex" << std::endl;
+	std::cerr << "- isTestRun" << std::endl;
+	std::cerr << "- nEvents" << std::endl;
         return 1;
     }
     std::string year = argvStr[2];
@@ -28,6 +35,7 @@ int main( int argc, char* argv[] ){
     const std::string sampleList = argvStr[4];
     const unsigned sampleIndex = std::stoi(argvStr[5]);
     const bool isTestRun = (argvStr[6]=="true" || argvStr[6]=="True");
+    const unsigned long nEvents = std::stoul(argvStr[7]);
 
     // configuration and variable definition
     const double mTLowerCut_prescaleFit = 90; // 90
@@ -73,9 +81,11 @@ int main( int argc, char* argv[] ){
 		    mTUpperCut_prescaleFit, false, false );
     prescale_filePtr->Close();
 
-    fillFakeRateMeasurementHistograms(flavor, year, sampleDirectory, sampleList, sampleIndex,
-	triggerVectorMap[ year ], prescaleMap, mTUpperCut_fakeRateMeasurement, 
-	metUpperCut_fakeRateMeasurement, isTestRun );
+    fillFakeRateMeasurementHistograms(
+	flavor, year, sampleDirectory, sampleList, sampleIndex,
+	triggerVectorMap[ year ], prescaleMap, 
+	mTUpperCut_fakeRateMeasurement, metUpperCut_fakeRateMeasurement, 
+	isTestRun, nEvents );
 
     std::cerr << "###done###" << std::endl;
     return 0;
