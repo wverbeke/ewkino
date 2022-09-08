@@ -141,10 +141,19 @@ int main( int argc, char* argv[] ){
     
     // check command line arguments
     std::vector< std::string > argvStr( &argv[0], &argv[0] + argc );
-    if( !(argvStr.size() == 9) ){
-        std::cerr<<"found "<<argc - 1<<" command line args, while 8 are needed."<<std::endl;
-        std::cerr<<"usage: ./closureTest_MC isMCFR use_mT process year flavour";
-	std::cerr<<" sampleDirectory sampleList isTestRun"<<std::endl;
+    unsigned nargs = 9;
+    if( !(argvStr.size() == nargs+1) ){
+        std::cerr << "found " << argc-1 << " command line args,";
+	std::cerr << " while " << nargs << " are needed." << std::endl;
+        std::cerr << "- isMCFR" << std::endl;
+	std::cerr << "- use_mT" << std::endl;
+	std::cerr << "- process" << std::endl;
+	std::cerr << "- year" << std::endl;
+	std::cerr << "- flavour" << std::endl;
+	std::cerr << "- sampleDirectory" << std::endl;
+	std::cerr << "- sampleList" << std::endl;
+	std::cerr << "- isTestRun" << std::endl;
+	std::cerr << "- nEvents" << std::endl;
         return 1;
     }
     
@@ -157,6 +166,7 @@ int main( int argc, char* argv[] ){
     std::string sampleDirectory = argvStr[6];
     std::string sampleListFile = argvStr[7];
     const bool isTestRun = (argvStr[8]=="True" or argvStr[8]=="true");
+    const unsigned long nEvents = std::stoul(argvStr[9]);
     if( flavor!="electron" && flavor!="muon" ){ flavor=""; }
     setTDRStyle();
 
@@ -181,23 +191,40 @@ int main( int argc, char* argv[] ){
         predictedHists.push_back( histInfo.makeHist( histInfo.name()+"_predicted_"+process+"_"+year) );
     }
 
-    
-    
     // read fake-rate map corresponding to this year and flavor 
     std::shared_ptr< TH2D > fakeRateMap_muon = readFRMap( "muon", year, isMCFR, use_mT );
     std::shared_ptr< TH2D > fakeRateMap_electron = readFRMap( "electron", year, isMCFR, use_mT );
 
-    // loop over samples to fill histograms
+    // make a TreeReader instance
     TreeReader treeReader( sampleListFile, sampleDirectory );
 
+    // set number of samples
     unsigned numberOfSamples = treeReader.numberOfSamples();
     if( isTestRun ) numberOfSamples = 1;
+
+    // loop over samples
     for( unsigned i = 0; i < numberOfSamples; ++i ){
 	std::cout<<"start processing sample n. "<<i+1<<" of "<<numberOfSamples<<std::endl;
         treeReader.initSample();
 
+	// set number of entries
 	long unsigned numberOfEntries = treeReader.numberOfEntries();
-	if( isTestRun ) numberOfEntries = 500000;
+	double nEventsReweight = 1.;
+	if( isTestRun ){
+	    // loop over a smaller number of entries for testing and debugging
+	    unsigned long nLimit = 10000;
+	    std::cout << "limiting number of entries because of test run setting" << std::endl;
+	    numberOfEntries = std::min(nLimit, numberOfEntries);
+	}
+	if( nEvents!=0 && nEvents<numberOfEntries && !treeReader.isData() ){
+	    // loop over a smaller number of entries if samples are impractically large
+	    std::cout << "limiting number of entries to " << nEvents << std::endl;
+	    nEventsReweight = (double)numberOfEntries/nEvents;
+	    std::cout << "(with corresponding reweighting factor " << nEventsReweight << ")" << std::endl;
+	    numberOfEntries = nEvents;
+	}
+	
+	// do event loop
         std::cout<<"starting event loop for "<<numberOfEntries<<" events"<<std::endl;
 	for( long unsigned entry = 0; entry < numberOfEntries; ++entry ){
             Event event = treeReader.buildEvent( entry );
@@ -215,7 +242,8 @@ int main( int argc, char* argv[] ){
                 mll = ( lightLeptons[0] + lightLeptons[1] ).mass();
                 mtW = mt( lightLeptons[2], event.met() );
             }
-            //compute plotting variables 
+            
+	    // compute plotting variables 
 	    std::tuple<int,int,int> temp = eventOriginFlavour( event );
             std::vector< double > variables = { 
 		lightLeptons[0].pt(), lightLeptons[1].pt(), lightLeptons[2].pt(),
@@ -237,7 +265,7 @@ int main( int argc, char* argv[] ){
 
             // event is 'observed' if all leptons are tight 
             bool isObserved = true;
-	    double weight = event.weight();
+	    double weight = event.weight()*nEventsReweight;
             for( const auto& leptonPtr : lightLeptons ){
                 if( !leptonPtr->isTight() ){
                     isObserved = false;
