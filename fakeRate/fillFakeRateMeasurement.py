@@ -13,16 +13,23 @@ import condorTools as ct
 from jobSettings import CMSSW_VERSION
 
 # set global properties
-years = ['2016','2017','2018']
-# (choose any combination from '2016', '2017' and '2018')
+years = ['2016PreVFP','2016PostVFP','2017','2018']
+# (choose any combination from '2016PreVFP','2016PostVFP', '2017' and '2018')
 flavours = ['muon','electron']
 # (choose any combination from 'muon' and 'electron')
-runmode = 'local'
+runmode = 'condor'
 # (choose 'qsub', 'condor' or 'local')
-testrun = True
-samplelistdirectory = os.path.abspath('sampleListsPreUL')
+testrun = False
+samplelistdirectory = os.path.abspath('sampleListsUL')
+# (directory where the sample lists are)
 # (see also below in loop to set the correct sample list name per flavour/year!)
-sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate'
+sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
+# (directory where the samples are)
+nevents = 0
+# (number of events to process)
+# (use 0 for all events)
+# (note: a reweighting factor ntotal/nevents will be applied to each used event)
+# (note: ignored for data, only applicable to simulation)
 
 # check if executable exists
 if not os.path.exists('./fillFakeRateMeasurement'):
@@ -46,8 +53,8 @@ for year in years:
 	# loop over samples and make commands
 	for i in range(nsamples):
 	    if( testrun and i!=0 ): continue
-	    command = './fillFakeRateMeasurement {} {} {} {} {} {}'.format(
-                            flavour,year,sampledirectory,samplelist,i,testrun)
+	    command = './fillFakeRateMeasurement {} {} {} {} {} {} {}'.format(
+                            flavour,year,sampledirectory,samplelist,i,testrun,nevents)
 	    cmds.append(command)
 
 # loop over commands and submit jobs
