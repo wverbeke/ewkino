@@ -15,7 +15,7 @@ from jobSettings import CMSSW_VERSION
 # set global properties
 years = ['2016PreVFP','2016PostVFP','2017','2018']
 # (choose any combination from '2016PreVFP', '2016PostVFP', '2017' and '2018')
-runmode = 'local'
+runmode = 'condor'
 # (choose from 'condor', 'qsub' or 'local')
 testrun = False
 # (does not overwrite runmode, 
@@ -25,7 +25,7 @@ samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below to set correct sample list name in the loop!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
 # directory where the samples are
-nevents = 1000
+nevents = 0
 # number of events to process
 # (use 0 for all events)
 # (note: a reweighting factor ntotal/nevents will be applied to each used event)
@@ -52,7 +52,6 @@ for year in years:
     # loop over samples
     for i in range(nsamples):
 	if( testrun and i!=0 ): continue
-	if i!=1: continue
 	command = './fillPrescaleMeasurement {} {} {} {} {} {}'.format(
                         year, sampledirectory, samplelist, i, testrun, nevents)
 	cmds.append(command)

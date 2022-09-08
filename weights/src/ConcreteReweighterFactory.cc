@@ -322,8 +322,6 @@ CombinedReweighter Run2ULReweighterFactory::buildReweighter(
 	std::make_shared<ReweighterElectronsID>(electronIDReweighter_stat) );
     eleSFFile->Close();
     
-    std::cout << "checkpoint 4" << std::endl;
-
     // make the b-tag shape reweighter
     // step 1: set correct csv file
     std::string bTagSFFileName = "bTagReshaping_unc_"+year+".root";
@@ -345,8 +343,6 @@ CombinedReweighter Run2ULReweighterFactory::buildReweighter(
 	    + "Collisions" + year + "_UltraLegacy_goldenJSON.root";
     combinedReweighter.addReweighter( "pileup",
         std::make_shared< ReweighterPileup >( pileupWeightPath ) );
-
-    std::cout << "checkpoint 5" << std::endl;
 
     // make prefire reweighter
     combinedReweighter.addReweighter( "prefire", std::make_shared< ReweighterPrefire >() );
