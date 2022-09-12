@@ -87,6 +87,7 @@ if __name__=='__main__':
 		# loop over years and flavours
 		for year in years:
 		    for flavor in flavors:
+			name = '{}_{}'.format(year,flavor)
 			# read the fake rate map
 			fname = 'fakeRateMap_MC_{}_{}.root'.format(flavor,year)
 			fname = os.path.join(wdirname,fname)
@@ -94,6 +95,7 @@ if __name__=='__main__':
 			    msg = 'ERROR: file {}'.format(fname)
 			    msg += ' does not exist, skipping...'
 			    print(msg)
+			    restextmaps[name][i,j,k] = 'failed'
 			    continue
 			f = ROOT.TFile.Open(fname)
 			# read the fake rate histogram
@@ -101,7 +103,6 @@ if __name__=='__main__':
 			# get minimum, maximum and average
 			(frmin, frmax, fravg) = getminmaxavg(frmap)
 			# add average to result
-			name = '{}_{}'.format(year,flavor)
                         resmaps[name][i,j,k] = fravg
 			# define text to write 
 			# (note that the length must not be longer than initialized above!)

@@ -25,7 +25,7 @@ samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below in loop to set the correct sample list name per flavour/year!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
 # (directory where the samples are)
-nevents = 0
+nevents = None
 # (number of events to process)
 # (use 0 for all events)
 # (note: a reweighting factor ntotal/nevents will be applied to each used event)
@@ -53,6 +53,8 @@ for year in years:
 	# loop over samples and make commands
 	for i in range(nsamples):
 	    if( testrun and i!=0 ): continue
+	    nevents = 0
+	    if i<6: nevents = 50000000
 	    command = './fillFakeRateMeasurement {} {} {} {} {} {} {}'.format(
                             flavour,year,sampledirectory,samplelist,i,testrun,nevents)
 	    cmds.append(command)
