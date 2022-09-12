@@ -135,7 +135,7 @@ bool MuonSelector::isFOBase_v1() const{
 
 bool MuonSelector::isFO2016_v1() const{
     if( leptonMVAValueMuon(muonPtr) <= leptonMVACutMuon() ){
-        if( muonPtr->closestJetDeepFlavor() > 0.02 ) return false;
+        if( muonPtr->closestJetDeepFlavor() > 0.025 ) return false;
         if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
@@ -144,7 +144,7 @@ bool MuonSelector::isFO2016_v1() const{
 
 bool MuonSelector::isFO2016PreVFP_v1() const{
     if( leptonMVAValueMuon(muonPtr) <= leptonMVACutMuon() ){
-	if( muonPtr->closestJetDeepFlavor() > 0.02 ) return false;
+	if( muonPtr->closestJetDeepFlavor() > 0.025 ) return false;
         if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
@@ -153,7 +153,7 @@ bool MuonSelector::isFO2016PreVFP_v1() const{
 
 bool MuonSelector::isFO2016PostVFP_v1() const{
     if( leptonMVAValueMuon(muonPtr) <= leptonMVACutMuon() ){
-        if( muonPtr->closestJetDeepFlavor() > 0.02 ) return false;
+        if( muonPtr->closestJetDeepFlavor() > 0.025 ) return false;
         if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
@@ -162,7 +162,7 @@ bool MuonSelector::isFO2016PostVFP_v1() const{
 
 bool MuonSelector::isFO2017_v1() const{
     if( leptonMVAValueMuon(muonPtr) <= leptonMVACutMuon() ){
-        if( muonPtr->closestJetDeepFlavor() > 0.02 ) return false;
+        if( muonPtr->closestJetDeepFlavor() > 0.025 ) return false;
         if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;
@@ -171,7 +171,7 @@ bool MuonSelector::isFO2017_v1() const{
 
 bool MuonSelector::isFO2018_v1() const{
     if( leptonMVAValueMuon(muonPtr) <= leptonMVACutMuon() ){
-        if( muonPtr->closestJetDeepFlavor() > 0.02 ) return false;
+        if( muonPtr->closestJetDeepFlavor() > 0.025 ) return false;
         if( muonPtr->ptRatio() <= 0.45 ) return false;
     }
     return true;

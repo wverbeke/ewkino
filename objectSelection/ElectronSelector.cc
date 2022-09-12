@@ -141,7 +141,7 @@ bool ElectronSelector::isFOBase_v1() const{
 bool ElectronSelector::isFO2016_v1() const{
     if( leptonMVAValueElectron(electronPtr) <= leptonMVACutElectron() ){
         if( electronPtr->closestJetDeepFlavor() > 0.1 ) return false;
-        if( electronPtr->ptRatio() < 0.4 ) return false;
+        if( electronPtr->ptRatio() < 0.5 ) return false;
         if( !electronPtr->passElectronMVAFall17NoIsoLoose() ) return false;
     }
     return true;
