@@ -8,9 +8,10 @@ import ROOT
 from array import array
 from copy import copy
 import numpy as np
-# import job submission tools for qsub
-sys.path.append('../skimmer')
-from jobSubmission import initializeJobScript
+# import job script tools
+sys.path.append('../jobSubmission')
+from condorTools import initJobScript
+from jobSettings import CMSSW_VERSION
 # import local tools
 sys.path.append('../Tools/python')
 import histtools as ht
@@ -365,9 +366,8 @@ if __name__=='__main__':
 		# run combine
 		script_name = datacard.replace('.txt','.sh')
 		impactfig = '' # empty string means no impact plot will be made
-		#impactfig = datacard.replace('.txt','_impacts')
-		with open( script_name, 'w') as script:
-		    initializeJobScript( script, cmssw_version = 'CMSSW_10_2_16_patch1' )
+		initJobScript(script_name, cmssw_version=CMSSW_VERSION)
+		with open( script_name, 'a') as script:
 		    addcombinecommands(script, datacard, impactfig=impactfig)
 		os.system('bash '+script_name)
 		resfile = datacard.replace('.txt','_out_signalstrength_obs.txt')
