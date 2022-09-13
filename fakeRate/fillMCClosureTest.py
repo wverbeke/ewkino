@@ -20,7 +20,7 @@ years = ['2016PreVFP','2016PostVFP','2017','2018']
 flavours = ['electron','muon','both']
 # (pick any combination from 'muon', 'electron' and any string 
 # different from 'muon' or 'electron' (perform closure test inclusive in lepton flavour))
-processes = ['TT']
+processes = ['DY']
 # (pick any combination from 'DY' and 'TT')
 runmode = 'condor'
 # (pick from 'qsub', 'condor' or 'local')
@@ -30,7 +30,7 @@ istestrun = False
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL/'
 samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below to set correct sample list name in loop!)
-nevents = 50000000
+nevents = 0
 # number of events to process
 # (use 0 for all events)
 # (note: a reweighting factor ntotal/nevents will be applied to each used event)

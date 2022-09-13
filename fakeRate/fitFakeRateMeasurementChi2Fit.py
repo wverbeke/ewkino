@@ -12,6 +12,7 @@ import numpy as np
 from copy import copy
 from array import array
 import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 # import local tools
 sys.path.append('../Tools/python')

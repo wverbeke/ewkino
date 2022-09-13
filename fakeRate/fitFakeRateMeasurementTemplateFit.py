@@ -11,7 +11,8 @@ import numpy as np
 # import job script tools
 sys.path.append('../jobSubmission')
 from condorTools import initJobScript
-from jobSettings import CMSSW_VERSION
+#from jobSettings import CMSSW_VERSION
+CMSSW_VERSION = '/user/llambrec/CMSSW_10_2_16_patch1'
 # import local tools
 sys.path.append('../Tools/python')
 import histtools as ht

@@ -172,7 +172,7 @@ for year in years:
 	### method 2: template fits using combine
 	elif fitmethod=='templatefit':
 	    # make fake rate map directory if it does not exist yet
-	    frmapdir = 'fakeRateMaps'
+	    frmapdir = 'fakeRateMapsTemplateFit'
 	    if not os.path.exists(frmapdir): os.makedirs(frmapdir)
 	    var = 'mT' if use_mT else 'met'
 	    command = 'python fitFakeRateMeasurementTemplateFit.py {} {} {} {}'.format(
@@ -181,7 +181,7 @@ for year in years:
 	### method 3: template fits using simple chi2 fit
 	elif fitmethod=='chi2fit':
 	    # make fake rate map directory if it does not exist yet
-            frmapdir = 'fakeRateMaps'
+            frmapdir = 'fakeRateMapsChi2Fit'
             if not os.path.exists(frmapdir): os.makedirs(frmapdir)
             var = 'mT' if use_mT else 'met'
             command = 'python fitFakeRateMeasurementChi2Fit.py {} {} {} {}'.format(
