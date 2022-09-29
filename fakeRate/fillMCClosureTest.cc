@@ -12,28 +12,79 @@
 #include "../Tools/interface/stringTools.h"
 #include "../Tools/interface/analysisTools.h"
 
-std::vector< HistInfo > makeDistributionInfoDefault(){
-    std::vector< HistInfo > histInfoVec = {
-	HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 10, 200 ),
-	HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 10, 150 ),
+std::vector< HistInfo > makeDistributionInfoDefault( const std::string& process ){
+    if( process=="DY" ){
+	// binning tuned for DY
+	std::vector< HistInfo > histInfoVec = {
+	    HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 10, 150 ),
+	    HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 10, 75 ),
 
-	HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
-	HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
+	    HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
+	    HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
 
-	HistInfo( "nLeptons", "number of leptons", 3, 1.5, 4.5 ),	
-	HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 300 ),
-	HistInfo( "ltmet", "L_{T} + E_{T}^{miss} (GeV)", 10, 0, 300 ),
-	HistInfo( "ht", "H_{T} (GeV)", 10, 0, 600 ),
+	    HistInfo( "nLeptons", "number of leptons", 3, 1.5, 4.5 ),
+	    HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 100 ),
+	    HistInfo( "ltmet", "L_{T} + E_{T}^{miss} (GeV)", 10, 0, 200 ),
+	    HistInfo( "ht", "H_{T} (GeV)", 10, 0, 200 ),
 
-	HistInfo( "nJets", "number of jets", 8, 0, 8 ),
-	HistInfo( "nBJets", "number of b-jets (medium deepFlavour)", 4, 0, 4 ),
-	HistInfo( "nVertex", "number of vertices", 10, 0, 70 ),
+	    HistInfo( "nJets", "number of jets", 4, -0.5, 3.5 ),
+	    HistInfo( "nBJets", "number of b-jets (medium deepFlavour)", 3, -0.5, 2.5 ),
+	    HistInfo( "nVertex", "number of vertices", 10, 0, 50 ),
 
-	HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, 0, 4 ),
-	HistInfo( "nCFlavorNonPrompt", "number of nonprompt with c-hadron origin", 4, 0, 4 ),
-	HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, 0, 4 )
-    };
-    return histInfoVec;
+	    HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, -0.5, 3.5 ),
+	    HistInfo( "nCFlavorNonPrompt", "number of nonprompt with c-hadron origin", 4, -0.5, 3.5 ),
+	    HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 )
+	};
+	return histInfoVec;
+    }
+    if( process=="TT" ){
+	// binning tuned for TT
+	std::vector< HistInfo > histInfoVec = {
+            HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 10, 200 ),
+            HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 10, 100 ),
+
+            HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
+            HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
+
+            HistInfo( "nLeptons", "number of leptons", 3, 1.5, 4.5 ),
+            HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 200 ),
+            HistInfo( "ltmet", "L_{T} + E_{T}^{miss} (GeV)", 10, 0, 400 ),
+            HistInfo( "ht", "H_{T} (GeV)", 10, 0, 600 ),
+
+            HistInfo( "nJets", "number of jets", 8, -0.5, 7.5 ),
+            HistInfo( "nBJets", "number of b-jets (medium deepFlavour)", 4, -0.5, 3.5 ),
+            HistInfo( "nVertex", "number of vertices", 10, 0, 50 ),
+
+            HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, -0.5, 3.5 ),
+            HistInfo( "nCFlavorNonPrompt", "number of nonprompt with c-hadron origin", 4, -0.5, 3.5 ),
+            HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 )
+        };
+	return histInfoVec;
+    }
+    else{
+	// general binning
+	std::vector< HistInfo > histInfoVec = {
+            HistInfo( "leptonPtLeading", "p_{T}^{leading lepton} (GeV)", 10, 10, 200 ),
+            HistInfo( "leptonPtSubLeading", "p_{T}^{subleading lepton} (GeV)", 10, 10, 100 ),
+
+            HistInfo( "leptonEtaLeading", "|#eta|^{leading lepton}", 10, 0, 2.5 ),
+            HistInfo( "leptonEtaSubLeading", "|#eta|^{subleading lepton}", 10, 0, 2.5 ),
+
+            HistInfo( "nLeptons", "number of leptons", 3, 1.5, 4.5 ),   
+            HistInfo( "met", "E_{T}^{miss} (GeV)", 10, 0, 300 ),
+            HistInfo( "ltmet", "L_{T} + E_{T}^{miss} (GeV)", 10, 0, 300 ),
+            HistInfo( "ht", "H_{T} (GeV)", 10, 0, 600 ),
+
+            HistInfo( "nJets", "number of jets", 8, -0.5, 7.5 ),
+            HistInfo( "nBJets", "number of b-jets (medium deepFlavour)", 4, -0.5, 3.5 ),
+            HistInfo( "nVertex", "number of vertices", 10, 0, 50 ),
+
+            HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, -0.5, 3.5 ),
+            HistInfo( "nCFlavorNonPrompt", "number of nonprompt with c-hadron origin", 4, -0.5, 3.5 ),
+            HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 )
+        };
+	return histInfoVec;
+    }
 }
 
 std::shared_ptr< TH2D > readFRMap( const std::string& flavor, const std::string& year, 
@@ -190,7 +241,7 @@ int main( int argc, char* argv[] ){
     // make collection of histograms
     std::vector< std::shared_ptr< TH1D > > observedHists; 
     std::vector< std::shared_ptr< TH1D > > predictedHists;
-    std::vector< HistInfo > histInfoVec = makeDistributionInfoDefault();
+    std::vector< HistInfo > histInfoVec = makeDistributionInfoDefault(process);
     for( const auto& histInfo : histInfoVec ){
         observedHists.push_back( histInfo.makeHist( histInfo.name()+ "_observed_"+process+"_"+year) );
         predictedHists.push_back( histInfo.makeHist( histInfo.name()+"_predicted_"+process+"_"+year) );
