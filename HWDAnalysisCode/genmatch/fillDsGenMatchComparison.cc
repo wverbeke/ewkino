@@ -68,6 +68,7 @@ void fillHistograms( const std::shared_ptr<DMeson> dmeson,
 
 void fillDsGenMatchComparison( const std::string& pathToFile, long nEvents,
 				std::map<std::string,std::shared_ptr<TH1D>> genMatchHists,
+				std::map<std::string,std::shared_ptr<TH1D>> partGenMatchHists,
 				std::map<std::string,std::shared_ptr<TH1D>> nonGenMatchHists,
 				bool selectGoodDMesons ){
     
@@ -94,11 +95,16 @@ void fillDsGenMatchComparison( const std::string& pathToFile, long nEvents,
 	    // set the weight
 	    double weight = 1.;
 
-	    // determine if the D meson is gen matched
-	    bool isGenMatched = dmeson->hasFastGenMatch();
+	    // determine if the D meson is gen matched: default
+	    //bool isGenMatched = dmeson->hasFastGenMatch();
+	    //bool isPartialGenMatched = dmeson->hasFastPartialGenMatch();
+	    // alternative:
+	    bool isGenMatched = dmeson->hasGenMatch();
+	    bool isPartialGenMatched = false;
 
 	    // fill the appropriate histograms
 	    if(isGenMatched) fillHistograms(dmeson, genMatchHists, weight);
+	    else if(isPartialGenMatched) fillHistograms(dmeson, partGenMatchHists, weight);
 	    else fillHistograms(dmeson, nonGenMatchHists, weight);
 	}	
     }
@@ -128,13 +134,16 @@ int main( int argc, char* argv[] ){
     // initialize the histograms
     std::vector<HistogramVariable> vars = variableTools::readVariables( variable_file_path );
     std::map< std::string, std::shared_ptr<TH1D> > genMatchHists;
+    std::map< std::string, std::shared_ptr<TH1D> > partGenMatchHists;
     std::map< std::string, std::shared_ptr<TH1D> > nonGenMatchHists;
     genMatchHists = variableTools::initializeHistograms( vars );
+    partGenMatchHists = variableTools::initializeHistograms( vars );
     nonGenMatchHists = variableTools::initializeHistograms( vars );
     
     // fill the histograms
     fillDsGenMatchComparison( input_file_path, nprocess,
                                 genMatchHists,
+				partGenMatchHists,
                                 nonGenMatchHists,
                                 selectGoodDMesons );
 
@@ -143,6 +152,10 @@ int main( int argc, char* argv[] ){
     std::map<std::string,std::shared_ptr<TH1D>>::iterator it;
     for( it=genMatchHists.begin(); it!=genMatchHists.end(); ++it ){
 	it->second->SetName( (std::string(it->second->GetName())+"_match").c_str() );
+        it->second->Write();
+    }
+    for( it=partGenMatchHists.begin(); it!=partGenMatchHists.end(); ++it ){
+        it->second->SetName( (std::string(it->second->GetName())+"_partmatch").c_str() );
         it->second->Write();
     }
     for( it=nonGenMatchHists.begin(); it!=nonGenMatchHists.end(); ++it ){

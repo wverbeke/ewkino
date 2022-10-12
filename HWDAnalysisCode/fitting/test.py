@@ -13,7 +13,7 @@ import optiontools as opt
 
 from fitroot import fitroot
 from fitscipy import fitscipy
-from fitroofit import fitroofit
+from fitroofit import fitroofit, fitroofit_alternative, fitroofit_alternative2
 import funcdefs as fd
 
 
@@ -35,8 +35,8 @@ if __name__=='__main__':
 
     # set fit function properties
     fitfunctype = fd.polynomial
-    rffitfunctype = fd.RooFitPolynomial
-    parameters = [0.,0.]
+    rffitfunctype = fd.RooFitPolynomialPdf
+    parameters = [1.,1.]
 
     # get the input histogram
     histlist = ht.loadhistograms(options.inputfile, mustcontainall=[options.histname])
@@ -47,11 +47,11 @@ if __name__=='__main__':
 
     # optional: set the histogram to a simple shape
     for i in range(0, hist.GetNbinsX()+2):
-	xval = hist.GetBinCenter(i)
-	yval = 1.
-	yerror = 0.1
-	hist.SetBinContent(i,yval)
-	hist.SetBinError(i,yerror)
+    	xval = hist.GetBinCenter(i)
+    	yval = 15
+    	yerror = 0.1
+    	hist.SetBinContent(i,yval)
+    	hist.SetBinError(i,yerror)
 
     # optional: set a region to zero
     #for i in range(0, hist.GetNbinsX()/2):
@@ -83,10 +83,16 @@ if __name__=='__main__':
     #labellist.append('Fit (scipy, limited)')
 
     ### fitting with RooFit ###
-    bounds = [(0.,0.),(0.,0.01)]
-    (roofitfunc,otherstuff) = fitroofit(hist, rffitfunctype, parameters, bounds=bounds)
+    bounds = [(0.,5.),(0.,5.)]
+    #(roofitfunc,otherstuff) = fitroofit(hist, rffitfunctype, parameters, bounds=bounds)
+    (roofitfunc,otherstuff) = fitroofit_alternative(hist, 
+    				'RooPolynomial::poly(x,{a1[10,0,15]})', 'poly')
+    #(roofitfunc,otherstuff) = fitroofit_alternative2(hist, rffitfunctype, parameters, bounds=bounds)
+    print(roofitfunc)
+    print(roofitfunc.Eval(150.))
     funclist.append( roofitfunc )
     labellist.append('Fit (RooFit)')
+    
 
     # make an example histogram to add on the plot
     exthist = hist.Clone()

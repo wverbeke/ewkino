@@ -42,30 +42,36 @@ if __name__=='__main__':
 	print('now processing variable {}'.format(varname))
 	thishistlist = []
 	thismatchhist = None
+	thispartmatchhist = None
 	thisnonmatchhist = None
 	for hist in histlist:
 	    if hist.GetName()==varname+'_match': 
 		thismatchhist = hist
 		thishistlist.append(hist)
+	    elif hist.GetName()==varname+'_partmatch':
+		thispartmatchhist = hist
+		thishistlist.append(hist)
 	    elif hist.GetName()==varname+'_nomatch': 
 		thisnonmatchhist = hist
 		thishistlist.append(hist)
-	if( thismatchhist is None or thisnonmatchhist is None ):
-	    print('ERROR: could not find match and nomatch histogram for this variable.')
+	if( thismatchhist is None 
+	    or thisnonmatchhist is None
+	    or thispartmatchhist is None ):
+	    print('ERROR: could not find all expected histograms for this variable.')
 	    continue
-	if len(thishistlist)!=2:
+	if len(thishistlist)!=3:
 	    print('ERROR: number of histograms for this variable is {}'.format(len(thishistlist)))
 	    continue
 
 	# other settiings
-	thishistlist = [thismatchhist, thisnonmatchhist]
-	labels = ['gen match', 'no gen match']
+	thishistlist = [thismatchhist, thispartmatchhist, thisnonmatchhist]
+	labels = ['gen match', 'partial gen match', 'no gen match']
 	xaxtitle = el['title']
 
 	# make absolute plot
 	figname = os.path.join(options.outputdir, varname+'_abs')
         yaxtitle = 'Number of D_{s} candidates'
-	pmh.plotmultihistograms([thismatchhist, thisnonmatchhist], 
+	pmh.plotmultihistograms(thishistlist, 
 			figname,
 			labellist = labels,
 			title=None, xaxtitle=xaxtitle, yaxtitle=yaxtitle,
@@ -79,7 +85,7 @@ if __name__=='__main__':
 	# make normalized plot
 	figname = os.path.join(options.outputdir, varname+'_norm')
 	yaxtitle = 'Arbitrary units'
-        pmh.plotmultihistograms([thismatchhist, thisnonmatchhist], 
+        pmh.plotmultihistograms(thishistlist, 
 			figname,
 			labellist = labels,
                         title=None, xaxtitle=xaxtitle, yaxtitle=yaxtitle,

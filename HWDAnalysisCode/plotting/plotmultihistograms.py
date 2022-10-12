@@ -78,7 +78,7 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     # legend box
     pentryheight = 0.05
     if doratio: pentryheight = 0.07
-    nentries = 1 + len(funclist) + len(histlist)
+    nentries = 1 + len(histlist)
     if nentries>3: pentryheight = pentryheight*0.8
     plegendbox = ([leftmargin+0.3,1-p1topmargin-0.03-pentryheight*nentries,
                     1-rightmargin-0.03,1-p1topmargin-0.03])
@@ -89,7 +89,9 @@ def plotmultihistograms(histlist, figname=None, title=None, xaxtitle=None, yaxti
     for i,hist in enumerate(histlist):
         hist.SetLineWidth(3)
         hist.SetLineColor(colorlist[i])
-        if normalize: scale = hist.Integral("width")
+        if normalize: 
+	    scale = hist.Integral("width")
+	    if scale==0.: scale = 1
         for j in range(0,hist.GetNbinsX()+2):
             hist.SetBinContent(j,hist.GetBinContent(j)/scale)
             hist.SetBinError(j,hist.GetBinError(j)/scale)
