@@ -28,3 +28,6 @@ HWDAnalysisCode/tools/*.o
 HWDAnalysisCode/standalone/hyperopt/output_*
 HWDAnalysisCode/standalone/hyperopt/grids/*.pkl
 HWDAnalysisCode/standalone/hyperopt/grids/*.json
+# keras output and data
+HWDAnalysisCode/standalone/keras/output_*
+HWDAnalysisCode/standalone/keras/data
