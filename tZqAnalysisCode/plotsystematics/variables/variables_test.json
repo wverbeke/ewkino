@@ -1,0 +1,5 @@
+[
+        {"name":"_abs_eta_recoil","title":"\\left|\\eta\\right|_{recoil}","unit":""},
+        {"name":"_Mjj_max","title":"m_{jet+jet}^{max}","unit":"GeV"},
+        {"name":"_lW_asymmetry","title":"Asymmetry (lepton from W)","unit":""}
+]

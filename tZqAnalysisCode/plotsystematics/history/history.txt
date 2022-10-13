@@ -1,0 +1,38 @@
+Save some examples of systematictags and excludetags for typical plots in AN
+
+Tags for PDF plot
+systematictags = ['pdf']
+excludetags = []
+simprocesses = ['tZq']
+
+Tags for QCD scales plot
+systematictags = ['rScale','fScale','rfScales']
+excludetags = []
+simprocesses = ['tZq']
+
+Tags for general plot
+systematictags = []
+excludetags = ['ShapeVar','rScale','fScale','rfScales','Norm']
+simprocesses = ['tZq']
+
+Save some examples of systematictags and excludetags for jec split studies
+
+Tags for grouped total
+systematictags = ['JECGrouped_TotalUp','JECGrouped_TotalDown','JECUp','JECDown']
+excludetags = []
+
+Tags for all total
+systematictags = ['JECAll_TotalUp','JECAll_TotalDown','JECUp','JECDown']
+excludetags = []
+
+Tags for squared sum grouped
+systematictags = ['JEC']
+excludetags = (['JECAll','Total','PileUpEnvelope','PileUpMuZero','FlavorZJet',
+                'FlavorPhotonJet','FlavorPureGluon','FlavorPureQuark',
+                'FlavorPureCharm','FlavorPureBottom'])
+
+Tags for squared sum all
+systematictags = ['JEC']
+excludetags = (['JECGrouped','Total','PileUpEnvelope','PileUpMuZero','FlavorZJet',
+                'FlavorPhotonJet','FlavorPureGluon','FlavorPureQuark',
+                'FlavorPureCharm','FlavorPureBottom'])

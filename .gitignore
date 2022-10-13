@@ -10,3 +10,9 @@ codeLibrary.o
 # root files
 # (exceptions may exist, e.g. scalefactors, but should be added manually)
 **.root
+
+# output folders
+*/output_*
+
+# output folders in analysis code
+tZqAnalysisCode/*/output_*
