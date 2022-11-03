@@ -220,12 +220,12 @@ void fillFakeRateMeasurementHistograms(const std::string& leptonFlavor, const st
 	// temp: remove events with unphysical large weights
         // issue with unknown cause observed in a small number of generator weights 
         // in UL WJets samples
-        /*if( weight>1e4 ){
+        if( weight>1e4 ){
             std::string msg = "WARNING: vetooing event with large weight.";
             msg += " (weight is " + std::to_string(weight) + ")";
             std::cerr << msg << std::endl;
             continue;
-        }*/
+        }
 
 	weight *= nEventsReweight;
         
