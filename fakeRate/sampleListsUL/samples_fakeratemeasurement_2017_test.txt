@@ -1,7 +1,0 @@
-# test version where only data is processed and it is split per PD
-data    data_combined_Fall17.root
-data	SingleMuon_Fall17_Run2017.root
-data	SingleElectron_Fall17_Run2017.root
-data	DoubleMuon_Fall17_Run2017.root
-data	DoubleEG_Fall17_Run2017.root
-data	MuonEG_Fall17_Run2017.root

@@ -22,7 +22,7 @@ sys.path.append('python')
 import fakeRateMeasurementTools as frt
 from merge2016 import merge2016
 
-years = ['2016PreVFP','2016PostVFP','2016Merged','2017','2018']
+years = ['2016PreVFP','2016PostVFP','2017','2018']
 # (choose any combination from '2016', '2017' and '2018')
 flavours = ['electron','muon']
 # (choose any combination from 'muon' and 'electron')
@@ -48,7 +48,7 @@ for year in years:
 	basename += '_histograms'
 	filename = basename + '.root'
 	if os.path.exists(filename): continue
-	subfolder = 'FakeRateMeasurementSubFiles'
+	subfolder = '.'
 	cmd = 'hadd '+filename+' '
 	cmd += os.path.join(subfolder,basename+'_sample*.root')
 	print(cmd)

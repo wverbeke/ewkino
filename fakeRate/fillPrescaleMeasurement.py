@@ -25,7 +25,7 @@ samplelistdirectory = os.path.abspath('sampleListsUL')
 # (see also below to set correct sample list name in the loop!)
 sampledirectory = '/pnfs/iihe/cms/store/user/llambrec/ntuples_fakerate_UL'
 # directory where the samples are
-nevents = 0
+nevents = 25000000
 # number of events to process
 # (use 0 for all events)
 # (note: a reweighting factor ntotal/nevents will be applied to each used event)
@@ -42,11 +42,12 @@ cwd = os.getcwd()
 cmds = []
 for year in years:
     samplelist = os.path.join(samplelistdirectory,
-				'samples_fakeratemeasurement_'+year+'.txt')
+				'samples_fakeratemeasurement_'+year+'_withqcd.txt')
     # check number of samples
     nsamples = 0
     with open(samplelist) as sf:
-	for sl in sf: 
+	for sl in sf:
+	    if len(sl)<2: continue 
 	    if not sl[0] == '#': nsamples += 1
     print('found '+str(nsamples)+' samples for '+year)
     # loop over samples
