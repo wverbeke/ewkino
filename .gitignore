@@ -13,9 +13,11 @@ codeLibrary.o
 
 # some output folders
 fakeRate/output_*
+fakeRate/fakeRateMaps
 fakeRateGrid/output_*
 FourTopsFakeRateAnalysisCode/eventselection/output_*
 FourTopsFakeRateAnalysisCode/normalization/hcounters_*
+FourTopsFakeRateAnalysisCode/normalization/samples_*
 fakeRateExtra/output_*
 sampleXSec/output_*
 
