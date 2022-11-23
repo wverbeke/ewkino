@@ -33,7 +33,10 @@ std::vector< HistInfo > makeDistributionInfoDefault( const std::string& process 
 
 	    HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, -0.5, 3.5 ),
 	    HistInfo( "nCFlavorNonPrompt", "number of nonprompt with c-hadron origin", 4, -0.5, 3.5 ),
-	    HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 )
+	    HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 ),
+
+            HistInfo( "nonpromptLeptonPt", "p_{T}^{leading nonprompt lepton} (GeV)", 10, 10, 75),
+            HistInfo( "nonpromptLeptonEta", "|#eta|^{leading nonprompt lepton}", 10, 0, 2.5 )
 	};
 	return histInfoVec;
     }
@@ -57,7 +60,10 @@ std::vector< HistInfo > makeDistributionInfoDefault( const std::string& process 
 
             HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, -0.5, 3.5 ),
             HistInfo( "nCFlavorNonPrompt", "number of nonprompt with c-hadron origin", 4, -0.5, 3.5 ),
-            HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 )
+            HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 ),
+    
+	    HistInfo( "nonpromptLeptonPt", "p_{T}^{leading nonprompt lepton} (GeV)", 10, 10, 100),
+	    HistInfo( "nonpromptLeptonEta", "|#eta|^{leading nonprompt lepton}", 10, 0, 2.5 )
         };
 	return histInfoVec;
     }
@@ -81,7 +87,10 @@ std::vector< HistInfo > makeDistributionInfoDefault( const std::string& process 
 
             HistInfo( "nLightNonPrompt", "number of nonprompt with light origin", 4, -0.5, 3.5 ),
             HistInfo( "nCFlavorNonPrompt", "number of nonprompt with c-hadron origin", 4, -0.5, 3.5 ),
-            HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 )
+            HistInfo( "nBFlavorNonPrompt", "number of nonprompt with b-hadron origin", 4, -0.5, 3.5 ),
+
+	    HistInfo( "nonpromptLeptonPt", "p_{T}^{leading nonprompt lepton} (GeV)", 10, 10, 100),
+	    HistInfo( "nonpromptLeptonEta", "|#eta|^{leading nonprompt lepton}", 10, 0, 2.5 )
         };
 	return histInfoVec;
     }
@@ -191,6 +200,19 @@ std::tuple<int,int,int> eventOriginFlavour( const Event& event ){
     return std::make_tuple<int,int,int>(nlight,ncflavor,nbflavor);
 }
 
+std::pair<double,double> findLeadingNonpromptLeptonPtAndEta( const Event& event ){
+    // retrieve leading nonprompt lepton kinematic properties
+    // assume leptons were already sorted!
+    std::pair<double, double> res = std::make_pair(0,0);
+    for( auto& leptonPtr : event.lightLeptonCollection() ){
+        if( !leptonPtr->isPrompt() ){
+            res = std::make_pair(leptonPtr->pt(),leptonPtr->eta());
+	    break;
+        }
+    }
+    return res;
+}
+
 int main( int argc, char* argv[] ){
 
     std::cerr << "###starting###" << std::endl;
@@ -290,7 +312,8 @@ int main( int argc, char* argv[] ){
 	    LightLeptonCollection lightLeptons = event.lightLeptonCollection();
 
 	    // compute plotting variables 
-	    std::tuple<int,int,int> temp = eventOriginFlavour( event );
+	    std::tuple<int,int,int> eof = eventOriginFlavour( event );
+	    std::pair<double, double> lnpl = findLeadingNonpromptLeptonPtAndEta( event );
             std::vector< double > variables = { 
 		lightLeptons[0].pt(), lightLeptons[1].pt(),
                 lightLeptons[0].absEta(), lightLeptons[1].absEta(),
@@ -301,9 +324,11 @@ int main( int argc, char* argv[] ){
                 static_cast< double >( event.numberOfJets() ),
                 static_cast< double >( event.numberOfMediumBTaggedJets() ),
                 static_cast< double >( event.numberOfVertices() ),
-		static_cast< double >( std::get<0>(temp) ),
-		static_cast< double >( std::get<1>(temp) ),
-		static_cast< double >( std::get<2>(temp) )
+		static_cast< double >( std::get<0>(eof) ),
+		static_cast< double >( std::get<1>(eof) ),
+		static_cast< double >( std::get<2>(eof) ),
+                lnpl.first,
+		fabs(lnpl.second)
             };
 
             // event is 'observed' if all leptons are tight 
