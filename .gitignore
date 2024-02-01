@@ -11,8 +11,12 @@ codeLibrary.o
 # (exceptions may exist, e.g. scalefactors, but should be added manually)
 **.root
 
-# output folders
-*/output_*
+# image files
+**.png
+**.pdf
+**.eps
 
-# output folders in analysis code
-tZqAnalysisCode/*/output_*
+# output folders
+**/*output*
+**/*plots*
+**/*datacards*
