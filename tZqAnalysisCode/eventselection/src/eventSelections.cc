@@ -270,6 +270,40 @@ bool pass_signalregion(Event& event, const std::string& selectiontype,
     return true;
 }
 
+std::tuple<int, std::string> pass_signalregion_cutflow(
+    Event& event, const std::string& selectiontype,
+    const std::string& variation, const bool selectbjets){
+    // apply basic object selection
+    cleanLeptonsAndJets(event);
+    // apply MET filters
+    if(not event.passMetFilters()) return std::make_tuple(1, "Fail MET filters");
+    // apply trigger thresholds
+    if(not passAnyTrigger(event)) return std::make_tuple(2, "Fail trigger");
+    // select FO leptons
+    if(!hasnFOLeptons(event, 3, true)) return std::make_tuple(3, "Fail 3 tight leptons");
+    if(not passLeptonPtThresholds(event)) return std::make_tuple(4, "Fail pT thresholds");
+    if(not passPhotonOverlapRemoval(event)) return std::make_tuple(3, "Fail 3 tight leptons");
+    // do lepton selection for different types of selections
+    if(selectiontype=="3tight"){
+        if(!hasnTightLeptons(event, 3, true)) return std::make_tuple(3, "Fail 3 tight leptons");
+    } else if(selectiontype=="3prompt"){
+        if(!hasnTightLeptons(event, 3, true)) return std::make_tuple(3, "Fail 3 tight leptons");
+        if(event.isMC() and !allLeptonsArePrompt(event)) return std::make_tuple(3, "Fail 3 tight leptons");
+    } else if(selectiontype=="fakerate"){
+        if(hasnTightLeptons(event, 3, false)) return std::make_tuple(-1, "2 <should not happen>");
+        if(event.isMC() and !allLeptonsArePrompt(event)) return std::make_tuple(-1, "2 <should not happen>");
+    } else if(selectiontype=="2tight"){
+        if(!hasnTightLeptons(event, 2, false)) return std::make_tuple(-1, "<should not happen>");
+        if(hasnTightLeptons(event, 3, false)) return std::make_tuple(-1, "<should not happen>");
+    } else return std::make_tuple(-1, "<should not happen>");
+    // Z boson candidate
+    if(!event.hasOSSFLightLeptonPair()) return std::make_tuple(5, "Fail Z boson candidate");
+    if(!event.hasZTollCandidate(halfwindow)) return std::make_tuple(5, "Fail Z boson candidate");
+    // number of jets and b-jets
+    if(eventCategory(event, variation, selectbjets)<0) return std::make_tuple(6, "Fail number of (b-) jets");
+    return std::make_tuple(7, "Pass all selections");
+}
+
 bool pass_signalsideband_noossf(Event& event, const std::string& selectiontype, 
 				const std::string& variation, const bool selectbjets){
     cleanLeptonsAndJets(event);

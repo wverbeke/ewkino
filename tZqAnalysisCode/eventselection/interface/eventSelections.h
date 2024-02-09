@@ -37,5 +37,8 @@ bool pass_signalsideband_noz(Event&, const std::string& selectiontype,
 			const std::string& variation, const bool selectbjets);
 bool pass_signalsideband(Event&, const std::string& selectiontype, 
 			const std::string& variation, const bool selectbjets);
+// pass functions with cutflow
+std::tuple<int, std::string> pass_signalregion_cutflow(Event&, const std::string& selectiontype,
+                        const std::string& variation, const bool selectbjets);
 
 #endif

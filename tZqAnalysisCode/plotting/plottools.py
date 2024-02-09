@@ -160,8 +160,8 @@ def setTDRstyle():
 ############################################################
 
 def drawLumi(pad, extratext="Preliminary", 
-		lumitext="<lumi> fb^{-1} (13 TeV)",
-		cms_in_grid=True):
+                lumitext="<lumi> fb^{-1} (13 TeV)",
+                cms_in_grid=True):
 
     pad.Update()
 
@@ -203,9 +203,9 @@ def drawLumi(pad, extratext="Preliminary",
     nlines = 1+extratext.count('#splitline') # not yet generalized to all cases
     if not cms_in_grid: latex.DrawLatex(lmargin + 1.2*cmsX, 
                         1-tmargin+CMSTextVerticalOffset, extratext);
-    else: latex.DrawLatex(lmargin + cmsX, 
-	    1-tmargin-CMSTextVerticalOffset-CMSTextSize-extraTextSize*0.8*(nlines-1), 
-	    extratext);
+    else: latex.DrawLatex(lmargin + 1.2*cmsX, 
+            1-tmargin-CMSTextVerticalOffset-CMSTextSize-extraTextSize*0.8*(nlines-1), 
+            extratext);
 
     latex.SetTextFont(42);
     latex.SetTextAlign(31);
@@ -223,8 +223,8 @@ def getcolormap(style):
     if(style=='tzq' or style=='tzqanalysis'): return getcolormap_tzq()
     if(style=='systematic' or style=='systematics'): return getcolormap_systematics()
     else:
-	print('### WARNING ### (in getcolormap): style not recognized, returning None')
-	return None
+        print('### WARNING ### (in getcolormap): style not recognized, returning None')
+        return None
 
 def defineColorHex(hexstring):
     # note: the color object needs to stay in scope, else the index will refer to a nullpointer
